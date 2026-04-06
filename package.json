@@ -1,0 +1,45 @@
+{
+  "name": "replyline",
+  "version": "0.1.0",
+  "description": "Replyline — tray-first snippet helper for difficult work conversations.",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "tauri": "tauri",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "test:fixtures": "node scripts/check-fixtures.mjs",
+    "test:prompt-contract": "node scripts/check-prompt-contract.mjs",
+    "copy:check": "node scripts/copy-check.mjs",
+    "probe:runtime": "cargo run --manifest-path src-tauri/Cargo.toml --bin runtime_probe",
+    "probe:bench": "pwsh -File scripts/runtime-bench.ps1",
+    "probe:durations": "pwsh -File scripts/runtime-duration-bench.ps1",
+    "probe:durations:avg": "pwsh -File scripts/runtime-duration-bench.ps1 -DurationsCsv 15,30,60 -Repeats 3",
+    "probe:live-source": "pwsh -File scripts/runtime-live-source-bench.ps1",
+    "evidence:bundle": "pwsh -File scripts/runtime-evidence-bundle.ps1",
+    "runtime:preflight": "pwsh -File scripts/runtime-preflight.ps1",
+    "benchmark:evidence": "pwsh -File scripts/benchmark-evidence-scaffold.ps1",
+    "smoke:template": "pwsh -File scripts/smoke-checks-template.ps1",
+    "alpha:handoff": "pwsh -File scripts/alpha-handoff-bundle.ps1",
+    "rust:deny": "pwsh -NoProfile -Command \"Push-Location src-tauri; cargo deny check --config deny.toml advisories bans sources; Pop-Location\"",
+    "rust:audit": "cargo audit --file src-tauri/Cargo.lock",
+    "rust:deps": "pnpm rust:deny && pnpm rust:audit",
+    "smoke": "pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo test --manifest-path src-tauri/Cargo.toml && pnpm test:fixtures && pnpm test:prompt-contract && pnpm copy:check"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
+    "@tauri-apps/plugin-global-shortcut": "^2.3.1",
+    "@tauri-apps/plugin-opener": "^2",
+    "solid-js": "^1.9.3"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.3",
+    "vite-plugin-solid": "^2.11.0"
+  }
+}

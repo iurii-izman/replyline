@@ -1,0 +1,42 @@
+# Replyline Benchmark Policy
+
+Replyline uses three labels for performance and runtime claims.
+
+| Label | Meaning |
+|---|---|
+| `target` | Intended design goal, not yet measured on a real machine |
+| `measured` | Captured on a real workstation with a saved runtime artifact |
+| `pending verification` | The path exists, but the proof is incomplete or noisy |
+
+## Rules
+
+- Do not call latency `measured` without a saved JSON or Markdown artifact under `reports/runtime`.
+- Do not treat `pnpm smoke` as runtime proof.
+- Do not treat one lucky run as product truth when repeated runs are noisy.
+- Prefer repeated runs for `15s / 30s / 60s` before changing the user-facing default.
+- If artifacts are missing for the current build family, downgrade claims to `pending verification`.
+- Scope all `measured` wording to the workstation(s) that produced evidence.
+
+## Reporting format
+
+When writing docs or release notes, use this format:
+
+- `target`: intended number or behavior
+- `measured`: include evidence source path (example: `reports/runtime/<file>.json`)
+- `pending verification`: explain what evidence is missing (example: repeated live-call runs)
+
+Runtime helpers:
+
+- `pnpm runtime:preflight` for machine-local readiness signal snapshot
+- `pnpm benchmark:evidence` to scaffold a compact evidence note from runtime reports
+
+## Current posture
+
+- Runtime route is designed for short captures first.
+- `120-180s` remains available but should be labeled `pending verification` for fast-path messaging unless repeated evidence says otherwise.
+
+See also:
+
+- `docs/verification-lanes.md`
+- `docs/runtime-evidence.md`
+- `docs/runtime-bringup.md`
