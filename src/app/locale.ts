@@ -1,11 +1,10 @@
 /**
- * UI strings for Replyline — Russian-first alpha.
+ * UI strings for Replyline — bilingual (ru / en).
  *
- * All user-visible text lives here so future i18n migration
- * only needs to swap this module for a locale-aware loader.
+ * All user-visible text lives here so i18n only needs `getUi(lang)`.
  */
 
-export const ui = {
+export const ui_ru = {
   appName: "Replyline",
   appSubtitle: "инструмент для сложных рабочих разговоров",
 
@@ -269,7 +268,278 @@ export const ui = {
   },
 } as const;
 
-export type UiStrings = typeof ui;
+export type UiStrings = typeof ui_ru;
+
+export const ui_en: UiStrings = {
+  appName: "Replyline",
+  appSubtitle: "a tool for high-stakes work conversations",
+
+  phase: {
+    booting: "Loading…",
+    capturing: "Recording",
+    transcribing: "Audio → text",
+    analyzing: "Card",
+    ready: "Card",
+    error: "Start failed",
+    hotkeyFail: "Hotkey",
+    setupNeeded: "Setup needed",
+    idleReady: "Ready",
+  },
+
+  livePhase: {
+    capturingHeadline: "Recording in progress",
+    capturingSub: "Hold the key. Release to continue the pipeline.",
+    transcribingHeadline: "Transcribing audio",
+    transcribingSub: "Waiting for transcript (Deepgram).",
+    analyzingHeadline: "Generating response",
+    analyzingSub: "Waiting for card from the gateway.",
+  },
+
+  card: {
+    gistLabel: "Gist",
+    sayNowLabel: "Say now",
+    nextMoveLabel: "Next move",
+    copySayNow: "Copy "Say now"",
+    copyToClipboardTitle: "Copy to clipboard",
+    retryCard: "Rebuild card",
+    retryCardTitle: "Same text, new gateway response",
+    clearContext: "Clear draft replies",
+    clearContextTitle: "Remove accumulated replies from memory (RAM), not from disk",
+    supersededHint: "Outdated card — wait for the current step to finish.",
+    openNotebookLm: "Open NotebookLM",
+    lastTranscriptLabel: "Last capture transcript (truncated)",
+    lastTranscriptHint: "The "Rebuild card" button sends this same text to the gateway again.",
+  },
+
+  setup: {
+    title: "Setup first",
+    body: "Without a saved Deepgram key and response route the pipeline won't start. Filling in fields alone does nothing — you must click "Save".",
+    step1: "Open setup (gear icon or button below).",
+    step2: "Deepgram key + gateway address and model.",
+    step3: ""Save on this machine", then verify by holding the hotkey.",
+    openSetup: "Open setup",
+  },
+
+  idle: {
+    title: "Ready",
+  },
+
+  startError: {
+    title: "Failed to start",
+    body: "Usually a Windows profile or settings file issue. Retry loading or open setup.",
+    retryLoad: "Retry loading",
+    toSetup: "Go to setup",
+  },
+
+  errorRoute: {
+    toStt: "Deepgram key →",
+    toLlm: "Gateway & model →",
+    toMemory: "Memory →",
+    toHotkey: "Setup →",
+  },
+
+  boot: {
+    loading: "Reading settings and registering the hotkey. On failure you'll see a message and "Retry".",
+  },
+
+  chrome: {
+    hideToTray: "Hide to tray",
+    closeApp: "Close application",
+    trayIntroCopy:
+      "× hides the window; the app stays in the system tray. To reopen: double-click the tray icon or choose "Open" from its menu.",
+    trayIntroHide: "Dismiss hint",
+  },
+
+  footer: {
+    loading: "Loading…",
+    errorHint: "Resolve the error first or open setup.",
+    contextActive: "Draft replies in memory (not on disk).",
+    contextEmpty: "No draft replies.",
+  },
+
+  tray: {
+    open: "Open",
+    settings: "Settings",
+    clearContext: "Clear context",
+    collectDiagnostic: "Collect diagnostic summary…",
+    quit: "Quit",
+  },
+
+  notices: {
+    contextCleared: "Draft replies cleared (memory only).",
+    trayIntroHidden: "Tray hint dismissed.",
+    settingsSaved: "Saved. You can now verify by holding the hotkey.",
+    settingsSavedPartial: "Saved. Finish setup to complete configuration.",
+    sayNowCopied: ""Say now" line copied to clipboard.",
+    notebookLmOpened: "NotebookLM opened in the system browser.",
+    retrying: "Rebuilding…",
+    hotkeyAlreadyRegistered: "This shortcut is already registered here. Choose another one.",
+    readinessJsonCopied: "Readiness JSON copied to clipboard.",
+    readinessJsonCopyManual: "Readiness JSON: clipboard unavailable, retry or copy from the log.",
+    readinessCopyFailed: "Failed to retrieve readiness JSON.",
+    ticketPayloadCopied: "Ticket JSON copied to clipboard.",
+    ticketPayloadCopyManual: "Ticket JSON: clipboard unavailable, copy from console/logs.",
+    ticketPayloadCopyFailed: "Failed to build ticket JSON.",
+    ticketPackageReady: "Ticket package ready: summary collected and JSON payload copied.",
+  },
+
+  settings: {
+    title: "Setup",
+    lead: "Holding the hotkey records a short audio clip; releasing sends it to your STT and response gateway (not saved to disk by default). "Save" writes the config file and keys to Windows on this machine; it does not test connectivity.",
+    save: "Save on this machine",
+    saving: "Saving…",
+    toCard: "Go to card",
+    retryLoad: "Retry loading",
+
+    hotkeyNudge:
+      "Fill in the required sections and click "Save". Without this, holding the hotkey won't start the pipeline.",
+    bootstrapFail:
+      "App loading failed. "Retry" or edit below and "Save".",
+
+    readinessTitle: "Readiness checklist",
+    readinessFoot:
+      "This only reflects configuration, not a guarantee of connectivity: providers, network, and audio source determine the outcome.",
+    readinessLabel: {
+      stt: "Speech-to-text",
+      llm: "Text response",
+      llmKey: "Gateway access",
+      hotkey: "Controls",
+    },
+    readinessState: {
+      deepgramMet: "Deepgram key stored in Windows",
+      deepgramMissing: "Required: key + "Save"",
+      llmMet: "Address and model set (verified on capture)",
+      llmPlaceholder: "Required: replace the default localhost with your route",
+      llmMissing: "Required: address and model below",
+      llmKeyMet: "Gateway key saved",
+      llmKeyOptional: "Optional: if the gateway requires a token, enter and save it",
+      hotkeyMet: "Hotkey assigned (takes effect after "Save")",
+      hotkeyMissing: "Assign a shortcut below",
+    },
+
+    snapshotTitle: "Current environment",
+    snapshotIntro:
+      "A brief overview of what's configured in settings and session memory. Does not test network or provider responses.",
+    snapshotLabel: {
+      gateway: "Gateway",
+      model: "Model",
+      deepgram: "Deepgram",
+      notebookLm: "NotebookLM",
+      notebookLmUrl: "NotebookLM URL",
+      fragmentLimit: "Fragment limit",
+      cardLanguage: "Card language",
+      contextDraft: "Draft replies",
+      appVersion: "App version",
+      settingsSchema: "Settings schema",
+      transcriptChars: "Characters in last transcript",
+      localLog: "Local log",
+      lastLine: "Last line",
+      lastDebugWav: "Last debug WAV",
+    },
+    snapshotValue: {
+      enabled: "enabled",
+      disabled: "disabled",
+      notYetReceived: "not yet received",
+      noEntries: "none yet",
+      empty: "empty",
+    },
+    copyLogPath: "Copy log path",
+    copyReadinessJson: "Copy readiness JSON",
+
+    supportTitle: "Support summary",
+    supportIntro:
+      "Collects a local support folder. If runtime reports from a repo clone are nearby they'll be included; otherwise at minimum the log and manifest are gathered.",
+    collectingBundle: "Collecting…",
+    collectBundle: "Collect summary",
+    collectTicketPackage: "Ticket package (summary + readiness JSON)",
+
+    hotkeySectionTitle: "In-conversation controls",
+    hotkeySectionIntro:
+      "Currently capture uses Windows system output only (WASAPI loopback), not the microphone. If YouTube or TTS is audible but the mic isn't — that's expected behavior in this alpha.",
+    hotkeyLabel: "Hotkey",
+    hotkeyHint: "System audio while held. The shortcut must not conflict with Windows.",
+    captureMaxLabel: "Max fragment length, sec",
+    captureMaxHint: "Typically 5–60 s. 120–180 s gives more context but slower, less predictable responses.",
+
+    sttSectionTitle: "Speech recognition",
+    sttSectionIntro:
+      "After releasing the key — Deepgram. The key is stored in Windows credentials, not in a plain file.",
+    deepgramKeyLabel: "Deepgram API key",
+    deepgramPlaceholderSaved: "new key, if changing",
+    deepgramPlaceholderNew: "paste your key",
+
+    llmSectionTitle: "Text response",
+    llmSectionIntro:
+      "An OpenAI-API-style gateway: transcript goes in, card comes out. Address and model are yours to set.",
+    llmBaseUrlLabel: "Gateway address (base URL)",
+    llmBaseUrlHint:
+      "http://127.0.0.1:4000/v1 is only a dev example here. For alpha, enter your working address.",
+    llmModelLabel: "Model",
+    llmKeyLabel: "Response API key",
+    llmKeyPlaceholder: "Bearer / API key, if your gateway requires one",
+    llmKeyIfNeeded: "if required by gateway",
+
+    notebookLmSectionTitle: "External tool: NotebookLM",
+    notebookLmSectionIntro:
+      "This opens the NotebookLM web interface in the system browser. It does not replace Replyline's LLM gateway and is not part of the audio → text → card pipeline.",
+    notebookLmEnable: "Enable quick-launch NotebookLM",
+    notebookLmUrlLabel: "NotebookLM launch URL",
+    notebookLmUrlHint:
+      "The default is the consumer web entry. For enterprise use you can specify your own URL.",
+    openNotebookLm: "Open NotebookLM",
+
+    savedBadge: "saved",
+    healthCheck: "Check providers",
+    healthCheckBusy: "Checking…",
+  },
+
+  language: {
+    ru: "Русский (alpha)",
+    en: "English",
+  },
+
+  advanced: {
+    sectionTitle: "Advanced",
+    customPromptLabel: "Custom system prompt (replaces built-in)",
+    customPromptHint: "Leave empty to use the default prompt.",
+    streamingSttLabel: "Streaming STT (WebSocket, experimental)",
+    devFixtureTitle: "Fixture run (dev build only)",
+    devFixtureIntro:
+      "A snippet from fixtures/ru-work-snippets.json is sent to the gateway as a transcript — no microphone or STT. Requires LLM access.",
+    devFixtureRun: "Build card",
+    devFixtureBusy: "Building card…",
+    devFixtureOk: "Fixture card ready (check the main panel).",
+  },
+
+  memory: {
+    sectionTitle: "Memory spaces",
+    sectionIntro: "Save facts, commitments, and terms by project and contact.",
+    noSpaces: "No spaces yet. Create your first one.",
+    createLabel: "Name",
+    createKindLabel: "Kind",
+    createButton: "Create",
+    kindTeam: "Team",
+    kindThread: "Thread",
+    kindContact: "Contact",
+    facts: "Facts",
+    commitments: "Commitments",
+    terms: "Terms",
+    saveToMemory: "Save to memory",
+    savedToMemory: "Card saved to memory space.",
+    selectSpace: "Select a space",
+    lastSavedFromCard: "Last saved from card in this space",
+    removeLastSavedCard: "Remove last saved card",
+    removedLastSavedCard: "Last card entry removed from the space.",
+    noSavedCardToRemove: "No card entries to remove in this space.",
+  },
+} as const;
+
+/** Backward-compatible default export. */
+export const ui: UiStrings = ui_ru;
+
+export function getUi(lang: string): UiStrings {
+  return lang.startsWith("en") ? ui_en : ui_ru;
+}
 
 export function fmtBundleCollected(path: string, clipboard: boolean): string {
   return clipboard

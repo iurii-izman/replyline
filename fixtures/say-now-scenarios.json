@@ -488,6 +488,142 @@
           }
         }
       ]
+    },
+    {
+      "id": "budget-cut",
+      "snippet": "Бюджет урезали на 30%. Какие фичи режем и кого уведомляем?",
+      "cases": [
+        {
+          "name": "reject-vague",
+          "expect": "reject",
+          "card": {
+            "gist": "Нужно решить, что выкинуть и кого предупредить.",
+            "say_now": "Ну это неприятно, как-нибудь разберёмся, главное — не паниковать.",
+            "next_move": "Подумаем вместе."
+          }
+        },
+        {
+          "name": "accept-prioritized-cut",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "next_move_signal",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "min_say_now_words:9",
+            "not_apology_only",
+            "decision_not_generic_overview"
+          ],
+          "card": {
+            "gist": "Нужен срез по бюджету, владельцы и каналы уведомлений.",
+            "say_now": "Сегодня до 17:00 я закрою список из трёх фич к отключению и назову владельцев коммуникации по каждому стриму.",
+            "next_move": "Пришлю в чат таблицу приоритета и черновик писем для продакта и поддержки."
+          }
+        }
+      ]
+    },
+    {
+      "id": "blame-redirect",
+      "snippet": "Это не мой блок, это ваша команда задержала. Что скажете?",
+      "cases": [
+        {
+          "name": "reject-deflection",
+          "expect": "reject",
+          "card": {
+            "gist": "Обвинение в чужой задержке.",
+            "say_now": "Ну вы сами знаете, тут не ко мне вопрос.",
+            "next_move": "Разберитесь между собой."
+          }
+        },
+        {
+          "name": "accept-facts-and-path",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "next_move_signal",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "min_say_now_words:9",
+            "not_apology_only",
+            "decision_not_generic_overview"
+          ],
+          "card": {
+            "gist": "Нужен спокойный ответ фактами и следующим шагом.",
+            "say_now": "Не буду спорить про вину: сегодня до 16:00 я сверю факты по тикету и назову один блокер с владельцем и сроком снятия.",
+            "next_move": "Пришлю в общий чат короткую сводку по датам и ответственности без оценок личности."
+          }
+        }
+      ]
+    },
+    {
+      "id": "last-minute-change",
+      "snippet": "Заказчик хочет поменять ТЗ за два дня до релиза. Как быть?",
+      "cases": [
+        {
+          "name": "reject-panic",
+          "expect": "reject",
+          "card": {
+            "gist": "Срочное изменение ТЗ перед релизом.",
+            "say_now": "Ой, сложно, постараемся как-нибудь втиснуть.",
+            "next_move": "Посмотрим по ситуации."
+          }
+        },
+        {
+          "name": "accept-triage-and-decision",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "next_move_signal",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "min_say_now_words:9",
+            "not_apology_only",
+            "decision_not_generic_overview"
+          ],
+          "card": {
+            "gist": "Нужно зафиксировать объём изменения и решение по сроку.",
+            "say_now": "Сегодня до 14:00 я разложу изменение ТЗ на must-have и откладываемое, предложу либо сдвиг релиза на пятницу, либо вынос фичи в хотфикс.",
+            "next_move": "Запишу встречу на час с заказчиком и пришлю одностраничный вариантный план в письме."
+          }
+        }
+      ]
+    },
+    {
+      "id": "team-conflict",
+      "snippet": "Два разработчика не могут договориться по архитектуре. Проект стоит.",
+      "cases": [
+        {
+          "name": "reject-wait",
+          "expect": "reject",
+          "card": {
+            "gist": "Дедлок по архитектуре между разработчиками.",
+            "say_now": "Ну пусть ещё поговорят, мы же за мир.",
+            "next_move": "Когда сами договорятся — напишут."
+          }
+        },
+        {
+          "name": "accept-facilitation-decision",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "next_move_signal",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "min_say_now_words:9",
+            "not_apology_only",
+            "decision_not_generic_overview"
+          ],
+          "card": {
+            "gist": "Нужно снять блок архрешением и владельцем.",
+            "say_now": "Сегодня в 15:00 проведу 45-минутный разбор с двумя вариантами, к 16:30 зафиксирую выбранный подход и ответственного за реализацию.",
+            "next_move": "Отправлю в чат решение одним сообщением и ссылку на ADR в репозитории."
+          }
+        }
+      ]
     }
   ]
 }

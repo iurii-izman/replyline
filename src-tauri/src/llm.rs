@@ -38,6 +38,9 @@ struct RawCard {
     next_move: String,
 }
 
+/// Prompt contract version. Bump when changing system prompts to track regressions.
+pub const PROMPT_VERSION: &str = "v2";
+
 const SYSTEM_PROMPT_RU: &str = r#"Ты — краткий помощник для сложных рабочих разговоров.
 Твоя задача: по короткому аудиофрагменту помочь человеку не растеряться и быстро ответить.
 
