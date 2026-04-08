@@ -43,6 +43,13 @@ Then rerun `pnpm rust:deps`.
 
 This avoids overfitting early-alpha policy while still flagging high-signal supply-chain issues.
 
+## Current warning posture
+
+- `pnpm rust:deps` is the authoritative Rust supply-chain gate for this repo.
+- The current warning set is dominated by Tauri / GTK transitive crates and duplicate-version notices.
+- These warnings are triaged and visible in release discussion; they are not treated as "already solved" unless the dependency tree actually changes.
+- A green `rust:deps` run here means policy + audit completed under the current allowlist posture, not that zero warnings exist.
+
 ## What this proves
 
 - known Rust dependency advisories are checked locally

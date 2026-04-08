@@ -1,7 +1,9 @@
 use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
 use tokio::time::{timeout, Duration};
-use tokio_tungstenite::{connect_async, tungstenite::client::IntoClientRequest, tungstenite::Message};
+use tokio_tungstenite::{
+    connect_async, tungstenite::client::IntoClientRequest, tungstenite::Message,
+};
 
 use crate::types::AppSettings;
 
@@ -25,7 +27,6 @@ struct DeepgramAlternative {
     transcript: String,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct DeepgramStreamingMessage {
     #[serde(default)]
@@ -39,7 +40,6 @@ struct DeepgramStreamingMessage {
     channel: Option<DeepgramStreamingChannel>,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct DeepgramStreamingChannel {
     alternatives: Vec<DeepgramAlternative>,
@@ -48,7 +48,7 @@ struct DeepgramStreamingChannel {
 pub async fn transcribe_wav(
     settings: &AppSettings,
     api_key: &str,
-    wav_bytes: Vec<u8>,
+    wav_bytes: &[u8],
 ) -> Result<String, String> {
     let language = settings.primary_language.trim();
     let model = settings.deepgram_model.trim();
@@ -61,19 +61,45 @@ pub async fn transcribe_wav(
         .build()
         .map_err(|err| format!("Deepgram client: {err}"))?;
 
-    let response = client
-        .post(endpoint)
-        .header("Authorization", format!("Token {api_key}"))
-        .header("Content-Type", "audio/wav")
-        .body(wav_bytes)
-        .send()
-        .await
-        .map_err(|err| format!("Deepgram request failed: {err}"))?;
+    let body = bytes::Bytes::copy_from_slice(wav_bytes);
+    let response = {
+        let max_retries = 2u32;
+        let mut last_err = String::new();
+        let mut resolved = None;
+        for attempt in 0..=max_retries {
+            if attempt > 0 {
+                tokio::time::sleep(Duration::from_millis(500 * 2u64.pow(attempt - 1))).await;
+            }
+            match client
+                .post(&endpoint)
+                .header("Authorization", format!("Token {api_key}"))
+                .header("Content-Type", "audio/wav")
+                .body(body.clone())
+                .send()
+                .await
+            {
+                Ok(resp) if resp.status().is_server_error() && attempt < max_retries => {
+                    last_err = format!("Deepgram server error {}", resp.status());
+                    continue;
+                }
+                Ok(resp) => {
+                    resolved = Some(resp);
+                    break;
+                }
+                Err(err) if (err.is_timeout() || err.is_connect()) && attempt < max_retries => {
+                    last_err = format!("Deepgram request failed: {err}");
+                    continue;
+                }
+                Err(err) => return Err(format!("Deepgram request failed: {err}")),
+            }
+        }
+        resolved.ok_or(last_err)?
+    };
 
     if !response.status().is_success() {
         let status = response.status();
-        let body = response.text().await.unwrap_or_default();
-        return Err(format!("Deepgram error {status}: {body}"));
+        let _ = response.text().await;
+        return Err(format!("Deepgram error {status}"));
     }
 
     let payload: DeepgramResponse = response
@@ -96,7 +122,6 @@ pub async fn transcribe_wav(
     Ok(transcript)
 }
 
-#[allow(dead_code)]
 pub async fn transcribe_pcm_streaming(
     settings: &AppSettings,
     api_key: &str,
@@ -111,9 +136,12 @@ pub async fn transcribe_pcm_streaming(
     let mut request = endpoint
         .into_client_request()
         .map_err(|err| format!("Deepgram WS request build failed: {err}"))?;
-    request
-        .headers_mut()
-        .insert("Authorization", format!("Token {api_key}").parse().map_err(|err| format!("Deepgram auth header failed: {err}"))?);
+    request.headers_mut().insert(
+        "Authorization",
+        format!("Token {api_key}")
+            .parse()
+            .map_err(|err| format!("Deepgram auth header failed: {err}"))?,
+    );
 
     let (mut socket, _) = timeout(Duration::from_secs(10), connect_async(request))
         .await
@@ -129,7 +157,9 @@ pub async fn transcribe_pcm_streaming(
     }
 
     socket
-        .send(Message::Text(r#"{"type":"CloseStream"}"#.to_string().into()))
+        .send(Message::Text(
+            r#"{"type":"CloseStream"}"#.to_string().into(),
+        ))
         .await
         .map_err(|err| format!("Deepgram WS close message failed: {err}"))?;
 
@@ -157,7 +187,9 @@ pub async fn transcribe_pcm_streaming(
 
                     if let Some(value) = transcript {
                         fallback_latest = Some(value.clone());
-                        if payload.is_final.unwrap_or(false) || payload.speech_final.unwrap_or(false) {
+                        if payload.is_final.unwrap_or(false)
+                            || payload.speech_final.unwrap_or(false)
+                        {
                             final_parts.push(value);
                         }
                     }
@@ -181,9 +213,8 @@ pub async fn transcribe_pcm_streaming(
     Ok(transcript)
 }
 
-#[allow(dead_code)]
 fn samples_to_le_bytes(samples: &[i16]) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(samples.len() * std::mem::size_of::<i16>());
+    let mut bytes = Vec::with_capacity(std::mem::size_of_val(samples));
     for sample in samples {
         bytes.extend_from_slice(&sample.to_le_bytes());
     }

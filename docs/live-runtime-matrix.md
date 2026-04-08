@@ -4,12 +4,16 @@ This file keeps the live-source testing story honest.
 
 ## Current workstation state
 
-Native app detection on this workstation:
+This section is intentionally machine-specific and must be updated by the operator.
 
-- Microsoft Teams: detected
-- Zoom: not detected
-- Yandex Telemost: not detected
-- browser clients: Chrome and Edge are available
+Use this quick template per workstation/session:
+
+- Microsoft Teams: `<detected | not detected | unknown>`
+- Zoom: `<detected | not detected | unknown>`
+- Yandex Telemost: `<detected | not detected | unknown>`
+- browser clients (Chrome/Edge): `<available | not available | unknown>`
+
+If current signals are unknown, keep app-level claims as `pending verification`.
 
 ## What can be tested automatically today
 

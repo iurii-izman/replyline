@@ -12,10 +12,10 @@ use serde::Serialize;
 
 #[path = "../audio.rs"]
 mod audio;
-#[path = "../credentials.rs"]
-mod credentials;
 #[path = "../deepgram.rs"]
 mod deepgram;
+#[path = "../fs_atomic.rs"]
+mod fs_atomic;
 #[path = "../llm.rs"]
 mod llm;
 #[path = "../settings.rs"]
@@ -23,7 +23,7 @@ mod settings;
 #[path = "../types.rs"]
 mod types;
 
-use types::{AppSettings, SecretSlot};
+use types::AppSettings;
 
 const DEFAULT_PROBE_TEXT: &str =
     "У нас есть риск сдвига на два дня. Если сегодня согласуем приоритеты, срок удержим.";
@@ -39,6 +39,9 @@ struct RuntimeLatencyReport {
     generated_at_utc: String,
     settings_path: String,
     report_path: String,
+    config_source: String,
+    credentials_source: String,
+    used_persistent_app_config: bool,
     scenario: String,
     audio_mode: String,
     audio_source_label: String,
@@ -94,7 +97,8 @@ async fn main() -> Result<(), String> {
         env::var("REPLYLINE_PROBE_VOICE").unwrap_or_else(|_| "Microsoft Irina Desktop".to_string());
     let scenario = env::var("REPLYLINE_SCENARIO").unwrap_or_else(|_| DEFAULT_SCENARIO.to_string());
     let stt_mode = env::var("REPLYLINE_STT_MODE").unwrap_or_else(|_| DEFAULT_STT_MODE.to_string());
-    let audio_mode = env::var("REPLYLINE_AUDIO_MODE").unwrap_or_else(|_| DEFAULT_AUDIO_MODE.to_string());
+    let audio_mode =
+        env::var("REPLYLINE_AUDIO_MODE").unwrap_or_else(|_| DEFAULT_AUDIO_MODE.to_string());
     let audio_source_label = env::var("REPLYLINE_AUDIO_SOURCE_LABEL").unwrap_or_else(|_| {
         if audio_mode == "tts" {
             voice_name.clone()
@@ -103,17 +107,17 @@ async fn main() -> Result<(), String> {
         }
     });
 
-    settings::save(&settings).map_err(|err| err.to_string())?;
-    credentials::save(SecretSlot::DeepgramApiKey, &deepgram_api_key)
-        .map_err(|err| err.to_string())?;
-    credentials::save(SecretSlot::LlmApiKey, &llm_api_key).map_err(|err| err.to_string())?;
-
     let settings_path = settings::settings_path().map_err(|err| err.to_string())?;
     let report_path = report_path()?;
+    let config_source = "probe-env-and-defaults".to_string();
+    let credentials_source = "process-env-only".to_string();
+    let used_persistent_app_config = false;
 
     println!("Replyline runtime probe");
     println!("Settings path: {}", settings_path.display());
     println!("Report path: {}", report_path.display());
+    println!("Config source: {config_source}");
+    println!("Credentials source: {credentials_source}");
     println!("Scenario: {scenario}");
     println!("Audio mode: {audio_mode}");
     println!("Audio source: {audio_source_label}");
@@ -137,10 +141,12 @@ async fn main() -> Result<(), String> {
     let captured_audio_ms = (pcm.len() as u128 * 1000) / 16_000;
     let stt_started_at = Instant::now();
     let transcript = match stt_mode.as_str() {
-        "streaming" => deepgram::transcribe_pcm_streaming(&settings, &deepgram_api_key, &pcm).await?,
+        "streaming" => {
+            deepgram::transcribe_pcm_streaming(&settings, &deepgram_api_key, &pcm).await?
+        }
         "batch" => {
             let wav = audio::encode_wav(&pcm);
-            deepgram::transcribe_wav(&settings, &deepgram_api_key, wav).await?
+            deepgram::transcribe_wav(&settings, &deepgram_api_key, &wav).await?
         }
         other => return Err(format!("Unknown REPLYLINE_STT_MODE: {other}")),
     };
@@ -156,6 +162,9 @@ async fn main() -> Result<(), String> {
         generated_at_utc: Utc::now().to_rfc3339(),
         settings_path: settings_path.display().to_string(),
         report_path: report_path.display().to_string(),
+        config_source,
+        credentials_source,
+        used_persistent_app_config,
         scenario,
         audio_mode,
         audio_source_label,
@@ -186,7 +195,7 @@ async fn main() -> Result<(), String> {
         fs::create_dir_all(parent).map_err(|err| err.to_string())?;
     }
     let payload = serde_json::to_vec_pretty(&report).map_err(|err| err.to_string())?;
-    fs::write(&report_path, payload).map_err(|err| err.to_string())?;
+    fs_atomic::write_bytes_atomically(&report_path, &payload).map_err(|err| err.to_string())?;
 
     println!();
     println!("Transcript: {}", report.transcript);
@@ -203,7 +212,8 @@ async fn main() -> Result<(), String> {
 }
 
 fn report_path() -> Result<PathBuf, String> {
-    let file_name = env::var("REPLYLINE_REPORT_FILE").unwrap_or_else(|_| "first-latency-report.json".to_string());
+    let file_name = env::var("REPLYLINE_REPORT_FILE")
+        .unwrap_or_else(|_| "first-latency-report.json".to_string());
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or_else(|| "Cannot resolve workspace root.".to_string())?
@@ -255,8 +265,9 @@ fn play_probe_source(audio_mode: &str, text: &str, voice_name: &str) -> Result<(
 }
 
 fn run_external_audio_command() -> Result<(), String> {
-    let command = env::var("REPLYLINE_AUDIO_COMMAND")
-        .map_err(|_| "REPLYLINE_AUDIO_COMMAND is required for external-command mode.".to_string())?;
+    let command = env::var("REPLYLINE_AUDIO_COMMAND").map_err(|_| {
+        "REPLYLINE_AUDIO_COMMAND is required for external-command mode.".to_string()
+    })?;
 
     let status = Command::new("pwsh")
         .arg("-NoProfile")

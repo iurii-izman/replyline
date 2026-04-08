@@ -190,7 +190,8 @@ impl JsonMemoryStore {
     }
 
     fn space_record_path(&self, space_id: &str) -> PathBuf {
-        self.root.join(format!("{}.json", encode_space_id_for_file(space_id)))
+        self.root
+            .join(format!("{}.json", encode_space_id_for_file(space_id)))
     }
 }
 
@@ -201,15 +202,7 @@ pub fn default_memory_root() -> Result<PathBuf, MemoryError> {
 }
 
 fn write_json_atomically<T: Serialize>(path: &Path, payload: &T) -> Result<(), MemoryError> {
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    let tmp_path = path.with_extension("json.tmp");
-    fs::write(&tmp_path, serde_json::to_vec_pretty(payload)?)?;
-    if path.exists() {
-        fs::remove_file(path)?;
-    }
-    fs::rename(tmp_path, path)?;
+    crate::fs_atomic::write_json_atomically(path, payload)?;
     Ok(())
 }
 
@@ -289,11 +282,7 @@ fn validate_term(term: &MemoryTerm) -> Result<(), MemoryError> {
     Ok(())
 }
 
-fn ensure_unique_ids<T, F>(
-    items: &[T],
-    extract_id: F,
-    field_name: &str,
-) -> Result<(), MemoryError>
+fn ensure_unique_ids<T, F>(items: &[T], extract_id: F, field_name: &str) -> Result<(), MemoryError>
 where
     F: Fn(&T) -> &str,
 {

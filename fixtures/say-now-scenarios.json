@@ -1,0 +1,493 @@
+{
+  "scenarios": [
+    {
+      "id": "deadline-pressure",
+      "snippet": "Мне нужен чёткий ответ: вы успеваете к пятнице или нет?",
+      "cases": [
+        {
+          "name": "reject-vague",
+          "expect": "reject",
+          "card": {
+            "gist": "Собеседник требует срок.",
+            "say_now": "Ну мы как-нибудь постараемся, посмотрим.",
+            "next_move": "Подумаем."
+          }
+        },
+        {
+          "name": "accept-anchored",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "next_move_signal",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "min_say_now_words:8",
+            "not_apology_only",
+            "decision_not_generic_overview"
+          ],
+          "card": {
+            "gist": "Нужен прямой ответ по сроку к пятнице.",
+            "say_now": "Да: блок А беру на себя и закрываю к пятнице 18:00; если увижу риск, напишу в среду до 12:00.",
+            "next_move": "Сегодня отправлю в чат письмо с владельцем и контрольной точкой."
+          }
+        }
+      ]
+    },
+    {
+      "id": "client-pushback",
+      "snippet": "Вы обещали одно, а сроки снова уехали. Как мне это объяснять команде?",
+      "cases": [
+        {
+          "name": "reject-defensive",
+          "expect": "reject",
+          "card": {
+            "gist": "Клиент недоволен сдвигом сроков.",
+            "say_now": "Простите, ну бывает.",
+            "next_move": "Ок."
+          }
+        },
+        {
+          "name": "accept-own-and-path",
+          "expect": "accept",
+          "rules": [
+            "next_move_signal",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "min_say_now_words:8",
+            "not_apology_only",
+            "decision_not_generic_overview"
+          ],
+          "card": {
+            "gist": "Нужно признать сдвиг и дать путь видимости.",
+            "say_now": "Сдвиг мой: я не дал раннего сигнала. Сегодня до 16:00 даю обновлённый план с датами и рисками.",
+            "next_move": "Пришлю письмо команде клиента с тремя датами и владельцем задач."
+          }
+        }
+      ]
+    },
+    {
+      "id": "escalation-threat",
+      "snippet": "Если сегодня не закроем вопрос, я подниму это на директора.",
+      "cases": [
+        {
+          "name": "reject-no-path",
+          "expect": "reject",
+          "card": {
+            "gist": "Угроза эскалации.",
+            "say_now": "Ну давайте без эмоций, всё нормально.",
+            "next_move": "Потом."
+          }
+        },
+        {
+          "name": "accept-boundary-and-timebox",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "next_move_signal",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "min_say_now_words:9",
+            "decision_not_generic_overview"
+          ],
+          "card": {
+            "gist": "Нужен выход сегодня, иначе будет эскалация.",
+            "say_now": "Сегодня до 17:00 я закрываю решение по варианту А или даю письменный план Б с датами и рисками.",
+            "next_move": "Через час пришлю в чат черновик решения и список блокеров."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ownership-demand",
+      "snippet": "Если это ваша зона ответственности, мне нужен не обзор, а решение.",
+      "cases": [
+        {
+          "name": "reject-overview-only",
+          "expect": "reject",
+          "card": {
+            "gist": "Просят решение, а не обзор.",
+            "say_now": "В целом картина такая: много факторов и пока рано что-то обещать.",
+            "next_move": "Поговорим позже."
+          }
+        },
+        {
+          "name": "accept-decision-language",
+          "expect": "accept",
+          "rules": [
+            "decision_verb_or_owner",
+            "specificity_marker",
+            "owner_or_actor",
+            "next_move_signal",
+            "artifact_or_channel",
+            "min_say_now_words:8",
+            "decision_not_generic_overview"
+          ],
+          "card": {
+            "gist": "Нужна явная фиксация решения и владельца.",
+            "say_now": "Беру решение на себя: внедряем вариант B, а риск по данным я закрываю до среды.",
+            "next_move": "Зафиксирую в письме владельца интеграции и чекпоинт на четверг."
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-more-slides",
+      "snippet": "Я не хочу ещё одну презентацию, я хочу услышать, что конкретно вы делаете дальше.",
+      "cases": [
+        {
+          "name": "reject-slides-tone",
+          "expect": "reject",
+          "card": {
+            "gist": "Просят действие, а не слайды.",
+            "say_now": "Могу подготовить презентацию на десять слайдов с контекстом.",
+            "next_move": "Согласуем встречу."
+          }
+        },
+        {
+          "name": "accept-next-two-steps",
+          "expect": "accept",
+          "rules": [
+            "next_move_signal",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "min_say_now_words:9",
+            "decision_verb_or_owner"
+          ],
+          "card": {
+            "gist": "Нужны два следующих шага, а не дек.",
+            "say_now": "Делаю два шага: сегодня выкатываю фикс в staging, завтра до 11:00 прохожу проверку с QA и даю статус.",
+            "next_move": "Назначу 20-минутный чекпоинт и пришлю краткий план в чат."
+          }
+        }
+      ]
+    },
+    {
+      "id": "vague-blame-no-owner",
+      "snippet": "Все говорят, что проблема у вас, но никто не может назвать владельца. Что дальше?",
+      "cases": [
+        {
+          "name": "reject-blur",
+          "expect": "reject",
+          "card": {
+            "gist": "Есть размытое обвинение.",
+            "say_now": "Ну это вообще сложная ситуация, давайте пока не будем спешить.",
+            "next_move": "Разберёмся."
+          }
+        },
+        {
+          "name": "accept-owner-request",
+          "expect": "accept",
+          "rules": [
+            "question_or_clarify",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:8"
+          ],
+          "card": {
+            "gist": "Нужно убрать размытость и назвать владельца.",
+            "say_now": "Давайте сейчас назовём один конкретный блок и владельца: что именно вы считаете нашей зоной?",
+            "next_move": "Я зафиксирую владельца и спорный блок в общем чате сразу после звонка."
+          }
+        }
+      ]
+    },
+    {
+      "id": "unclear-next-step",
+      "snippet": "Хорошо, обсудили. Но кто и что делает после этого разговора?",
+      "cases": [
+        {
+          "name": "reject-no-owner",
+          "expect": "reject",
+          "card": {
+            "gist": "Неясен следующий шаг.",
+            "say_now": "В целом всё понятно, дальше двинемся по ситуации.",
+            "next_move": "Продолжим."
+          }
+        },
+        {
+          "name": "accept-owner-checkpoint",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:8"
+          ],
+          "card": {
+            "gist": "Нужно сразу назвать владельца и чекпоинт.",
+            "say_now": "После звонка я беру обновление плана, а Оля закрывает проверку данных до завтра 14:00.",
+            "next_move": "Сейчас отправлю в чат список из двух задач и время контрольного слота."
+          }
+        }
+      ]
+    },
+    {
+      "id": "reprioritization-conflict",
+      "snippet": "Вы просите срочно переключиться на новое, но старый коммитмент у меня уже на сегодня. Что приоритетнее?",
+      "cases": [
+        {
+          "name": "reject-yes-to-everything",
+          "expect": "reject",
+          "card": {
+            "gist": "Конфликт приоритетов.",
+            "say_now": "Да, конечно, всё сделаем сразу.",
+            "next_move": "Потом поймём."
+          }
+        },
+        {
+          "name": "accept-tradeoff-language",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:9",
+            "decision_verb_or_owner"
+          ],
+          "card": {
+            "gist": "Нужно зафиксировать trade-off по двум обязательствам.",
+            "say_now": "Я могу переключиться на новый приоритет сейчас, но тогда старый коммитмент уедет на завтра до 15:00. Подтверждаем такой обмен?",
+            "next_move": "Зафиксирую выбранный приоритет и сдвиг во встречном письме сегодня."
+          }
+        }
+      ]
+    },
+    {
+      "id": "dependency-blocker",
+      "snippet": "Вы опять стоите из-за другой команды. Когда это перестанет быть оправданием?",
+      "cases": [
+        {
+          "name": "reject-excuse-only",
+          "expect": "reject",
+          "card": {
+            "gist": "Есть блокер у другой команды.",
+            "say_now": "Мы зависим от них, тут ничего не сделать.",
+            "next_move": "Ждём."
+          }
+        },
+        {
+          "name": "accept-blocker-owner",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:9"
+          ],
+          "card": {
+            "gist": "Нужно назвать блокер и свой обходной шаг.",
+            "say_now": "Блокер у интеграции, но это не снимает ответственность с меня: сегодня до 16:00 даю обходной путь и срок по риску.",
+            "next_move": "Создам общий тикет с владельцем зависимости и коротким планом обхода."
+          }
+        }
+      ]
+    },
+    {
+      "id": "soft-refusal-boundary",
+      "snippet": "Можете взять ещё и это сегодня, просто как маленькую просьбу?",
+      "cases": [
+        {
+          "name": "reject-people-pleasing",
+          "expect": "reject",
+          "card": {
+            "gist": "Просят ещё одну задачу.",
+            "say_now": "Да, конечно, как-нибудь встрою.",
+            "next_move": "Посмотрим."
+          }
+        },
+        {
+          "name": "accept-boundary",
+          "expect": "accept",
+          "rules": [
+            "boundary_language",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:9"
+          ],
+          "card": {
+            "gist": "Нужно мягко поставить границу и предложить реальный слот.",
+            "say_now": "Сегодня не обещаю третий поток: реально могу взять это завтра после 13:00, если подтверждаем сдвиг текущей задачи.",
+            "next_move": "Зафиксирую в чате новый слот и что именно мы переносим."
+          }
+        }
+      ]
+    },
+    {
+      "id": "over-apology-no-plan",
+      "snippet": "Мне не нужен ещё один sorry, мне нужен понятный следующий шаг.",
+      "cases": [
+        {
+          "name": "reject-sorry-loop",
+          "expect": "reject",
+          "card": {
+            "gist": "Собеседник устал от извинений.",
+            "say_now": "Извините, правда извините, очень неловко получилось.",
+            "next_move": "Постараюсь лучше."
+          }
+        },
+        {
+          "name": "accept-plan-over-sorry",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:8",
+            "not_apology_only"
+          ],
+          "card": {
+            "gist": "Нужно заменить извинение планом.",
+            "say_now": "Не буду повторять sorry: сегодня до 18:00 я пришлю исправленный план и отмечу, где снимаю риск.",
+            "next_move": "Отправлю письмо с новой датой и списком трёх шагов."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ambiguous-ask-clarify",
+      "snippet": "Мне нужно, чтобы вы это закрыли нормально. Вы же понимаете, о чём я?",
+      "cases": [
+        {
+          "name": "reject-fake-certainty",
+          "expect": "reject",
+          "card": {
+            "gist": "Запрос звучит расплывчато.",
+            "say_now": "Да, конечно, всё понял.",
+            "next_move": "Сделаем."
+          }
+        },
+        {
+          "name": "accept-safe-clarify",
+          "expect": "accept",
+          "rules": [
+            "question_or_clarify",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:8"
+          ],
+          "card": {
+            "gist": "Нужно сузить расплывчатый запрос до одного результата.",
+            "say_now": "Чтобы не промахнуться, уточню: вы ждёте закрытия по сроку, по качеству или по владельцу?",
+            "next_move": "После ответа зафиксирую в чате один критерий и следующий шаг."
+          }
+        }
+      ]
+    },
+    {
+      "id": "commitment-with-due-date",
+      "snippet": "Окей, если вы берёте это на себя, когда именно я увижу результат?",
+      "cases": [
+        {
+          "name": "reject-open-ended",
+          "expect": "reject",
+          "card": {
+            "gist": "Нужно обещание по сроку.",
+            "say_now": "Скоро вернусь с апдейтом.",
+            "next_move": "Дам знать."
+          }
+        },
+        {
+          "name": "accept-due-date",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:8",
+            "decision_verb_or_owner"
+          ],
+          "card": {
+            "gist": "Нужно назвать точный срок результата.",
+            "say_now": "Беру это на себя: первый видимый результат дам вам завтра до 11:30, финальный статус - к пятнице 17:00.",
+            "next_move": "Сразу после звонка пришлю в письмо два срока и критерий готовности."
+          }
+        }
+      ]
+    },
+    {
+      "id": "manager-status-challenge",
+      "snippet": "Я уже третий раз слышу 'в процессе'. Что реально сделано и что будет готово дальше?",
+      "cases": [
+        {
+          "name": "reject-status-fog",
+          "expect": "reject",
+          "card": {
+            "gist": "Менеджер недоволен статусом.",
+            "say_now": "Мы всё ещё в процессе, есть движение.",
+            "next_move": "Продолжим работу."
+          }
+        },
+        {
+          "name": "accept-fact-and-next",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:9"
+          ],
+          "card": {
+            "gist": "Нужно ответить фактами и ближайшим deliverable.",
+            "say_now": "Сделано два блока: импорт и проверка схемы. Следующим шагом я закрываю тесты и даю статус сегодня в 18:30.",
+            "next_move": "Пришлю короткий статус в чат с фактом 'готово / осталось / риск'."
+          }
+        }
+      ]
+    },
+    {
+      "id": "cross-functional-coordination",
+      "snippet": "Продакт, разработка и поддержка ждут разного. Кто сейчас синхронизирует это в один план?",
+      "cases": [
+        {
+          "name": "reject-no-coordination",
+          "expect": "reject",
+          "card": {
+            "gist": "Команды рассинхронизированы.",
+            "say_now": "Ну, у всех свои ожидания, это нормально.",
+            "next_move": "Созвонимся потом."
+          }
+        },
+        {
+          "name": "accept-single-owner-plan",
+          "expect": "accept",
+          "rules": [
+            "time_anchor",
+            "specificity_marker",
+            "owner_or_actor",
+            "artifact_or_channel",
+            "next_move_signal",
+            "min_say_now_words:9",
+            "decision_verb_or_owner"
+          ],
+          "card": {
+            "gist": "Нужен один владелец синхронизации и общий план.",
+            "say_now": "Синхронизацию беру на себя: сегодня до 15:00 собираю один план с ожиданиями продакта, разработки и поддержки.",
+            "next_move": "Разошлю общий документ и 15-минутный слот на подтверждение ролей."
+          }
+        }
+      ]
+    }
+  ]
+}

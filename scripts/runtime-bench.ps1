@@ -88,6 +88,37 @@ function New-Stats([double[]]$values) {
   }
 }
 
+function Get-ProbeFailureMessage([object[]]$OutputLines, [string]$FallbackMessage) {
+  $lines = @(
+    $OutputLines |
+      ForEach-Object { "$_".Trim() } |
+      Where-Object { $_ -ne "" }
+  )
+
+  if ($lines.Count -eq 0) {
+    return $FallbackMessage
+  }
+
+  $preferred = @(
+    $lines | Where-Object {
+      $_ -match 'Deepgram .*empty transcript' -or
+      $_ -match 'Card output invalid:' -or
+      $_ -match 'analysis_failed' -or
+      $_ -match 'Analysis failed:' -or
+      $_ -match 'User-safe error:' -or
+      $_ -match 'pipeline error' -or
+      $_ -match 'error'
+    }
+  )
+
+  if ($preferred.Count -gt 0) {
+    return $preferred[-1]
+  }
+
+  $tail = @($lines | Select-Object -Last 3) -join " "
+  return "$FallbackMessage Output tail: $tail"
+}
+
 foreach ($scenario in $scenarios) {
   $perScenario = @()
   for ($run = 1; $run -le $Repeats; $run++) {
@@ -109,9 +140,10 @@ foreach ($scenario in $scenarios) {
     $env:REPLYLINE_CAPTURE_MAX_SECONDS = [string]$scenario.CaptureCap
 
     try {
-      pnpm probe:runtime
+      $probeOutput = @(& pnpm probe:runtime 2>&1)
       if ($LASTEXITCODE -ne 0) {
-        throw "pnpm probe:runtime failed with exit code $LASTEXITCODE."
+        $failureMessage = Get-ProbeFailureMessage -OutputLines $probeOutput -FallbackMessage "pnpm probe:runtime failed with exit code $LASTEXITCODE."
+        throw $failureMessage
       }
       $reportPath = Join-Path $reportDir $reportName
       $report = Get-Content -Raw -Path $reportPath | ConvertFrom-Json
@@ -120,12 +152,14 @@ foreach ($scenario in $scenarios) {
     } catch {
       $results += [pscustomobject]@{
         scenario = $scenarioName
+        captureMaxSeconds = $scenario.CaptureCap
         sttMode = $scenario.SttMode
         llmModel = $scenario.Model
         capturedAudioMs = $null
         sttMs = $null
         llmMs = $null
         releaseToCardMs = $null
+        status = "error"
         transcript = "ERROR: $($_.Exception.Message)"
       }
     }
@@ -143,12 +177,23 @@ foreach ($scenario in $scenarios) {
 $summaryPath = Join-Path $reportDir "latency-comparison.json"
 $summaryMdPath = Join-Path $reportDir "latency-comparison.md"
 
+$errorCount = @($results | Where-Object { ($_.transcript ?? "") -like "ERROR:*" }).Count
+$hasSuccessfulRuns = @($results | Where-Object { $_.releaseToCardMs -ne $null }).Count -gt 0
+$canMarkMeasured = ($Repeats -ge 2) -and $hasSuccessfulRuns -and ($errorCount -eq 0)
+
 $summary = [ordered]@{
   generatedAtLocal = (Get-Date).ToString("s")
   lane = "runtime-bench"
   repeats = $Repeats
-  claimLabel = if ($Repeats -ge 2) { "measured" } else { "pending verification" }
-  claimNote = if ($Repeats -ge 2) { "Repeated local benchmark runs." } else { "Single run per scenario." }
+  claimLabel = if ($canMarkMeasured) { "measured" } else { "pending verification" }
+  claimNote = if ($canMarkMeasured) {
+    "Repeated local benchmark runs without script-level errors. Still workstation-scoped."
+  } elseif ($Repeats -ge 2) {
+    "Repeated runs exist, but errors/noisy output prevent measured status."
+  } else {
+    "Single run per scenario."
+  }
+  errorCount = $errorCount
   stats = $scenarioStats
   runs = $results
 }
@@ -172,7 +217,7 @@ $md += ""
 $md += "## Raw runs"
 $md += ""
 $md += "| scenario | cap s | stt mode | llm model | audio ms | stt ms | llm ms | release->card ms | transcript |"
-$md += "|---|---|---|---:|---:|---:|---:|---|"
+$md += "|---|---:|---|---|---:|---:|---:|---:|---|"
 foreach ($item in $results) {
   $transcript = (($item.transcript ?? "") -replace '\|', '/' -replace "`r?`n", " ").Trim()
   $md += "| $($item.scenario) | $($item.captureMaxSeconds) | $($item.sttMode) | $($item.llmModel) | $($item.capturedAudioMs) | $($item.sttMs) | $($item.llmMs) | $($item.releaseToCardMs) | $transcript |"

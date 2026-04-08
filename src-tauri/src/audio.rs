@@ -8,9 +8,8 @@ use std::time::{Duration, Instant};
 
 #[cfg(windows)]
 use windows::Win32::Media::Audio::{
-    eConsole, eRender, AUDCLNT_BUFFERFLAGS_SILENT, AUDCLNT_SHAREMODE_SHARED,
-    AUDCLNT_STREAMFLAGS_LOOPBACK, IAudioCaptureClient, IAudioClient, IMMDeviceEnumerator,
-    MMDeviceEnumerator,
+    eConsole, eRender, IAudioCaptureClient, IAudioClient, IMMDeviceEnumerator, MMDeviceEnumerator,
+    AUDCLNT_BUFFERFLAGS_SILENT, AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK,
 };
 #[cfg(windows)]
 use windows::Win32::System::Com::{
@@ -50,7 +49,7 @@ pub fn encode_wav(samples: &[i16]) -> Vec<u8> {
     let bytes_per_sample = std::mem::size_of::<i16>() as u16;
     let byte_rate = TARGET_SAMPLE_RATE * channels as u32 * bytes_per_sample as u32;
     let block_align = channels * bytes_per_sample;
-    let data_len = (samples.len() * std::mem::size_of::<i16>()) as u32;
+    let data_len = std::mem::size_of_val(samples) as u32;
     let chunk_len = 36 + data_len;
 
     let mut bytes = Vec::with_capacity(44 + data_len as usize);
@@ -74,12 +73,18 @@ pub fn encode_wav(samples: &[i16]) -> Vec<u8> {
 }
 
 #[cfg(not(windows))]
-fn record_loopback(_cancel: Arc<AtomicBool>, _max_capture_duration: Duration) -> Result<Vec<i16>, String> {
+fn record_loopback(
+    _cancel: Arc<AtomicBool>,
+    _max_capture_duration: Duration,
+) -> Result<Vec<i16>, String> {
     Err("System audio capture is only available on Windows.".to_string())
 }
 
 #[cfg(windows)]
-fn record_loopback(cancel: Arc<AtomicBool>, max_capture_duration: Duration) -> Result<Vec<i16>, String> {
+fn record_loopback(
+    cancel: Arc<AtomicBool>,
+    max_capture_duration: Duration,
+) -> Result<Vec<i16>, String> {
     unsafe { CoInitializeEx(None, COINIT_MULTITHREADED).ok() }.map_err(|e| e.to_string())?;
     let result = capture_loopback(cancel, max_capture_duration);
     unsafe {
@@ -89,15 +94,18 @@ fn record_loopback(cancel: Arc<AtomicBool>, max_capture_duration: Duration) -> R
 }
 
 #[cfg(windows)]
-fn capture_loopback(cancel: Arc<AtomicBool>, max_capture_duration: Duration) -> Result<Vec<i16>, String> {
+fn capture_loopback(
+    cancel: Arc<AtomicBool>,
+    max_capture_duration: Duration,
+) -> Result<Vec<i16>, String> {
     let enumerator: IMMDeviceEnumerator =
         unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
             .map_err(|e| e.to_string())?;
 
     let device = unsafe { enumerator.GetDefaultAudioEndpoint(eRender, eConsole) }
         .map_err(|e| e.to_string())?;
-    let client: IAudioClient = unsafe { device.Activate(CLSCTX_ALL, None) }
-        .map_err(|e| e.to_string())?;
+    let client: IAudioClient =
+        unsafe { device.Activate(CLSCTX_ALL, None) }.map_err(|e| e.to_string())?;
 
     let mix_ptr = unsafe { client.GetMixFormat() }.map_err(|e| e.to_string())?;
     if mix_ptr.is_null() {
@@ -125,12 +133,14 @@ fn capture_loopback(cancel: Arc<AtomicBool>, max_capture_duration: Duration) -> 
     let capture: IAudioCaptureClient = unsafe { client.GetService() }.map_err(|e| e.to_string())?;
     let mut resampler = DownmixResampler::new(sample_rate);
     let started = Instant::now();
-    let mut pcm = Vec::with_capacity(TARGET_SAMPLE_RATE as usize * max_capture_duration.as_secs() as usize);
+    let mut pcm =
+        Vec::with_capacity(TARGET_SAMPLE_RATE as usize * max_capture_duration.as_secs() as usize);
 
     unsafe { client.Start() }.map_err(|e| e.to_string())?;
 
     while !cancel.load(Ordering::SeqCst) && started.elapsed() < max_capture_duration {
-        let mut packet_frames = unsafe { capture.GetNextPacketSize() }.map_err(|e| e.to_string())?;
+        let mut packet_frames =
+            unsafe { capture.GetNextPacketSize() }.map_err(|e| e.to_string())?;
         if packet_frames == 0 {
             thread::sleep(Duration::from_millis(8));
             continue;
@@ -140,10 +150,8 @@ fn capture_loopback(cancel: Arc<AtomicBool>, max_capture_duration: Duration) -> 
             let mut data_ptr = std::ptr::null_mut();
             let mut frames = 0u32;
             let mut flags = 0u32;
-            unsafe {
-                capture.GetBuffer(&mut data_ptr, &mut frames, &mut flags, None, None)
-            }
-            .map_err(|e| e.to_string())?;
+            unsafe { capture.GetBuffer(&mut data_ptr, &mut frames, &mut flags, None, None) }
+                .map_err(|e| e.to_string())?;
 
             let silent = (flags & AUDCLNT_BUFFERFLAGS_SILENT.0 as u32) != 0;
             let mono = decode_to_mono(
@@ -188,9 +196,9 @@ fn decode_to_mono(
 
     let mut mono = Vec::with_capacity(frames);
     match (format_tag, bits_per_sample) {
-        (tag, 32) if tag == WAVE_FORMAT_IEEE_FLOAT_TAG || tag == WAVE_FORMAT_EXTENSIBLE_TAG =>
-        {
-            let source = unsafe { std::slice::from_raw_parts(data_ptr.cast::<f32>(), frames * channels) };
+        (tag, 32) if tag == WAVE_FORMAT_IEEE_FLOAT_TAG || tag == WAVE_FORMAT_EXTENSIBLE_TAG => {
+            let source =
+                unsafe { std::slice::from_raw_parts(data_ptr.cast::<f32>(), frames * channels) };
             for frame in 0..frames {
                 let offset = frame * channels;
                 let take = min(channels, 2);
@@ -202,7 +210,8 @@ fn decode_to_mono(
             }
         }
         (tag, 16) if tag == WAVE_FORMAT_PCM_TAG || tag == WAVE_FORMAT_EXTENSIBLE_TAG => {
-            let source = unsafe { std::slice::from_raw_parts(data_ptr.cast::<i16>(), frames * channels) };
+            let source =
+                unsafe { std::slice::from_raw_parts(data_ptr.cast::<i16>(), frames * channels) };
             for frame in 0..frames {
                 let offset = frame * channels;
                 let take = min(channels, 2);

@@ -23,7 +23,7 @@ Critical paths only:
 |---|---|---|---|---|
 | App starts | Launch `pnpm tauri dev` (or packaged build) | Manual | Main window can open and Tauri shell boots on this workstation | Runtime providers, latency quality, cross-machine behavior |
 | Tray works | Confirm tray icon + tray menu (`Open`, `Settings`, `Clear context`, `Quit`) | Manual | Tray integration and menu wiring are alive | End-to-end capture/analysis quality |
-| Hotkey works | Press default `Ctrl+Shift+Space` (or configured hotkey) | Manual | Global shortcut is registered and capture flow can be triggered | Provider correctness or transcript quality |
+| Hotkey works | Press default `Ctrl+Alt+Space` (or configured hotkey) | Manual | Global shortcut is registered and capture flow can be triggered | Provider correctness or transcript quality |
 | Capture starts/stops | Hold hotkey while system audio plays, then release | Manual | Capture controller starts/stops and transitions to analysis path | STT/LLM quality and repeatability |
 | Result card renders | After release, check `gist / say_now / next_move` card appears | Manual | One compact response card is produced and UI renders result | Response usefulness in real calls |
 | Settings save | Change settings in app, restart app, verify persisted values | Manual | Settings file persists and reloads correctly | Secret storage integrity |
@@ -35,12 +35,13 @@ Critical paths only:
 ## Manual vs automated boundary
 
 - Manual checks validate operator-visible UX/control flow for this specific machine.
-- Automated checks (`pnpm smoke`) validate build + compile + tests only.
+- Automated checks (`pnpm smoke`) validate build + compile + tests, including the mock/UI lane and consistency gate.
 - Runtime scripts (`probe:*`, `evidence:*`) generate artifacts for claims, but still require honest interpretation.
 
 ## Relationship to existing lanes
 
 - Build/test lane: `pnpm smoke` (fast default gate).
+- Mock/UI lane inside that fast gate: `pnpm test:ui`.
 - Runtime lane: `pnpm probe:runtime`, `pnpm probe:bench`, `pnpm probe:durations`, `pnpm probe:live-source`, `pnpm evidence:bundle`.
 - Manual artifact helper: `pnpm smoke:template` (creates one editable Markdown stub under `reports/` with references to latest runtime evidence when present).
 - Alpha handoff helper: `pnpm alpha:handoff` (creates one compact handoff folder under `reports/` and places a smoke template in that same folder).

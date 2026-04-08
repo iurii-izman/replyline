@@ -3,10 +3,28 @@ import solid from "vite-plugin-solid";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
+// @ts-expect-error process is a nodejs global
+const isVitest = process.env.VITEST === "true";
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [solid()],
+  plugins: [solid({ dev: !isVitest, hot: !isVitest })],
+  test: {
+    environment: "jsdom",
+    globals: true,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.*"],
+      thresholds: {
+        statements: 55,
+        branches: 45,
+        functions: 45,
+        lines: 55,
+      },
+    },
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

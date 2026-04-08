@@ -4,9 +4,20 @@ import process from "node:process";
 
 const targets = [
   "src/App.tsx",
+  "src/app/locale.ts",
+  "src-tauri/src/ui_strings.rs",
   "src/App.css",
   "index.html",
   "README.md",
+  "landing/index.html",
+  "docs/privacy-and-trust.md",
+  "docs/known-limitations.md",
+  "docs/third-party-providers.md",
+  "docs/tester-brief.md",
+  "docs/test-feedback-template.md",
+  "docs/internal-alpha-checklist.md",
+  ".github/ISSUE_TEMPLATE/bug_report.md",
+  ".github/ISSUE_TEMPLATE/feature_request.md",
 ];
 
 const blockedPhrases = [

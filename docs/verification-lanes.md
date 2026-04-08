@@ -4,14 +4,16 @@ Replyline uses four separate verification lanes. Green in one lane does not impl
 
 | Lane | Main command | What it proves | What it does not prove |
 |---|---|---|---|
-| Compile + unit | `pnpm smoke` | Vite build, Rust compile, unit tests, fixture checks | Real Tauri runtime, loopback capture, provider latency |
-| Mock / UI | future Playwright lane | UI state machine, settings flow, result card behavior | Real Windows audio, real STT, real LLM |
-| Prompt / contract | `pnpm test:prompt-contract` | Output shape stays `gist / say_now / next_move`; deterministic trust/copy policy checks stay enforced | Real usefulness in live calls, provider quality in real runtime |
-| Runtime proof | `pnpm probe:runtime`, `pnpm probe:bench`, `pnpm evidence:bundle` | Real local provider path, real Windows capture path, measured latency on this workstation | Same behavior on every workstation or call app |
+| Compile + unit | `pnpm smoke` | Vite build, Rust compile, unit tests, fixture checks, consistency gate | Real Tauri runtime, loopback capture, provider latency |
+| Mock / UI | `pnpm test:ui` | UI state machine on a mocked platform bridge: bootstrap, settings flow, hotkey fallback, result card surface, copy flow, diagnostic states | Real Windows audio, real STT, real LLM, packaged Tauri shell behavior |
+| Prompt / contract | `pnpm test:prompt-contract`, `pnpm test:say-now-scenarios` | Output shape stays `gist / say_now / next_move`; deterministic trust/copy policy checks stay enforced; thin scenario heuristics on example cards | Real usefulness in live calls, provider quality in real runtime |
+| Runtime proof | `pnpm probe:runtime`, `pnpm probe:bench`, `pnpm probe:durations`, `pnpm probe:live-source`, `pnpm evidence:bundle` | Real local provider path, real Windows capture path, runtime artifacts from this workstation | Same behavior on every workstation or call app |
 
 ## Current truth
 
 - `pnpm smoke` is the fast default gate.
+- `pnpm smoke` now includes `pnpm test:ui` and `pnpm test:consistency`.
+- `pnpm test:ui` is the current truth for frontend state-machine verification; it is mock-based, not runtime proof.
 - `pnpm test:prompt-contract` is deterministic and provider-free.
 - `pnpm probe:runtime` is the minimum real-provider proof.
 - `pnpm probe:bench` compares runtime variants.
@@ -28,6 +30,7 @@ Use benchmark labels consistently in docs, release notes, and product copy:
 Lane rule:
 
 - `pnpm smoke` results cannot upgrade any runtime claim to `measured`.
+- `pnpm test:ui` results cannot upgrade any runtime claim to `measured`.
 - Only runtime lane artifacts can upgrade runtime claims to `measured`.
 
 See also:

@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@7088e561eb65bb68695d245aa206f005ef30921d # v4.1.0
+        with:
+          version: 9
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache Cargo registry and build
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Cache pnpm store
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm build
+
+      - name: Cargo check
+        run: cargo check --manifest-path src-tauri/Cargo.toml
+
+      - name: Clippy
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
+
+      - name: Rust format check
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+
+      - name: Rust tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: UI tests with coverage
+        run: pnpm test:ui:coverage
+
+      - name: Fixture checks
+        run: pnpm test:fixtures
+
+      - name: Prompt contract
+        run: pnpm test:prompt-contract
+
+      - name: Say-now scenarios
+        run: pnpm test:say-now-scenarios
+
+      - name: Fixture gate (LLM-backed)
+        if: ${{ secrets.LLM_API_KEY != '' || secrets.OPENROUTER_API_KEY != '' }}
+        env:
+          REPLYLINE_FIXTURE_GATE: "1"
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          REPLYLINE_FIXTURE_IDS: "client-pushback-1,scope-1,salary-1"
+        run: pnpm test:fixture-gate
+
+      - name: Fixture gate skipped (no secrets)
+        if: ${{ secrets.LLM_API_KEY == '' && secrets.OPENROUTER_API_KEY == '' }}
+        run: 'echo "Fixture gate skipped: LLM API secret is not configured."'
+
+      - name: IPC contract gate
+        run: pnpm test:ipc-contract
+
+      - name: Consistency gate
+        run: pnpm test:consistency
+
+      - name: Copy discipline check
+        run: pnpm copy:check
+
+      - name: Install cargo-deny and cargo-audit
+        run: cargo install cargo-deny cargo-audit --locked
+        continue-on-error: true
+
+      - name: Rust supply chain check
+        run: pnpm rust:deps
+
+      - name: npm audit
+        run: pnpm audit --audit-level=high

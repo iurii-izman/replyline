@@ -39,6 +39,11 @@ Long captures are supported so the founder can test real usage, but the interact
 
 If the user needs minutes of context every time, the right solution is not to keep stretching one hotkey hold forever. The better long-term shape is a separate memory layer.
 
+Scope note:
+
+- this memory direction is a future track;
+- it is not part of the current user-facing MVP alpha flow.
+
 That future layer should:
 
 - store distilled facts, not raw audio by default

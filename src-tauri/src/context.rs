@@ -5,6 +5,7 @@ use crate::types::{AnalysisCardDto, ContextStatusDto};
 const CONTEXT_TTL: Duration = Duration::from_secs(20 * 60);
 const CONTEXT_MAX_ENTRIES: usize = 3;
 const CONTEXT_MAX_CHARS: usize = 1500;
+const TRANSCRIPT_PREVIEW_MAX_CHARS: usize = 360;
 
 #[derive(Debug, Default)]
 pub struct ConversationContext {
@@ -70,15 +71,30 @@ impl ConversationContext {
 
     pub fn status(&mut self) -> ContextStatusDto {
         self.clear_if_expired();
+        let last = self.last_transcript();
+        let preview = last
+            .as_ref()
+            .map(|text| truncate_preview(text, TRANSCRIPT_PREVIEW_MAX_CHARS));
         ContextStatusDto {
             context_active: !self.entries.is_empty(),
             entry_count: self.entries.len(),
+            last_transcript_preview: preview,
+            can_retry_last_transcript: last.is_some(),
         }
     }
 
     fn total_chars(&self) -> usize {
         self.entries.iter().map(|value| value.chars().count()).sum()
     }
+}
+
+fn truncate_preview(text: &str, max_chars: usize) -> String {
+    let count = text.chars().count();
+    if count <= max_chars {
+        return text.to_string();
+    }
+    let head: String = text.chars().take(max_chars).collect();
+    format!("{head}…")
 }
 
 #[cfg(test)]
@@ -96,5 +112,19 @@ mod tests {
         assert!(!text.contains("1: one"));
         assert!(text.contains("1: two"));
         assert!(text.contains("3: four"));
+    }
+
+    #[test]
+    fn status_exposes_transcript_preview_and_retry_flag() {
+        let mut ctx = ConversationContext::default();
+        ctx.push_transcript("hello transcript");
+        let s = ctx.status();
+        assert!(s.can_retry_last_transcript);
+        assert_eq!(s.entry_count, 1);
+        assert!(s
+            .last_transcript_preview
+            .as_ref()
+            .expect("preview")
+            .contains("hello transcript"));
     }
 }

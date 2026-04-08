@@ -12,10 +12,12 @@ Replyline uses three labels for performance and runtime claims.
 
 - Do not call latency `measured` without a saved JSON or Markdown artifact under `reports/runtime`.
 - Do not treat `pnpm smoke` as runtime proof.
+- Do not treat `pnpm test:ui` as runtime proof.
 - Do not treat one lucky run as product truth when repeated runs are noisy.
-- Prefer repeated runs for `15s / 30s / 60s` before changing the user-facing default.
+- Prefer repeated runs (`pnpm probe:bench -- -Repeats 2`, `pnpm probe:durations:avg`) before changing the user-facing default.
 - If artifacts are missing for the current build family, downgrade claims to `pending verification`.
 - Scope all `measured` wording to the workstation(s) that produced evidence.
+- `measured` never means cross-machine or cross-call-app readiness by itself.
 
 ## Reporting format
 

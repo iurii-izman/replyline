@@ -1,43 +1,74 @@
 # Replyline
 
-Replyline is a Windows-first tray app for difficult work conversations.
+## Hero
 
-Hold one hotkey while a difficult reply is playing, release it, and get one compact response card:
+Когда ответить трудно, Replyline даёт следующий ход.
+
+Windows-first tray app для сложных рабочих разговоров: hotkey -> короткий system-audio snippet -> одна карточка `gist / say_now / next_move`.
+
+## What it is
+
+Удерживайте горячую клавишу в сложный момент разговора, отпустите — и получите компактную карточку ответа:
 
 - `Суть`
 - `Скажи сейчас`
 - `Дальше`
 
-The current product focus is intentionally narrow:
+Текущий фокус продукта намеренно узкий:
 
-- difficult work conversations
-- live rescue, not post-call analysis
-- short snippet capture, not full-call recording
+- сложные рабочие разговоры
+- помощь в моменте, а не пост-разбор звонка
+- короткий фрагмент, а не запись всего звонка
+
+## What it is not
+
+- не meeting assistant
+- не transcript tool
+- не speaking coach
+
+## Trust block
+
+- захват идёт только пока удерживается hotkey
+- live-фрагменты обрабатываются в RAM и по умолчанию не сохраняются на диск
+- после отпускания hotkey фрагмент отправляется во внешние STT / LLM провайдеры, которые вы настраиваете сами
+- пользователь сам отвечает за правила платформ, политику работодателя и законы о записи
+
+## Alpha disclaimer
+
+- текущая стадия: внутренняя русскоязычная alpha
+- source-only: без обещаний публичного binary availability на этом этапе
+- cross-machine и cross-call-app поведение остаются `pending verification`
+
+## CTA
+
+- исходники и запуск: [README sections below](#getting-started)
+- минимальная внешняя страница: [landing/index.html](landing/index.html)
+- доступ для точечных тестеров: [docs/tester-brief.md](docs/tester-brief.md)
 
 ## Current state
 
-This repository is an early alpha engineering build.
+Этот репозиторий — ранняя внутренняя инженерная alpha-сборка.
 
-Initial publication model for this repository:
+Текущая модель публикации:
 
-- source code only
-- no bundled binary artifacts committed to git
-- no public installer release until packaging, signing, and live-call validation are stronger
+- только исходный код
+- без закоммиченных бинарных артефактов
+- без публичного installer-релиза, пока не укреплены упаковка, подпись и live-call валидация
 
-What exists now:
+Что уже есть:
 
-- tray-first Tauri app
-- compact always-on-top window
-- one global hotkey, default `Ctrl+Shift+Space`
-- system-audio snippet capture via WASAPI loopback
-- Deepgram STT path
-- one OpenAI-compatible LLM path
-- compact card with `gist / say_now / next_move`
-- in-memory context only
-- local settings + Windows Credential Manager for secrets
-- runtime evidence, smoke artifacts, and alpha handoff bundle tooling
+- tray-first Tauri приложение
+- компактное always-on-top окно
+- один global hotkey, по умолчанию `Ctrl+Alt+Space`
+- захват system-audio фрагмента через WASAPI loopback
+- путь STT через Deepgram
+- один OpenAI-compatible путь LLM
+- компактная карточка `gist / say_now / next_move`
+- только in-memory контекст
+- локальные настройки + Windows Credential Manager для секретов
+- runtime evidence, smoke артефакты и alpha handoff bundle tooling
 
-What is explicitly not in the current MVP:
+Что явно не входит в текущий MVP:
 
 - transcript UI
 - history UI
@@ -50,15 +81,27 @@ What is explicitly not in the current MVP:
 
 ## Trust model
 
-- audio is captured only while the hotkey is held
-- snippets are processed in RAM and not stored by default
-- released snippets are sent to configured external STT / LLM providers
-- the app does not present itself as covert-use software, a therapy product, or an autonomous answering system
-- the user is responsible for complying with platform rules, employer policy, and recording laws
+- аудио захватывается только пока удерживается hotkey
+- фрагменты обрабатываются в RAM и по умолчанию не сохраняются
+- после отпускания клавиши фрагмент отправляется во внешние STT / LLM провайдеры, которые вы настроили
+- приложение не позиционируется как скрытый софт, терапевтический продукт или автономная система ответов
+- пользователь сам отвечает за соблюдение правил платформ, политики работодателя и законов о записи
+
+Подробно:
+
+- [docs/privacy-and-trust.md](docs/privacy-and-trust.md)
+- [docs/third-party-providers.md](docs/third-party-providers.md)
+- [docs/known-limitations.md](docs/known-limitations.md)
+
+## Язык alpha и честность запуска
+
+- текущая alpha — русскоязычная в product-facing UX
+- в коде есть технический `primaryLanguage` hook (`ru`/`en`) для будущей multilingual beta
+- это не означает готовый English-ready UX на текущем этапе
 
 ## What is proven vs not yet proven
 
-What is already proven locally:
+Что уже подтверждено локально:
 
 - the app builds
 - the Rust backend compiles and tests pass
@@ -66,13 +109,13 @@ What is already proven locally:
 - the runtime probe path can produce real machine-local evidence artifacts
 - alpha handoff bundles can be generated from local runtime artifacts
 
-What is still pending verification:
+Что всё ещё pending verification:
 
-- repeated live-call behavior on Zoom / Teams / Meet / Telemost
-- cross-machine consistency
-- real-user usefulness beyond local engineering runs
+- повторяемое поведение в живых звонках Zoom / Teams / Meet / Telemost
+- консистентность между разными машинами
+- реальная полезность за пределами локальных инженерных прогонов
 
-For the honest verification model, start with [docs/verification-lanes.md](C:/Dev/replyline/docs/verification-lanes.md).
+Для честной модели верификации начните с [docs/verification-lanes.md](docs/verification-lanes.md).
 
 ## Getting started
 
@@ -82,7 +125,7 @@ For the honest verification model, start with [docs/verification-lanes.md](C:/De
 - Node / pnpm
 - Rust toolchain
 - WebView2 / Tauri runtime requirements
-- provider keys for real runtime use
+- ключи провайдеров для реального runtime пути
 
 ### Install
 
@@ -90,30 +133,33 @@ For the honest verification model, start with [docs/verification-lanes.md](C:/De
 pnpm install
 ```
 
-### Run the app
+### Запуск приложения
 
 ```bash
 pnpm tauri dev
 ```
 
-### Fast engineering gate
+### Быстрый инженерный gate
 
 ```bash
 pnpm smoke
 ```
 
-This runs:
+Эта команда запускает:
 
 - Vite production build
 - `cargo check`
 - `cargo test`
+- `vitest` mock/UI lane (`pnpm test:ui`)
 - fixture validation
 - prompt-contract checks
+- сценарные проверки `say_now` (локальный quality gate)
+- deterministic consistency gate for canonical hotkey + scope wording
 - copy / claim guard
 
 ## Runtime commands
 
-Core runtime / evidence commands:
+Базовые runtime / evidence команды:
 
 ```bash
 pnpm probe:runtime
@@ -124,7 +170,7 @@ pnpm smoke:template
 pnpm alpha:handoff
 ```
 
-Useful support commands:
+Полезные вспомогательные команды:
 
 ```bash
 pnpm runtime:preflight
@@ -134,26 +180,35 @@ pnpm rust:deps
 
 ## Repository map
 
-- [src](C:/Dev/replyline/src): Solid frontend
-- [src-tauri](C:/Dev/replyline/src-tauri): Rust backend and Tauri app
-- [scripts](C:/Dev/replyline/scripts): runtime, evidence, smoke, and release-support scripts
-- [fixtures](C:/Dev/replyline/fixtures): deterministic prompt-contract inputs
-- [docs](C:/Dev/replyline/docs): engineering docs for runtime proof, release readiness, memory, and verification
+- [src](src): Solid frontend
+- [src-tauri](src-tauri): Rust backend and Tauri app
+- [scripts](scripts): runtime, evidence, smoke, and release-support scripts
+- [fixtures](fixtures): deterministic prompt-contract inputs
+- [docs](docs): engineering docs for runtime proof, release readiness, memory, and verification
 
 Start here:
 
-- [docs/README.md](C:/Dev/replyline/docs/README.md)
+- [docs/README.md](docs/README.md)
 
 ## Core docs
 
-- [verification-lanes.md](C:/Dev/replyline/docs/verification-lanes.md): what each verification lane proves
-- [runtime-bringup.md](C:/Dev/replyline/docs/runtime-bringup.md): real runtime path and probe workflow
-- [runtime-evidence.md](C:/Dev/replyline/docs/runtime-evidence.md): evidence artifacts and honesty rules
-- [smoke-checks.md](C:/Dev/replyline/docs/smoke-checks.md): manual critical-path checks
-- [release-readiness.md](C:/Dev/replyline/docs/release-readiness.md): lean alpha handoff gate
-- [benchmark-policy.md](C:/Dev/replyline/docs/benchmark-policy.md): `target / measured / pending verification`
-- [memory-layer.md](C:/Dev/replyline/docs/memory-layer.md): future memory layer, separate from live card
+- [verification-lanes.md](docs/verification-lanes.md): что доказывает каждая verification lane
+- [runtime-bringup.md](docs/runtime-bringup.md): реальный runtime path и probe workflow
+- [runtime-evidence.md](docs/runtime-evidence.md): evidence артефакты и honesty rules
+- [smoke-checks.md](docs/smoke-checks.md): ручные critical-path проверки
+- [release-readiness.md](docs/release-readiness.md): lean alpha handoff gate
+- [benchmark-policy.md](docs/benchmark-policy.md): `target / measured / pending verification`
+- [privacy-and-trust.md](docs/privacy-and-trust.md): короткая trust-модель и storage truth
+- [known-limitations.md](docs/known-limitations.md): честные ограничения текущей alpha
+- [third-party-providers.md](docs/third-party-providers.md): границы ответственности внешних STT/LLM
+- [memory-layer.md](docs/memory-layer.md): future track (internal planning), отдельно от текущего live-card MVP
+
+## Internal alpha ops
+
+- [internal-alpha-checklist.md](docs/internal-alpha-checklist.md): порядок self-test и blocker gate
+- [tester-brief.md](docs/tester-brief.md): короткий бриф для точечных ранних тестеров
+- [test-feedback-template.md](docs/test-feedback-template.md): единый шаблон useful feedback
 
 ## License
 
-[MIT](C:/Dev/replyline/LICENSE)
+[MIT](LICENSE)

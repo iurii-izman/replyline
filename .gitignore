@@ -4,3 +4,16 @@ src-tauri/target
 *.log
 reports
 .vscode
+
+# Build / test artefacts
+coverage/
+
+# Personal / AI-assistant config (not project code)
+AI/
+.claude/
+
+# Secrets — never commit
+.env
+.env.*
+*.pem
+*.key

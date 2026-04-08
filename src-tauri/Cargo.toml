@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Replyline desktop shell"
 authors = ["you"]
 edition = "2021"
+default-run = "replyline"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -33,6 +34,7 @@ reqwest = { version = "0.13", default-features = false, features = ["json", "nat
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync"] }
 tokio-tungstenite = { version = "0.27", features = ["native-tls"] }
 futures-util = "0.3"
+bytes = "1.11.1"
 
 [target."cfg(windows)".dependencies]
-windows = { version = "0.62.2", features = ["Win32_Media_Audio", "Win32_System_Com", "Win32_Foundation", "Win32_System_Com_StructuredStorage", "Win32_System_Variant"] }
+windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_Media_Audio", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_Variant"] }

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#173f38" />
+    <title>Replyline — Source-only alpha</title>
+    <style>
+      :root {
+        color: #162c29;
+        background: #f4efe7;
+        font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        line-height: 1.45;
+      }
+
+      .wrap {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 28px 16px 44px;
+      }
+
+      .card {
+        background: #fffdfa;
+        border: 1px solid rgba(22, 44, 41, 0.12);
+        border-radius: 16px;
+        padding: 18px;
+      }
+
+      .alpha-badge {
+        display: inline-block;
+        margin-bottom: 10px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        background: rgba(23, 63, 56, 0.1);
+        color: #173f38;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(1.35rem, 3vw, 1.9rem);
+      }
+
+      .subhead {
+        margin: 0 0 16px;
+        color: rgba(22, 44, 41, 0.86);
+      }
+
+      .section {
+        margin-top: 16px;
+      }
+
+      .section h2 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+      }
+
+      .section p {
+        margin: 0 0 8px;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      li + li {
+        margin-top: 4px;
+      }
+
+      .cta {
+        margin-top: 18px;
+        display: inline-block;
+        text-decoration: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        background: #173f38;
+        color: #f7f3ee;
+        border: 1px solid #173f38;
+      }
+
+      .note {
+        margin-top: 12px;
+        font-size: 0.9rem;
+        color: rgba(22, 44, 41, 0.8);
+      }
+
+      @media (max-width: 640px) {
+        .wrap {
+          padding-top: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <article class="card">
+        <div class="alpha-badge">Source-only alpha · Windows-first · Russian-first</div>
+        <h1>Когда ответить трудно, Replyline даёт следующий ход.</h1>
+        <p class="subhead">
+          Tray-приложение для сложных рабочих разговоров: одна горячая клавиша, короткий фрагмент, одна карточка
+          `gist / say_now / next_move`.
+        </p>
+
+        <section class="section">
+          <h2>Что это</h2>
+          <ul>
+            <li>Помощь в моменте, а не пост-разбор звонка.</li>
+            <li>Захват только пока удерживается hotkey.</li>
+            <li>Фокус на коротком ответе, который можно произнести вслух.</li>
+          </ul>
+        </section>
+
+        <section class="section">
+          <h2>Что это не есть</h2>
+          <ul>
+            <li>Не meeting assistant.</li>
+            <li>Не transcript tool.</li>
+            <li>Не speaking coach.</li>
+          </ul>
+        </section>
+
+        <section class="section">
+          <h2>Trust</h2>
+          <p>
+            Live-фрагменты обрабатываются в RAM и по умолчанию не сохраняются на диск. После отпускания hotkey фрагмент
+            отправляется во внешние STT/LLM провайдеры, которые вы настраиваете сами. Пользователь отвечает за соблюдение
+            правил платформ, политики работодателя и законов о записи.
+          </p>
+          <p class="note">
+            Поведение между разными машинами и всеми call-приложениями остаётся pending verification.
+          </p>
+        </section>
+
+        <a class="cta" href="../README.md">Открыть исходники (README)</a>
+      </article>
+    </main>
+  </body>
+</html>

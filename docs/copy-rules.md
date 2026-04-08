@@ -1,18 +1,23 @@
 # Replyline Copy Rules
 
-Replyline should sound practical, explicit, and conservative.
+Replyline должен звучать как спокойный рабочий инструмент: конкретно, честно, без магии.
 
-## Allowed
+## Current alpha truth
 
-- local-first
-- tray helper
-- snippet capture
-- short card
-- fast response
-- visible capture state
-- external STT / LLM providers
+- текущая стадия: внутренняя русскоязычная alpha
+- core flow: hotkey -> короткий system-audio snippet -> `gist / say_now / next_move`
+- multilingual beta может готовиться архитектурно, но не продаётся как готовая сейчас
 
-## Disallowed
+## Разрешённые формулировки
+
+- windows-first tray app
+- короткий фрагмент, а не запись всего звонка
+- одна компактная карточка ответа
+- видимое состояние захвата
+- внешние STT / LLM провайдеры, которые настраивает пользователь
+- обработка в RAM и отсутствие хранения по умолчанию
+
+## Запрещённые формулировки
 
 - stealth
 - invisible overlay
@@ -26,27 +31,33 @@ Replyline should sound practical, explicit, and conservative.
 
 ## Product copy rule
 
-Do not imply that Replyline:
+Не допускать формулировок, будто Replyline:
 
-- hides itself from other people
-- understands emotions reliably
-- replaces therapy or mental-health support
-- keeps all processing on-device when cloud providers are enabled
+- работает как скрытый или незаметный софт
+- надёжно «понимает эмоции» или «оценивает тон»
+- заменяет терапию, психологическую помощь или коучинг
+- всегда обрабатывает всё только локально, если включены cloud-провайдеры
+- уже готов как полноценный multilingual UX
 
 ## Trust/copy discipline
 
-- Describe only what current evidence supports.
-- For runtime or performance claims, use labels from `docs/benchmark-policy.md`: `target`, `measured`, `pending verification`.
-- If a runtime path has no recent local evidence artifact, label it `pending verification`.
-- Do not upgrade claims from `target` to `measured` based only on `pnpm smoke`.
+- Описывать только то, что подтверждено текущими артефактами.
+- Для runtime/performance claims использовать метки из `docs/benchmark-policy.md`: `target`, `measured`, `pending verification`.
+- Если для runtime-пути нет свежего локального evidence, ставить `pending verification`.
+- Не поднимать claim с `target` до `measured` только по результату `pnpm smoke`.
+- Не использовать фразы вроде "private by design" без конкретного объяснения data flow.
+- Не использовать фразы вроде "nothing is ever stored anywhere".
 
 ## Runtime claim language
 
-- Good: "Measured on this workstation with local runtime evidence."
-- Good: "Supported path, pending verification for fast-path promise."
-- Avoid: "Production-ready everywhere", "always low latency", "works in every call app."
+- Хорошо: "Measured on this workstation with local runtime evidence."
+- Хорошо: "Supported path, pending verification for fast-path promise."
+- Избегать: "Production-ready everywhere", "always low latency", "works in every call app."
 
 See also:
 
 - `docs/verification-lanes.md`
 - `docs/runtime-evidence.md`
+- `docs/privacy-and-trust.md`
+- `docs/known-limitations.md`
+- `docs/third-party-providers.md`

@@ -78,6 +78,37 @@ function New-Stats([double[]]$values) {
   }
 }
 
+function Get-ProbeFailureMessage([object[]]$OutputLines, [string]$FallbackMessage) {
+  $lines = @(
+    $OutputLines |
+      ForEach-Object { "$_".Trim() } |
+      Where-Object { $_ -ne "" }
+  )
+
+  if ($lines.Count -eq 0) {
+    return $FallbackMessage
+  }
+
+  $preferred = @(
+    $lines | Where-Object {
+      $_ -match 'Deepgram .*empty transcript' -or
+      $_ -match 'Card output invalid:' -or
+      $_ -match 'analysis_failed' -or
+      $_ -match 'Analysis failed:' -or
+      $_ -match 'User-safe error:' -or
+      $_ -match 'pipeline error' -or
+      $_ -match 'error'
+    }
+  )
+
+  if ($preferred.Count -gt 0) {
+    return $preferred[-1]
+  }
+
+  $tail = @($lines | Select-Object -Last 3) -join " "
+  return "$FallbackMessage Output tail: $tail"
+}
+
 foreach ($duration in $Durations) {
   for ($run = 1; $run -le $Repeats; $run++) {
     $scenarioName = "duration-${duration}s-r$run"
@@ -92,23 +123,40 @@ foreach ($duration in $Durations) {
     $env:REPLYLINE_REPORT_FILE = $reportName
     $env:REPLYLINE_CAPTURE_MAX_SECONDS = [string]$duration
 
-    pnpm probe:runtime
-    if ($LASTEXITCODE -ne 0) {
-      throw "pnpm probe:runtime failed with exit code $LASTEXITCODE."
-    }
+    try {
+      $probeOutput = @(& pnpm probe:runtime 2>&1)
+      if ($LASTEXITCODE -ne 0) {
+        $failureMessage = Get-ProbeFailureMessage -OutputLines $probeOutput -FallbackMessage "pnpm probe:runtime failed with exit code $LASTEXITCODE."
+        throw $failureMessage
+      }
 
-    $reportPath = Join-Path $reportDir $reportName
-    $report = Get-Content -Raw -Path $reportPath | ConvertFrom-Json
-    $runResults += [pscustomobject]@{
-      duration = $duration
-      run = $run
-      scenario = $report.scenario
-      captureMaxSeconds = $report.captureMaxSeconds
-      capturedAudioMs = $report.capturedAudioMs
-      sttMs = $report.sttMs
-      llmMs = $report.llmMs
-      releaseToCardMs = $report.releaseToCardMs
-      status = "ok"
+      $reportPath = Join-Path $reportDir $reportName
+      $report = Get-Content -Raw -Path $reportPath | ConvertFrom-Json
+      $runResults += [pscustomobject]@{
+        duration = $duration
+        run = $run
+        scenario = $report.scenario
+        captureMaxSeconds = $report.captureMaxSeconds
+        capturedAudioMs = $report.capturedAudioMs
+        sttMs = $report.sttMs
+        llmMs = $report.llmMs
+        releaseToCardMs = $report.releaseToCardMs
+        error = $null
+        status = "ok"
+      }
+    } catch {
+      $runResults += [pscustomobject]@{
+        duration = $duration
+        run = $run
+        scenario = $scenarioName
+        captureMaxSeconds = $duration
+        capturedAudioMs = $null
+        sttMs = $null
+        llmMs = $null
+        releaseToCardMs = $null
+        error = $_.Exception.Message
+        status = "error"
+      }
     }
   }
 }
@@ -128,6 +176,8 @@ foreach ($duration in $Durations) {
   }
 }
 
+$errorCount = @($runResults | Where-Object { $_.status -eq "error" }).Count
+
 $summary = [ordered]@{
   generatedAtLocal = (Get-Date).ToString("s")
   lane = "runtime-duration-bench"
@@ -136,11 +186,14 @@ $summary = [ordered]@{
   repeats = $Repeats
   durations = $Durations
   runCount = $runResults.Count
+  errorCount = $errorCount
   stats = $durationStats
   runs = $runResults
-  claimLabel = if ($Repeats -ge 2) { "measured" } else { "pending verification" }
-  claimNote = if ($Repeats -ge 2) {
-    "Repeated local runs available. Still workstation-scoped."
+  claimLabel = if (($Repeats -ge 2) -and ($runResults.Count -gt 0) -and ($errorCount -eq 0)) { "measured" } else { "pending verification" }
+  claimNote = if (($Repeats -ge 2) -and ($errorCount -eq 0)) {
+    "Repeated local runs available without script-level errors. Still workstation-scoped."
+  } elseif ($Repeats -ge 2) {
+    "Repeated runs exist, but errors/noisy output prevent measured status."
   } else {
     "Single-run data only. Repeat runs recommended before strong claims."
   }
@@ -166,10 +219,11 @@ foreach ($item in $durationStats) {
 $md += ""
 $md += "## Raw runs"
 $md += ""
-$md += "| scenario | duration s | run | captured audio ms | stt ms | llm ms | release->card ms | status |"
-$md += "|---|---:|---:|---:|---:|---:|---:|---|"
+$md += "| scenario | duration s | run | captured audio ms | stt ms | llm ms | release->card ms | status | error |"
+$md += "|---|---:|---:|---:|---:|---:|---:|---|---|"
 foreach ($item in $runResults) {
-  $md += "| $($item.scenario) | $($item.duration) | $($item.run) | $($item.capturedAudioMs) | $($item.sttMs) | $($item.llmMs) | $($item.releaseToCardMs) | $($item.status) |"
+  $errorText = (($item.error ?? "") -replace '\|', '/' -replace "`r?`n", " ").Trim()
+  $md += "| $($item.scenario) | $($item.duration) | $($item.run) | $($item.capturedAudioMs) | $($item.sttMs) | $($item.llmMs) | $($item.releaseToCardMs) | $($item.status) | $errorText |"
 }
 $md -join "`n" | Set-Content -Path $summaryMdPath -Encoding utf8
 
