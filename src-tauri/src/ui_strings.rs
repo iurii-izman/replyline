@@ -2,6 +2,7 @@
 ///
 /// All user-visible text from the Rust backend lives here so a future
 /// i18n pass only needs to swap this module for a locale-aware loader.
+#[allow(dead_code)]
 pub mod en {
     // -- Tray tooltip --
     pub const TRAY_BOOTING: &str = "Replyline · Loading…";
@@ -29,12 +30,9 @@ pub mod en {
     pub const STATUS_RETRYING_CARD: &str = "Rebuilding card…";
 
     // -- User-facing errors --
-    pub const ERR_NO_ACTIVE_CAPTURE: &str =
-        "Recording wasn't active. Hold the hotkey first.";
-    pub const ERR_NO_DEEPGRAM_KEY: &str =
-        "No Deepgram API key. Settings → key → Save.";
-    pub const ERR_NOTHING_TO_RETRY: &str =
-        "Nothing to rebuild yet — capture something first.";
+    pub const ERR_NO_ACTIVE_CAPTURE: &str = "Recording wasn't active. Hold the hotkey first.";
+    pub const ERR_NO_DEEPGRAM_KEY: &str = "No Deepgram API key. Settings → key → Save.";
+    pub const ERR_NOTHING_TO_RETRY: &str = "Nothing to rebuild yet — capture something first.";
 }
 
 pub mod ru {
