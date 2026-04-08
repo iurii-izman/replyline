@@ -299,7 +299,7 @@ export const ui_en: UiStrings = {
     gistLabel: "Gist",
     sayNowLabel: "Say now",
     nextMoveLabel: "Next move",
-    copySayNow: "Copy "Say now"",
+    copySayNow: "Copy 'Say now'",
     copyToClipboardTitle: "Copy to clipboard",
     retryCard: "Rebuild card",
     retryCardTitle: "Same text, new gateway response",
@@ -308,15 +308,15 @@ export const ui_en: UiStrings = {
     supersededHint: "Outdated card — wait for the current step to finish.",
     openNotebookLm: "Open NotebookLM",
     lastTranscriptLabel: "Last capture transcript (truncated)",
-    lastTranscriptHint: "The "Rebuild card" button sends this same text to the gateway again.",
+    lastTranscriptHint: "The 'Rebuild card' button sends this same text to the gateway again.",
   },
 
   setup: {
     title: "Setup first",
-    body: "Without a saved Deepgram key and response route the pipeline won't start. Filling in fields alone does nothing — you must click "Save".",
+    body: "Without a saved Deepgram key and response route the pipeline won't start. Filling in fields alone does nothing — you must click 'Save'.",
     step1: "Open setup (gear icon or button below).",
     step2: "Deepgram key + gateway address and model.",
-    step3: ""Save on this machine", then verify by holding the hotkey.",
+    step3: "'Save on this machine', then verify by holding the hotkey.",
     openSetup: "Open setup",
   },
 
@@ -339,14 +339,14 @@ export const ui_en: UiStrings = {
   },
 
   boot: {
-    loading: "Reading settings and registering the hotkey. On failure you'll see a message and "Retry".",
+    loading: "Reading settings and registering the hotkey. On failure you'll see a message and 'Retry'.",
   },
 
   chrome: {
     hideToTray: "Hide to tray",
     closeApp: "Close application",
     trayIntroCopy:
-      "× hides the window; the app stays in the system tray. To reopen: double-click the tray icon or choose "Open" from its menu.",
+      "× hides the window; the app stays in the system tray. To reopen: double-click the tray icon or choose 'Open' from its menu.",
     trayIntroHide: "Dismiss hint",
   },
 
@@ -370,7 +370,7 @@ export const ui_en: UiStrings = {
     trayIntroHidden: "Tray hint dismissed.",
     settingsSaved: "Saved. You can now verify by holding the hotkey.",
     settingsSavedPartial: "Saved. Finish setup to complete configuration.",
-    sayNowCopied: ""Say now" line copied to clipboard.",
+    sayNowCopied: "'Say now' line copied to clipboard.",
     notebookLmOpened: "NotebookLM opened in the system browser.",
     retrying: "Rebuilding…",
     hotkeyAlreadyRegistered: "This shortcut is already registered here. Choose another one.",
@@ -385,16 +385,16 @@ export const ui_en: UiStrings = {
 
   settings: {
     title: "Setup",
-    lead: "Holding the hotkey records a short audio clip; releasing sends it to your STT and response gateway (not saved to disk by default). "Save" writes the config file and keys to Windows on this machine; it does not test connectivity.",
+    lead: "Holding the hotkey records a short audio clip; releasing sends it to your STT and response gateway (not saved to disk by default). 'Save' writes the config file and keys to Windows on this machine; it does not test connectivity.",
     save: "Save on this machine",
     saving: "Saving…",
     toCard: "Go to card",
     retryLoad: "Retry loading",
 
     hotkeyNudge:
-      "Fill in the required sections and click "Save". Without this, holding the hotkey won't start the pipeline.",
+      "Fill in the required sections and click 'Save'. Without this, holding the hotkey won't start the pipeline.",
     bootstrapFail:
-      "App loading failed. "Retry" or edit below and "Save".",
+      "App loading failed. 'Retry' or edit below and 'Save'.",
 
     readinessTitle: "Readiness checklist",
     readinessFoot:
@@ -407,13 +407,13 @@ export const ui_en: UiStrings = {
     },
     readinessState: {
       deepgramMet: "Deepgram key stored in Windows",
-      deepgramMissing: "Required: key + "Save"",
+      deepgramMissing: "Required: key + 'Save'",
       llmMet: "Address and model set (verified on capture)",
       llmPlaceholder: "Required: replace the default localhost with your route",
       llmMissing: "Required: address and model below",
       llmKeyMet: "Gateway key saved",
       llmKeyOptional: "Optional: if the gateway requires a token, enter and save it",
-      hotkeyMet: "Hotkey assigned (takes effect after "Save")",
+      hotkeyMet: "Hotkey assigned (takes effect after 'Save')",
       hotkeyMissing: "Assign a shortcut below",
     },
 
