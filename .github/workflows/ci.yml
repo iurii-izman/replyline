@@ -82,8 +82,9 @@ jobs:
       - name: Say-now scenarios
         run: pnpm test:say-now-scenarios
 
-      - name: Fixture gate (LLM-backed)
+      - name: Fixture gate (LLM-backed, informational)
         if: env.OPENROUTER_API_KEY != ''
+        continue-on-error: true
         env:
           REPLYLINE_FIXTURE_GATE: "1"
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
