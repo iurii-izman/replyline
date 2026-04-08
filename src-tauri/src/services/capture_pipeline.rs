@@ -25,7 +25,10 @@ pub async fn capture_stop_and_analyze(
     };
 
     emit_status(app, "transcribing", Some(ru::STATUS_WAITING_TEXT));
-    update_tray_title(app, &crate::tray_status::tooltip_for_phase("transcribing", None));
+    update_tray_title(
+        app,
+        &crate::tray_status::tooltip_for_phase("transcribing", None),
+    );
 
     let pcm = tauri::async_runtime::spawn_blocking(move || capture_run.stop())
         .await
@@ -55,7 +58,10 @@ pub async fn capture_stop_and_analyze(
     );
 
     emit_status(app, "analyzing", Some(ru::STATUS_WAITING_CARD));
-    update_tray_title(app, &crate::tray_status::tooltip_for_phase("analyzing", None));
+    update_tray_title(
+        app,
+        &crate::tray_status::tooltip_for_phase("analyzing", None),
+    );
 
     let context_text = {
         let mut context = state
@@ -65,7 +71,14 @@ pub async fn capture_stop_and_analyze(
         context.formatted_context()
     };
 
-    let card = match llm_provider::analyze(&settings, llm_key.as_deref(), &transcript, &context_text).await {
+    let card = match llm_provider::analyze(
+        &settings,
+        llm_key.as_deref(),
+        &transcript,
+        &context_text,
+    )
+    .await
+    {
         Ok(card) => card,
         Err(err) => {
             let event = if err.contains("Card output invalid:") {
@@ -97,7 +110,10 @@ pub async fn capture_stop_and_analyze(
     }
 
     emit_status(app, "ready", None);
-    update_tray_title(app, &crate::tray_status::tooltip_for_phase("ready_card", None));
+    update_tray_title(
+        app,
+        &crate::tray_status::tooltip_for_phase("ready_card", None),
+    );
     let _ = app_log::append_event("analysis_ok", "card_ready");
     Ok(card)
 }
@@ -127,7 +143,14 @@ pub async fn retry_last_analysis(
         &crate::tray_status::tooltip_for_phase("analyzing", Some("повтор")),
     );
 
-    let card = match llm_provider::analyze(&settings, llm_key.as_deref(), &transcript, &context_text).await {
+    let card = match llm_provider::analyze(
+        &settings,
+        llm_key.as_deref(),
+        &transcript,
+        &context_text,
+    )
+    .await
+    {
         Ok(card) => card,
         Err(err) => {
             let event = if err.contains("Card output invalid:") {
@@ -147,7 +170,10 @@ pub async fn retry_last_analysis(
         context.remember_card(card.clone());
     }
     emit_status(app, "ready", None);
-    update_tray_title(app, &crate::tray_status::tooltip_for_phase("ready_card", None));
+    update_tray_title(
+        app,
+        &crate::tray_status::tooltip_for_phase("ready_card", None),
+    );
     Ok(card)
 }
 

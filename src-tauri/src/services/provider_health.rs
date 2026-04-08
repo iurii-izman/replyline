@@ -5,8 +5,7 @@ pub async fn check_provider_health(
     deepgram_key: Option<&str>,
     llm_key: Option<&str>,
 ) -> Result<HealthCheckResult, CommandError> {
-    let client = crate::services::http_client::build_client(8)
-        .map_err(CommandError::Internal)?;
+    let client = crate::services::http_client::build_client(8).map_err(CommandError::Internal)?;
 
     let deepgram_ok = if let Some(key) = deepgram_key {
         client
@@ -21,7 +20,10 @@ pub async fn check_provider_health(
     };
 
     let llm_ok = {
-        let url = format!("{}/models", settings.llm_base_url.trim().trim_end_matches('/'));
+        let url = format!(
+            "{}/models",
+            settings.llm_base_url.trim().trim_end_matches('/')
+        );
         let mut req = client.get(&url);
         if let Some(key) = llm_key {
             req = req.header("Authorization", format!("Bearer {key}"));

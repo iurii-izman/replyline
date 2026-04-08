@@ -16,7 +16,9 @@ pub fn save_space_record(input: MemorySpaceRecord) -> Result<MemorySpaceRecord, 
     save_space_record_with_store(&store, input)
 }
 
-pub(crate) fn list_spaces_with_store(store: &JsonMemoryStore) -> Result<Vec<MemorySpace>, CommandError> {
+pub(crate) fn list_spaces_with_store(
+    store: &JsonMemoryStore,
+) -> Result<Vec<MemorySpace>, CommandError> {
     store.list_spaces().map_err(memory_error_for_command)
 }
 
@@ -33,7 +35,9 @@ pub(crate) fn save_space_record_with_store(
     store: &JsonMemoryStore,
     input: MemorySpaceRecord,
 ) -> Result<MemorySpaceRecord, CommandError> {
-    store.save_record(&input).map_err(memory_error_for_command)?;
+    store
+        .save_record(&input)
+        .map_err(memory_error_for_command)?;
     Ok(input)
 }
 

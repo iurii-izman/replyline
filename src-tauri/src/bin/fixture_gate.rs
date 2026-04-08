@@ -6,10 +6,10 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 
-#[path = "../llm.rs"]
-mod llm;
 #[path = "../fs_atomic.rs"]
 mod fs_atomic;
+#[path = "../llm.rs"]
+mod llm;
 #[path = "../settings.rs"]
 mod settings;
 #[path = "../types.rs"]
@@ -44,10 +44,14 @@ fn assert_guardrails(id: &str, card: &types::AnalysisCardDto) -> Result<(), Stri
     let say_len = card.say_now.chars().count();
     let next_len = card.next_move.chars().count();
     if gist_len == 0 || gist_len > 110 {
-        return Err(format!("Fixture {id}: gist length out of range ({gist_len})."));
+        return Err(format!(
+            "Fixture {id}: gist length out of range ({gist_len})."
+        ));
     }
     if say_len == 0 || say_len > 220 {
-        return Err(format!("Fixture {id}: say_now length out of range ({say_len})."));
+        return Err(format!(
+            "Fixture {id}: say_now length out of range ({say_len})."
+        ));
     }
     if next_len == 0 || next_len > 110 {
         return Err(format!(
@@ -59,9 +63,17 @@ fn assert_guardrails(id: &str, card: &types::AnalysisCardDto) -> Result<(), Stri
         .iter()
         .any(|token| lower.starts_with(token));
     if apology_only
-        && !["сегодня", "до ", "пришлю", "сделаю", "давайте", "фиксируем", "уточню"]
-            .iter()
-            .any(|token| lower.contains(token))
+        && ![
+            "сегодня",
+            "до ",
+            "пришлю",
+            "сделаю",
+            "давайте",
+            "фиксируем",
+            "уточню",
+        ]
+        .iter()
+        .any(|token| lower.contains(token))
     {
         return Err(format!("Fixture {id}: say_now looks apology-only."));
     }
@@ -117,13 +129,17 @@ async fn main() -> Result<(), String> {
         let mut last_err: Option<String> = None;
         let mut passed = false;
         for attempt in 1..=3 {
-            match llm::analyze_transcript(&settings, Some(&llm_api_key), &fixture.snippet, "").await {
+            match llm::analyze_transcript(&settings, Some(&llm_api_key), &fixture.snippet, "").await
+            {
                 Ok(card) => {
                     if card.gist.trim().is_empty()
                         || card.say_now.trim().is_empty()
                         || card.next_move.trim().is_empty()
                     {
-                        last_err = Some(format!("Fixture {} produced empty card fields.", fixture.id));
+                        last_err = Some(format!(
+                            "Fixture {} produced empty card fields.",
+                            fixture.id
+                        ));
                         continue;
                     }
                     if let Err(err) = assert_guardrails(&fixture.id, &card) {
@@ -142,12 +158,16 @@ async fn main() -> Result<(), String> {
                     break;
                 }
                 Err(err) => {
-                    last_err = Some(format!("Fixture {} attempt {} failed: {}", fixture.id, attempt, err));
+                    last_err = Some(format!(
+                        "Fixture {} attempt {} failed: {}",
+                        fixture.id, attempt, err
+                    ));
                 }
             }
         }
         if !passed {
-            return Err(last_err.unwrap_or_else(|| format!("Fixture {} failed without details.", fixture.id)));
+            return Err(last_err
+                .unwrap_or_else(|| format!("Fixture {} failed without details.", fixture.id)));
         }
     }
 

@@ -95,8 +95,7 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
 
 fn migrate_v1_to_v2(value: &mut serde_json::Value) {
     if let Some(obj) = value.as_object_mut() {
-        obj.entry("schemaVersion")
-            .or_insert(serde_json::json!(2));
+        obj.entry("schemaVersion").or_insert(serde_json::json!(2));
         if let Some(v) = obj.get_mut("schemaVersion") {
             *v = serde_json::json!(2);
         }
@@ -277,7 +276,10 @@ mod tests {
     fn rejects_remote_http_llm_base_url() {
         let mut settings = AppSettings::default();
         settings.llm_base_url = "http://example.com/v1".to_string();
-        assert!(matches!(validate(&settings), Err(SettingsError::InvalidUrl)));
+        assert!(matches!(
+            validate(&settings),
+            Err(SettingsError::InvalidUrl)
+        ));
     }
 
     #[test]

@@ -10,8 +10,8 @@ mod fs_atomic;
 mod llm;
 mod memory;
 mod providers;
-mod settings;
 mod services;
+mod settings;
 mod state;
 mod tray_status;
 mod types;
@@ -97,7 +97,8 @@ pub fn run() {
                         let _ = app.emit("replyline://collect-diagnostic", ());
                     }
                     "copy-runtime-readiness" => {
-                        let _ = app_log::append_event("tray_action_received", "copy-runtime-readiness");
+                        let _ =
+                            app_log::append_event("tray_action_received", "copy-runtime-readiness");
                         let _ = open_main_window(app);
                         let _ = app.emit("replyline://copy-runtime-readiness", ());
                     }

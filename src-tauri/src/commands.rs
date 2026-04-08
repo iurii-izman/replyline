@@ -8,8 +8,8 @@ use crate::audio::CaptureRun;
 use crate::credentials;
 use crate::diagnostic_bundle;
 use crate::memory::{MemorySpace, MemorySpaceRecord};
-use crate::settings;
 use crate::services::{capture_pipeline, memory_service, provider_health};
+use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
     AnalysisCardDto, AppSettings, BootstrapDto, CommandError, ContextStatusDto,
@@ -313,13 +313,16 @@ struct FixtureSnippetRow {
 
 /// Debug-only: run LLM card pipeline on a transcript snippet from `fixtures/ru-work-snippets.json` (no mic/STT).
 #[tauri::command]
-pub async fn dev_analyze_fixture_snippet(fixture_id: String) -> Result<AnalysisCardDto, CommandError> {
+pub async fn dev_analyze_fixture_snippet(
+    fixture_id: String,
+) -> Result<AnalysisCardDto, CommandError> {
     if !cfg!(debug_assertions) {
         return Err(CommandError::Internal(
             "Прогон фикстур доступен только в debug-сборке.".to_string(),
         ));
     }
-    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../fixtures/ru-work-snippets.json");
+    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../fixtures/ru-work-snippets.json");
     let raw = std::fs::read_to_string(&path)
         .map_err(|e| CommandError::Internal(format!("Не прочитан файл фикстур: {e}")))?;
     let list: Vec<FixtureSnippetRow> = serde_json::from_str(&raw)
@@ -445,9 +448,8 @@ mod tests {
     #[test]
     fn memory_get_space_record_returns_user_safe_missing_error() {
         let store = temp_store();
-        let err =
-            memory_service::get_space_record_with_store(&store, "team:missing")
-                .expect_err("must fail");
+        let err = memory_service::get_space_record_with_store(&store, "team:missing")
+            .expect_err("must fail");
         assert_eq!(err.to_string(), "Memory space not found.");
     }
 
@@ -456,8 +458,8 @@ mod tests {
         let store = temp_store();
         let mut record = sample_record();
         record.facts[0].confidence = 2.0;
-        let err = memory_service::save_space_record_with_store(&store, record)
-            .expect_err("must fail");
+        let err =
+            memory_service::save_space_record_with_store(&store, record).expect_err("must fail");
         assert_eq!(err.to_string(), "Memory input is invalid.");
     }
 }
