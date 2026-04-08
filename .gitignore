@@ -15,5 +15,6 @@ AI/
 # Secrets — never commit
 .env
 .env.*
+!.env.keys
 *.pem
 *.key
