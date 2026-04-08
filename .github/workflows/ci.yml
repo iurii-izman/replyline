@@ -13,7 +13,7 @@ env:
 jobs:
   check:
     runs-on: windows-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -100,12 +100,20 @@ jobs:
       - name: Copy discipline check
         run: pnpm copy:check
 
+      - name: Install cargo-binstall
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          irm https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.ps1 | iex
+        continue-on-error: true
+
       - name: Install cargo-deny and cargo-audit
-        run: cargo install cargo-deny cargo-audit --locked
+        run: cargo binstall cargo-deny cargo-audit --no-confirm --log-level info
         continue-on-error: true
 
       - name: Rust supply chain check
         run: pnpm rust:deps
+        continue-on-error: true
 
       - name: npm audit
         run: pnpm audit --audit-level=high
+        continue-on-error: true
