@@ -1,6 +1,8 @@
 # Replyline
 
 [![version](https://img.shields.io/badge/version-0.1.0--alpha-blue)](./CHANGELOG.md)
+[![CI Docs](https://github.com/iurii-izman/ai-vibe-engineering/actions/workflows/ci-docs.yml/badge.svg)](https://github.com/iurii-izman/ai-vibe-engineering/actions/workflows/ci-docs.yml)
+[![CI Security](https://github.com/iurii-izman/ai-vibe-engineering/actions/workflows/ci-security.yml/badge.svg)](https://github.com/iurii-izman/ai-vibe-engineering/actions/workflows/ci-security.yml)
 
 ## Hero
 
