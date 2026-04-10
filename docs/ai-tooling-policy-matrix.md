@@ -24,20 +24,20 @@ If rules conflict, higher precedence wins.
 
 ## Tool Mapping
 
-| Tool | Role | Adapter / Config entry point | Required checks |
-| --- | --- | --- | --- |
-| Windsurf | Primary AI IDE | `AGENTS.md`, `.windsurf/rules/*.md` | `pnpm smoke`; dependency gates when applicable |
-| Cursor/Codex | AI IDE/agent | `AGENTS.md` + repo docs | `pnpm smoke`; dependency gates when applicable |
-| GitHub Copilot | Assistant/completions/chat | `.github/copilot-instructions.md` | `pnpm smoke` before merge |
-| Claude tooling | Agent/chat surface | `CLAUDE.md` + repo docs | `pnpm smoke` before merge |
-| Zed + AI/Agent Panel | Core alternative IDE | Repo policy files via adapter guidance | `pnpm smoke` before merge |
-| Cline | Agent in editor | Repo policy files + local safe permissions | `pnpm smoke`; no unverified claims |
-| Continue.dev | Model router/chat | Repo policy files + extension config | `pnpm smoke`; dependency gates when applicable |
-| aider | CLI code agent | Repo policy files + CLI defaults | `pnpm smoke`; explicit command evidence |
-| Gemini CLI / Code Assist | CLI/editor assistant | Repo policy files + provider config | `pnpm smoke`; dependency gates when applicable |
-| OpenHands | Agentic automation | Sandbox policy only (Wave 3) | No direct merge without core gates |
-| Void Editor | Experimental IDE | Sandbox policy only (Wave 3) | No direct merge without core gates |
-| Google Antigravity | Agent-first environment | Sandbox policy only (Wave 3) | No direct merge without core gates |
+| Tool                     | Role                       | Adapter / Config entry point               | Required checks                                |
+| ------------------------ | -------------------------- | ------------------------------------------ | ---------------------------------------------- |
+| Windsurf                 | Primary AI IDE             | `AGENTS.md`, `.windsurf/rules/*.md`        | `pnpm smoke`; dependency gates when applicable |
+| Cursor/Codex             | AI IDE/agent               | `AGENTS.md` + repo docs                    | `pnpm smoke`; dependency gates when applicable |
+| GitHub Copilot           | Assistant/completions/chat | `.github/copilot-instructions.md`          | `pnpm smoke` before merge                      |
+| Claude tooling           | Agent/chat surface         | `CLAUDE.md` + repo docs                    | `pnpm smoke` before merge                      |
+| Zed + AI/Agent Panel     | Core alternative IDE       | Repo policy files via adapter guidance     | `pnpm smoke` before merge                      |
+| Cline                    | Agent in editor            | Repo policy files + local safe permissions | `pnpm smoke`; no unverified claims             |
+| Continue.dev             | Model router/chat          | Repo policy files + extension config       | `pnpm smoke`; dependency gates when applicable |
+| aider                    | CLI code agent             | Repo policy files + CLI defaults           | `pnpm smoke`; explicit command evidence        |
+| Gemini CLI / Code Assist | CLI/editor assistant       | Repo policy files + provider config        | `pnpm smoke`; dependency gates when applicable |
+| OpenHands                | Agentic automation         | Sandbox policy only (Wave 3)               | No direct merge without core gates             |
+| Void Editor              | Experimental IDE           | Sandbox policy only (Wave 3)               | No direct merge without core gates             |
+| Google Antigravity       | Agent-first environment    | Sandbox policy only (Wave 3)               | No direct merge without core gates             |
 
 ## Wave 2 Integration Checklists (Core Tools)
 
@@ -69,4 +69,3 @@ These tools are experimental in this project and must run under sandbox constrai
 
 - Approved baseline: `Zed Editor` with AI features and Agent Panel.
 - Additional Zed products are out of scope unless a concrete project need appears and is added to this matrix first.
-

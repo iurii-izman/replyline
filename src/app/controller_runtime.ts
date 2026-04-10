@@ -1,11 +1,6 @@
 import type { Accessor } from "solid-js";
 
-import {
-  fmtBundleCollected,
-  fmtLogPath,
-  fmtSayNowFallback,
-  ui,
-} from "./locale";
+import { fmtBundleCollected, fmtLogPath, fmtSayNowFallback, type UiStrings } from "./locale";
 import {
   userSafeClearContextError,
   userSafeDiagnosticError,
@@ -21,6 +16,7 @@ import type { AppPlatform } from "./platform";
 
 type RuntimeSliceDeps = {
   platform: AppPlatform;
+  strings: Accessor<UiStrings>;
   panel: Accessor<"main" | "settings">;
   card: Accessor<AnalysisCard | null>;
   logStatus: Accessor<LogStatusDto | null>;
@@ -46,7 +42,7 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
     try {
       const status = await deps.platform.invoke<ContextStatusDto>("clear_context");
       deps.applyContextStatus(status);
-      deps.setCopyNotice(ui.notices.contextCleared);
+      deps.setCopyNotice(deps.strings().notices.contextCleared);
     } catch (err) {
       deps.showRecoverableError(userSafeClearContextError(err), err);
     }
@@ -55,7 +51,7 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
   async function retryAnalysis() {
     deps.setError(null);
     deps.setPhase("analyzing");
-    deps.setStatusDetail(ui.notices.retrying);
+    deps.setStatusDetail(deps.strings().notices.retrying);
     try {
       const result = await deps.platform.invoke<AnalysisCard>("retry_last_analysis");
       try {
@@ -86,8 +82,10 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
     try {
       const result = await deps.platform.invoke<DiagnosticBundleDto>("collect_diagnostic_bundle");
       const copied = await deps.tryWriteClipboard(result.bundlePath);
-      deps.setCopyNotice(fmtBundleCollected(result.bundlePath, copied));
-      const nextLogStatus = await deps.platform.invoke<LogStatusDto>("get_log_status").catch(() => null);
+      deps.setCopyNotice(fmtBundleCollected(result.bundlePath, copied, deps.strings()));
+      const nextLogStatus = await deps.platform
+        .invoke<LogStatusDto>("get_log_status")
+        .catch(() => null);
       if (nextLogStatus) deps.setLogStatus(nextLogStatus);
     } catch (err) {
       deps.setDiagnosticLocalError(userSafeDiagnosticError(err));
@@ -100,14 +98,16 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
     const status = deps.logStatus();
     if (!status?.logPath) return;
     const copied = await deps.tryWriteClipboard(status.logPath);
-    deps.setCopyNotice(fmtLogPath(status.logPath, copied));
+    deps.setCopyNotice(fmtLogPath(status.logPath, copied, deps.strings()));
   }
 
   async function copyAnswer() {
     const value = deps.card()?.sayNow?.trim();
     if (!value) return;
     const copied = await deps.tryWriteClipboard(value);
-    deps.setCopyNotice(copied ? ui.notices.sayNowCopied : fmtSayNowFallback(value));
+    deps.setCopyNotice(
+      copied ? deps.strings().notices.sayNowCopied : fmtSayNowFallback(value, deps.strings()),
+    );
   }
 
   async function copySection(section: "gist" | "sayNow" | "nextMove") {
@@ -116,7 +116,7 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
     const value = currentCard[section]?.trim();
     if (!value) return;
     const copied = await deps.tryWriteClipboard(value);
-    deps.setCopyNotice(copied ? ui.notices.sayNowCopied : value);
+    deps.setCopyNotice(copied ? deps.strings().notices.sayNowCopied : value);
   }
 
   async function openNotebookLm(notebookLmEnabled: boolean, notebookLmLaunchUrl: string) {
@@ -127,7 +127,7 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
         throw new Error("NOTEBOOKLM_DISABLED");
       }
       await deps.platform.invoke("open_notebooklm", { url: notebookLmLaunchUrl.trim() });
-      deps.setCopyNotice(ui.notices.notebookLmOpened);
+      deps.setCopyNotice(deps.strings().notices.notebookLmOpened);
     } catch (err) {
       const message = userSafeNotebookLmOpenError(err);
       if (deps.panel() === "settings") deps.setSettingsFormHint(message);

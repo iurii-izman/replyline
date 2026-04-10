@@ -29,6 +29,7 @@ const EXPECTED = [
   "memory_save_space_record",
   "open_notebooklm",
   "quit_app",
+  "refresh_tray_menu",
   "retry_last_analysis",
   "save_secret",
   "save_settings",

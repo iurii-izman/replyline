@@ -2,32 +2,41 @@ use tauri::{AppHandle, Emitter};
 
 use crate::app_log;
 use crate::credentials;
-use crate::providers::{llm_provider, stt_provider};
+use crate::llm;
+use crate::providers::stt_provider;
 use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{AnalysisCardDto, CommandError, SecretSlot, StatusEventDto};
-use crate::ui_strings::ru;
+use crate::ui_strings::{en, pick_lang, ru};
 
 pub async fn capture_stop_and_analyze(
     state: &ReplylineState,
     app: &AppHandle,
 ) -> Result<AnalysisCardDto, CommandError> {
     let _ = app_log::append_event("analysis_start", "-");
+    let settings = settings::load()?;
+    let lang = settings.primary_language.as_str();
+
     let capture_run = {
         let mut capture = state
             .capture
             .lock()
             .map_err(|_| CommandError::Internal("Capture lock poisoned".to_string()))?;
-        capture
-            .active
-            .take()
-            .ok_or_else(|| CommandError::Capture(ru::ERR_NO_ACTIVE_CAPTURE.to_string()))?
+        capture.active.take().ok_or_else(|| {
+            CommandError::Capture(
+                pick_lang(lang, en::ERR_NO_ACTIVE_CAPTURE, ru::ERR_NO_ACTIVE_CAPTURE).to_string(),
+            )
+        })?
     };
 
-    emit_status(app, "transcribing", Some(ru::STATUS_WAITING_TEXT));
+    emit_status(
+        app,
+        "transcribing",
+        Some(pick_lang(lang, en::STATUS_WAITING_TEXT, ru::STATUS_WAITING_TEXT).to_string()),
+    );
     update_tray_title(
         app,
-        &crate::tray_status::tooltip_for_phase("transcribing", None),
+        &crate::tray_status::tooltip_for_phase(lang, "transcribing", None),
     );
 
     let pcm = tauri::async_runtime::spawn_blocking(move || capture_run.stop())
@@ -35,9 +44,11 @@ pub async fn capture_stop_and_analyze(
         .map_err(|_| CommandError::Capture("Capture join failed".to_string()))?
         .map_err(CommandError::Capture)?;
 
-    let settings = settings::load()?;
-    let deepgram_key = credentials::load(SecretSlot::DeepgramApiKey)?
-        .ok_or_else(|| CommandError::Credential(ru::ERR_NO_DEEPGRAM_KEY.to_string()))?;
+    let deepgram_key = credentials::load(SecretSlot::DeepgramApiKey)?.ok_or_else(|| {
+        CommandError::Credential(
+            pick_lang(lang, en::ERR_NO_DEEPGRAM_KEY, ru::ERR_NO_DEEPGRAM_KEY).to_string(),
+        )
+    })?;
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
 
     let transcript = match stt_provider::transcribe(&settings, &deepgram_key, &pcm).await {
@@ -57,10 +68,14 @@ pub async fn capture_stop_and_analyze(
         format!("transcript_chars={}", transcript.chars().count()),
     );
 
-    emit_status(app, "analyzing", Some(ru::STATUS_WAITING_CARD));
+    emit_status(
+        app,
+        "analyzing",
+        Some(pick_lang(lang, en::STATUS_WAITING_CARD, ru::STATUS_WAITING_CARD).to_string()),
+    );
     update_tray_title(
         app,
-        &crate::tray_status::tooltip_for_phase("analyzing", None),
+        &crate::tray_status::tooltip_for_phase(lang, "analyzing", None),
     );
 
     let context_text = {
@@ -71,25 +86,21 @@ pub async fn capture_stop_and_analyze(
         context.formatted_context()
     };
 
-    let card = match llm_provider::analyze(
-        &settings,
-        llm_key.as_deref(),
-        &transcript,
-        &context_text,
-    )
-    .await
-    {
-        Ok(card) => card,
-        Err(err) => {
-            let event = if err.contains("Card output invalid:") {
-                "analysis_card_invalid"
-            } else {
-                "analysis_llm_failed"
-            };
-            let _ = app_log::append_event(event, format!("llm: {err}"));
-            return Err(CommandError::Pipeline(err));
-        }
-    };
+    let card =
+        match llm::analyze_transcript(&settings, llm_key.as_deref(), &transcript, &context_text)
+            .await
+        {
+            Ok(card) => card,
+            Err(err) => {
+                let event = if err.contains("Card output invalid:") {
+                    "analysis_card_invalid"
+                } else {
+                    "analysis_llm_failed"
+                };
+                let _ = app_log::append_event(event, format!("llm: {err}"));
+                return Err(CommandError::Pipeline(err));
+            }
+        };
     let _ = app_log::append_event(
         "analysis_llm_ok",
         format!(
@@ -112,7 +123,7 @@ pub async fn capture_stop_and_analyze(
     emit_status(app, "ready", None);
     update_tray_title(
         app,
-        &crate::tray_status::tooltip_for_phase("ready_card", None),
+        &crate::tray_status::tooltip_for_phase(lang, "ready_card", None),
     );
     let _ = app_log::append_event("analysis_ok", "card_ready");
     Ok(card)
@@ -123,6 +134,7 @@ pub async fn retry_last_analysis(
     app: &AppHandle,
 ) -> Result<AnalysisCardDto, CommandError> {
     let settings = settings::load()?;
+    let lang = settings.primary_language.as_str();
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
 
     let (transcript, context_text) = {
@@ -130,38 +142,41 @@ pub async fn retry_last_analysis(
             .context
             .lock()
             .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
-        let transcript = context
-            .last_transcript()
-            .ok_or_else(|| CommandError::Pipeline(ru::ERR_NOTHING_TO_RETRY.to_string()))?;
+        let transcript = context.last_transcript().ok_or_else(|| {
+            CommandError::Pipeline(
+                pick_lang(lang, en::ERR_NOTHING_TO_RETRY, ru::ERR_NOTHING_TO_RETRY).to_string(),
+            )
+        })?;
         let context_text = context.formatted_context();
         (transcript, context_text)
     };
 
-    emit_status(app, "analyzing", Some(ru::STATUS_RETRYING_CARD));
+    let retry_detail = pick_lang(lang, "retry", "повтор");
+    emit_status(
+        app,
+        "analyzing",
+        Some(pick_lang(lang, en::STATUS_RETRYING_CARD, ru::STATUS_RETRYING_CARD).to_string()),
+    );
     update_tray_title(
         app,
-        &crate::tray_status::tooltip_for_phase("analyzing", Some("повтор")),
+        &crate::tray_status::tooltip_for_phase(lang, "analyzing", Some(retry_detail)),
     );
 
-    let card = match llm_provider::analyze(
-        &settings,
-        llm_key.as_deref(),
-        &transcript,
-        &context_text,
-    )
-    .await
-    {
-        Ok(card) => card,
-        Err(err) => {
-            let event = if err.contains("Card output invalid:") {
-                "analysis_card_invalid"
-            } else {
-                "analysis_llm_failed"
-            };
-            let _ = app_log::append_event(event, format!("retry_llm: {err}"));
-            return Err(CommandError::Pipeline(err));
-        }
-    };
+    let card =
+        match llm::analyze_transcript(&settings, llm_key.as_deref(), &transcript, &context_text)
+            .await
+        {
+            Ok(card) => card,
+            Err(err) => {
+                let event = if err.contains("Card output invalid:") {
+                    "analysis_card_invalid"
+                } else {
+                    "analysis_llm_failed"
+                };
+                let _ = app_log::append_event(event, format!("retry_llm: {err}"));
+                return Err(CommandError::Pipeline(err));
+            }
+        };
     {
         let mut context = state
             .context
@@ -172,17 +187,17 @@ pub async fn retry_last_analysis(
     emit_status(app, "ready", None);
     update_tray_title(
         app,
-        &crate::tray_status::tooltip_for_phase("ready_card", None),
+        &crate::tray_status::tooltip_for_phase(lang, "ready_card", None),
     );
     Ok(card)
 }
 
-fn emit_status(app: &AppHandle, phase: &str, detail: Option<&str>) {
+fn emit_status(app: &AppHandle, phase: &str, detail: Option<String>) {
     let _ = app.emit(
         "replyline://status",
         StatusEventDto {
             phase: phase.to_string(),
-            detail: detail.map(|value| value.to_string()),
+            detail,
         },
     );
 }

@@ -41,10 +41,10 @@
 
 Replyline can run entirely on-device by replacing cloud providers with local alternatives:
 
-| Role | Local Alternative | Setup |
-|------|-------------------|-------|
-| STT | [Whisper.cpp](https://github.com/ggerganov/whisper.cpp) via [faster-whisper-server](https://github.com/fedirz/faster-whisper-server) | Run the server, point Replyline's STT to `http://127.0.0.1:<port>` |
-| LLM | [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai) | Install, pull a model, set `llmBaseUrl` to `http://127.0.0.1:11434/v1` (Ollama) or `http://127.0.0.1:1234/v1` (LM Studio) |
+| Role | Local Alternative                                                                                                                    | Setup                                                                                                                     |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| STT  | [Whisper.cpp](https://github.com/ggerganov/whisper.cpp) via [faster-whisper-server](https://github.com/fedirz/faster-whisper-server) | Run the server, point Replyline's STT to `http://127.0.0.1:<port>`                                                        |
+| LLM  | [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai)                                                                     | Install, pull a model, set `llmBaseUrl` to `http://127.0.0.1:11434/v1` (Ollama) or `http://127.0.0.1:1234/v1` (LM Studio) |
 
 **Steps:**
 

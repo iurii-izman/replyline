@@ -120,8 +120,11 @@ Treat runtime bring-up as complete only when all of the following are true:
 
 If any item is missing, mark runtime readiness as `pending verification`.
 
-See also:
+## See also
 
-- `docs/verification-lanes.md`
-- `docs/runtime-evidence.md`
-- `docs/release-readiness.md`
+- [verification-lanes.md](verification-lanes.md) — 4 lane модель (compile / mock / prompt / runtime).
+- [runtime-evidence.md](runtime-evidence.md) — где живут артефакты, минимальное качество.
+- [`release-readiness.md`](release-readiness.md)
+
+- [benchmark-policy.md](benchmark-policy.md) — лейблы `target / measured / pending verification`.
+- [copy-rules.md](copy-rules.md) — формулировки и баны.

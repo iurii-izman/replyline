@@ -74,8 +74,11 @@ Bundle acceptance:
 - `reports/runtime-evidence-*/manifest.json` (timestamped evidence bundles)
 - `reports/alpha-handoff-*/manifest.json` (compact alpha handoff manifest)
 
-See also:
+## See also
 
-- `docs/verification-lanes.md`
-- `docs/benchmark-policy.md`
-- `docs/release-readiness.md`
+- [verification-lanes.md](verification-lanes.md) — 4 lane модель (compile / mock / prompt / runtime).
+- [benchmark-policy.md](benchmark-policy.md) — лейблы `target / measured / pending verification`.
+- [`release-readiness.md`](release-readiness.md)
+
+- [runtime-bringup.md](runtime-bringup.md) — как поднять runtime path первый раз.
+- [copy-rules.md](copy-rules.md) — формулировки и баны.

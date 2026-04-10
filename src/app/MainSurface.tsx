@@ -1,29 +1,37 @@
 import { Show } from "solid-js";
 
 import type { ReplylineController } from "./controller";
-import { ui } from "./locale";
 
 export function MainSurface(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
+  const st = () => controller().strings();
 
   return (
     <>
       <Show when={controller().phase() === "booting"}>
         <section class="main-card boot-card">
-          <p class="section-copy boot-copy">{ui.boot.loading}</p>
+          <p class="section-copy boot-copy">{st().boot.loading}</p>
         </section>
       </Show>
 
       <Show when={controller().phase() === "error" && controller().panel() !== "settings"}>
         <section class="main-card boot-card">
-          <h2 class="section-title">{ui.startError.title}</h2>
-          <p class="section-copy">{ui.startError.body}</p>
+          <h2 class="section-title">{st().startError.title}</h2>
+          <p class="section-copy">{st().startError.body}</p>
           <div class="settings-actions">
-            <button class="btn-primary" type="button" onClick={() => void controller().reloadBootstrap()}>
-              {ui.startError.retryLoad}
+            <button
+              class="btn-primary"
+              type="button"
+              onClick={() => void controller().reloadBootstrap()}
+            >
+              {st().startError.retryLoad}
             </button>
-            <button class="btn-ghost" type="button" onClick={() => controller().openSettingsPanel()}>
-              {ui.startError.toSetup}
+            <button
+              class="btn-ghost"
+              type="button"
+              onClick={() => controller().openSettingsPanel()}
+            >
+              {st().startError.toSetup}
             </button>
           </div>
         </section>
@@ -41,26 +49,37 @@ export function MainSurface(props: { controller: ReplylineController }) {
             when={!controller().setupRequired()}
             fallback={
               <div class="empty-card setup-needed-card">
-                <h2 class="section-title">{ui.setup.title}</h2>
-                <p class="section-copy">{ui.setup.body}</p>
+                <h2 class="section-title">{st().setup.title}</h2>
+                <p class="section-copy">{st().setup.body}</p>
                 <ol class="setup-steps">
-                  <li>{ui.setup.step1}</li>
-                  <li>{ui.setup.step2}</li>
-                  <li>{ui.setup.step3}</li>
+                  <li>{st().setup.step1}</li>
+                  <li>{st().setup.step2}</li>
+                  <li>{st().setup.step3}</li>
                 </ol>
-                <button class="btn-primary" type="button" onClick={() => controller().openSettingsPanel()}>
-                  {ui.setup.openSetup}
+                <button
+                  class="btn-primary"
+                  type="button"
+                  onClick={() => controller().openSettingsPanel()}
+                >
+                  {st().setup.openSetup}
                 </button>
                 <Show when={controller().settings.notebookLmEnabled}>
-                  <button class="btn-ghost" type="button" onClick={() => void controller().openNotebookLm()}>
-                    {ui.card.openNotebookLm}
+                  <button
+                    class="btn-ghost"
+                    type="button"
+                    onClick={() => void controller().openNotebookLm()}
+                  >
+                    {st().card.openNotebookLm}
                   </button>
                 </Show>
               </div>
             }
           >
             <Show when={controller().pipelineActive()}>
-              <div class={`live-phase-block live-phase-block--${controller().phase()}`} aria-live="polite">
+              <div
+                class={`live-phase-block live-phase-block--${controller().phase()}`}
+                aria-live="polite"
+              >
                 <div class="live-phase-pulse" aria-hidden="true" />
                 <div class="live-phase-headline">{controller().livePhaseHeadline()}</div>
                 <p class="live-phase-sub">{controller().livePhaseSub()}</p>
@@ -74,16 +93,16 @@ export function MainSurface(props: { controller: ReplylineController }) {
                   aria-busy={controller().pipelineActive()}
                 >
                   <Show when={controller().pipelineActive()}>
-                    <p class="result-superseded-hint">{ui.card.supersededHint}</p>
+                    <p class="result-superseded-hint">{st().card.supersededHint}</p>
                   </Show>
 
                   <section class="result-section">
                     <div class="result-label-row">
-                      <div class="result-label">{ui.card.gistLabel}</div>
+                      <div class="result-label">{st().card.gistLabel}</div>
                       <button
                         class="copy-section-btn"
                         type="button"
-                        title={ui.card.copyToClipboardTitle}
+                        title={st().card.copyToClipboardTitle}
                         onClick={() => void controller().copySection("gist")}
                       >
                         ⎘
@@ -94,11 +113,11 @@ export function MainSurface(props: { controller: ReplylineController }) {
 
                   <section class="result-section result-section--primary">
                     <div class="result-label-row">
-                      <div class="result-label">{ui.card.sayNowLabel}</div>
+                      <div class="result-label">{st().card.sayNowLabel}</div>
                       <button
                         class="copy-section-btn"
                         type="button"
-                        title={ui.card.copyToClipboardTitle}
+                        title={st().card.copyToClipboardTitle}
                         onClick={() => void controller().copySection("sayNow")}
                       >
                         ⎘
@@ -109,11 +128,11 @@ export function MainSurface(props: { controller: ReplylineController }) {
 
                   <section class="result-section">
                     <div class="result-label-row">
-                      <div class="result-label">{ui.card.nextMoveLabel}</div>
+                      <div class="result-label">{st().card.nextMoveLabel}</div>
                       <button
                         class="copy-section-btn"
                         type="button"
-                        title={ui.card.copyToClipboardTitle}
+                        title={st().card.copyToClipboardTitle}
                         onClick={() => void controller().copySection("nextMove")}
                       >
                         ⎘
@@ -127,28 +146,28 @@ export function MainSurface(props: { controller: ReplylineController }) {
                       class="btn-primary"
                       type="button"
                       disabled={controller().pipelineActive()}
-                      title={ui.card.copyToClipboardTitle}
+                      title={st().card.copyToClipboardTitle}
                       onClick={() => void controller().copyAnswer()}
                     >
-                      {ui.card.copySayNow}
+                      {st().card.copySayNow}
                     </button>
                     <button
                       class="btn-secondary"
                       type="button"
                       disabled={controller().pipelineActive()}
-                      title={ui.card.retryCardTitle}
+                      title={st().card.retryCardTitle}
                       onClick={() => void controller().retryAnalysis()}
                     >
-                      {ui.card.retryCard}
+                      {st().card.retryCard}
                     </button>
                     <button
                       class="btn-ghost"
                       type="button"
                       disabled={controller().pipelineActive()}
-                      title={ui.card.clearContextTitle}
+                      title={st().card.clearContextTitle}
                       onClick={() => void controller().clearContext()}
                     >
-                      {ui.card.clearContext}
+                      {st().card.clearContext}
                     </button>
                     <Show when={controller().memorySpaces().length > 0}>
                       <button
@@ -157,7 +176,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                         disabled={controller().pipelineActive() || !controller().activeSpaceId()}
                         onClick={() => void controller().saveCardToMemory()}
                       >
-                        {ui.memory.saveToMemory}
+                        {st().memory.saveToMemory}
                       </button>
                     </Show>
                     <Show when={controller().settings.notebookLmEnabled}>
@@ -167,14 +186,14 @@ export function MainSurface(props: { controller: ReplylineController }) {
                         disabled={controller().pipelineActive()}
                         onClick={() => void controller().openNotebookLm()}
                       >
-                        {ui.card.openNotebookLm}
+                        {st().card.openNotebookLm}
                       </button>
                     </Show>
                   </div>
                   <Show when={controller().contextTranscriptPreview()}>
                     <details class="last-transcript-block">
-                      <summary>{ui.card.lastTranscriptLabel}</summary>
-                      <p class="last-transcript-hint">{ui.card.lastTranscriptHint}</p>
+                      <summary>{st().card.lastTranscriptLabel}</summary>
+                      <p class="last-transcript-hint">{st().card.lastTranscriptHint}</p>
                       <p class="last-transcript-text">{controller().contextTranscriptPreview()}</p>
                     </details>
                   </Show>
@@ -185,27 +204,36 @@ export function MainSurface(props: { controller: ReplylineController }) {
             <Show when={!controller().card() && !controller().pipelineActive()}>
               <div class="empty-card">
                 <h2 class="section-title">
-                  {ui.idle.title}
+                  {st().idle.title}
                   <Show when={controller().contextActive()}>
                     <span class="context-badge">{controller().contextBadge()}</span>
                   </Show>
                 </h2>
                 <p class="section-copy">
-                  <strong>Удержите</strong> <strong>{controller().settings.hotkey}</strong> на нужной реплике,
-                  <strong> отпустите</strong> — звук → текст → одна карточка (суть, сейчас,
-                  дальше). Максимум <strong>{controller().settings.captureMaxSeconds} с</strong> за раз.
+                  <strong>{st().idle.captureHold}</strong>{" "}
+                  <strong>{controller().settings.hotkey}</strong> {st().idle.captureMid}{" "}
+                  <strong>{st().idle.captureRelease}</strong> {st().idle.capturePipeline}{" "}
+                  {st().idle.captureMaxPrefix}{" "}
+                  <strong>
+                    {controller().settings.captureMaxSeconds} {st().copyFmt.secondUnit}
+                  </strong>{" "}
+                  {st().idle.captureMaxSuffix}
                 </p>
                 <Show when={controller().settings.notebookLmEnabled}>
                   <div class="result-actions">
-                    <button class="btn-ghost" type="button" onClick={() => void controller().openNotebookLm()}>
-                      {ui.card.openNotebookLm}
+                    <button
+                      class="btn-ghost"
+                      type="button"
+                      onClick={() => void controller().openNotebookLm()}
+                    >
+                      {st().card.openNotebookLm}
                     </button>
                   </div>
                 </Show>
                 <Show when={controller().contextTranscriptPreview()}>
                   <details class="last-transcript-block last-transcript-block--idle">
-                    <summary>{ui.card.lastTranscriptLabel}</summary>
-                    <p class="last-transcript-hint">{ui.card.lastTranscriptHint}</p>
+                    <summary>{st().card.lastTranscriptLabel}</summary>
+                    <p class="last-transcript-hint">{st().card.lastTranscriptHint}</p>
                     <p class="last-transcript-text">{controller().contextTranscriptPreview()}</p>
                   </details>
                 </Show>

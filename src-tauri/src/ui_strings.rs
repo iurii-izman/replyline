@@ -1,8 +1,18 @@
-/// Centralized user-facing strings (`en` / `ru`).
-///
-/// All user-visible text from the Rust backend lives here so a future
-/// i18n pass only needs to swap this module for a locale-aware loader.
-#[allow(dead_code)]
+//! Centralized user-facing strings (`en` / `ru`).
+//!
+//! All user-visible text from the Rust backend lives here so a future
+//! i18n pass only needs to swap this module for a locale-aware loader.
+
+/// Pick `en` vs `ru` copy from settings `primary_language` (aligned with TS `getUi`).
+pub fn pick_lang<'a>(primary_language: &str, en_s: &'a str, ru_s: &'a str) -> &'a str {
+    let t = primary_language.trim();
+    if t.eq_ignore_ascii_case("en") || t.to_lowercase().starts_with("en") {
+        en_s
+    } else {
+        ru_s
+    }
+}
+
 pub mod en {
     // -- Tray tooltip --
     pub const TRAY_BOOTING: &str = "Replyline · Loading…";

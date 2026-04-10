@@ -25,12 +25,12 @@ Replyline не является полностью on-device системой п
 
 ## Provider Data Retention (Known Policies)
 
-| Provider | Data Sent | Retention Policy (as of 2026) |
-|----------|-----------|-------------------------------|
-| Deepgram | Audio snippet (WAV or PCM stream) | Not used for training by default. API data retained for 30 days for debugging, then deleted. See [Deepgram Privacy](https://deepgram.com/privacy). |
-| OpenAI (via OpenRouter or direct) | Transcript text + context | API data not used for training when accessed via API. 30-day retention for abuse monitoring. See [OpenAI API Data Usage](https://platform.openai.com/docs/models). |
-| Other OpenAI-compatible providers | Transcript text + context | Varies by provider. Check your provider's data handling policy. |
-| NotebookLM (Google) | No data from Replyline | Replyline only opens a URL in the system browser. All interaction happens within Google's ecosystem. |
+| Provider                          | Data Sent                         | Retention Policy (as of 2026)                                                                                                                                      |
+| --------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Deepgram                          | Audio snippet (WAV or PCM stream) | Not used for training by default. API data retained for 30 days for debugging, then deleted. See [Deepgram Privacy](https://deepgram.com/privacy).                 |
+| OpenAI (via OpenRouter or direct) | Transcript text + context         | API data not used for training when accessed via API. 30-day retention for abuse monitoring. See [OpenAI API Data Usage](https://platform.openai.com/docs/models). |
+| Other OpenAI-compatible providers | Transcript text + context         | Varies by provider. Check your provider's data handling policy.                                                                                                    |
+| NotebookLM (Google)               | No data from Replyline            | Replyline only opens a URL in the system browser. All interaction happens within Google's ecosystem.                                                               |
 
 **Important:** These policies may change. Always verify current terms before production use.
 

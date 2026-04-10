@@ -61,13 +61,15 @@ function makeBootstrap(overrides: Partial<BootstrapDto> = {}): BootstrapDto {
 
 type CommandHandler = (args?: Record<string, unknown>) => unknown | Promise<unknown>;
 
-function createMockPlatform(options: {
-  bootstrap?: BootstrapDto;
-  commandHandlers?: Record<string, CommandHandler>;
-  registerError?: Error;
-  alreadyRegistered?: boolean;
-  bundleResult?: DiagnosticBundleDto;
-} = {}) {
+function createMockPlatform(
+  options: {
+    bootstrap?: BootstrapDto;
+    commandHandlers?: Record<string, CommandHandler>;
+    registerError?: Error;
+    alreadyRegistered?: boolean;
+    bundleResult?: DiagnosticBundleDto;
+  } = {},
+) {
   const listeners = new Map<string, Set<(event: ListenerPayload<unknown>) => void>>();
   let shortcutHandler: ((event: ShortcutEvent) => void | Promise<void>) | null = null;
   let closeHandler: ((event: CloseRequestEvent) => void | Promise<void>) | null = null;
@@ -80,11 +82,10 @@ function createMockPlatform(options: {
   let currentLogStatus = options.bootstrap?.logStatus ?? DEFAULT_LOG_STATUS;
 
   const bootstrap = options.bootstrap ?? makeBootstrap();
-  const bundleResult =
-    options.bundleResult ?? {
-      bundlePath: "C:\\Support\\runtime-evidence-20260407-130000",
-      manifestPath: "C:\\Support\\runtime-evidence-20260407-130000\\manifest.json",
-    };
+  const bundleResult = options.bundleResult ?? {
+    bundlePath: "C:\\Support\\runtime-evidence-20260407-130000",
+    manifestPath: "C:\\Support\\runtime-evidence-20260407-130000\\manifest.json",
+  };
 
   const defaultHandlers: Record<string, CommandHandler> = {
     load_bootstrap: async () => bootstrap,
@@ -115,6 +116,7 @@ function createMockPlatform(options: {
         currentContext.lastTranscriptPreview != null
           ? currentContext.lastTranscriptPreview.length
           : null,
+      promptContractVersion: "v2",
     }),
     retry_last_analysis: async () => DEFAULT_CARD,
     clear_context: async () => {
@@ -132,7 +134,13 @@ function createMockPlatform(options: {
     collect_diagnostic_bundle: async () => bundleResult,
     open_notebooklm: async () => null,
     dev_analyze_fixture_snippet: async () => DEFAULT_CARD,
+    refresh_tray_menu: async () => null,
     quit_app: async () => null,
+    memory_list_spaces: async () => [],
+    memory_get_space_record: async () => {
+      throw new Error("Memory space not found");
+    },
+    memory_save_space_record: async () => null,
   };
 
   const invokeMock = vi.fn(async (command: string, args?: Record<string, unknown>) => {
@@ -147,12 +155,14 @@ function createMockPlatform(options: {
     return result;
   });
 
-  const registerMock = vi.fn(async (_hotkey: string, handler: (event: ShortcutEvent) => void | Promise<void>) => {
-    if (options.registerError) {
-      throw options.registerError;
-    }
-    shortcutHandler = handler;
-  });
+  const registerMock = vi.fn(
+    async (_hotkey: string, handler: (event: ShortcutEvent) => void | Promise<void>) => {
+      if (options.registerError) {
+        throw options.registerError;
+      }
+      shortcutHandler = handler;
+    },
+  );
 
   const platform: AppPlatform = {
     invoke: invokeMock,
@@ -429,7 +439,9 @@ describe("Replyline UI lane", () => {
     await user.type(urlInput, "notebooklm");
     await user.click(screen.getByRole("button", { name: "Сохранить на этой машине" }));
 
-    expect(await screen.findByText("Адрес NotebookLM: укажите полный http:// или https:// URL.")).toBeTruthy();
+    expect(
+      await screen.findByText("Адрес NotebookLM: укажите полный http:// или https:// URL."),
+    ).toBeTruthy();
   });
 
   it("hides to tray instead of closing the window directly", async () => {
@@ -449,7 +461,8 @@ describe("Replyline UI lane", () => {
   it("runs full capture-stop-analyze pipeline and shows all three card sections", async () => {
     const customCard: AnalysisCard = {
       gist: "Клиент просит перенести срок на неделю.",
-      sayNow: "Давайте зафиксируем: перенос на 14 апреля, я пришлю обновлённый план сегодня до 18:00.",
+      sayNow:
+        "Давайте зафиксируем: перенос на 14 апреля, я пришлю обновлённый план сегодня до 18:00.",
       nextMove: "Отправить письмо с новым сроком и чекпоинтом на среду.",
     };
     const mock = createMockPlatform({

@@ -12,7 +12,7 @@ const RULES = {
     const text = `${sayNow} ${nextMove}`.toLowerCase();
     if (
       /\d|сегодня|завтра|до\s|к\s|вариант|статус|владел|письм|чат|тикет|staging|qa|срок|план|список|встреч|созвон|чекпоинт|директор|клиент|команд/i.test(
-        text
+        text,
       )
     ) {
       return null;
@@ -24,7 +24,7 @@ const RULES = {
     const t = sayNow.toLowerCase();
     if (
       /\d|пятниц|сред|понедельник|четверг|вторник|суббот|воскрес|сегодня|завтра|до\s|срок|час|дн|недел|18:00|17:00|12:00/i.test(
-        t
+        t,
       )
     ) {
       return null;
@@ -36,7 +36,7 @@ const RULES = {
     const t = nextMove.toLowerCase();
     if (
       /уточн|зафиксир|согласу|напиш|пришл|разошл|владел|контроль|срок|завтра|письм|чат|встреч|чекпоинт|черновик|документ/i.test(
-        t
+        t,
       )
     ) {
       return null;
@@ -52,10 +52,7 @@ const RULES = {
 
   not_defensive_only(sayNow) {
     const t = sayNow.trim().toLowerCase();
-    if (
-      /^(простите|извините|я не уверен|сложно сказать)([\s,.;:!?]|$)/u.test(t) &&
-      t.length < 70
-    ) {
+    if (/^(простите|извините|я не уверен|сложно сказать)([\s,.;:!?]|$)/u.test(t) && t.length < 70) {
       return "say_now: слишком оборонительно, без движения к решению";
     }
     return null;
@@ -64,11 +61,8 @@ const RULES = {
   decision_not_generic_overview(sayNow) {
     const t = sayNow.toLowerCase();
     const generic =
-      /(^|[\s,.;:])(в целом|в общем|на высоком уровне|много факторов)([\s,.;:!?]|$)/u.test(
-        t
-      );
-    const hasAnchor =
-      /сделаю|закрою|фиксиру|отправлю|даю|беру|сегодня|завтра|\d/u.test(t);
+      /(^|[\s,.;:])(в целом|в общем|на высоком уровне|много факторов)([\s,.;:!?]|$)/u.test(t);
+    const hasAnchor = /сделаю|закрою|фиксиру|отправлю|даю|беру|сегодня|завтра|\d/u.test(t);
     if (generic && !hasAnchor) {
       return "say_now: слишком общо, нет конкретного обязательства или якоря";
     }
@@ -101,7 +95,10 @@ const RULES = {
 
   question_or_clarify(sayNow) {
     const t = sayNow.toLowerCase();
-    if (sayNow.includes("?") || /уточн|правильно ли|что из|какой из|подтвердите|верно ли/i.test(t)) {
+    if (
+      sayNow.includes("?") ||
+      /уточн|правильно ли|что из|какой из|подтвердите|верно ли/i.test(t)
+    ) {
       return null;
     }
     return "say_now: нет безопасной уточняющей формулировки";
@@ -117,7 +114,10 @@ const RULES = {
 
   not_apology_only(sayNow) {
     const t = sayNow.toLowerCase();
-    if (/^(простите|извините|сожалею)/i.test(t) && !/сделаю|пришлю|даю|сегодня|завтра|до\s/i.test(t)) {
+    if (
+      /^(простите|извините|сожалею)/i.test(t) &&
+      !/сделаю|пришлю|даю|сегодня|завтра|до\s/i.test(t)
+    ) {
       return "say_now: извинение без плана";
     }
     return null;
@@ -178,9 +178,7 @@ for (const scenario of data.scenarios) {
       const rules = Array.isArray(c.rules) ? c.rules : [];
       const issues = collectIssues(c.card, scenario.snippet, rules);
       if (issues.length > 0) {
-        fail(
-          `[${scenario.id} / ${c.name}] expected accept, got: ${issues.join(" | ")}`
-        );
+        fail(`[${scenario.id} / ${c.name}] expected accept, got: ${issues.join(" | ")}`);
       }
     } else if (c.expect === "reject") {
       rejectCount += 1;
@@ -198,7 +196,7 @@ for (const scenario of data.scenarios) {
       const fullScan = collectIssues(c.card, scenario.snippet, rules);
       if (fullScan.length === 0) {
         fail(
-          `[${scenario.id} / ${c.name}] expected reject, but card passed contract + quality scan`
+          `[${scenario.id} / ${c.name}] expected reject, but card passed contract + quality scan`,
         );
       }
     } else {
@@ -212,5 +210,5 @@ if (data.scenarios.length < 15 || acceptCount < 15 || rejectCount < 15) {
 }
 
 console.log(
-  `Say-now scenarios OK: ${data.scenarios.length} scenarios, ${acceptCount} accept, ${rejectCount} reject.`
+  `Say-now scenarios OK: ${data.scenarios.length} scenarios, ${acceptCount} accept, ${rejectCount} reject.`,
 );

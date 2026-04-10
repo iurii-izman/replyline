@@ -1,9 +1,6 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 
-async function invokeWithDevTiming<T>(
-  command: string,
-  args?: Record<string, unknown>,
-): Promise<T> {
+async function invokeWithDevTiming<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   const hasPerf = typeof performance !== "undefined" && typeof performance.now === "function";
   const t0 = hasPerf ? performance.now() : 0;
   try {
@@ -14,7 +11,10 @@ async function invokeWithDevTiming<T>(
     return result;
   } catch (err) {
     if (import.meta.env.DEV && hasPerf) {
-      console.debug(`[replyline:invoke] ${command} err ${(performance.now() - t0).toFixed(1)}ms`, err);
+      console.debug(
+        `[replyline:invoke] ${command} err ${(performance.now() - t0).toFixed(1)}ms`,
+        err,
+      );
     }
     throw err;
   }
@@ -62,7 +62,9 @@ export type AppPlatform = {
     setFocus(): Promise<void>;
     hide(): Promise<void>;
     startDragging(): Promise<void>;
-    onCloseRequested(handler: (event: CloseRequestEvent) => void | Promise<void>): Promise<Unlisten>;
+    onCloseRequested(
+      handler: (event: CloseRequestEvent) => void | Promise<void>,
+    ): Promise<Unlisten>;
   };
 };
 

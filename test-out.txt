@@ -1,0 +1,278 @@
+﻿
+ RUN  v4.1.3 C:/Dev/replyline
+
+ тЭп src/app/App.ui.test.tsx (15 tests | 1 failed | 14 skipped) 4140ms
+     ├Ч routes into settings when setup is required 4137ms
+node.exe : 
+C:\Users\iurii\AppData\Roaming\npm\pnpm.ps1:24 знак:5
++     & "node$exe"  "$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+тОптОптОптОптОптОптОп Failed Tests 1 тОптОптОптОптОптОптОп
+
+ FAIL  src/app/App.ui.test.tsx > Replyline UI lane > routes into settings when setup is required
+TestingLibraryElementError: Unable to find an element with the text: ╨Я╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨░ ╨║ ╤А╨░╨▒╨╛╤В╨╡. This could b
+e because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to
+ make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"shell"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"shell-chrome"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"shell-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"shell-header-drag"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"app-name"[39m
+            [36m>[39m
+              [0mReplyline[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"app-subtitle"[39m
+            [36m>[39m
+              [0m╨╕╨╜╤Б╤В╤А╤Г╨╝╨╡╨╜╤В ╨┤╨╗╤П ╤Б╨╗╨╛╨╢╨╜╤Л╤Е ╤А╨░╨▒╨╛╤З╨╕╤Е ╤А╨░╨╖╨│╨╛╨▓╨╛╤А╨╛╨▓[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"header-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"icon-btn"[39m
+              [33mtitle[39m=[32m"╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mтЪЩ[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"icon-btn"[39m
+              [33mtitle[39m=[32m"╨б╨║╤А╤Л╤В╤М ╨▓ ╤В╤А╨╡╨╣"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mтдУ[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"icon-btn"[39m
+              [33mtitle[39m=[32m"╨Ч╨░╨║╤А╤Л╤В╤М ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╤Г"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m├Ч[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"status-strip"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"status-pill is-booting"[39m
+          [36m>[39m
+            [0m╨Ч╨░╨│╤А╤Г╨╖╨║╨░тАж[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"hotkey-pill"[39m
+          [36m>[39m
+            [0mCtrl+Alt+Space[0m
+            [0m ┬╖ тЙд [0m
+            [0m30 ╤Б[0m
+          [36m</div>[39m
+        [36m</section>[39m
+        [0m[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"shell-body"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"main-card boot-card"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"section-copy boot-copy"[39m
+          [36m>[39m
+            [0m╨з╨╕╤В╨░╨╡╨╝ ╨╜╨░╤Б╤В╤А╨╛╨╣╨║╨╕ ╨╕ ╤А╨╡╨│╨╕╤Б╤В╤А╨╕╤А╤Г╨╡╨╝ ╨║╨╗╨░╨▓╨╕╤И╤Г. ╨Я╤А╨╕ ╤Б╨▒╨╛╨╡ тАФ ╤Б╨╛╨╛╨
+▒╤Й╨╡╨╜╨╕╨╡ ╨╕ ┬л╨Я╨╛╨▓╤В╨╛╤А╨╕╤В╤М┬╗.[0m
+          [36m</p>[39m
+        [36m</section>[39m
+        [0m[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"shell-messages"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"error-bar"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"error-bar-text"[39m
+          [36m>[39m
+            [0m╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╖╨░╨│╤А╤Г╨╖╨╕╤В╤М ╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╨╡. ╨Э╨░╨╢╨╝╨╕╤В╨╡ ┬л╨Я╨╛╨▓╤В╨╛╤А╨╕╤В╤М┬╗ ╨╕╨╗
+╨╕ ╨╛╤В╨║╤А╨╛╨╣╤В╨╡ ╨╜╨░╤Б╤В╤А╨╛╨╣╨║╨╕.[0m
+          [36m</span>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"error-bar-actions"[39m
+          [36m>[39m
+            [0m[0m
+            [0m[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [0m[0m
+      [36m</div>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"footer-strip"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"footer-copy"[39m
+        [36m>[39m
+          [0m╨Ч╨░╨│╤А╤Г╨╖╨║╨░тАж[0m
+        [36m</div>[39m
+      [36m</footer>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"shell"[39m
+    [36m>[39m
+
+ Test Files  1 failed (1)
+      [36m<div[39m
+        [33mclass[39m=[32m"shell-chrome"[39m
+      Tests  1 failed | 14 skipped (15)
+   Start at  01:59:36
+   Duration  39.52s (transform 21.45s, setup 0ms, import 25.76s, tests 4.14s, environment 9.17s)
+
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"shell-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"shell-header-drag"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"app-name"[39m
+            [36m>[39m
+              [0mReplyline[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"app-subtitle"[39m
+            [36m>[39m
+              [0m╨╕╨╜╤Б╤В╤А╤Г╨╝╨╡╨╜╤В ╨┤╨╗╤П ╤Б╨╗╨╛╨╢╨╜╤Л╤Е ╤А╨░╨▒╨╛╤З╨╕╤Е ╤А╨░╨╖╨│╨╛╨▓╨╛╤А╨╛╨▓[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"header-actions"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"icon-btn"[39m
+              [33mtitle[39m=[32m"╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mтЪЩ[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"icon-btn"[39m
+              [33mtitle[39m=[32m"╨б╨║╤А╤Л╤В╤М ╨▓ ╤В╤А╨╡╨╣"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mтдУ[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"icon-btn"[39m
+              [33mtitle[39m=[32m"╨Ч╨░╨║╤А╤Л╤В╤М ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╤Г"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m├Ч[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"status-strip"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"status-pill is-booting"[39m
+          [36m>[39m
+            [0m╨Ч╨░╨│╤А╤Г╨╖╨║╨░тАж[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"hotkey-pill"[39m
+          [36m>[39m
+            [0mCtrl+Alt+Space[0m
+            [0m ┬╖ тЙд [0m
+            [0m30 ╤Б[0m
+          [36m</div>[39m
+        [36m</section>[39m
+        [0m[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"shell-body"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"main-card boot-card"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"section-copy boot-copy"[39m
+          [36m>[39m
+            [0m╨з╨╕╤В╨░╨╡╨╝ ╨╜╨░╤Б╤В╤А╨╛╨╣╨║╨╕ ╨╕ ╤А╨╡╨│╨╕╤Б╤В╤А╨╕╤А╤Г╨╡╨╝ ╨║╨╗╨░╨▓╨╕╤И╤Г. ╨Я╤А╨╕ ╤Б╨▒╨╛╨╡ тАФ ╤Б╨╛╨╛╨
+▒╤Й╨╡╨╜╨╕╨╡ ╨╕ ┬л╨Я╨╛╨▓╤В╨╛╤А╨╕╤В╤М┬╗.[0m
+          [36m</p>[39m
+        [36m</section>[39m
+        [0m[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"shell-messages"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"error-bar"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"error-bar-text"[39m
+          [36m>[39m
+            [0m╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╖╨░╨│╤А╤Г╨╖╨╕╤В╤М ╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╨╡. ╨Э╨░╨╢╨╝╨╕╤В╨╡ ┬л╨Я╨╛╨▓╤В╨╛╤А╨╕╤В╤М┬╗ ╨╕╨╗
+╨╕ ╨╛╤В╨║╤А╨╛╨╣╤В╨╡ ╨╜╨░╤Б╤В╤А╨╛╨╣╨║╨╕.[0m
+          [36m</span>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"error-bar-actions"[39m
+          [36m>[39m
+            [0m[0m
+            [0m[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [0m[0m
+      [36m</div>[39m
+      [36m<footer[39m
+        [33mclass[39m=[32m"footer-strip"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"footer-copy"[39m
+        [36m>[39m
+          [0m╨Ч╨░╨│╤А╤Г╨╖╨║╨░тАж[0m
+        [36m</div>[39m
+      [36m</footer>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ тЭп waitForWrapper node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:1
+63:27
+ тЭп findByText node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:
+86:33
+ тЭп src/app/App.ui.test.tsx:263:25
+    261|     render(() => <App platform={mock.platform} />);
+    262|
+    263|     expect(await screen.findByText("╨Я╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨░ ╨║ ╤А╨░╨▒╨╛╤В╨╡")).toBeTruthy(тАж
+       |                         ^
+    264|     expect(screen.getByText("╨з╨╡╨║╨╗╨╕╤Б╤В ╨│╨╛╤В╨╛╨▓╨╜╨╛╤Б╤В╨╕")).toBeTruthy();
+    265|   });
+
+тОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОптОп[1/1]тОп
+

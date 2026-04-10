@@ -22,13 +22,13 @@ No step in this pipeline writes audio or transcripts to disk by default.
 
 ## What is stored locally
 
-| Data | Location | Format | Retention |
-|------|----------|--------|-----------|
-| Settings (hotkey, provider URLs, model, language) | `%APPDATA%\com.replyline.app\settings.json` | Plaintext JSON | Until user changes or deletes |
-| API keys (Deepgram, LLM) | Windows Credential Manager | OS-managed encrypted store | Until user revokes |
-| App event log | `%LOCALAPPDATA%\com.replyline.app\app.log` | Line-delimited text | 5 MB rotation (oldest lines dropped) |
-| Debug WAV files | `%LOCALAPPDATA%\com.replyline.app\debug\` | WAV | Written only on STT failure; user manages |
-| Memory store (spaces, facts, commitments, terms) | `%APPDATA%\com.replyline.app\memory\` | JSON | User manages |
+| Data                                              | Location                                    | Format                     | Retention                                 |
+| ------------------------------------------------- | ------------------------------------------- | -------------------------- | ----------------------------------------- |
+| Settings (hotkey, provider URLs, model, language) | `%APPDATA%\com.replyline.app\settings.json` | Plaintext JSON             | Until user changes or deletes             |
+| API keys (Deepgram, LLM)                          | Windows Credential Manager                  | OS-managed encrypted store | Until user revokes                        |
+| App event log                                     | `%LOCALAPPDATA%\com.replyline.app\app.log`  | Line-delimited text        | 5 MB rotation (oldest lines dropped)      |
+| Debug WAV files                                   | `%LOCALAPPDATA%\com.replyline.app\debug\`   | WAV                        | Written only on STT failure; user manages |
+| Memory store (spaces, facts, commitments, terms)  | `%APPDATA%\com.replyline.app\memory\`       | JSON                       | User manages                              |
 
 ## What is NOT stored
 
@@ -59,14 +59,14 @@ Users can:
 
 ## Data retention
 
-| Data type | Retention policy |
-|-----------|-----------------|
-| Conversation context (RAM) | 20-minute TTL from last use, max 3 entries. Cleared on app restart. |
-| App event log | 5 MB rotation. Oldest entries are dropped when the log exceeds the size limit. |
-| Settings | Persisted until user changes or deletes the file. |
-| API keys | Persisted in Credential Manager until user revokes them. |
-| Memory store | Persisted until user deletes space files. |
-| Debug WAVs | Written only on STT failure. User responsible for cleanup. |
+| Data type                  | Retention policy                                                               |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| Conversation context (RAM) | 20-minute TTL from last use, max 3 entries. Cleared on app restart.            |
+| App event log              | 5 MB rotation. Oldest entries are dropped when the log exceeds the size limit. |
+| Settings                   | Persisted until user changes or deletes the file.                              |
+| API keys                   | Persisted in Credential Manager until user revokes them.                       |
+| Memory store               | Persisted until user deletes space files.                                      |
+| Debug WAVs                 | Written only on STT failure. User responsible for cleanup.                     |
 
 ## Legal responsibility
 

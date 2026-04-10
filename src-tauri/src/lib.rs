@@ -18,13 +18,60 @@ mod types;
 mod ui_strings;
 
 use tauri::{
-    menu::{MenuBuilder, MenuItemBuilder},
+    menu::{Menu, MenuBuilder, MenuItemBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Emitter, Manager,
+    AppHandle, Emitter, Manager, Runtime,
 };
 
 use crate::state::ReplylineState;
 use crate::types::SecretSlot;
+
+/// Rebuilt when UI language changes (`refresh_tray_menu`) and on startup.
+pub(crate) fn build_main_tray_menu<R: Runtime>(
+    app: &AppHandle<R>,
+    lang: &str,
+) -> tauri::Result<Menu<R>> {
+    use crate::ui_strings::{en, pick_lang, ru};
+    let open_item = MenuItemBuilder::with_id("open", pick_lang(lang, en::MENU_OPEN, ru::MENU_OPEN))
+        .build(app)?;
+    let settings_item = MenuItemBuilder::with_id(
+        "settings",
+        pick_lang(lang, en::MENU_SETTINGS, ru::MENU_SETTINGS),
+    )
+    .build(app)?;
+    let clear_item = MenuItemBuilder::with_id(
+        "clear-context",
+        pick_lang(lang, en::MENU_CLEAR_CONTEXT, ru::MENU_CLEAR_CONTEXT),
+    )
+    .build(app)?;
+    let bundle_item = MenuItemBuilder::with_id(
+        "collect-diagnostic",
+        pick_lang(
+            lang,
+            en::MENU_COLLECT_DIAGNOSTIC,
+            ru::MENU_COLLECT_DIAGNOSTIC,
+        ),
+    )
+    .build(app)?;
+    let readiness_item = MenuItemBuilder::with_id(
+        "copy-runtime-readiness",
+        pick_lang(lang, en::MENU_COPY_READINESS, ru::MENU_COPY_READINESS),
+    )
+    .build(app)?;
+    let quit_item = MenuItemBuilder::with_id("quit", pick_lang(lang, en::MENU_QUIT, ru::MENU_QUIT))
+        .build(app)?;
+
+    MenuBuilder::new(app)
+        .items(&[
+            &open_item,
+            &settings_item,
+            &clear_item,
+            &bundle_item,
+            &readiness_item,
+            &quit_item,
+        ])
+        .build()
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -35,39 +82,18 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
             let _ = app_log::append_event("app_boot_start", "setup");
-            use crate::ui_strings::ru;
-            let open_item = MenuItemBuilder::with_id("open", ru::MENU_OPEN).build(app)?;
-            let settings_item =
-                MenuItemBuilder::with_id("settings", ru::MENU_SETTINGS).build(app)?;
-            let clear_item =
-                MenuItemBuilder::with_id("clear-context", ru::MENU_CLEAR_CONTEXT).build(app)?;
-            let bundle_item =
-                MenuItemBuilder::with_id("collect-diagnostic", ru::MENU_COLLECT_DIAGNOSTIC)
-                    .build(app)?;
-            let readiness_item =
-                MenuItemBuilder::with_id("copy-runtime-readiness", ru::MENU_COPY_READINESS)
-                    .build(app)?;
-            let quit_item = MenuItemBuilder::with_id("quit", ru::MENU_QUIT).build(app)?;
-
-            let menu = MenuBuilder::new(app)
-                .items(&[
-                    &open_item,
-                    &settings_item,
-                    &clear_item,
-                    &bundle_item,
-                    &readiness_item,
-                    &quit_item,
-                ])
-                .build()?;
-
             let settings = settings::load().unwrap_or_default();
+            let lang = settings.primary_language.as_str();
+            let handle = app.handle().clone();
+            let menu = build_main_tray_menu(&handle, lang)?;
+
             let deepgram_ok = credentials::present(SecretSlot::DeepgramApiKey).unwrap_or(false);
             let needs_setup = !settings.runtime_path_configured(deepgram_ok);
 
             let initial_tooltip = if needs_setup {
-                tray_status::tooltip_for_phase("setup_needed", None)
+                tray_status::tooltip_for_phase(lang, "setup_needed", None)
             } else {
-                tray_status::tooltip_for_phase("booting", None)
+                tray_status::tooltip_for_phase(lang, "booting", None)
             };
 
             TrayIconBuilder::with_id("main-tray")
@@ -142,6 +168,7 @@ pub fn run() {
             commands::capture_stop_and_analyze,
             commands::retry_last_analysis,
             commands::sync_tray_ui_phase,
+            commands::refresh_tray_menu,
             commands::tray_open_main,
             commands::memory_list_spaces,
             commands::memory_get_space_record,

@@ -1,11 +1,12 @@
 import { Show } from "solid-js";
 
 import type { ReplylineController } from "./controller";
-import { ui } from "./locale";
+import { fmtSecondsSuffix } from "./locale";
 import { settingsAnchorForCommandErrorKind, type CommandErrorKind } from "./model";
 
 export function ShellChrome(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
+  const st = () => controller().strings();
 
   return (
     <div class="shell-chrome">
@@ -16,14 +17,14 @@ export function ShellChrome(props: { controller: ReplylineController }) {
             void controller().startDragging();
           }}
         >
-          <div class="app-name">{ui.appName}</div>
-          <div class="app-subtitle">{ui.appSubtitle}</div>
+          <div class="app-name">{st().appName}</div>
+          <div class="app-subtitle">{st().appSubtitle}</div>
         </div>
         <div class="header-actions">
           <button
             class="icon-btn"
             type="button"
-            title={ui.tray.settings}
+            title={st().tray.settings}
             onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
@@ -35,7 +36,7 @@ export function ShellChrome(props: { controller: ReplylineController }) {
           <button
             class="icon-btn"
             type="button"
-            title={ui.chrome.hideToTray}
+            title={st().chrome.hideToTray}
             onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
@@ -47,7 +48,7 @@ export function ShellChrome(props: { controller: ReplylineController }) {
           <button
             class="icon-btn"
             type="button"
-            title={ui.chrome.closeApp}
+            title={st().chrome.closeApp}
             onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
@@ -60,9 +61,12 @@ export function ShellChrome(props: { controller: ReplylineController }) {
       </header>
 
       <section class="status-strip">
-        <div class={`status-pill ${controller().statusPillClass()}`}>{controller().phaseLabel()}</div>
+        <div class={`status-pill ${controller().statusPillClass()}`}>
+          {controller().phaseLabel()}
+        </div>
         <div class="hotkey-pill">
-          {controller().settings.hotkey} · ≤ {controller().settings.captureMaxSeconds}с
+          {controller().settings.hotkey} · ≤{" "}
+          {fmtSecondsSuffix(controller().settings.captureMaxSeconds, controller().strings())}
         </div>
       </section>
 
@@ -74,14 +78,14 @@ export function ShellChrome(props: { controller: ReplylineController }) {
         }
       >
         <div class="intro-banner" role="status">
-          <p class="intro-banner-copy">{ui.chrome.trayIntroCopy}</p>
+          <p class="intro-banner-copy">{st().chrome.trayIntroCopy}</p>
           <button
             class="btn-secondary intro-banner-btn"
             type="button"
             disabled={controller().saving()}
             onClick={() => void controller().acknowledgeTrayIntro()}
           >
-            {ui.chrome.trayIntroHide}
+            {st().chrome.trayIntroHide}
           </button>
         </div>
       </Show>
@@ -91,6 +95,7 @@ export function ShellChrome(props: { controller: ReplylineController }) {
 
 export function MessagesAndFooter(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
+  const st = () => controller().strings();
 
   return (
     <>
@@ -105,7 +110,7 @@ export function MessagesAndFooter(props: { controller: ReplylineController }) {
                   class="error-bar-action"
                   onClick={() => controller().openSettingsPanel()}
                 >
-                  {ui.startError.toSetup}
+                  {st().startError.toSetup}
                 </button>
               </Show>
               <Show when={controller().lastCommandErrorKind()}>
@@ -113,12 +118,12 @@ export function MessagesAndFooter(props: { controller: ReplylineController }) {
                   const anchor = settingsAnchorForCommandErrorKind(kind as CommandErrorKind);
                   const label =
                     anchor === "stt"
-                      ? ui.errorRoute.toStt
+                      ? st().errorRoute.toStt
                       : anchor === "llm"
-                        ? ui.errorRoute.toLlm
+                        ? st().errorRoute.toLlm
                         : anchor === "memory"
-                          ? ui.errorRoute.toMemory
-                          : ui.errorRoute.toHotkey;
+                          ? st().errorRoute.toMemory
+                          : st().errorRoute.toHotkey;
                   return (
                     <button
                       type="button"
@@ -143,15 +148,15 @@ export function MessagesAndFooter(props: { controller: ReplylineController }) {
       <footer class="footer-strip">
         <div class="footer-copy">
           {controller().phase() === "booting"
-            ? ui.footer.loading
+            ? st().footer.loading
             : controller().phase() === "error"
-              ? ui.footer.errorHint
+              ? st().footer.errorHint
               : controller().pipelineActive()
                 ? (controller().statusDetail() ?? controller().livePhaseSub())
-                : controller().statusDetail() ??
+                : (controller().statusDetail() ??
                   (controller().contextActive()
-                    ? ui.footer.contextActive
-                    : ui.footer.contextEmpty)}
+                    ? st().footer.contextActive
+                    : st().footer.contextEmpty))}
         </div>
       </footer>
     </>

@@ -108,6 +108,7 @@ pub fn get_runtime_readiness(
         context_entry_count: status.entry_count,
         can_retry_last_transcript: status.can_retry_last_transcript,
         last_transcript_char_count: char_count,
+        prompt_contract_version: crate::llm::PROMPT_VERSION.to_string(),
     })
 }
 
@@ -151,8 +152,23 @@ pub fn sync_tray_ui_phase(
     phase: String,
     detail: Option<String>,
 ) -> Result<(), CommandError> {
-    let text = crate::tray_status::tooltip_for_phase(&phase, detail.as_deref());
+    let lang = settings::load().unwrap_or_default().primary_language;
+    let text = crate::tray_status::tooltip_for_phase(&lang, &phase, detail.as_deref());
     update_tray_title(&app, &text);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn refresh_tray_menu(app: AppHandle) -> Result<(), CommandError> {
+    let settings = settings::load()?;
+    let lang = settings.primary_language.as_str();
+    let menu = crate::build_main_tray_menu(&app, lang)
+        .map_err(|e| CommandError::Internal(format!("tray menu build failed: {e}")))?;
+    let tray = app
+        .tray_by_id("main-tray")
+        .ok_or_else(|| CommandError::Internal("main tray icon not found".to_string()))?;
+    tray.set_menu(Some(menu))
+        .map_err(|e| CommandError::Internal(format!("tray set_menu failed: {e}")))?;
     Ok(())
 }
 
@@ -243,7 +259,11 @@ pub fn capture_start(state: State<'_, ReplylineState>, app: AppHandle) -> Result
     emit_status(&app, "capturing", None);
     update_tray_title(
         &app,
-        &crate::tray_status::tooltip_for_phase("capturing", None),
+        &crate::tray_status::tooltip_for_phase(
+            settings.primary_language.as_str(),
+            "capturing",
+            None,
+        ),
     );
     let _ = app_log::append_event("capture_start_ok", "-");
     Ok(())

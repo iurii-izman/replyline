@@ -25,13 +25,19 @@ function keyEvent(key: string, options: Partial<KeyboardEventInit> = {}): Keyboa
 
 describe("model helpers", () => {
   it("detects placeholder route", () => {
-    expect(usesPlaceholderLlmRoute(DEFAULT_SETTINGS.llmBaseUrl, DEFAULT_SETTINGS.llmModel)).toBe(true);
-    expect(usesPlaceholderLlmRoute("https://openrouter.ai/api/v1", "openai/gpt-4o-mini")).toBe(false);
+    expect(usesPlaceholderLlmRoute(DEFAULT_SETTINGS.llmBaseUrl, DEFAULT_SETTINGS.llmModel)).toBe(
+      true,
+    );
+    expect(usesPlaceholderLlmRoute("https://openrouter.ai/api/v1", "openai/gpt-4o-mini")).toBe(
+      false,
+    );
   });
 
   it("detects configured llm route", () => {
     expect(isConfiguredLlmRoute("", "model")).toBe(false);
-    expect(isConfiguredLlmRoute(DEFAULT_SETTINGS.llmBaseUrl, DEFAULT_SETTINGS.llmModel)).toBe(false);
+    expect(isConfiguredLlmRoute(DEFAULT_SETTINGS.llmBaseUrl, DEFAULT_SETTINGS.llmModel)).toBe(
+      false,
+    );
     expect(isConfiguredLlmRoute("https://gateway.example/v1", "model-x")).toBe(true);
   });
 
@@ -42,8 +48,12 @@ describe("model helpers", () => {
   });
 
   it("formats hotkey from keyboard event", () => {
-    expect(formatHotkeyFromEvent(keyEvent("a", { ctrlKey: true, altKey: true }))).toBe("Ctrl+Alt+A");
-    expect(formatHotkeyFromEvent(keyEvent(" ", { ctrlKey: true, altKey: true }))).toBe("Ctrl+Alt+Space");
+    expect(formatHotkeyFromEvent(keyEvent("a", { ctrlKey: true, altKey: true }))).toBe(
+      "Ctrl+Alt+A",
+    );
+    expect(formatHotkeyFromEvent(keyEvent(" ", { ctrlKey: true, altKey: true }))).toBe(
+      "Ctrl+Alt+Space",
+    );
     expect(formatHotkeyFromEvent(keyEvent("Control", { ctrlKey: true }))).toBeNull();
   });
 
@@ -68,7 +78,9 @@ describe("model helpers", () => {
   it("maps bootstrap and hotkey registration errors", () => {
     expect(userSafeBootstrapLoadError("Context lock poisoned")).toContain("Внутренняя ошибка");
     expect(userSafeBootstrapLoadError("IO: denied")).toContain("Не прочитались настройки");
-    expect(userSafeHotkeyRegisterError("already registered", "Ctrl+Alt+Space")).toContain("уже занято");
+    expect(userSafeHotkeyRegisterError("already registered", "Ctrl+Alt+Space")).toContain(
+      "уже занято",
+    );
   });
 
   it("maps command error kinds to settings anchors", () => {

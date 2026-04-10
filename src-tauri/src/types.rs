@@ -156,6 +156,8 @@ pub struct RuntimeReadinessDto {
     pub can_retry_last_transcript: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_transcript_char_count: Option<usize>,
+    /// Bumps with system prompt changes; for support / regression tracking.
+    pub prompt_contract_version: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

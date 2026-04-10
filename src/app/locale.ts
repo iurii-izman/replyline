@@ -56,6 +56,12 @@ export const ui_ru = {
 
   idle: {
     title: "К захвату",
+    captureHold: "Удержите",
+    captureMid: "на нужной реплике,",
+    captureRelease: "отпустите",
+    capturePipeline: "— звук → текст → одна карточка (суть, сейчас, дальше).",
+    captureMaxPrefix: "Максимум",
+    captureMaxSuffix: "за раз.",
   },
 
   startError: {
@@ -117,6 +123,17 @@ export const ui_ru = {
     ticketPackageReady: "Пакет для тикета готов: сводка собрана и JSON payload скопирован.",
   },
 
+  copyFmt: {
+    diagnosticClipboard: "Сводка собрана. Путь в буфере:",
+    diagnosticPath: "Сводка собрана. Путь:",
+    logClipboard: "Путь к логу в буфере:",
+    logPlain: "Путь к логу:",
+    sayNowFallback: "Скажи сейчас:",
+    settingsSavedBut: "Настройки сохранены, но",
+    contextDraftActive: "есть · фрагментов:",
+    secondUnit: "с",
+  },
+
   settings: {
     title: "Подготовка к работе",
     lead: "Удержание клавиши — запись короткого звука; отпускание — в ваши STT и шлюз ответа (не на диск по умолчанию). «Сохранить» пишет файл и ключи в Windows на этой машине; не проверяет звонок и сеть.",
@@ -127,8 +144,7 @@ export const ui_ru = {
 
     hotkeyNudge:
       "Заполните обязательные блоки и нажмите «Сохранить». Без этого удержание клавиши не запускает цепочку.",
-    bootstrapFail:
-      "Загрузка приложения сбойнула. «Повторить» или правки ниже и «Сохранить».",
+    bootstrapFail: "Загрузка приложения сбойнула. «Повторить» или правки ниже и «Сохранить».",
 
     readinessTitle: "Чеклист готовности",
     readinessFoot:
@@ -169,6 +185,7 @@ export const ui_ru = {
       localLog: "Локальный лог",
       lastLine: "Последняя строка",
       lastDebugWav: "Последний debug WAV",
+      promptContract: "Версия контракта промпта",
     },
     snapshotValue: {
       enabled: "включён",
@@ -265,6 +282,9 @@ export const ui_ru = {
     removeLastSavedCard: "Удалить последнее из карточки",
     removedLastSavedCard: "Последняя запись с карточки удалена из пространства.",
     noSavedCardToRemove: "Нет записей с карточки для удаления в этом пространстве.",
+    invokeInvalid: "Память: данные не прошли проверку. Проверьте поля и повторите.",
+    invokeSpaceMissing: "Память: выбранное пространство не найдено. Обновите список.",
+    invokeGeneric: "Память: операция не выполнена. Повторите позже.",
   },
 } as const;
 
@@ -322,6 +342,12 @@ export const ui_en: UiStrings = {
 
   idle: {
     title: "Ready",
+    captureHold: "Hold",
+    captureMid: "during the line you care about,",
+    captureRelease: "release",
+    capturePipeline: "— audio → text → one card (gist, say now, next move).",
+    captureMaxPrefix: "Up to",
+    captureMaxSuffix: "at a time.",
   },
 
   startError: {
@@ -339,7 +365,8 @@ export const ui_en: UiStrings = {
   },
 
   boot: {
-    loading: "Reading settings and registering the hotkey. On failure you'll see a message and 'Retry'.",
+    loading:
+      "Reading settings and registering the hotkey. On failure you'll see a message and 'Retry'.",
   },
 
   chrome: {
@@ -383,6 +410,17 @@ export const ui_en: UiStrings = {
     ticketPackageReady: "Ticket package ready: summary collected and JSON payload copied.",
   },
 
+  copyFmt: {
+    diagnosticClipboard: "Summary collected. Path in clipboard:",
+    diagnosticPath: "Summary collected. Path:",
+    logClipboard: "Log path in clipboard:",
+    logPlain: "Log path:",
+    sayNowFallback: "Say now:",
+    settingsSavedBut: "Settings saved, but",
+    contextDraftActive: "active · fragments:",
+    secondUnit: "s",
+  },
+
   settings: {
     title: "Setup",
     lead: "Holding the hotkey records a short audio clip; releasing sends it to your STT and response gateway (not saved to disk by default). 'Save' writes the config file and keys to Windows on this machine; it does not test connectivity.",
@@ -393,8 +431,7 @@ export const ui_en: UiStrings = {
 
     hotkeyNudge:
       "Fill in the required sections and click 'Save'. Without this, holding the hotkey won't start the pipeline.",
-    bootstrapFail:
-      "App loading failed. 'Retry' or edit below and 'Save'.",
+    bootstrapFail: "App loading failed. 'Retry' or edit below and 'Save'.",
 
     readinessTitle: "Readiness checklist",
     readinessFoot:
@@ -435,6 +472,7 @@ export const ui_en: UiStrings = {
       localLog: "Local log",
       lastLine: "Last line",
       lastDebugWav: "Last debug WAV",
+      promptContract: "Prompt contract version",
     },
     snapshotValue: {
       enabled: "enabled",
@@ -459,7 +497,8 @@ export const ui_en: UiStrings = {
     hotkeyLabel: "Hotkey",
     hotkeyHint: "System audio while held. The shortcut must not conflict with Windows.",
     captureMaxLabel: "Max fragment length, sec",
-    captureMaxHint: "Typically 5–60 s. 120–180 s gives more context but slower, less predictable responses.",
+    captureMaxHint:
+      "Typically 5–60 s. 120–180 s gives more context but slower, less predictable responses.",
 
     sttSectionTitle: "Speech recognition",
     sttSectionIntro:
@@ -531,6 +570,9 @@ export const ui_en: UiStrings = {
     removeLastSavedCard: "Remove last saved card",
     removedLastSavedCard: "Last card entry removed from the space.",
     noSavedCardToRemove: "No card entries to remove in this space.",
+    invokeInvalid: "Memory: data failed validation. Check fields and try again.",
+    invokeSpaceMissing: "Memory: selected space was not found. Refresh the list.",
+    invokeGeneric: "Memory: operation failed. Try again later.",
   },
 } as const;
 
@@ -541,34 +583,32 @@ export function getUi(lang: string): UiStrings {
   return lang.startsWith("en") ? ui_en : ui_ru;
 }
 
-export function fmtBundleCollected(path: string, clipboard: boolean): string {
+export function fmtBundleCollected(path: string, clipboard: boolean, s: UiStrings): string {
   return clipboard
-    ? `Сводка собрана. Путь в буфере: ${path}`
-    : `Сводка собрана. Путь: ${path}`;
+    ? `${s.copyFmt.diagnosticClipboard} ${path}`
+    : `${s.copyFmt.diagnosticPath} ${path}`;
 }
 
-export function fmtLogPath(path: string, clipboard: boolean): string {
-  return clipboard
-    ? `Путь к логу в буфере: ${path}`
-    : `Путь к логу: ${path}`;
+export function fmtLogPath(path: string, clipboard: boolean, s: UiStrings): string {
+  return clipboard ? `${s.copyFmt.logClipboard} ${path}` : `${s.copyFmt.logPlain} ${path}`;
 }
 
-export function fmtSayNowFallback(value: string): string {
-  return `Скажи сейчас: ${value}`;
+export function fmtSayNowFallback(value: string, s: UiStrings): string {
+  return `${s.copyFmt.sayNowFallback} ${value}`;
 }
 
-export function fmtSettingsSavedButHotkey(hint: string): string {
-  return `Настройки сохранены, но ${hint.toLowerCase()}`;
+export function fmtSettingsSavedButHotkey(hint: string, s: UiStrings): string {
+  return `${s.copyFmt.settingsSavedBut} ${hint.toLowerCase()}`;
 }
 
-export function fmtContextDraftActive(count: number): string {
-  return `есть · фрагментов: ${count}`;
+export function fmtContextDraftActive(count: number, s: UiStrings): string {
+  return `${s.copyFmt.contextDraftActive} ${count}`;
 }
 
-export function fmtSecondsSuffix(seconds: number): string {
-  return `${seconds} с`;
+export function fmtSecondsSuffix(seconds: number, s: UiStrings): string {
+  return `${seconds} ${s.copyFmt.secondUnit}`;
 }
 
-export function fmtReadinessJsonCopied(clipboardOk: boolean): string {
-  return clipboardOk ? ui.notices.readinessJsonCopied : ui.notices.readinessJsonCopyManual;
+export function fmtReadinessJsonCopied(clipboardOk: boolean, s: UiStrings): string {
+  return clipboardOk ? s.notices.readinessJsonCopied : s.notices.readinessJsonCopyManual;
 }

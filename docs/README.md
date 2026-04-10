@@ -26,9 +26,12 @@
 - [third-party-providers.md](third-party-providers.md)
 - [prompt-contract-lane.md](prompt-contract-lane.md)
 
+## Direction and roadmap
+
+- [development-directions.md](development-directions.md) — единая канон-точка по 30 направлениям развития, текущему счёту и приоритетным шагам. Поглотила старые `improvement-plan.md` и `interviewforge-lessons.md`.
+
 ## Internal reference
 
-- [interviewforge-lessons.md](interviewforge-lessons.md)
 - [naming-decision-brief.md](naming-decision-brief.md)
 - [memory-layer.md](memory-layer.md) (future layer, не core MVP story)
 - [i18n-beta-prep.md](i18n-beta-prep.md) (future multilingual prep, не часть текущей alpha UX)
@@ -39,12 +42,12 @@
 
 ## Troubleshooting
 
-| Problem | Likely cause | Fix |
-|---|---|---|
-| **No audio captured** | WASAPI loopback sees no system output, or wrong audio device is default. | Play any sound in Windows before holding the hotkey. Verify the correct playback device is set as default in Windows Sound settings. |
-| **STT returns empty / fails** | Deepgram API key is missing, expired, or the network is down. | Open Settings, re-enter a valid Deepgram key, click Save. Check that the machine has internet access. |
-| **LLM unreachable / timeout** | Gateway URL or model name is wrong, or the provider is down. | Verify the gateway URL (`/v1` suffix) and model name in Settings. Try opening the URL in a browser to confirm the host responds. |
-| **Hotkey conflict** | Another program already registered the same global shortcut. | Change the hotkey in Settings to an unused combination (e.g. `Ctrl+Alt+Space` → `Ctrl+Shift+.`). |
+| Problem                                | Likely cause                                                                                       | Fix                                                                                                                                                 |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **No audio captured**                  | WASAPI loopback sees no system output, or wrong audio device is default.                           | Play any sound in Windows before holding the hotkey. Verify the correct playback device is set as default in Windows Sound settings.                |
+| **STT returns empty / fails**          | Deepgram API key is missing, expired, or the network is down.                                      | Open Settings, re-enter a valid Deepgram key, click Save. Check that the machine has internet access.                                               |
+| **LLM unreachable / timeout**          | Gateway URL or model name is wrong, or the provider is down.                                       | Verify the gateway URL (`/v1` suffix) and model name in Settings. Try opening the URL in a browser to confirm the host responds.                    |
+| **Hotkey conflict**                    | Another program already registered the same global shortcut.                                       | Change the hotkey in Settings to an unused combination (e.g. `Ctrl+Alt+Space` → `Ctrl+Shift+.`).                                                    |
 | **Settings file corrupt / app resets** | A crash during save left invalid JSON. The app auto-quarantines the file and starts with defaults. | Re-enter your settings and save again. The corrupt file is preserved as `settings.json.corrupt.<timestamp>` in the config directory for inspection. |
 
 ## Fast gates

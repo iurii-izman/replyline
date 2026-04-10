@@ -93,14 +93,14 @@ $value | gh secret set OPENROUTER_API_KEY --repo owner/repo
 
 ## Security Properties
 
-| Property | User Env Vars (old) | SecretStore (new) |
-|---|---|---|
-| Encrypted at rest | No (plaintext registry) | Yes (AES-256 + DPAPI) |
-| Visible to all processes | Yes | No |
-| Requires explicit loading | No | Yes |
-| Scoped per project | No | Yes (via .env.keys) |
-| Survives reboot | Yes | Yes (vault persists) |
-| Audit trail | None | PowerShell logging |
+| Property                  | User Env Vars (old)     | SecretStore (new)     |
+| ------------------------- | ----------------------- | --------------------- |
+| Encrypted at rest         | No (plaintext registry) | Yes (AES-256 + DPAPI) |
+| Visible to all processes  | Yes                     | No                    |
+| Requires explicit loading | No                      | Yes                   |
+| Scoped per project        | No                      | Yes (via .env.keys)   |
+| Survives reboot           | Yes                     | Yes (vault persists)  |
+| Audit trail               | None                    | PowerShell logging    |
 
 ## AI Tool Considerations
 

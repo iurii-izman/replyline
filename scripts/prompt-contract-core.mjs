@@ -68,8 +68,7 @@ export function deterministicCardFromSnippet(snippet) {
   const gist = compact.length <= 100 ? compact : `${compact.slice(0, 97)}...`;
   return {
     gist,
-    say_now:
-      "Давайте зафиксируем решение и срок: сегодня подтверждаю следующий шаг письменно.",
+    say_now: "Давайте зафиксируем решение и срок: сегодня подтверждаю следующий шаг письменно.",
     next_move: "Уточните владельца действия и время контрольной проверки.",
   };
 }

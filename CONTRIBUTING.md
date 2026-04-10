@@ -4,14 +4,14 @@ This document covers the practical workflow for contributing to Replyline during
 
 ## Prerequisites
 
-| Tool | Minimum version | Notes |
-|------|----------------|-------|
-| Node.js | 20+ | LTS recommended |
-| pnpm | 9+ | Package manager |
-| Rust | stable (latest) | `rustup update stable` |
-| Windows | 10 or 11 | Primary target platform |
-| cargo-deny | latest | `cargo install cargo-deny` |
-| cargo-audit | latest | `cargo install cargo-audit` |
+| Tool        | Minimum version | Notes                       |
+| ----------- | --------------- | --------------------------- |
+| Node.js     | 20+             | LTS recommended             |
+| pnpm        | 9+              | Package manager             |
+| Rust        | stable (latest) | `rustup update stable`      |
+| Windows     | 10 or 11        | Primary target platform     |
+| cargo-deny  | latest          | `cargo install cargo-deny`  |
+| cargo-audit | latest          | `cargo install cargo-audit` |
 
 Optional but recommended:
 

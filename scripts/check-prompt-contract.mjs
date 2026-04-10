@@ -28,21 +28,37 @@ if (!Array.isArray(fixtures) || fixtures.length < 20) {
 assertIncludes(
   llmRaw,
   '{"gist":"...","say_now":"...","next_move":"..."}',
-  "llm.rs must require exact JSON contract gist/say_now/next_move."
+  "llm.rs must require exact JSON contract gist/say_now/next_move.",
 );
 assertIncludes(llmRaw, "struct RawCard", "llm.rs must define RawCard contract.");
 assertIncludes(llmRaw, "gist: String", "RawCard must include gist.");
 assertIncludes(llmRaw, "say_now: String", "RawCard must include say_now.");
 assertIncludes(llmRaw, "next_move: String", "RawCard must include next_move.");
-assertIncludes(llmRaw, "не давай терапевтические советы", "Russian prompt must ban therapy wording.");
-assertIncludes(llmRaw, "не оценивай эмоции и тональность", "Russian prompt must ban emotion/tone magic.");
+assertIncludes(
+  llmRaw,
+  "не давай терапевтические советы",
+  "Russian prompt must ban therapy wording.",
+);
+assertIncludes(
+  llmRaw,
+  "не оценивай эмоции и тональность",
+  "Russian prompt must ban emotion/tone magic.",
+);
 assertIncludes(llmRaw, "SYSTEM_PROMPT_EN", "llm.rs must define an English system prompt.");
-assertIncludes(llmRaw, "do not give therapeutic advice", "English prompt must ban therapy wording.");
-assertIncludes(llmRaw, "do not evaluate emotions or tone", "English prompt must ban emotion/tone magic.");
+assertIncludes(
+  llmRaw,
+  "do not give therapeutic advice",
+  "English prompt must ban therapy wording.",
+);
+assertIncludes(
+  llmRaw,
+  "do not evaluate emotions or tone",
+  "English prompt must ban emotion/tone magic.",
+);
 assertIncludes(
   llmRaw,
   "trim_line(&card.say_now, 220)",
-  "say_now clamp to 220 chars must stay in place."
+  "say_now clamp to 220 chars must stay in place.",
 );
 
 for (const fixture of fixtures) {

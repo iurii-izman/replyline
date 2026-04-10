@@ -2,12 +2,12 @@
 
 Replyline uses four separate verification lanes. Green in one lane does not imply green in another lane.
 
-| Lane | Main command | What it proves | What it does not prove |
-|---|---|---|---|
-| Compile + unit | `pnpm smoke` | Vite build, Rust compile, unit tests, fixture checks, consistency gate | Real Tauri runtime, loopback capture, provider latency |
-| Mock / UI | `pnpm test:ui` | UI state machine on a mocked platform bridge: bootstrap, settings flow, hotkey fallback, result card surface, copy flow, diagnostic states | Real Windows audio, real STT, real LLM, packaged Tauri shell behavior |
-| Prompt / contract | `pnpm test:prompt-contract`, `pnpm test:say-now-scenarios` | Output shape stays `gist / say_now / next_move`; deterministic trust/copy policy checks stay enforced; thin scenario heuristics on example cards | Real usefulness in live calls, provider quality in real runtime |
-| Runtime proof | `pnpm probe:runtime`, `pnpm probe:bench`, `pnpm probe:durations`, `pnpm probe:live-source`, `pnpm evidence:bundle` | Real local provider path, real Windows capture path, runtime artifacts from this workstation | Same behavior on every workstation or call app |
+| Lane              | Main command                                                                                                       | What it proves                                                                                                                                   | What it does not prove                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| Compile + unit    | `pnpm smoke`                                                                                                       | Vite build, Rust compile, unit tests, fixture checks, consistency gate                                                                           | Real Tauri runtime, loopback capture, provider latency                |
+| Mock / UI         | `pnpm test:ui`                                                                                                     | UI state machine on a mocked platform bridge: bootstrap, settings flow, hotkey fallback, result card surface, copy flow, diagnostic states       | Real Windows audio, real STT, real LLM, packaged Tauri shell behavior |
+| Prompt / contract | `pnpm test:prompt-contract`, `pnpm test:say-now-scenarios`                                                         | Output shape stays `gist / say_now / next_move`; deterministic trust/copy policy checks stay enforced; thin scenario heuristics on example cards | Real usefulness in live calls, provider quality in real runtime       |
+| Runtime proof     | `pnpm probe:runtime`, `pnpm probe:bench`, `pnpm probe:durations`, `pnpm probe:live-source`, `pnpm evidence:bundle` | Real local provider path, real Windows capture path, runtime artifacts from this workstation                                                     | Same behavior on every workstation or call app                        |
 
 ## Current truth
 
@@ -33,13 +33,13 @@ Lane rule:
 - `pnpm test:ui` results cannot upgrade any runtime claim to `measured`.
 - Only runtime lane artifacts can upgrade runtime claims to `measured`.
 
-See also:
+## See also
 
-- `docs/benchmark-policy.md`
-- `docs/runtime-evidence.md`
-- `docs/prompt-contract-lane.md`
-- `docs/smoke-checks.md`
-- `docs/rust-dependency-security.md`
+- [benchmark-policy.md](benchmark-policy.md) — лейблы `target / measured / pending verification`.
+- [runtime-evidence.md](runtime-evidence.md) — где живут артефакты, минимальное качество.
+- [`prompt-contract-lane.md`](prompt-contract-lane.md)
+- [`smoke-checks.md`](smoke-checks.md)
+- [`rust-dependency-security.md`](rust-dependency-security.md)
 
 ## Readiness before claims
 
@@ -49,3 +49,6 @@ Do not claim a runtime path is ready until there is at least one real local evid
 - transcript
 - provider path used
 - release-to-card latency
+
+- [runtime-bringup.md](runtime-bringup.md) — как поднять runtime path первый раз.
+- [copy-rules.md](copy-rules.md) — формулировки и баны.

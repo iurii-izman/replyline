@@ -56,6 +56,8 @@ export type RuntimeReadinessDto = {
   contextEntryCount: number;
   canRetryLastTranscript: boolean;
   lastTranscriptCharCount?: number | null;
+  /** Backend prompt contract version (bumps with system prompt changes). */
+  promptContractVersion: string;
 };
 
 export type DiagnosticBundleDto = {
@@ -236,8 +238,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 
 export function usesPlaceholderLlmRoute(baseUrl: string, model: string): boolean {
   return (
-    baseUrl.trim() === DEFAULT_SETTINGS.llmBaseUrl &&
-    model.trim() === DEFAULT_SETTINGS.llmModel
+    baseUrl.trim() === DEFAULT_SETTINGS.llmBaseUrl && model.trim() === DEFAULT_SETTINGS.llmModel
   );
 }
 

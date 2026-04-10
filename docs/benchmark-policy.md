@@ -2,11 +2,11 @@
 
 Replyline uses three labels for performance and runtime claims.
 
-| Label | Meaning |
-|---|---|
-| `target` | Intended design goal, not yet measured on a real machine |
-| `measured` | Captured on a real workstation with a saved runtime artifact |
-| `pending verification` | The path exists, but the proof is incomplete or noisy |
+| Label                  | Meaning                                                      |
+| ---------------------- | ------------------------------------------------------------ |
+| `target`               | Intended design goal, not yet measured on a real machine     |
+| `measured`             | Captured on a real workstation with a saved runtime artifact |
+| `pending verification` | The path exists, but the proof is incomplete or noisy        |
 
 ## Rules
 
@@ -37,8 +37,10 @@ Runtime helpers:
 - Runtime route is designed for short captures first.
 - `120-180s` remains available but should be labeled `pending verification` for fast-path messaging unless repeated evidence says otherwise.
 
-See also:
+## See also
 
-- `docs/verification-lanes.md`
-- `docs/runtime-evidence.md`
-- `docs/runtime-bringup.md`
+- [verification-lanes.md](verification-lanes.md) — 4 lane модель (compile / mock / prompt / runtime).
+- [runtime-evidence.md](runtime-evidence.md) — где живут артефакты, минимальное качество.
+- [runtime-bringup.md](runtime-bringup.md) — как поднять runtime path первый раз.
+
+- [copy-rules.md](copy-rules.md) — формулировки и баны.

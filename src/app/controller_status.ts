@@ -1,4 +1,4 @@
-import { ui } from "./locale";
+import type { UiStrings } from "./locale";
 import type { Phase } from "./model";
 
 type TrayPayloadInput = {
@@ -31,48 +31,49 @@ export function phaseLabelFor(
   phase: Phase,
   setupRequired: boolean,
   hotkeyFailed: boolean,
+  s: UiStrings,
 ): string {
   switch (phase) {
     case "booting":
-      return ui.phase.booting;
+      return s.phase.booting;
     case "capturing":
-      return ui.phase.capturing;
+      return s.phase.capturing;
     case "transcribing":
-      return ui.phase.transcribing;
+      return s.phase.transcribing;
     case "analyzing":
-      return ui.phase.analyzing;
+      return s.phase.analyzing;
     case "ready":
-      return ui.phase.ready;
+      return s.phase.ready;
     case "error":
-      return ui.phase.error;
+      return s.phase.error;
     default:
-      if (hotkeyFailed) return ui.phase.hotkeyFail;
-      if (setupRequired) return ui.phase.setupNeeded;
-      return ui.phase.idleReady;
+      if (hotkeyFailed) return s.phase.hotkeyFail;
+      if (setupRequired) return s.phase.setupNeeded;
+      return s.phase.idleReady;
   }
 }
 
-export function livePhaseHeadlineFor(phase: Phase): string {
+export function livePhaseHeadlineFor(phase: Phase, s: UiStrings): string {
   switch (phase) {
     case "capturing":
-      return ui.livePhase.capturingHeadline;
+      return s.livePhase.capturingHeadline;
     case "transcribing":
-      return ui.livePhase.transcribingHeadline;
+      return s.livePhase.transcribingHeadline;
     case "analyzing":
-      return ui.livePhase.analyzingHeadline;
+      return s.livePhase.analyzingHeadline;
     default:
       return "";
   }
 }
 
-export function livePhaseSubFor(phase: Phase): string {
+export function livePhaseSubFor(phase: Phase, s: UiStrings): string {
   switch (phase) {
     case "capturing":
-      return ui.livePhase.capturingSub;
+      return s.livePhase.capturingSub;
     case "transcribing":
-      return ui.livePhase.transcribingSub;
+      return s.livePhase.transcribingSub;
     case "analyzing":
-      return ui.livePhase.analyzingSub;
+      return s.livePhase.analyzingSub;
     default:
       return "";
   }

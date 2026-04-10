@@ -16,6 +16,12 @@
 
 ## 2) Быстрый preflight (обязательно)
 
+Одной командой (эквивалент пунктов 1–4 ниже):
+
+- `pnpm alpha:preflight`
+
+Или по шагам:
+
 1. `pnpm smoke`
 2. `pnpm runtime:preflight`
 3. `pnpm probe:runtime`

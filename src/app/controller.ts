@@ -1,4 +1,11 @@
-import { createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  onMount,
+  type Accessor,
+} from "solid-js";
 import { createStore } from "solid-js/store";
 
 import {
@@ -33,11 +40,7 @@ import {
   type MemorySpaceRecord,
   type StatusEvent,
 } from "./model";
-import {
-  ui,
-  fmtReadinessJsonCopied,
-  fmtSettingsSavedButHotkey,
-} from "./locale";
+import { fmtReadinessJsonCopied, fmtSettingsSavedButHotkey, getUi, type UiStrings } from "./locale";
 import type { AppPlatform } from "./platform";
 import {
   livePhaseHeadlineFor,
@@ -74,8 +77,12 @@ export function useReplylineController(platform: AppPlatform) {
   const [contextTranscriptPreview, setContextTranscriptPreview] = createSignal<string | null>(null);
   const [canRetryLastTranscript, setCanRetryLastTranscript] = createSignal(false);
   const [runtimeReadiness, setRuntimeReadiness] = createSignal<RuntimeReadinessDto | null>(null);
-  const [lastCommandErrorKind, setLastCommandErrorKind] = createSignal<CommandErrorKind | null>(null);
-  const [settingsScrollAnchor, setSettingsScrollAnchor] = createSignal<ErrorSettingsAnchor | null>(null);
+  const [lastCommandErrorKind, setLastCommandErrorKind] = createSignal<CommandErrorKind | null>(
+    null,
+  );
+  const [settingsScrollAnchor, setSettingsScrollAnchor] = createSignal<ErrorSettingsAnchor | null>(
+    null,
+  );
   const [devFixtureBusy, setDevFixtureBusy] = createSignal(false);
 
   const [settings, setSettings] = createStore<AppSettings>({ ...DEFAULT_SETTINGS });
@@ -99,6 +106,8 @@ export function useReplylineController(platform: AppPlatform) {
     ["capturing", "transcribing", "analyzing"].includes(phase()),
   );
 
+  const strings: Accessor<UiStrings> = createMemo(() => getUi(settings.primaryLanguage));
+
   function applyContextStatus(status: ContextStatusDto) {
     setContextActive(status.contextActive);
     setContextEntryCount(status.entryCount);
@@ -120,10 +129,10 @@ export function useReplylineController(platform: AppPlatform) {
       const r = await platform.invoke<RuntimeReadinessDto>("get_runtime_readiness");
       const text = JSON.stringify(r, null, 2);
       const ok = await tryWriteClipboard(text);
-      setCopyNotice(fmtReadinessJsonCopied(ok));
+      setCopyNotice(fmtReadinessJsonCopied(ok, strings()));
     } catch (err) {
       setCopyNotice(null);
-      showRecoverableError(ui.notices.readinessCopyFailed, err);
+      showRecoverableError(strings().notices.readinessCopyFailed, err);
     }
   }
 
@@ -143,17 +152,19 @@ export function useReplylineController(platform: AppPlatform) {
         logStatus: latestLog ?? logStatus(),
       };
       const ok = await tryWriteClipboard(JSON.stringify(payload, null, 2));
-      setCopyNotice(ok ? ui.notices.ticketPayloadCopied : ui.notices.ticketPayloadCopyManual);
+      setCopyNotice(
+        ok ? strings().notices.ticketPayloadCopied : strings().notices.ticketPayloadCopyManual,
+      );
     } catch (err) {
       setCopyNotice(null);
-      showRecoverableError(ui.notices.ticketPayloadCopyFailed, err);
+      showRecoverableError(strings().notices.ticketPayloadCopyFailed, err);
     }
   }
 
   async function collectTicketSupportPackage() {
     await collectSupportBundle();
     await copyTicketPayloadJson();
-    setCopyNotice(ui.notices.ticketPackageReady);
+    setCopyNotice(strings().notices.ticketPackageReady);
   }
 
   function clearSettingsScrollAnchor() {
@@ -173,13 +184,15 @@ export function useReplylineController(platform: AppPlatform) {
     setStatusDetail(null);
     setPhase("analyzing");
     try {
-      const card = await platform.invoke<AnalysisCard>("dev_analyze_fixture_snippet", { fixtureId });
+      const card = await platform.invoke<AnalysisCard>("dev_analyze_fixture_snippet", {
+        fixtureId,
+      });
       setCard(card);
       setContextActive(true);
       setPhase("ready");
       setPanel("main");
       await showWindow("main");
-      setCopyNotice(ui.advanced.devFixtureOk);
+      setCopyNotice(strings().advanced.devFixtureOk);
       try {
         const status = await platform.invoke<ContextStatusDto>("get_context_status");
         applyContextStatus(status);
@@ -194,12 +207,12 @@ export function useReplylineController(platform: AppPlatform) {
   }
 
   const phaseLabel = createMemo(() => {
-    return phaseLabelFor(phase(), setupRequired(), hotkeyFailed());
+    return phaseLabelFor(phase(), setupRequired(), hotkeyFailed(), strings());
   });
 
-  const livePhaseHeadline = createMemo(() => livePhaseHeadlineFor(phase()));
+  const livePhaseHeadline = createMemo(() => livePhaseHeadlineFor(phase(), strings()));
 
-  const livePhaseSub = createMemo(() => livePhaseSubFor(phase()));
+  const livePhaseSub = createMemo(() => livePhaseSubFor(phase(), strings()));
 
   const statusPillClass = createMemo(() => {
     const currentPhase = phase();
@@ -233,7 +246,10 @@ export function useReplylineController(platform: AppPlatform) {
     setCommandErrorKind(invokeErr ?? null);
     setError(message);
     setPhase("idle");
-    void platform.invoke<LogStatusDto>("get_log_status").then(setLogStatus).catch(() => undefined);
+    void platform
+      .invoke<LogStatusDto>("get_log_status")
+      .then(setLogStatus)
+      .catch(() => undefined);
   }
 
   async function tryWriteClipboard(value: string): Promise<boolean> {
@@ -263,7 +279,7 @@ export function useReplylineController(platform: AppPlatform) {
     await platform.shortcuts.unregisterAll();
     const alreadyRegistered = await platform.shortcuts.isRegistered(hotkey);
     if (alreadyRegistered) {
-      throw new Error(ui.notices.hotkeyAlreadyRegistered);
+      throw new Error(strings().notices.hotkeyAlreadyRegistered);
     }
     setHotkeyFailed(false);
     let captureArmed = false;
@@ -384,7 +400,7 @@ export function useReplylineController(platform: AppPlatform) {
     try {
       const savedSettings = await platform.invoke<AppSettings>("acknowledge_tray_intro");
       setSettings(savedSettings);
-      setCopyNotice(ui.notices.trayIntroHidden);
+      setCopyNotice(strings().notices.trayIntroHidden);
     } catch (err) {
       setCommandErrorKind(err);
       setError(userSafeTrayAckSaveError(err));
@@ -425,6 +441,7 @@ export function useReplylineController(platform: AppPlatform) {
 
       await platform.invoke("save_settings", { input });
       setSettings(input);
+      void platform.invoke("refresh_tray_menu").catch(() => undefined);
 
       if (draftSecrets.deepgramApiKey.trim()) {
         await platform.invoke("save_secret", {
@@ -451,7 +468,7 @@ export function useReplylineController(platform: AppPlatform) {
         setHotkeyFailed(true);
         const hint = userSafeHotkeyRegisterError(err, input.hotkey);
         setCommandErrorKind(null);
-        setError(fmtSettingsSavedButHotkey(hint));
+        setError(fmtSettingsSavedButHotkey(hint, strings()));
         setSettingsFormHint(hint);
         await platform
           .invoke("log_client_event", {
@@ -469,8 +486,8 @@ export function useReplylineController(platform: AppPlatform) {
 
       setCopyNotice(
         nextSetupRequired
-          ? ui.notices.settingsSavedPartial
-          : ui.notices.settingsSaved,
+          ? strings().notices.settingsSavedPartial
+          : strings().notices.settingsSaved,
       );
       setSettingsFormHint(null);
       if (!nextSetupRequired) {
@@ -503,7 +520,9 @@ export function useReplylineController(platform: AppPlatform) {
       return;
     }
     try {
-      const record = await platform.invoke<MemorySpaceRecord>("memory_get_space_record", { spaceId: id });
+      const record = await platform.invoke<MemorySpaceRecord>("memory_get_space_record", {
+        spaceId: id,
+      });
       const saved = record.facts.filter((f) => f.sourceKind === "saved_card");
       setMemorySavedCardPreview(saved.length > 0 ? saved[saved.length - 1]!.text : null);
     } catch {
@@ -513,6 +532,7 @@ export function useReplylineController(platform: AppPlatform) {
 
   const memorySlice = createMemorySlice({
     platform,
+    strings,
     card,
     activeSpaceId,
     setMemorySpaces,
@@ -525,6 +545,7 @@ export function useReplylineController(platform: AppPlatform) {
 
   const runtimeSlice = createRuntimeSlice({
     platform,
+    strings,
     panel,
     card,
     logStatus,
@@ -675,6 +696,12 @@ export function useReplylineController(platform: AppPlatform) {
     });
 
     void (async () => {
+      /* Bootstrap before event wiring so the UI (and tests) are not blocked on listen/setup ordering. */
+      await reloadBootstrap();
+      if (disposed) {
+        return;
+      }
+
       const unlistenClose = await platform.window.onCloseRequested(async (event) => {
         event.preventDefault();
         await platform.window.hide();
@@ -713,7 +740,7 @@ export function useReplylineController(platform: AppPlatform) {
         setContextEntryCount(0);
         setContextTranscriptPreview(null);
         setCanRetryLastTranscript(false);
-        setCopyNotice(ui.notices.contextCleared);
+        setCopyNotice(strings().notices.contextCleared);
       });
       if (disposed) {
         unlistenContextCleared();
@@ -731,16 +758,17 @@ export function useReplylineController(platform: AppPlatform) {
       }
       cleanups.push(unlistenCollectDiagnostic);
 
-      const unlistenCopyReadiness = await platform.listen("replyline://copy-runtime-readiness", () => {
-        void copyRuntimeReadinessJson();
-      });
+      const unlistenCopyReadiness = await platform.listen(
+        "replyline://copy-runtime-readiness",
+        () => {
+          void copyRuntimeReadinessJson();
+        },
+      );
       if (disposed) {
         unlistenCopyReadiness();
         return;
       }
       cleanups.push(unlistenCopyReadiness);
-
-      await reloadBootstrap();
     })();
   });
 
@@ -763,6 +791,7 @@ export function useReplylineController(platform: AppPlatform) {
   });
 
   return {
+    strings,
     phase,
     panel,
     card,

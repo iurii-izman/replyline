@@ -1,11 +1,17 @@
 import type { Accessor } from "solid-js";
 
-import { invokeErrorMessage, type AnalysisCard, type MemorySpace, type MemorySpaceRecord } from "./model";
+import type { UiStrings } from "./locale";
+import {
+  invokeErrorMessage,
+  type AnalysisCard,
+  type MemorySpace,
+  type MemorySpaceRecord,
+} from "./model";
 import type { AppPlatform } from "./platform";
-import { ui } from "./locale";
 
 type MemorySliceDeps = {
   platform: AppPlatform;
+  strings: Accessor<UiStrings>;
   card: Accessor<AnalysisCard | null>;
   activeSpaceId: Accessor<string | null>;
   setMemorySpaces: (spaces: MemorySpace[]) => void;
@@ -20,15 +26,15 @@ function makeMemorySpaceId(label: string, kind: "team" | "thread" | "contact"): 
   return `${kind}:${label.toLowerCase().replace(/\s+/g, "-").slice(0, 30)}`;
 }
 
-function userSafeMemoryError(err: unknown): string {
+function userSafeMemoryError(err: unknown, s: UiStrings): string {
   const message = invokeErrorMessage(err);
   if (/Memory input is invalid/i.test(message)) {
-    return "Память: данные не прошли проверку. Проверьте поля и повторите.";
+    return s.memory.invokeInvalid;
   }
   if (/Memory space not found/i.test(message)) {
-    return "Память: выбранное пространство не найдено. Обновите список.";
+    return s.memory.invokeSpaceMissing;
   }
-  return "Память: операция не выполнена. Повторите позже.";
+  return s.memory.invokeGeneric;
 }
 
 export function createMemorySlice(deps: MemorySliceDeps) {
@@ -59,7 +65,7 @@ export function createMemorySlice(deps: MemorySliceDeps) {
       deps.setActiveSpaceId(id);
       deps.onMemoryRecordChanged?.();
     } catch (err) {
-      deps.setSettingsFormHint(userSafeMemoryError(err));
+      deps.setSettingsFormHint(userSafeMemoryError(err, deps.strings()));
     }
   }
 
@@ -85,10 +91,10 @@ export function createMemorySlice(deps: MemorySliceDeps) {
       });
       record.space.updatedAt = now;
       await deps.platform.invoke("memory_save_space_record", { input: record });
-      deps.setCopyNotice(ui.memory.savedToMemory);
+      deps.setCopyNotice(deps.strings().memory.savedToMemory);
       deps.onMemoryRecordChanged?.();
     } catch (err) {
-      deps.setError(userSafeMemoryError(err));
+      deps.setError(userSafeMemoryError(err, deps.strings()));
     }
   }
 
@@ -107,7 +113,7 @@ export function createMemorySlice(deps: MemorySliceDeps) {
         }
       }
       if (idx < 0) {
-        deps.setSettingsFormHint(ui.memory.noSavedCardToRemove);
+        deps.setSettingsFormHint(deps.strings().memory.noSavedCardToRemove);
         return;
       }
       record.facts.splice(idx, 1);
@@ -115,9 +121,9 @@ export function createMemorySlice(deps: MemorySliceDeps) {
       record.space.updatedAt = now;
       await deps.platform.invoke("memory_save_space_record", { input: record });
       deps.onMemoryRecordChanged?.();
-      deps.setCopyNotice(ui.memory.removedLastSavedCard);
+      deps.setCopyNotice(deps.strings().memory.removedLastSavedCard);
     } catch (err) {
-      deps.setSettingsFormHint(userSafeMemoryError(err));
+      deps.setSettingsFormHint(userSafeMemoryError(err, deps.strings()));
     }
   }
 

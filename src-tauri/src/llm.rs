@@ -39,7 +39,6 @@ struct RawCard {
 }
 
 /// Prompt contract version. Bump when changing system prompts to track regressions.
-#[allow(dead_code)]
 pub const PROMPT_VERSION: &str = "v2";
 
 const SYSTEM_PROMPT_RU: &str = r#"Ты — краткий помощник для сложных рабочих разговоров.

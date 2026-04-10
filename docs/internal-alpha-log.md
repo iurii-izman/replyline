@@ -102,4 +102,3 @@ Blocker? (yes/no):
 Short note:
 Artifact/report path, if any:
 ```
-

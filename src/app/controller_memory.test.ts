@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createMemorySlice } from "./controller_memory";
+import { ui_ru } from "./locale";
 import type { AnalysisCard, MemorySpaceRecord } from "./model";
 
 function makeCard(): AnalysisCard {
@@ -34,10 +35,13 @@ describe("controller_memory slice", () => {
         }
         throw new Error("unexpected command");
       }),
-    } as unknown as { invoke: (command: string, args?: Record<string, unknown>) => Promise<unknown> };
+    } as unknown as {
+      invoke: (command: string, args?: Record<string, unknown>) => Promise<unknown>;
+    };
 
     const slice = createMemorySlice({
       platform: platform as never,
+      strings: () => ui_ru,
       card: () => makeCard(),
       activeSpaceId: () => currentActive,
       setMemorySpaces: setMemorySpaces as never,
@@ -77,11 +81,14 @@ describe("controller_memory slice", () => {
         if (command === "memory_save_space_record") return null;
         throw new Error("unexpected command");
       }),
-    } as unknown as { invoke: (command: string, args?: Record<string, unknown>) => Promise<unknown> };
+    } as unknown as {
+      invoke: (command: string, args?: Record<string, unknown>) => Promise<unknown>;
+    };
 
     const onMemoryRecordChanged = vi.fn();
     const slice = createMemorySlice({
       platform: platform as never,
+      strings: () => ui_ru,
       card: () => makeCard(),
       activeSpaceId: () => "team:qa",
       setMemorySpaces: vi.fn(),
@@ -157,10 +164,13 @@ describe("controller_memory slice", () => {
         if (command === "memory_save_space_record") return null;
         throw new Error("unexpected command");
       }),
-    } as unknown as { invoke: (command: string, args?: Record<string, unknown>) => Promise<unknown> };
+    } as unknown as {
+      invoke: (command: string, args?: Record<string, unknown>) => Promise<unknown>;
+    };
 
     const slice = createMemorySlice({
       platform: platform as never,
+      strings: () => ui_ru,
       card: () => makeCard(),
       activeSpaceId: () => "team:qa",
       setMemorySpaces: vi.fn(),

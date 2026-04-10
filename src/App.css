@@ -32,10 +32,7 @@
   background:
     radial-gradient(circle at top left, rgba(255, 236, 213, 0.82), transparent 42%),
     linear-gradient(180deg, #f4efe7 0%, #ebe7de 100%);
-  font-family:
-    "Segoe UI Variable Text",
-    "Segoe UI",
-    sans-serif;
+  font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
   line-height: 1.4;
   font-weight: 400;
   text-rendering: optimizeLegibility;
@@ -187,7 +184,9 @@ input {
   background: rgba(28, 63, 59, 0.08);
   color: #17322f;
   font-weight: 600;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .status-pill.is-capturing {
@@ -241,8 +240,7 @@ input {
   min-height: 0;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-card);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62));
   box-shadow: 0 14px 35px rgba(28, 49, 45, 0.08);
   transition: opacity 0.2s ease;
 }
@@ -584,7 +582,9 @@ input {
   opacity: 0.5;
   transform: scale(0.98);
   position: relative;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .result-superseded-hint {
@@ -691,7 +691,9 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .copy-section-btn:hover {

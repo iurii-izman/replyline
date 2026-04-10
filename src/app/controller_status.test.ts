@@ -6,7 +6,7 @@ import {
   phaseLabelFor,
   traySyncPayload,
 } from "./controller_status";
-import { ui } from "./locale";
+import { ui_ru as uiRu } from "./locale";
 
 describe("controller_status helpers", () => {
   it("builds tray payload for analyzing with short detail", () => {
@@ -43,12 +43,12 @@ describe("controller_status helpers", () => {
   });
 
   it("returns localized labels for capture and ready", () => {
-    expect(phaseLabelFor("capturing", false, false)).toBe(ui.phase.capturing);
-    expect(phaseLabelFor("ready", false, false)).toBe(ui.phase.ready);
+    expect(phaseLabelFor("capturing", false, false, uiRu)).toBe(uiRu.phase.capturing);
+    expect(phaseLabelFor("ready", false, false, uiRu)).toBe(uiRu.phase.ready);
   });
 
   it("returns live phase headlines and subtitles", () => {
-    expect(livePhaseHeadlineFor("transcribing")).toBe(ui.livePhase.transcribingHeadline);
-    expect(livePhaseSubFor("analyzing")).toBe(ui.livePhase.analyzingSub);
+    expect(livePhaseHeadlineFor("transcribing", uiRu)).toBe(uiRu.livePhase.transcribingHeadline);
+    expect(livePhaseSubFor("analyzing", uiRu)).toBe(uiRu.livePhase.analyzingSub);
   });
 });

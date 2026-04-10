@@ -15,8 +15,8 @@ Guide for developers adding new providers, features, or integrations.
 
 1. If it uses OpenAI-compatible API: just change `llm_base_url` and `llm_model`
 2. If it uses a different protocol:
-   - Create `src-tauri/src/new_llm.rs`
-   - Add routing in `llm_provider.rs`
+   - Create `src-tauri/src/new_llm.rs` (or extend `llm.rs`)
+   - Route from `services/capture_pipeline.rs` into the new module
    - Add provider type to settings
 
 ### Current Provider Flow
@@ -28,8 +28,7 @@ stt_provider::transcribe()
   → deepgram::transcribe_wav()       [REST, batch]
   → deepgram::transcribe_pcm_streaming()  [WebSocket]
   ↓ transcript text
-llm_provider::analyze()
-  → llm::analyze_transcript()        [OpenAI-compatible chat API]
+llm::analyze_transcript()            [OpenAI-compatible chat API]
   ↓ AnalysisCardDto {gist, say_now, next_move}
 Frontend card display
 ```
@@ -69,6 +68,7 @@ settings.primaryLanguage → system_prompt_for_language() → LLM prompt
 ## Quality Gates
 
 Any extension must pass:
+
 - `pnpm smoke` — all existing checks
 - `scripts/check-ipc-handler-contract.mjs` — IPC count matches
 - `scripts/check-consistency.mjs` — file/export consistency

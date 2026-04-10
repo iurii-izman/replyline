@@ -89,35 +89,35 @@ Error recovery returns to `error` phase with a user-safe message.
 
 20 registered commands between frontend and backend:
 
-| Command | Purpose |
-|---------|---------|
-| `load_bootstrap` | Initial state: settings, key presence, context status, log status |
-| `save_settings` | Persist AppSettings to JSON |
-| `acknowledge_tray_intro` | Mark tray intro as seen |
-| `save_secret` | Store API key in Credential Manager |
-| `delete_secret` | Remove API key from Credential Manager |
-| `clear_context` | Reset conversation context |
-| `get_context_status` | Query context entry count and active flag |
-| `capture_start` | Begin WASAPI loopback recording |
-| `capture_stop_and_analyze` | Stop capture, run STT + LLM pipeline, return card |
-| `retry_last_analysis` | Re-run LLM on last transcript without re-capturing |
-| `sync_tray_ui_phase` | Update tray tooltip from UI phase |
-| `tray_open_main` | Show/focus the main window |
-| `memory_list_spaces` | List all memory spaces |
-| `memory_get_space_record` | Load a full space record (facts, commitments, terms) |
-| `memory_save_space_record` | Persist a space record to disk |
-| `collect_diagnostic_bundle` | Gather runtime evidence into a bundle |
-| `get_log_status` | Return log path, last line, last debug WAV path |
-| `log_client_event` | Append a frontend event to the app log |
-| `open_notebooklm` | Open the configured NotebookLM URL in the system browser |
-| `check_provider_health` | Ping Deepgram + LLM endpoints, return reachability status |
-| `quit_app` | Exit the application |
+| Command                     | Purpose                                                           |
+| --------------------------- | ----------------------------------------------------------------- |
+| `load_bootstrap`            | Initial state: settings, key presence, context status, log status |
+| `save_settings`             | Persist AppSettings to JSON                                       |
+| `acknowledge_tray_intro`    | Mark tray intro as seen                                           |
+| `save_secret`               | Store API key in Credential Manager                               |
+| `delete_secret`             | Remove API key from Credential Manager                            |
+| `clear_context`             | Reset conversation context                                        |
+| `get_context_status`        | Query context entry count and active flag                         |
+| `capture_start`             | Begin WASAPI loopback recording                                   |
+| `capture_stop_and_analyze`  | Stop capture, run STT + LLM pipeline, return card                 |
+| `retry_last_analysis`       | Re-run LLM on last transcript without re-capturing                |
+| `sync_tray_ui_phase`        | Update tray tooltip from UI phase                                 |
+| `tray_open_main`            | Show/focus the main window                                        |
+| `memory_list_spaces`        | List all memory spaces                                            |
+| `memory_get_space_record`   | Load a full space record (facts, commitments, terms)              |
+| `memory_save_space_record`  | Persist a space record to disk                                    |
+| `collect_diagnostic_bundle` | Gather runtime evidence into a bundle                             |
+| `get_log_status`            | Return log path, last line, last debug WAV path                   |
+| `log_client_event`          | Append a frontend event to the app log                            |
+| `open_notebooklm`           | Open the configured NotebookLM URL in the system browser          |
+| `check_provider_health`     | Ping Deepgram + LLM endpoints, return reachability status         |
+| `quit_app`                  | Exit the application                                              |
 
 Events emitted from backend to frontend:
 
-| Event | Payload |
-|-------|---------|
-| `replyline://status` | `{ phase, detail }` -- pipeline progress |
+| Event                       | Payload                                   |
+| --------------------------- | ----------------------------------------- |
+| `replyline://status`        | `{ phase, detail }` -- pipeline progress  |
 | `replyline://open-settings` | `()` -- tray menu triggers settings panel |
 
 ### Backend Layer (Rust)
@@ -131,7 +131,6 @@ src-tauri/src/
   llm.rs                LLM analysis client (OpenAI-compatible, retry/backoff)
   providers/
     stt_provider.rs     STT provider facade used by pipeline orchestration
-    llm_provider.rs     LLM provider facade used by pipeline orchestration
   context.rs            ConversationContext: RAM ring buffer with TTL
   settings.rs           Settings load/save (%APPDATA% JSON)
   credentials.rs        Windows Credential Manager (keyring) operations
@@ -146,11 +145,11 @@ src-tauri/src/
 
 ### External Dependencies
 
-| Service | Role | Protocol |
-|---------|------|----------|
-| Deepgram | Speech-to-text | HTTPS POST (WAV upload) |
-| User-configured LLM | Transcript analysis | HTTPS POST (OpenAI chat completion format) |
-| NotebookLM | External research/workspace tool | HTTPS URL opened in system browser |
+| Service             | Role                             | Protocol                                   |
+| ------------------- | -------------------------------- | ------------------------------------------ |
+| Deepgram            | Speech-to-text                   | HTTPS POST (WAV upload)                    |
+| User-configured LLM | Transcript analysis              | HTTPS POST (OpenAI chat completion format) |
+| NotebookLM          | External research/workspace tool | HTTPS URL opened in system browser         |
 
 Replyline does not bundle or host these services. The user configures endpoints, keys, and optional external tool URLs.
 
@@ -175,6 +174,7 @@ Both mutexes are acquired per-command. The capture mutex is held briefly at star
 The context mutex is held during formatting and push operations.
 
 Context constraints:
+
 - TTL: 20 minutes from last touch (auto-cleared on next access).
 - Max entries: 3 transcript fragments.
 - Max chars: 1500 total across all entries (oldest evicted first).
@@ -183,18 +183,18 @@ Context constraints:
 
 ### Roaming app data (`%APPDATA%\com.replyline.app\`)
 
-| Path | Content | Format |
-|------|---------|--------|
-| `settings.json` | User preferences (hotkey, provider URLs, model, language) | Plaintext JSON |
-| `memory/spaces.json` | Memory space index | JSON |
-| `memory/<space-id>/record.json` | Per-space facts, commitments, terms | JSON |
+| Path                            | Content                                                   | Format         |
+| ------------------------------- | --------------------------------------------------------- | -------------- |
+| `settings.json`                 | User preferences (hotkey, provider URLs, model, language) | Plaintext JSON |
+| `memory/spaces.json`            | Memory space index                                        | JSON           |
+| `memory/<space-id>/record.json` | Per-space facts, commitments, terms                       | JSON           |
 
 ### Local app data (`%LOCALAPPDATA%\com.replyline.app\`)
 
-| Path | Content | Format |
-|------|---------|--------|
-| `app.log` | Append-only event log (5MB rotation) | Line-delimited text |
-| `debug/` | Failed-STT WAV files (written only on STT errors) | WAV |
+| Path      | Content                                           | Format              |
+| --------- | ------------------------------------------------- | ------------------- |
+| `app.log` | Append-only event log (5MB rotation)              | Line-delimited text |
+| `debug/`  | Failed-STT WAV files (written only on STT errors) | WAV                 |
 
 ### Secrets
 

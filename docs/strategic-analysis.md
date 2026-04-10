@@ -15,20 +15,20 @@
 
 ### What the code actually shows (ground truth)
 
-| Layer | Status |
-|---|---|
-| Audio capture (WASAPI loopback, `audio.rs`) | Implemented. Windows-only. 16kHz mono downmix. |
-| STT (Deepgram batch + streaming, `deepgram.rs`) | Batch wired. Streaming exists but `#[allow(dead_code)]`. |
-| LLM analysis (`llm.rs`) | Single-pass OpenAI-compatible. Russian system prompt. 160 max_tokens. |
-| Card contract | `gist` <=110 chars, `say_now` <=220 chars, `next_move` <=110 chars. Hard-clamped in Rust. |
-| Context (`context.rs`) | RAM-only. 20-min TTL. Max 3 entries, 1500 chars total. Auto-expire. |
-| Secrets (`credentials.rs`) | Windows Credential Manager via `keyring` crate. |
-| Settings (`settings.rs`) | Atomic JSON writes. Validates schema version, hotkey, URL, model, language (ru/en only), capture range (5--180s). |
-| Memory layer (`memory.rs`) | Fully implemented: spaces, facts, commitments, terms, JSON store with validation. Zero UI. |
-| Tray integration (`lib.rs`) | Open / Settings / Clear Context / Quit. Left-click opens window. |
-| Window | 408x360, no decorations, always-on-top, skip taskbar, hide-on-close. |
-| Tests | Unit tests for context trimming, WAV encoding, JSON parsing, memory CRUD, settings validation. |
-| Verification | 4 lanes: compile+unit, mock/UI (future), prompt/contract, runtime proof. |
+| Layer                                           | Status                                                                                                            |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Audio capture (WASAPI loopback, `audio.rs`)     | Implemented. Windows-only. 16kHz mono downmix.                                                                    |
+| STT (Deepgram batch + streaming, `deepgram.rs`) | Batch wired. Streaming exists but `#[allow(dead_code)]`.                                                          |
+| LLM analysis (`llm.rs`)                         | Single-pass OpenAI-compatible. Russian system prompt. 160 max_tokens.                                             |
+| Card contract                                   | `gist` <=110 chars, `say_now` <=220 chars, `next_move` <=110 chars. Hard-clamped in Rust.                         |
+| Context (`context.rs`)                          | RAM-only. 20-min TTL. Max 3 entries, 1500 chars total. Auto-expire.                                               |
+| Secrets (`credentials.rs`)                      | Windows Credential Manager via `keyring` crate.                                                                   |
+| Settings (`settings.rs`)                        | Atomic JSON writes. Validates schema version, hotkey, URL, model, language (ru/en only), capture range (5--180s). |
+| Memory layer (`memory.rs`)                      | Fully implemented: spaces, facts, commitments, terms, JSON store with validation. Zero UI.                        |
+| Tray integration (`lib.rs`)                     | Open / Settings / Clear Context / Quit. Left-click opens window.                                                  |
+| Window                                          | 408x360, no decorations, always-on-top, skip taskbar, hide-on-close.                                              |
+| Tests                                           | Unit tests for context trimming, WAV encoding, JSON parsing, memory CRUD, settings validation.                    |
+| Verification                                    | 4 lanes: compile+unit, mock/UI (future), prompt/contract, runtime proof.                                          |
 
 ---
 
@@ -44,7 +44,7 @@ It is not a meeting recorder, not a transcript tool, not a speaking coach, and n
 
 The card lives in RAM. Nothing is stored by default. The user controls when capture starts (press hotkey) and when it stops (release hotkey). There is no background recording, no speaker detection, no emotion analysis, no history, and no bot joining the call.
 
-**Why this matters in 2026:** The market is saturated with tools that help you *remember* meetings (Otter, Fireflies, Granola) or *improve* your speaking (Poised, Yoodli). Nobody occupies the position of helping you *respond* in the moment. Replyline's value is not memory but **response quality under pressure**.
+**Why this matters in 2026:** The market is saturated with tools that help you _remember_ meetings (Otter, Fireflies, Granola) or _improve_ your speaking (Poised, Yoodli). Nobody occupies the position of helping you _respond_ in the moment. Replyline's value is not memory but **response quality under pressure**.
 
 ---
 
@@ -54,12 +54,12 @@ The card lives in RAM. Nothing is stored by default. The user controls when capt
 
 Individual professionals on Windows who conduct 5+ difficult work calls per week:
 
-| Role | Pain | Scenario |
-|---|---|---|
+| Role                                   | Pain                                                            | Scenario                                                       |
+| -------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------- |
 | Technical leads / engineering managers | Unexpected objections during architecture reviews, status calls | Need to respond to "why is this late?" without being defensive |
-| Product managers in B2B | Client pushback on scope, timeline, priorities | Need to reframe without over-promising |
-| Account managers / sales engineers | Price objections, contract negotiations, escalations | Need a composed counter without losing the thread |
-| Consultants / freelancers | Demanding clients, scope creep, value challenges | Need to hold boundaries gracefully |
+| Product managers in B2B                | Client pushback on scope, timeline, priorities                  | Need to reframe without over-promising                         |
+| Account managers / sales engineers     | Price objections, contract negotiations, escalations            | Need a composed counter without losing the thread              |
+| Consultants / freelancers              | Demanding clients, scope creep, value challenges                | Need to hold boundaries gracefully                             |
 
 ### Secondary ICP
 
@@ -121,28 +121,28 @@ Do not use: "AI meeting assistant", "meeting notes", "transcription tool", "spea
 
 ### "Replyline" assessment
 
-| Criterion | Score | Comment |
-|---|---|---|
-| Clarity | 6/10 | "Reply" is clear, "line" is ambiguous (helpdesk? timeline? pipeline?) |
-| Trust | 7/10 | Neutral, not hype-y. Doesn't trigger suspicion. |
-| Memorability | 5/10 | Generic compound. Easy to forget. |
-| Distinctiveness | 5/10 | Sounds like SaaS name generator output. |
-| Product fit | 7/10 | "Reply" is accurate, but misses hotkey/card/moment. |
+| Criterion       | Score | Comment                                                               |
+| --------------- | ----- | --------------------------------------------------------------------- |
+| Clarity         | 6/10  | "Reply" is clear, "line" is ambiguous (helpdesk? timeline? pipeline?) |
+| Trust           | 7/10  | Neutral, not hype-y. Doesn't trigger suspicion.                       |
+| Memorability    | 5/10  | Generic compound. Easy to forget.                                     |
+| Distinctiveness | 5/10  | Sounds like SaaS name generator output.                               |
+| Product fit     | 7/10  | "Reply" is accurate, but misses hotkey/card/moment.                   |
 
 ### Consolidated alternative names (best from all sources)
 
-| Name | Clarity | Trust | Distinctive | Fit | Total | Source docs |
-|---|---|---|---|---|---|---|
-| Replyline | 6 | 7 | 5 | 7 | 25 | Current |
-| Tact | 7 | 8 | 9 | 9 | 33 | Doc 5 |
-| Riposte | 7 | 6 | 9 | 9 | 31 | Doc 5 |
-| HoldCard | 8 | 8 | 9 | 9 | 34 | Doc 4 |
-| SayNext | 8 | 9 | 8 | 9 | 34 | Doc 4 |
-| Cuecard | 8 | 7 | 7 | 9 | 31 | Doc 2 |
-| Parry | 7 | 6 | 8 | 9 | 30 | Doc 5 |
-| Reflex | 8 | 7 | 7 | 9 | 31 | Doc 5 |
-| Replycard | 9 | 8 | 5 | 9 | 31 | Doc 1 |
-| Reactkey | 7 | 7 | 7 | 8 | 29 | Doc 8 |
+| Name      | Clarity | Trust | Distinctive | Fit | Total | Source docs |
+| --------- | ------- | ----- | ----------- | --- | ----- | ----------- |
+| Replyline | 6       | 7     | 5           | 7   | 25    | Current     |
+| Tact      | 7       | 8     | 9           | 9   | 33    | Doc 5       |
+| Riposte   | 7       | 6     | 9           | 9   | 31    | Doc 5       |
+| HoldCard  | 8       | 8     | 9           | 9   | 34    | Doc 4       |
+| SayNext   | 8       | 9     | 8           | 9   | 34    | Doc 4       |
+| Cuecard   | 8       | 7     | 7           | 9   | 31    | Doc 2       |
+| Parry     | 7       | 6     | 8           | 9   | 30    | Doc 5       |
+| Reflex    | 8       | 7     | 7           | 9   | 31    | Doc 5       |
+| Replycard | 9       | 8     | 5           | 9   | 31    | Doc 1       |
+| Reactkey  | 7       | 7     | 7           | 8   | 29    | Doc 8       |
 
 ### Shortlist (top 5)
 
@@ -166,23 +166,23 @@ Do not use: "AI meeting assistant", "meeting notes", "transcription tool", "spea
 
 ### 5 core traits
 
-| Trait | How it manifests |
-|---|---|
-| Precise | Card fields are hard-clamped (110/220/110 chars in `llm.rs`). No vague advice. |
-| Private | RAM-only context, 20-min TTL, manual hotkey activation. |
-| Pragmatic | One card, three fields. No features beyond the core moment. |
-| Adult | No gamification, no streaks, no "AI magic" language. |
-| User-controlled | Nothing happens unless the user holds the hotkey. |
+| Trait           | How it manifests                                                               |
+| --------------- | ------------------------------------------------------------------------------ |
+| Precise         | Card fields are hard-clamped (110/220/110 chars in `llm.rs`). No vague advice. |
+| Private         | RAM-only context, 20-min TTL, manual hotkey activation.                        |
+| Pragmatic       | One card, three fields. No features beyond the core moment.                    |
+| Adult           | No gamification, no streaks, no "AI magic" language.                           |
+| User-controlled | Nothing happens unless the user holds the hotkey.                              |
 
 ### 5 traits to avoid
 
-| Trait | Why |
-|---|---|
-| Therapeutic | "Helps you manage emotions" --> regulatory/positioning trap |
-| Stealthy | "Nobody will know" --> instant trust destruction |
-| Autonomous | "Answers for you" --> misrepresents what the product does |
-| Playful | Emojis, mascots, gamification --> wrong audience signal |
-| Omniscient | "Understands your conversation" --> overpromise, LLM reality |
+| Trait       | Why                                                          |
+| ----------- | ------------------------------------------------------------ |
+| Therapeutic | "Helps you manage emotions" --> regulatory/positioning trap  |
+| Stealthy    | "Nobody will know" --> instant trust destruction             |
+| Autonomous  | "Answers for you" --> misrepresents what the product does    |
+| Playful     | Emojis, mascots, gamification --> wrong audience signal      |
+| Omniscient  | "Understands your conversation" --> overpromise, LLM reality |
 
 ### Emotional effect
 
@@ -205,17 +205,17 @@ The dark-green (#173F38) + warm-beige (#F5EDE0) + muted-ochre palette is **stron
 
 ### Colour system
 
-| Role | Colour | Hex | Notes |
-|---|---|---|---|
-| Primary dark | Deep pine | #173F38 | Background, frames, primary elements (current) |
-| Surface | Warm bone | #F5EDE0 | Card background, settings surface (current) |
-| Accent | Muted ochre | #C49A5B | CTA, active state, emphasis only (current) |
-| Text primary | Dark graphite | #2D2D2D | **Add** -- currently #142321, needs more structure |
-| Text secondary | Muted pine | rgba(20,35,33,0.72) | Current -- keep |
-| Error | Muted terracotta | #8D2020 | Current -- keep. Not bright red. |
-| Capturing state | Warm rust | rgba(196,80,49,0.14) | Current `.is-capturing` -- keep |
-| Processing state | Amber | rgba(185,135,37,0.16) | Current `.is-transcribing/.is-analyzing` -- keep |
-| Ready state | Calm teal | rgba(34,116,98,0.14) | Current `.is-ready` -- keep |
+| Role             | Colour           | Hex                   | Notes                                              |
+| ---------------- | ---------------- | --------------------- | -------------------------------------------------- |
+| Primary dark     | Deep pine        | #173F38               | Background, frames, primary elements (current)     |
+| Surface          | Warm bone        | #F5EDE0               | Card background, settings surface (current)        |
+| Accent           | Muted ochre      | #C49A5B               | CTA, active state, emphasis only (current)         |
+| Text primary     | Dark graphite    | #2D2D2D               | **Add** -- currently #142321, needs more structure |
+| Text secondary   | Muted pine       | rgba(20,35,33,0.72)   | Current -- keep                                    |
+| Error            | Muted terracotta | #8D2020               | Current -- keep. Not bright red.                   |
+| Capturing state  | Warm rust        | rgba(196,80,49,0.14)  | Current `.is-capturing` -- keep                    |
+| Processing state | Amber            | rgba(185,135,37,0.16) | Current `.is-transcribing/.is-analyzing` -- keep   |
+| Ready state      | Calm teal        | rgba(34,116,98,0.14)  | Current `.is-ready` -- keep                        |
 
 ### Typography
 
@@ -294,14 +294,14 @@ Custom illustrations, animated logo, glassmorphism, 3D elements, light/dark them
 
 ### Current stage decisions
 
-| Channel | Decision | Rationale |
-|---|---|---|
-| Source-only GitHub alpha | **Yes** | Honest about stage. Attracts technical reviewers. Builds trust. |
-| Private tester build | **Yes** | 10--15 hand-picked users with real difficult-call workflows. |
-| Minimal landing page | **Yes** | One page: hero, trust block, "what it is / isn't", GitHub link. |
-| Waitlist | **No** | Creates false expectations for source-only alpha. |
-| Binary release | **No** | No signed installer, no cross-machine validation, no live-call proof. |
-| Product Hunt | **No** | Premature. Wrong audience expectations. Use after binary release with demo video. |
+| Channel                  | Decision | Rationale                                                                         |
+| ------------------------ | -------- | --------------------------------------------------------------------------------- |
+| Source-only GitHub alpha | **Yes**  | Honest about stage. Attracts technical reviewers. Builds trust.                   |
+| Private tester build     | **Yes**  | 10--15 hand-picked users with real difficult-call workflows.                      |
+| Minimal landing page     | **Yes**  | One page: hero, trust block, "what it is / isn't", GitHub link.                   |
+| Waitlist                 | **No**   | Creates false expectations for source-only alpha.                                 |
+| Binary release           | **No**   | No signed installer, no cross-machine validation, no live-call proof.             |
+| Product Hunt             | **No**   | Premature. Wrong audience expectations. Use after binary release with demo video. |
 
 ### Best first 5 channels
 
@@ -473,35 +473,35 @@ Yes, but minimal. Not a marketing site -- a technical business card. When someon
 
 ### Must-have before source publication
 
-| Document | Content | Priority |
-|---|---|---|
-| README.md | Positioning, alpha disclaimer, trust model, build instructions, limitations | Critical |
-| LICENSE | MIT (already present) | Critical |
-| `docs/privacy-and-trust.md` | What is captured, where it goes, what is NOT stored, user responsibility, recording laws note | Critical |
+| Document                    | Content                                                                                         | Priority |
+| --------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| README.md                   | Positioning, alpha disclaimer, trust model, build instructions, limitations                     | Critical |
+| LICENSE                     | MIT (already present)                                                                           | Critical |
+| `docs/privacy-and-trust.md` | What is captured, where it goes, what is NOT stored, user responsibility, recording laws note   | Critical |
 | `docs/known-limitations.md` | Honest list: platforms not verified, no speaker detection, no history, no storage, Windows-only | Critical |
-| `docs/copy-rules.md` | Already exists -- update with banned terms from this analysis | High |
-| Contact/support note | GitHub Issues only, with templates | High |
+| `docs/copy-rules.md`        | Already exists -- update with banned terms from this analysis                                   | High     |
+| Contact/support note        | GitHub Issues only, with templates                                                              | High     |
 
 ### Should-have
 
-| Document | Content |
-|---|---|
-| Recording/consent note | Paragraph in privacy-and-trust.md: user must comply with local recording laws and platform TOS |
-| Third-party providers note | Deepgram processes audio, LLM provider processes text. User configures both. |
-| Security note | No stored audio. Snippets in RAM. Credential Manager for secrets. How to verify. |
-| Release notes template | Already partially exists in verification docs -- formalize |
-| Issue templates | Bug report (OS, audio setup, steps, expected/actual) + feedback template |
+| Document                   | Content                                                                                        |
+| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| Recording/consent note     | Paragraph in privacy-and-trust.md: user must comply with local recording laws and platform TOS |
+| Third-party providers note | Deepgram processes audio, LLM provider processes text. User configures both.                   |
+| Security note              | No stored audio. Snippets in RAM. Credential Manager for secrets. How to verify.               |
+| Release notes template     | Already partially exists in verification docs -- formalize                                     |
+| Issue templates            | Bug report (OS, audio setup, steps, expected/actual) + feedback template                       |
 
 ### Later (after alpha, before binary)
 
-| Document | When |
-|---|---|
-| Full Privacy Policy (legal review) | Before binary release |
-| Terms of Use | Before binary release |
-| CONTRIBUTING.md | When ready to accept PRs |
-| FAQ | After 10+ users ask recurring questions |
-| Architecture overview | When onboarding external contributors |
-| Vulnerability disclosure / security.txt | Before binary release |
+| Document                                | When                                    |
+| --------------------------------------- | --------------------------------------- |
+| Full Privacy Policy (legal review)      | Before binary release                   |
+| Terms of Use                            | Before binary release                   |
+| CONTRIBUTING.md                         | When ready to accept PRs                |
+| FAQ                                     | After 10+ users ask recurring questions |
+| Architecture overview                   | When onboarding external contributors   |
+| Vulnerability disclosure / security.txt | Before binary release                   |
 
 ### What is NOT needed
 
@@ -542,22 +542,23 @@ Subscription with generous free tier or one-time purchase for binary convenience
 
 ### Market landscape (April 2026)
 
-| Product | Category | What they do | Why Replyline is different |
-|---|---|---|---|
-| Granola | AI notepad | Full-meeting capture, structured notes, AI enhancement | Replyline doesn't capture full meetings or produce notes |
-| Otter | AI meeting agent | Real-time transcription, summaries, bot joins call | Replyline has no bot, no transcript, no summary |
-| Fireflies | AI notetaker | Full recording, CRM integration, searchable history | Replyline has zero storage and no integrations |
-| Krisp | Voice AI | Noise cancellation, meeting notes, accent AI | Replyline doesn't touch audio quality -- focuses on content |
-| Read AI | Meeting intelligence | Cross-meeting memory, email+meeting+search assistant | Entirely different scale and scope |
-| Poised | Communication coach | Real-time speaking feedback (pace, filler words, confidence) | Replyline advises on WHAT to say, not HOW you say it |
-| Yoodli | Speech coach | Roleplay practice, speech analysis, training | Replyline is live, not practice |
-| Superwhisper | Voice-to-text | On-device dictation, offline/cloud model options | Superwhisper transcribes YOU. Replyline listens to the OTHER PERSON. |
+| Product      | Category             | What they do                                                 | Why Replyline is different                                           |
+| ------------ | -------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| Granola      | AI notepad           | Full-meeting capture, structured notes, AI enhancement       | Replyline doesn't capture full meetings or produce notes             |
+| Otter        | AI meeting agent     | Real-time transcription, summaries, bot joins call           | Replyline has no bot, no transcript, no summary                      |
+| Fireflies    | AI notetaker         | Full recording, CRM integration, searchable history          | Replyline has zero storage and no integrations                       |
+| Krisp        | Voice AI             | Noise cancellation, meeting notes, accent AI                 | Replyline doesn't touch audio quality -- focuses on content          |
+| Read AI      | Meeting intelligence | Cross-meeting memory, email+meeting+search assistant         | Entirely different scale and scope                                   |
+| Poised       | Communication coach  | Real-time speaking feedback (pace, filler words, confidence) | Replyline advises on WHAT to say, not HOW you say it                 |
+| Yoodli       | Speech coach         | Roleplay practice, speech analysis, training                 | Replyline is live, not practice                                      |
+| Superwhisper | Voice-to-text        | On-device dictation, offline/cloud model options             | Superwhisper transcribes YOU. Replyline listens to the OTHER PERSON. |
 
 ### The real wedge
 
 Every competitor works **before** the call (prep), **during** the call (recording), or **after** the call (notes/summary). None works at the specific moment of **"I need to reply right now."**
 
 Replyline is the only tool that:
+
 1. Activates manually (hotkey) only when needed
 2. Captures a fragment, not the whole call
 3. Generates a reply, not a transcript
@@ -565,16 +566,16 @@ Replyline is the only tool that:
 
 ### Language to avoid (prevents category collapse)
 
-| Never say | Why | Say instead |
-|---|---|---|
-| "AI meeting assistant" | Granola/Otter/Fireflies territory | "Reply aid for difficult moments" |
-| "Transcribe" / "transcript" | Implies full recording | "Captures a short snippet" |
-| "Meeting notes" / "summary" | Granola/Fireflies/Otter territory | "One compact card" |
-| "Communication coach" | Poised/Yoodli territory | "Decision support" |
-| "Voice-to-text" / "dictation" | Superwhisper territory | "Audio snippet processing" |
-| "Never miss anything" | Implies full capture | "Help in the moment that matters" |
-| "Invisible" / "stealth" | Trust destruction | "Visible capture state" |
-| "Understands emotions" | Overpromise, competes with Poised | "Extracts the gist" |
+| Never say                     | Why                               | Say instead                       |
+| ----------------------------- | --------------------------------- | --------------------------------- |
+| "AI meeting assistant"        | Granola/Otter/Fireflies territory | "Reply aid for difficult moments" |
+| "Transcribe" / "transcript"   | Implies full recording            | "Captures a short snippet"        |
+| "Meeting notes" / "summary"   | Granola/Fireflies/Otter territory | "One compact card"                |
+| "Communication coach"         | Poised/Yoodli territory           | "Decision support"                |
+| "Voice-to-text" / "dictation" | Superwhisper territory            | "Audio snippet processing"        |
+| "Never miss anything"         | Implies full capture              | "Help in the moment that matters" |
+| "Invisible" / "stealth"       | Trust destruction                 | "Visible capture state"           |
+| "Understands emotions"        | Overpromise, competes with Poised | "Extracts the gist"               |
 
 ### Is the wedge strong enough?
 
@@ -624,30 +625,30 @@ Replyline is the only tool that:
 
 ### Product risks
 
-| # | Risk | Impact | Mitigation |
-|---|---|---|---|
-| 1 | Core moment doesn't prove repeatably useful in real calls | Fatal | Validate with 10+ real-call sessions before broad launch |
-| 2 | WASAPI loopback breaks on Zoom/Teams/Meet updates | High | Test on multiple configurations, document failures |
-| 3 | STT+LLM latency exceeds 5s, making card useless under pressure | High | Measure. Current 20s timeout in `llm.rs` may need tuning. |
-| 4 | LLM generates harmful/wrong `say_now` in critical moments | High | System prompt guardrails exist in `llm.rs`. Add disclaimer: "suggestions only, user decides" |
-| 5 | Audio driver inconsistency across machines (virtual audio devices from Zoom/Teams) | Medium | Document. Cannot control third-party drivers. |
+| #   | Risk                                                                               | Impact | Mitigation                                                                                   |
+| --- | ---------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------- |
+| 1   | Core moment doesn't prove repeatably useful in real calls                          | Fatal  | Validate with 10+ real-call sessions before broad launch                                     |
+| 2   | WASAPI loopback breaks on Zoom/Teams/Meet updates                                  | High   | Test on multiple configurations, document failures                                           |
+| 3   | STT+LLM latency exceeds 5s, making card useless under pressure                     | High   | Measure. Current 20s timeout in `llm.rs` may need tuning.                                    |
+| 4   | LLM generates harmful/wrong `say_now` in critical moments                          | High   | System prompt guardrails exist in `llm.rs`. Add disclaimer: "suggestions only, user decides" |
+| 5   | Audio driver inconsistency across machines (virtual audio devices from Zoom/Teams) | Medium | Document. Cannot control third-party drivers.                                                |
 
 ### Trust / legal risks
 
-| # | Risk | Impact | Mitigation |
-|---|---|---|---|
-| 6 | User violates recording laws or workplace policies | High | Explicit disclaimer: user is responsible. Not our liability. |
-| 7 | Product perceived as "spyware" due to audio capture | High | Open source + trust docs + "visible capture state" language |
-| 8 | LLM API provider logs create de facto storage | Medium | Document: "your LLM provider may log requests per their policy" |
+| #   | Risk                                                | Impact | Mitigation                                                      |
+| --- | --------------------------------------------------- | ------ | --------------------------------------------------------------- |
+| 6   | User violates recording laws or workplace policies  | High   | Explicit disclaimer: user is responsible. Not our liability.    |
+| 7   | Product perceived as "spyware" due to audio capture | High   | Open source + trust docs + "visible capture state" language     |
+| 8   | LLM API provider logs create de facto storage       | Medium | Document: "your LLM provider may log requests per their policy" |
 
 ### Distribution / positioning risks
 
-| # | Risk | Impact | Mitigation |
-|---|---|---|---|
-| 9 | Product categorized as "another AI meeting assistant" | High | Aggressive messaging discipline. Never use competitor language. |
-| 10 | Wrong users arrive expecting transcripts/history | Medium | "What it is NOT" section in README, landing page, first-run |
-| 11 | Binary release creates support burden too early | Medium | Hold binary until verification complete |
-| 12 | Source-only limits tester pool to developers | Low | Acceptable for alpha stage |
+| #   | Risk                                                  | Impact | Mitigation                                                      |
+| --- | ----------------------------------------------------- | ------ | --------------------------------------------------------------- |
+| 9   | Product categorized as "another AI meeting assistant" | High   | Aggressive messaging discipline. Never use competitor language. |
+| 10  | Wrong users arrive expecting transcripts/history      | Medium | "What it is NOT" section in README, landing page, first-run     |
+| 11  | Binary release creates support burden too early       | Medium | Hold binary until verification complete                         |
+| 12  | Source-only limits tester pool to developers          | Low    | Acceptable for alpha stage                                      |
 
 ---
 
@@ -669,12 +670,15 @@ Replyline is the only tool that:
 ## 19. Final Recommendation
 
 ### Name
+
 Keep Replyline for alpha. Revisit before binary release.
 
 ### Source-only alpha
+
 **Publish now** -- after 1--2 weeks of docs/trust/copy cleanup (deliverables 1--4 from section 18). The engineering discipline is mature enough. Don't wait for perfection.
 
 ### Binary release
+
 **Later.** Minimum 4--8 weeks after source publication. Prerequisites: signed installer, 3+ machine verification, 10+ real-call tester sessions, stable Zoom/Teams/Meet behaviour.
 
 ### First public story
@@ -698,4 +702,4 @@ Technical. Honest. No hype. The target audience for the first wave is not end us
 
 ---
 
-*This analysis synthesizes 8 independent strategic reviews, cross-referenced with full codebase audit of all Rust backend modules (`audio.rs`, `deepgram.rs`, `llm.rs`, `context.rs`, `credentials.rs`, `settings.rs`, `memory.rs`, `commands.rs`, `lib.rs`, `types.rs`, `bin/runtime_probe.rs`), Solid.js frontend (`App.tsx`, `App.css`), Tauri configuration (`tauri.conf.json`, `Cargo.toml`, `capabilities/default.json`), test fixtures, and 12 documentation files.*
+_This analysis synthesizes 8 independent strategic reviews, cross-referenced with full codebase audit of all Rust backend modules (`audio.rs`, `deepgram.rs`, `llm.rs`, `context.rs`, `credentials.rs`, `settings.rs`, `memory.rs`, `commands.rs`, `lib.rs`, `types.rs`, `bin/runtime_probe.rs`), Solid.js frontend (`App.tsx`, `App.css`), Tauri configuration (`tauri.conf.json`, `Cargo.toml`, `capabilities/default.json`), test fixtures, and 12 documentation files._
