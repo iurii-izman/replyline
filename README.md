@@ -1,5 +1,7 @@
 # Replyline
 
+[![version](https://img.shields.io/badge/version-0.1.0--alpha-blue)](./CHANGELOG.md)
+
 ## Hero
 
 Когда ответить трудно, Replyline даёт следующий ход.
@@ -208,6 +210,13 @@ Start here:
 - [internal-alpha-checklist.md](docs/internal-alpha-checklist.md): порядок self-test и blocker gate
 - [tester-brief.md](docs/tester-brief.md): короткий бриф для точечных ранних тестеров
 - [test-feedback-template.md](docs/test-feedback-template.md): единый шаблон useful feedback
+
+## Alpha governance
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [CHANGELOG.md](CHANGELOG.md)
 
 ## License
 
