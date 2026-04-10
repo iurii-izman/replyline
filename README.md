@@ -220,16 +220,6 @@ Start here:
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - [CHANGELOG.md](CHANGELOG.md)
 
-## Быстрые команды (Makefile)
-
-| Команда | Действие |
-|---------|----------|
-| `make help` | Список всех команд |
-| `make smoke` | Ежедневный smoke-тест |
-| `make self-heal` | Починка стека |
-| `make status` | Статус Docker-сервисов |
-| `make profile-cloud` / `make profile-local` | Переключение профиля |
-
 ## License
 
 [MIT](LICENSE)
