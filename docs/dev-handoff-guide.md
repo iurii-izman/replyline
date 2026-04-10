@@ -20,6 +20,7 @@ rl-dev
 ```
 
 Команда автоматически:
+
 - перейдёт в `C:\Dev\replyline`
 - загрузит ключи из `DevVault` по списку из `.env.keys`
 - выставит `GH_TOKEN` из `GITHUB_CLASSIC_API_KEY` (если доступен)
@@ -43,17 +44,20 @@ pnpm tauri dev
 
 ### P0 (обязательно)
 
-1. Подключить runtime i18n-переключение в UI:
-   - заменить прямой `ui` на `getUi(settings().primaryLanguage)` в компонентах
-2. Подключить backend language switch:
-   - в `tray_status.rs` и `lib.rs` выбрать `ui_strings::en`/`ru` по `settings.primary_language`
-3. Прогнать `docs/internal-alpha-checklist.md` в реальных сценариях
+1. ~~Runtime i18n~~ — UI через `controller().strings()` / `getUi(settings.primaryLanguage)`; тексты idle/хрома без жёсткого RU в разметке.
+2. ~~Язык в Rust~~ — меню трея и тултипы с `pick_lang` + `primary_language`; после «Сохранить» вызывается `refresh_tray_menu`.
+3. **Прогнать `docs/internal-alpha-checklist.md`** — вручную на машине; автоматический префлайт цепочки:
+
+```powershell
+pnpm alpha:preflight
+```
+
+(эквивалент раздела 2 чеклиста: `smoke` + `runtime:preflight` + `probe:runtime` + `evidence:bundle`).
 
 ### P1 (после P0)
 
-1. Миграция на TypeScript 6 (ручные правки типов)
-2. Миграция на Vite 8 (manual config migration)
-3. Добавить `src-tauri/rustfmt.toml`
+1. ~~TypeScript 6~~ / ~~Vite 8~~ — в `package.json`; после обновлений гонять `pnpm smoke`.
+2. ~~`src-tauri/rustfmt.toml`~~ — добавлен (edition 2021, `max_width = 100`).
 
 ### P2 (по возможности)
 
@@ -69,6 +73,9 @@ pnpm tauri dev
 # Полный quality gate
 pnpm smoke
 
+# Webhook code review (нужны n8n + LiteLLM на localhost)
+pnpm code-review:webhook
+
 # Отдельные ключевые проверки
 pnpm test:ui:coverage
 pnpm test:prompt-contract
@@ -77,6 +84,27 @@ pnpm test:consistency
 pnpm copy:check
 cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 ```
+
+---
+
+## AI stack ops (автопилот)
+
+Replyline использует только тонкий мост к внешнему стеку.
+
+- Внешний проект AI stack (source of truth): `C:\Dev\ai-vibe-engineering`
+- Snapshot webhook workflow в этом репо: `docs/ai-stack/n8n_workflow_llm_review_webhook.json`
+- Локальная проверка моста из Replyline: `pnpm code-review:webhook`
+
+Операционные детали стека (n8n/LiteLLM/Langfuse/Ollama), runbooks и архитектура поддерживаются в отдельном проекте AI stack.
+
+---
+
+## Следующие логичные шаги (компактно, без раздувания)
+
+1. **Internal alpha по чеклисту** — сценарии полезности (раздел 3 `internal-alpha-checklist.md`); префлайт уже в `pnpm alpha:preflight`.
+2. **Держать JSON workflow синхронно** — правки в n8n → обновить `docs/ai-stack/...` и при необходимости `~/ai-stack/n8n_workflow_llm_review_webhook.json` + `PUT` в API.
+3. **PR-гигиена** — при желании вызывать `pnpm code-review:webhook` или `git diff ... | node scripts/send-code-review-webhook.mjs --stdin <file>` перед merge критичных веток.
+4. **P2 из секции ниже** — E2E / установщик / fixture gate по приоритету продукта.
 
 ---
 

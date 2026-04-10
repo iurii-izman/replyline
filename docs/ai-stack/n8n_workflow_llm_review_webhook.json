@@ -1,0 +1,127 @@
+{
+  "name": "AI Code Review Webhook (Cloud Fast)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "replyline-code-review",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const root = $input.first().json;\nconst body = root.body ?? root;\nconst diff = body.diff ?? body.patch ?? body.text ?? '';\nconst file = body.file ?? body.path ?? '';\nconst meta = body.meta;\nlet review_text = typeof diff === 'string' ? diff : (diff != null ? JSON.stringify(diff) : '');\nif (!review_text.trim()) review_text = 'No diff provided';\nif (file) review_text += '\\n\\nFile: ' + String(file);\nif (meta != null && meta !== '') {\n  const metaStr = typeof meta === 'string' ? meta : JSON.stringify(meta);\n  review_text += '\\n\\nMeta: ' + metaStr;\n}\nreturn [{ json: { review_text, file_hint: String(file || '') } }];"
+      },
+      "id": "normalize_input",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "position": [420, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:4000/v1/chat/completions",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer sk-local-dev-key"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'review-default', messages: [{ role: 'system', content: 'Ты senior code reviewer. Отвечай только валидным JSON-массивом объектов формата: [{\\\"severity\\\":\\\"low|medium|high\\\",\\\"finding\\\":\\\"...\\\",\\\"file\\\":\\\"...\\\",\\\"fix\\\":\\\"...\\\"}]. Без markdown и без лишнего текста. Если проблем нет, верни [].' }, { role: 'user', content: $json.review_text }], temperature: 0.1, max_tokens: 260 }) }}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "id": "llm_call",
+      "name": "LiteLLM Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [640, 300],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst raw = item.choices?.[0]?.message?.content;\nconst err = (m) => ({ json: { ok: false, error: m, raw: typeof raw === 'string' ? raw.slice(0, 2000) : '' } });\nif (raw == null || typeof raw !== 'string') return [err('missing_content')];\nfunction tryParse(s) {\n  try { return JSON.parse(s.trim()); } catch (e) { return null; }\n}\nlet parsed = tryParse(raw);\nif (parsed === null) {\n  const fence = raw.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n  if (fence) parsed = tryParse(fence[1]);\n}\nif (parsed === null) {\n  const i = raw.indexOf('[');\n  const j = raw.lastIndexOf(']');\n  if (i >= 0 && j > i) parsed = tryParse(raw.slice(i, j + 1));\n}\nif (parsed === null) return [err('invalid_json')];\nif (!Array.isArray(parsed)) return [err('not_array')];\nfor (let i = 0; i < parsed.length; i++) {\n  const o = parsed[i];\n  if (o === null || typeof o !== 'object') return [err('item_not_object')];\n  if (!['low', 'medium', 'high'].includes(o.severity)) return [err('bad_severity')];\n  if (typeof o.finding !== 'string') return [err('bad_finding')];\n  if (o.file != null && typeof o.file !== 'string') return [err('bad_file')];\n  if (o.fix != null && typeof o.fix !== 'string') return [err('bad_fix')];\n}\nreturn [{ json: { ok: true, findings: parsed } }];"
+      },
+      "id": "validate_output",
+      "name": "Validate LLM JSON",
+      "type": "n8n-nodes-base.code",
+      "position": [860, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "respond_to_webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1080, 300],
+      "typeVersion": 1.2
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "LiteLLM Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LiteLLM Call": {
+      "main": [
+        [
+          {
+            "node": "Validate LLM JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate LLM JSON": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}
