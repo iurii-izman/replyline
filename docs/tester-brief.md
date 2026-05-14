@@ -40,6 +40,7 @@ Replyline — Windows-first tray app для сложных рабочих раз
    - помогло ответить быстрее?
    - `say_now` было уместно и произносимо?
 4. Отправить фидбек по шаблону: `docs/test-feedback-template.md`.
+5. Для trusted beta triage пометить frequency/severity/reproducibility/action по `docs/beta-feedback-loop.md`.
 
 ## Что обязательно сообщать как отдельные классы проблем
 

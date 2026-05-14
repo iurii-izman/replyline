@@ -40,6 +40,13 @@
 - Repro steps:
 - Any runtime artifact/report file (if available):
 
+## 5.1) Triage tags (trusted beta ops)
+
+- Frequency (once / sometimes / always):
+- Severity (S0/S1/S2/S3):
+- Reproducibility (high / medium / low):
+- Action (fix now / schedule / monitor):
+
 ## 6) Trust and scope check
 
 - Did product behavior match trust docs? (yes/no + why):

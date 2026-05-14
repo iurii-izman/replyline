@@ -4,6 +4,7 @@ use crate::types::{AnalysisCardDto, AppSettings};
 
 const HTTP_TIMEOUT_SECS: u64 = 20;
 const MAX_RETRIES: u32 = 2;
+const RETRY_BASE_MS: u64 = 500;
 
 #[derive(Debug, Serialize)]
 struct ChatRequest<'a> {
@@ -145,7 +146,7 @@ pub async fn analyze_transcript(
         for attempt in 0..=MAX_RETRIES {
             if attempt > 0 {
                 tokio::time::sleep(std::time::Duration::from_millis(
-                    500 * 2u64.pow(attempt - 1),
+                    RETRY_BASE_MS * 2u64.pow(attempt - 1),
                 ))
                 .await;
             }
@@ -155,7 +156,7 @@ pub async fn analyze_transcript(
             }
             match req.send().await {
                 Ok(resp) if resp.status().is_server_error() && attempt < MAX_RETRIES => {
-                    last_err = format!("LLM server error {}", resp.status());
+                    last_err = format!("LLM_HTTP_5XX: LLM server error {}", resp.status());
                     continue;
                 }
                 Ok(resp) => {
@@ -163,10 +164,10 @@ pub async fn analyze_transcript(
                     break;
                 }
                 Err(err) if (err.is_timeout() || err.is_connect()) && attempt < MAX_RETRIES => {
-                    last_err = format!("LLM request failed: {err}");
+                    last_err = format!("LLM_RETRYABLE: LLM request failed: {err}");
                     continue;
                 }
-                Err(err) => return Err(format!("LLM request failed: {err}")),
+                Err(err) => return Err(format!("LLM_REQUEST_FAILED: LLM request failed: {err}")),
             }
         }
         resolved.ok_or(last_err)?
@@ -175,17 +176,17 @@ pub async fn analyze_transcript(
     if !response.status().is_success() {
         let status = response.status();
         let _ = response.text().await;
-        return Err(format!("LLM error {status}"));
+        return Err(format!("LLM_HTTP_ERROR: LLM error {status}"));
     }
 
     let payload: ChatResponse = response
         .json()
         .await
-        .map_err(|err| format!("LLM response parse failed: {err}"))?;
+        .map_err(|err| format!("LLM_PARSE_FAILED: LLM response parse failed: {err}"))?;
     let content = payload
         .choices
         .first()
-        .ok_or_else(|| "LLM returned no choices.".to_string())?
+        .ok_or_else(|| "LLM_EMPTY: LLM returned no choices.".to_string())?
         .message
         .content
         .clone();

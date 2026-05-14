@@ -257,6 +257,20 @@ describe("Replyline UI lane", () => {
     expect(screen.getByText(/Не прочитались настройки или ключи Windows/)).toBeTruthy();
   });
 
+  it("shows actionable restart diagnostics hint for lock-poisoned bootstrap", async () => {
+    const mock = createMockPlatform({
+      commandHandlers: {
+        load_bootstrap: async () => {
+          throw new Error("Context lock poisoned");
+        },
+      },
+    });
+
+    render(() => <App platform={mock.platform} />);
+    expect(await screen.findByText(/Перезапустите приложение/)).toBeTruthy();
+    expect(screen.getByText(/Собрать сводку/)).toBeTruthy();
+  });
+
   it("routes into settings when setup is required", async () => {
     const mock = createMockPlatform({
       bootstrap: makeBootstrap({
@@ -372,7 +386,7 @@ describe("Replyline UI lane", () => {
     render(() => <App platform={mock.platform} />);
     await screen.findByText("Подготовка к работе");
 
-    await user.click(screen.getByLabelText("Расширенные настройки"));
+    await user.click(screen.getByLabelText("Показать beta-ops инструменты"));
     await user.click(screen.getByRole("button", { name: "Сохранить на этой машине" }));
 
     await waitFor(() => {
@@ -432,6 +446,23 @@ describe("Replyline UI lane", () => {
         }),
       );
     });
+  });
+
+  it("shows partial config recovery hint when backend rejects incomplete settings", async () => {
+    const mock = createMockPlatform({
+      bootstrap: makeBootstrap({ runtimeReady: false }),
+      commandHandlers: {
+        save_settings: async () => {
+          throw new Error('{"kind":"Settings","message":"PARTIAL_CONFIG_INVALID"}');
+        },
+      },
+    });
+    const user = userEvent.setup();
+
+    render(() => <App platform={mock.platform} />);
+    await screen.findByText("Подготовка к работе");
+    await user.click(screen.getByRole("button", { name: "Сохранить на этой машине" }));
+    expect(await screen.findByText(/Файл настроек неполный после восстановления/)).toBeTruthy();
   });
 
   it("keeps first-run setup -> save -> reopen flow stable", async () => {

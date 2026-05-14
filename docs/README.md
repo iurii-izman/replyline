@@ -1,6 +1,6 @@
 # Replyline Docs
 
-Короткая навигация по документации Replyline для текущей внутренней alpha.
+Короткая навигация по документации Replyline для текущей внутренней stable beta.
 
 ## Read first
 
@@ -34,7 +34,7 @@
 
 - [naming-decision-brief.md](naming-decision-brief.md)
 - [memory-layer.md](memory-layer.md) (future layer, не core MVP story)
-- [i18n-beta-prep.md](i18n-beta-prep.md) (future multilingual prep, не часть текущей alpha UX)
+- [i18n-beta-prep.md](i18n-beta-prep.md) (future multilingual prep, не часть текущей stable-beta UX)
 - [internal-alpha-checklist.md](internal-alpha-checklist.md)
 - [tester-brief.md](tester-brief.md)
 - [test-feedback-template.md](test-feedback-template.md)

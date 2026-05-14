@@ -1,6 +1,6 @@
 # Contributing to Replyline
 
-This document covers the practical workflow for contributing to Replyline during the internal alpha phase.
+This document covers the practical workflow for contributing to Replyline during the internal stable beta phase.
 
 ## Prerequisites
 
@@ -57,7 +57,7 @@ Run the full smoke gate before submitting:
 pnpm smoke
 ```
 
-This executes: TypeScript typecheck, ESLint, Vite build, `cargo check`, Vitest UI lane, consistency gate, and IPC contract gate.
+This executes: TypeScript typecheck, ESLint, Vite build, Rust `cargo check` + `cargo clippy -D warnings` + `cargo fmt --check` + `cargo test`, Vitest UI lane, consistency gate, IPC contract gate, prompt-contract gate, and copy gate.
 
 Run the unified local verification gate:
 

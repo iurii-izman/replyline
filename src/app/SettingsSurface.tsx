@@ -76,6 +76,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             />
             <span style="font-weight: 600;">{st().advanced.showAdvancedLabel}</span>
           </label>
+          <p class="field-hint field-hint--tight">{st().advanced.showAdvancedHint}</p>
         </div>
 
         <Show when={controller().settings.showAdvanced}>
@@ -496,7 +497,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
           </div>
         </Show>
 
-        <Show when={controller().settings.showAdvanced}>
+        <Show when={controller().settings.showAdvanced && controller().memorySpaces().length > 0}>
           <div class="settings-section" id="settings-anchor-memory">
             <h3 class="settings-section-title">{st().memory.sectionTitle}</h3>
             <p class="settings-section-intro">{st().memory.sectionIntro}</p>
@@ -542,7 +543,6 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </div>
             </Show>
 
-            <MemorySpaceCreator controller={controller()} />
           </div>
         </Show>
 
@@ -567,46 +567,5 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
         </form>
       </section>
     </Show>
-  );
-}
-
-function MemorySpaceCreator(props: { controller: ReplylineController }) {
-  const st = () => props.controller.strings();
-  const [label, setLabel] = createSignal("");
-  const [kind, setKind] = createSignal<"team" | "thread" | "contact">("team");
-
-  async function handleCreate() {
-    const name = label().trim();
-    if (!name) return;
-    await props.controller.createMemorySpace(name, kind());
-    setLabel("");
-  }
-
-  return (
-    <div class="memory-create-row">
-      <input
-        class="field-input memory-create-input"
-        placeholder={st().memory.createLabel}
-        value={label()}
-        onInput={(e) => setLabel(e.currentTarget.value)}
-      />
-      <select
-        class="field-input memory-create-kind"
-        value={kind()}
-        onChange={(e) => setKind(e.currentTarget.value as "team" | "thread" | "contact")}
-      >
-        <option value="team">{st().memory.kindTeam}</option>
-        <option value="thread">{st().memory.kindThread}</option>
-        <option value="contact">{st().memory.kindContact}</option>
-      </select>
-      <button
-        class="btn-secondary"
-        type="button"
-        disabled={!label().trim()}
-        onClick={() => void handleCreate()}
-      >
-        {st().memory.createButton}
-      </button>
-    </div>
   );
 }

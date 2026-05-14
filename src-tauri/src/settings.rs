@@ -34,6 +34,8 @@ pub enum SettingsError {
     HotkeyRequired,
     #[error("CAPTURE_RANGE_INVALID")]
     CaptureRangeInvalid,
+    #[error("PARTIAL_CONFIG_INVALID")]
+    PartialConfigInvalid,
 }
 
 pub fn settings_path() -> Result<PathBuf, SettingsError> {
@@ -58,6 +60,11 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     };
 
     let migrated = migrate_settings(value);
+
+    if let Err(err) = ensure_required_fields(&migrated) {
+        quarantine_corrupt(&path, &format!("required_fields_error={err}"));
+        return Ok(AppSettings::default());
+    }
 
     let settings: AppSettings = match serde_json::from_value(migrated) {
         Ok(s) => s,
@@ -131,6 +138,44 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     }
     if !settings.llm_base_url.trim().is_empty() {
         validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
+    }
+    Ok(())
+}
+
+fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError> {
+    let obj = value
+        .as_object()
+        .ok_or(SettingsError::PartialConfigInvalid)?;
+    for key in [
+        "schemaVersion",
+        "hotkey",
+        "llmBaseUrl",
+        "llmModel",
+        "primaryLanguage",
+        "deepgramModel",
+        "captureMaxSeconds",
+    ] {
+        if !obj.contains_key(key) {
+            return Err(SettingsError::PartialConfigInvalid);
+        }
+    }
+
+    if obj
+        .get("hotkey")
+        .and_then(|v| v.as_str())
+        .map(|v| v.trim().is_empty())
+        .unwrap_or(true)
+    {
+        return Err(SettingsError::PartialConfigInvalid);
+    }
+
+    if obj
+        .get("llmModel")
+        .and_then(|v| v.as_str())
+        .map(|v| v.trim().is_empty())
+        .unwrap_or(true)
+    {
+        return Err(SettingsError::PartialConfigInvalid);
     }
     Ok(())
 }
@@ -357,5 +402,21 @@ mod tests {
         let migrated = super::migrate_settings(v2);
         let parsed: AppSettings = serde_json::from_value(migrated).expect("parse migrated");
         assert!(parsed.show_advanced);
+    }
+
+    #[test]
+    fn required_fields_reject_missing_hotkey() {
+        let value = serde_json::json!({
+            "schemaVersion": 2,
+            "llmBaseUrl": "https://openrouter.ai/api/v1",
+            "llmModel": "gpt-4o-mini",
+            "primaryLanguage": "ru",
+            "deepgramModel": "nova-3",
+            "captureMaxSeconds": 30
+        });
+        assert!(matches!(
+            ensure_required_fields(&value),
+            Err(SettingsError::PartialConfigInvalid)
+        ));
     }
 }

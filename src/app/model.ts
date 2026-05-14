@@ -296,7 +296,7 @@ export function userSafePipelineError(err: unknown): string {
     return "Нет текста из звука: ключ Deepgram и сеть → Настройки.";
   }
   if (
-    /stt_streaming_failed_then_batch_failed|stt_streaming_failed|RL_STT_STREAMING_FAILED|Deepgram WS|websocket/i.test(
+    /STT_FALLBACK_FAILED|STT_STREAMING_FAILED|stt_streaming_failed_then_batch_failed|stt_streaming_failed|RL_STT_STREAMING_FAILED|Deepgram WS|websocket/i.test(
       s,
     )
   ) {
@@ -305,7 +305,7 @@ export function userSafePipelineError(err: unknown): string {
   if (/Card output invalid|слишком расплывчат|too generic/i.test(s)) {
     return "Карточка вышла слишком расплывчатой. Повторите захват или уточните фрагмент.";
   }
-  if (/gateway|401|403|fetch failed|reqwest|http|LLM|OpenAI|timeout/i.test(s)) {
+  if (/LLM_HTTP_|LLM_REQUEST_|gateway|401|403|fetch failed|reqwest|http|LLM|OpenAI|timeout/i.test(s)) {
     return "Нет ответа шлюза: адрес, модель, ключ → Настройки.";
   }
   return "Цепочка оборвалась: настройки, ключи, сеть. Повторите захват.";
@@ -314,10 +314,10 @@ export function userSafePipelineError(err: unknown): string {
 export function userSafeBootstrapLoadError(err: unknown): string {
   const s = invokeErrorMessage(err);
   if (/Context lock poisoned|lock poisoned/i.test(s)) {
-    return "Внутренняя ошибка. Закройте приложение и откройте снова.";
+    return "Внутренняя ошибка после сбоя. Перезапустите приложение, затем откройте «Собрать сводку» в настройках.";
   }
   if (/config|credential|IO:|JSON|NotFound|denied/i.test(s)) {
-    return "Не прочитались настройки или ключи Windows. Проверьте профиль и повторите загрузку.";
+    return "Не прочитались настройки или ключи Windows. Проверьте профиль, затем сохраните настройки заново и повторите.";
   }
   return "Не удалось загрузить приложение. Нажмите «Повторить», затем проверьте настройки ключей и адрес шлюза.";
 }
@@ -332,7 +332,7 @@ export function userSafeClearContextError(err: unknown): string {
 
 export function alphaLanguageLabel(code: string): string {
   const c = code.trim().toLowerCase();
-  if (c === "ru") return "Русский (alpha)";
+  if (c === "ru") return "Русский (stable beta)";
   if (c === "en") return "English (технический hook)";
   return code.trim() || "—";
 }
@@ -383,6 +383,9 @@ export function mapSettingsSaveError(err: unknown): string | null {
   }
   if (s.includes("INVALID_SCHEMA")) {
     return "Формат settings.json устарел. Обновите приложение или сбросьте настройки и сохраните заново.";
+  }
+  if (s.includes("PARTIAL_CONFIG_INVALID")) {
+    return "Файл настроек неполный после восстановления. Сохраните настройки заново на этой машине.";
   }
   if (s.includes("IO:")) {
     return "Не записался файл настроек. Проверьте профиль Windows.";

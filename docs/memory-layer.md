@@ -1,7 +1,7 @@
 # Replyline Memory Layer (Future, Separate from Live Card)
 
 > Scope guardrail: этот документ описывает future track.
-> Он не меняет текущую MVP alpha story и не означает, что memory — часть текущего user-facing продукта.
+> Он не меняет текущую MVP stable-beta story и не означает, что memory — часть текущего user-facing продукта.
 
 Replyline should not solve long-context needs by turning one hotkey capture into endless recording. The right shape is a separate memory layer.
 
@@ -138,7 +138,7 @@ When memory appears, keep it lightweight:
 
 Keep memory separate from the current live-card loop.
 
-For current internal alpha messaging:
+For current internal stable-beta messaging:
 
 - core MVP story = live card (`gist / say_now / next_move`)
 - memory = future explicit user-confirmed layer, not current default path

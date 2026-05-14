@@ -76,7 +76,7 @@ pub(crate) fn build_main_tray_menu<R: Runtime>(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .manage(ReplylineState::default())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_clipboard_manager::init())
@@ -154,32 +154,59 @@ pub fn run() {
             }
 
             Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            commands::load_bootstrap,
-            commands::save_settings,
-            commands::acknowledge_tray_intro,
-            commands::save_secret,
-            commands::clear_context,
-            commands::delete_secret,
-            commands::dev_analyze_fixture_snippet,
-            commands::get_context_status,
-            commands::capture_start,
-            commands::capture_stop_and_analyze,
-            commands::retry_last_analysis,
-            commands::sync_tray_ui_phase,
-            commands::refresh_tray_menu,
-            commands::tray_open_main,
-            commands::memory_list_spaces,
-            commands::memory_get_space_record,
-            commands::memory_save_space_record,
-            commands::collect_diagnostic_bundle,
-            commands::get_log_status,
-            commands::get_runtime_readiness,
-            commands::log_client_event,
-            commands::check_provider_health,
-            commands::quit_app
-        ])
+        });
+    #[cfg(any(debug_assertions, test))]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::load_bootstrap,
+        commands::save_settings,
+        commands::acknowledge_tray_intro,
+        commands::save_secret,
+        commands::clear_context,
+        commands::delete_secret,
+        commands::dev_analyze_fixture_snippet,
+        commands::get_context_status,
+        commands::capture_start,
+        commands::capture_stop_and_analyze,
+        commands::retry_last_analysis,
+        commands::sync_tray_ui_phase,
+        commands::refresh_tray_menu,
+        commands::tray_open_main,
+        commands::memory_list_spaces,
+        commands::memory_get_space_record,
+        commands::memory_save_space_record,
+        commands::collect_diagnostic_bundle,
+        commands::get_log_status,
+        commands::get_runtime_readiness,
+        commands::log_client_event,
+        commands::check_provider_health,
+        commands::quit_app
+    ]);
+    #[cfg(not(any(debug_assertions, test)))]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::load_bootstrap,
+        commands::save_settings,
+        commands::acknowledge_tray_intro,
+        commands::save_secret,
+        commands::clear_context,
+        commands::delete_secret,
+        commands::get_context_status,
+        commands::capture_start,
+        commands::capture_stop_and_analyze,
+        commands::retry_last_analysis,
+        commands::sync_tray_ui_phase,
+        commands::refresh_tray_menu,
+        commands::tray_open_main,
+        commands::memory_list_spaces,
+        commands::memory_get_space_record,
+        commands::memory_save_space_record,
+        commands::collect_diagnostic_bundle,
+        commands::get_log_status,
+        commands::get_runtime_readiness,
+        commands::log_client_event,
+        commands::check_provider_health,
+        commands::quit_app
+    ]);
+    builder
         .run(tauri::generate_context!())
         .unwrap_or_else(|err| {
             eprintln!("Fatal: Replyline failed to start: {err}");

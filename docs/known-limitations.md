@@ -1,10 +1,10 @@
-# Replyline Known Limitations (Pre-Alpha)
+# Replyline Known Limitations (Internal Stable Beta)
 
-Короткий список ограничений для честной внутренней alpha.
+Короткий список ограничений для честной внутренней stable beta.
 
 ## Stage and platform
 
-- Стадия: внутренняя русскоязычная alpha.
+- Стадия: внутренняя русскоязычная stable beta.
 - Фокус: Windows-first (Tauri + Rust + Solid).
 - Публичный binary release не является целью текущего этапа.
 
@@ -29,13 +29,13 @@
 
 ## Language boundaries
 
-- Product-facing UX в текущей alpha ориентирован на русский язык.
+- Product-facing UX в текущей stable beta ориентирован на русский язык.
 - В коде есть технические hooks под будущую multilingual beta, но это не означает готовый multilingual UX сейчас.
 
 ## Memory boundary
 
 - Memory backend существует отдельно от core live-card цикла.
-- Memory layer не должен становиться hero story текущей MVP alpha.
+- Memory layer не должен становиться hero story текущей MVP stable beta.
 
 ## Advanced Mode
 

@@ -206,7 +206,7 @@ export const ui_ru = {
 
     hotkeySectionTitle: "Управление в разговоре",
     hotkeySectionIntro:
-      "Сейчас захват идёт только с системного вывода Windows (WASAPI loopback), а не с микрофона. Если слышен YouTube или TTS, а микрофон нет — это ожидаемое поведение текущей alpha.",
+      "Сейчас захват идёт только с системного вывода Windows (WASAPI loopback), а не с микрофона. Если слышен YouTube или TTS, а микрофон нет — это ожидаемое поведение текущей stable beta.",
     hotkeyLabel: "Горячая клавиша",
     hotkeyHint: "Системный звук, пока держите. Сочетание не должно быть занято в Windows.",
     captureMaxLabel: "Максимальная длина одного фрагмента, сек",
@@ -221,10 +221,10 @@ export const ui_ru = {
 
     llmSectionTitle: "Ответ по тексту",
     llmSectionIntro:
-      "Шлюз в стиле OpenAI API: сюда текст распознавания, отсюда карточка. Адрес и модель — ваши. Интерфейс alpha на русском.",
+      "Шлюз в стиле OpenAI API: сюда текст распознавания, отсюда карточка. Адрес и модель — ваши. Интерфейс stable beta на русском.",
     llmBaseUrlLabel: "Адрес шлюза (base URL)",
     llmBaseUrlHint:
-      "http://127.0.0.1:4000/v1 здесь только как dev-пример. Для alpha укажите свой рабочий адрес.",
+      "http://127.0.0.1:4000/v1 здесь только как dev-пример. Для stable beta укажите свой рабочий адрес.",
     llmModelLabel: "Модель",
     llmKeyLabel: "Ключ к API ответа",
     llmKeyPlaceholder: "Bearer / API key, если требует ваш шлюз",
@@ -241,13 +241,15 @@ export const ui_ru = {
   },
 
   language: {
-    ru: "Русский (alpha)",
+    ru: "Русский (stable beta)",
     en: "English (технический hook)",
   },
 
   advanced: {
     sectionTitle: "Дополнительно",
-    showAdvancedLabel: "Расширенные настройки",
+    showAdvancedLabel: "Показать beta-ops инструменты",
+    showAdvancedHint:
+      "Для обычного пути stable beta оставьте выключенным. Включайте только для диагностики и управляемых экспериментов.",
     governancePurpose: "Назначение режима: диагностика и тонкая настройка для beta-ops, не для скрытого автопилота.",
     governanceRisks:
       "Риски: Streaming STT и свой промпт могут ухудшить стабильность, повысить задержку и увести карточку от ожидаемого формата.",
@@ -499,7 +501,7 @@ export const ui_en: UiStrings = {
 
     hotkeySectionTitle: "In-conversation controls",
     hotkeySectionIntro:
-      "Currently capture uses Windows system output only (WASAPI loopback), not the microphone. If YouTube or TTS is audible but the mic isn't — that's expected behavior in this alpha.",
+      "Currently capture uses Windows system output only (WASAPI loopback), not the microphone. If YouTube or TTS is audible but the mic isn't — that's expected behavior in this stable beta.",
     hotkeyLabel: "Hotkey",
     hotkeyHint: "System audio while held. The shortcut must not conflict with Windows.",
     captureMaxLabel: "Max fragment length, sec",
@@ -518,7 +520,7 @@ export const ui_en: UiStrings = {
       "An OpenAI-API-style gateway: transcript goes in, card comes out. Address and model are yours to set.",
     llmBaseUrlLabel: "Gateway address (base URL)",
     llmBaseUrlHint:
-      "http://127.0.0.1:4000/v1 is only a dev example here. For alpha, enter your working address.",
+      "http://127.0.0.1:4000/v1 is only a dev example here. For stable beta, enter your working address.",
     llmModelLabel: "Model",
     llmKeyLabel: "Response API key",
     llmKeyPlaceholder: "Bearer / API key, if your gateway requires one",
@@ -535,13 +537,15 @@ export const ui_en: UiStrings = {
   },
 
   language: {
-    ru: "Русский (alpha)",
+    ru: "Русский (stable beta)",
     en: "English",
   },
 
   advanced: {
     sectionTitle: "Advanced",
-    showAdvancedLabel: "Show advanced settings",
+    showAdvancedLabel: "Show beta-ops tools",
+    showAdvancedHint:
+      "For normal stable-beta usage keep this off. Enable only for diagnostics or controlled experiments.",
     governancePurpose:
       "Mode purpose: diagnostics and fine-tuning for beta ops, not hidden autopilot behavior.",
     governanceRisks:

@@ -168,12 +168,8 @@ fn collect_runtime_evidence_bundle_with_inputs(
     }
     copied_names.sort();
 
-    let runtime_events = parse_runtime_events(
-        log_path
-            .as_ref()
-            .map(|p| p.as_path())
-            .unwrap_or_else(|| Path::new("")),
-    )?;
+    let runtime_events =
+        parse_runtime_events(log_path.as_deref().unwrap_or_else(|| Path::new("")))?;
     let diagnostics_target_dir = bundle_dir.join("diagnostics");
     fs::create_dir_all(&diagnostics_target_dir).map_err(|err| err.to_string())?;
     let runtime_events_path = diagnostics_target_dir.join("runtime-events.json");
@@ -376,7 +372,10 @@ mod tests {
         assert!(bundle_path.starts_with(&bundle_root));
         assert!(manifest_path.is_file());
         assert!(bundle_path.join("logs").join("app.log").is_file());
-        assert!(bundle_path.join("diagnostics").join("runtime-events.json").is_file());
+        assert!(bundle_path
+            .join("diagnostics")
+            .join("runtime-events.json")
+            .is_file());
 
         let manifest: Value =
             serde_json::from_slice(&fs::read(&manifest_path).expect("manifest bytes"))
@@ -419,8 +418,14 @@ mod tests {
         .expect("collect bundle");
 
         let bundle_path = PathBuf::from(&dto.bundle_path);
-        assert!(bundle_path.join("runtime").join("first-latency-report.json").is_file());
-        assert!(bundle_path.join("runtime").join("duration-comparison.md").is_file());
+        assert!(bundle_path
+            .join("runtime")
+            .join("first-latency-report.json")
+            .is_file());
+        assert!(bundle_path
+            .join("runtime")
+            .join("duration-comparison.md")
+            .is_file());
         assert!(bundle_path.join("logs").join("app.log").is_file());
     }
 

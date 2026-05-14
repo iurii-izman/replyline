@@ -16,11 +16,11 @@ pub async fn transcribe(
                 return match deepgram::transcribe_wav(settings, deepgram_key, &wav).await {
                     Ok(t) => Ok(t),
                     Err(batch_err) => Err(format!(
-                        "stt_streaming_failed_then_batch_failed: streaming={stream_err}; batch={batch_err}"
+                        "STT_FALLBACK_FAILED: streaming={stream_err}; batch={batch_err}"
                     )),
                 };
             }
-            Err(stream_err) => return Err(format!("stt_streaming_failed: {stream_err}")),
+            Err(stream_err) => return Err(format!("STT_STREAMING_FAILED: {stream_err}")),
         }
     }
 
@@ -49,4 +49,22 @@ fn should_fallback_to_batch(err: &str) -> bool {
         || s.contains("timeout")
         || s.contains("connect failed")
         || s.contains("server error")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::should_fallback_to_batch;
+
+    #[test]
+    fn fallback_policy_matches_transport_failures() {
+        assert!(should_fallback_to_batch(
+            "STT_WS_TIMEOUT: Deepgram WS response timed out."
+        ));
+        assert!(should_fallback_to_batch(
+            "STT_WS_CONNECT_FAILED: Deepgram WS connect failed: dns error"
+        ));
+        assert!(!should_fallback_to_batch(
+            "STT_EMPTY: Deepgram returned an empty transcript."
+        ));
+    }
 }

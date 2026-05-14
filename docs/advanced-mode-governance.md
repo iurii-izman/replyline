@@ -1,6 +1,6 @@
 # Advanced Mode Governance
 
-This document defines lightweight governance for `showAdvanced` mode in Replyline.
+This document defines lightweight governance for `showAdvanced` mode in Replyline internal stable beta.
 
 ## Purpose
 
@@ -19,7 +19,7 @@ When enabled:
 - changes still require manual `Save on this machine`
 
 When disabled:
-- advanced sections are hidden from normal setup flow
+- advanced sections are hidden from normal stable-beta setup flow
 - core capture pipeline behavior remains unchanged
 
 ## Risks and constraints

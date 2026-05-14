@@ -21,8 +21,11 @@ Replyline uses four separate verification lanes. Green in one lane does not impl
 
 ## Lifecycle matrix (required vs optional)
 
-- `required`: `pnpm smoke`, `pnpm verify`, `pnpm test:security-lanes`, `pnpm rust:deps`, `pnpm audit:npm`
+- `required`: `pnpm smoke` (includes `pnpm test:prompt-contract` and `pnpm copy:check`), `pnpm verify`, `pnpm test:security-lanes`, `pnpm rust:deps`, `pnpm audit:npm`
+- `required`: `pnpm release:freeze:check` (change visibility against stable-beta guardrails)
 - `optional`: `pnpm test:ui:coverage`, `pnpm test:fixtures`, `pnpm test:say-now-scenarios`, `pnpm test:optional:*`
+- `optional`: `pnpm probe:soak`, `pnpm check:slo`
+- `experimental`: `pnpm test:optional:perf:k6`, `pnpm test:optional:sec:zap`, `pnpm test:experimental`
 
 ## Label discipline across lanes
 

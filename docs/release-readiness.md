@@ -1,6 +1,6 @@
 # Replyline Release Readiness
 
-This is the lean handoff gate for Replyline alpha builds.
+This is the lean handoff gate for Replyline internal stable beta builds.
 
 ## Minimum green set (required)
 
@@ -8,6 +8,7 @@ This is the lean handoff gate for Replyline alpha builds.
 2. manual critical path spot-check from `docs/smoke-checks.md`
 3. `pnpm rust:deps`
 4. `pnpm audit:npm`
+5. `pnpm release:freeze:check`
 
 ## Lightweight checklist
 
@@ -18,6 +19,8 @@ This is the lean handoff gate for Replyline alpha builds.
 - Rust supply-chain gate is green with current warnings triaged, not hand-waved (`pnpm rust:deps`).
 - JavaScript supply-chain gate is green (`pnpm audit:npm`).
 - Security regression lane is green (`pnpm test:security-lanes`).
+- Release freeze guardrails reviewed (`pnpm release:freeze:check`, artifact in `reports/release-freeze-check.json`).
+- SLO budget check is evaluated when soak artifact exists (`pnpm check:slo`).
 
 ## What this proves
 
@@ -47,7 +50,7 @@ This is the lean handoff gate for Replyline alpha builds.
 
 ## Optional Runtime Evidence Lane
 
-For machine-local transfer discipline, use `pnpm alpha:handoff` to generate one compact `reports/alpha-handoff-*` package that combines:
+For machine-local transfer discipline, use `pnpm alpha:handoff` (legacy name) to generate one compact `reports/alpha-handoff-*` package that combines:
 
 - runtime evidence bundle copy
 - manual smoke artifact template
@@ -75,3 +78,6 @@ See also:
 - `docs/runtime-evidence.md`
 - `docs/benchmark-policy.md`
 - `docs/smoke-checks.md`
+- `docs/release-freeze-matrix.md`
+- `docs/release-incident-classification.md`
+- `docs/core-pipeline-slo.json`

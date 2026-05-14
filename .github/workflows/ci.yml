@@ -30,7 +30,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
         with:
-          version: 9
+          version: 9.15.9
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable

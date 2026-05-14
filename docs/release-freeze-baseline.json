@@ -1,0 +1,36 @@
+{
+  "baselineScenarios": [
+    "bootstrap-load",
+    "hotkey-capture-release",
+    "capture-stop-analyze",
+    "retry-last-analysis",
+    "settings-save-and-reload",
+    "secrets-persist-separate-from-settings",
+    "clear-context",
+    "collect-diagnostic-bundle",
+    "runtime-probe-and-evidence"
+  ],
+  "guardrailPaths": [
+    "src/app/model.ts",
+    "src/app/platform.ts",
+    "src/app/controller.ts",
+    "src-tauri/src/settings.rs",
+    "src-tauri/src/services/capture_pipeline.rs",
+    "src-tauri/src/providers/stt_provider.rs",
+    "src-tauri/src/deepgram.rs",
+    "src-tauri/src/llm.rs",
+    "docs/release-readiness.md",
+    "docs/verification-lanes.md",
+    "docs/smoke-checks.md",
+    "docs/copy-rules.md",
+    "scripts/check-consistency.mjs",
+    "scripts/check-prompt-contract.mjs"
+  ],
+  "allowlistPrefixes": [
+    "docs/",
+    "scripts/",
+    "tests/",
+    "src/",
+    "src-tauri/"
+  ]
+}

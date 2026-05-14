@@ -9,7 +9,6 @@ jobs:
   extended-quality:
     runs-on: windows-latest
     timeout-minutes: 60
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -81,6 +80,7 @@ jobs:
             Write-Host "::error title=Extended quality lane failed::$lane failed in non-blocking workflow"
           }
 
+          Write-Host "::warning title=Extended quality signal::Non-blocking workflow reported failed lanes. See summary + artifact."
           exit 1
       - name: Upload extended summary artifact
         if: always()

@@ -303,6 +303,7 @@ pub async fn check_provider_health() -> Result<HealthCheckResult, CommandError> 
 }
 
 #[derive(Debug, Deserialize)]
+#[cfg(any(debug_assertions, test))]
 struct FixtureSnippetRow {
     id: String,
     snippet: String,
@@ -310,14 +311,10 @@ struct FixtureSnippetRow {
 
 /// Debug-only: run LLM card pipeline on a transcript snippet from `fixtures/ru-work-snippets.json` (no mic/STT).
 #[tauri::command]
+#[cfg(any(debug_assertions, test))]
 pub async fn dev_analyze_fixture_snippet(
     fixture_id: String,
 ) -> Result<AnalysisCardDto, CommandError> {
-    if !cfg!(debug_assertions) {
-        return Err(CommandError::Internal(
-            "Прогон фикстур доступен только в debug-сборке.".to_string(),
-        ));
-    }
     let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../fixtures/ru-work-snippets.json");
     let raw = std::fs::read_to_string(&path)

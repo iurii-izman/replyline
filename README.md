@@ -33,9 +33,9 @@ Windows-first tray app для сложных рабочих разговоров
 - после отпускания hotkey фрагмент отправляется во внешние STT / LLM провайдеры, которые вы настраиваете сами
 - пользователь сам отвечает за правила платформ, политику работодателя и законы о записи
 
-## Alpha disclaimer
+## Stage disclaimer
 
-- текущая стадия: внутренняя русскоязычная alpha
+- текущая стадия: внутренняя русскоязычная stable beta
 - source-only: без обещаний публичного binary availability на этом этапе
 - cross-machine и cross-call-app поведение остаются `pending verification`
 
@@ -47,7 +47,7 @@ Windows-first tray app для сложных рабочих разговоров
 
 ## Current state
 
-Этот репозиторий — ранняя внутренняя инженерная alpha-сборка.
+Этот репозиторий — внутренняя инженерная stable beta-сборка.
 
 Текущая модель публикации:
 
@@ -66,7 +66,7 @@ Windows-first tray app для сложных рабочих разговоров
 - компактная карточка `gist / say_now / next_move`
 - только in-memory контекст
 - локальные настройки + Windows Credential Manager для секретов
-- runtime evidence, smoke артефакты и alpha handoff bundle tooling
+- runtime evidence, smoke артефакты и handoff bundle tooling
 
 Что явно не входит в текущий MVP:
 
@@ -93,10 +93,10 @@ Windows-first tray app для сложных рабочих разговоров
 - [docs/third-party-providers.md](docs/third-party-providers.md)
 - [docs/known-limitations.md](docs/known-limitations.md)
 
-## Язык alpha и честность запуска
+## Язык stable beta и честность запуска
 
-- текущая alpha — русскоязычная в product-facing UX
-- в коде есть технический `primaryLanguage` hook (`ru`/`en`) для будущей multilingual beta
+- текущая stable beta — русскоязычная в product-facing UX
+- в коде есть технический `primaryLanguage` hook (`ru`/`en`) для будущей multilingual expansion
 - это не означает готовый English-ready UX на текущем этапе
 
 ## What is proven vs not yet proven
@@ -107,7 +107,7 @@ Windows-first tray app для сложных рабочих разговоров
 - the Rust backend compiles and tests pass
 - the prompt contract is guarded
 - the runtime probe path can produce real machine-local evidence artifacts
-- alpha handoff bundles can be generated from local runtime artifacts
+- handoff bundles can be generated from local runtime artifacts
 
 Что всё ещё pending verification:
 
@@ -151,9 +151,14 @@ pnpm smoke
 - ESLint (`pnpm lint`)
 - Vite production build
 - `cargo check`
+- `cargo clippy -- -D warnings`
+- `cargo fmt --check`
+- `cargo test`
 - `vitest` lane (`pnpm test:ui`)
 - deterministic consistency gate
 - IPC contract gate
+- prompt-contract gate
+- copy gate
 
 Обязательный локальный quality + security gate:
 
@@ -208,10 +213,10 @@ Start here:
 - [runtime-bringup.md](docs/runtime-bringup.md): реальный runtime path и probe workflow
 - [runtime-evidence.md](docs/runtime-evidence.md): evidence артефакты и honesty rules
 - [smoke-checks.md](docs/smoke-checks.md): ручные critical-path проверки
-- [release-readiness.md](docs/release-readiness.md): lean alpha handoff gate
+- [release-readiness.md](docs/release-readiness.md): lean stable-beta handoff gate
 - [benchmark-policy.md](docs/benchmark-policy.md): `target / measured / pending verification`
 - [privacy-and-trust.md](docs/privacy-and-trust.md): короткая trust-модель и storage truth
-- [known-limitations.md](docs/known-limitations.md): честные ограничения текущей alpha
+- [known-limitations.md](docs/known-limitations.md): честные ограничения текущей stable beta
 - [third-party-providers.md](docs/third-party-providers.md): границы ответственности внешних STT/LLM
 - [memory-layer.md](docs/memory-layer.md): future track (internal planning), отдельно от текущего live-card MVP
 
