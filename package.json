@@ -40,17 +40,19 @@
     "benchmark:evidence": "pwsh -File scripts/benchmark-evidence-scaffold.ps1",
     "smoke:template": "pwsh -File scripts/smoke-checks-template.ps1",
     "alpha:handoff": "pwsh -File scripts/alpha-handoff-bundle.ps1",
-    "rust:deny": "pwsh -NoProfile -Command \"Push-Location src-tauri; cargo deny check --config deny.toml advisories bans sources; Pop-Location\"",
+    "rust:deny": "pwsh -NoProfile -Command \"Push-Location src-tauri; cargo deny check --config deny.toml advisories bans sources; $code = $LASTEXITCODE; Pop-Location; exit $code\"",
     "rust:audit": "cargo audit --file src-tauri/Cargo.lock",
     "rust:deps": "pnpm rust:deny && pnpm rust:audit",
     "audit:npm": "pnpm audit --audit-level=high",
+    "typecheck": "pwsh -NoProfile -Command \"tsc --noEmit -p tsconfig.node.json; $code = $LASTEXITCODE; if (Test-Path 'tsconfig.node.tsbuildinfo') { Remove-Item 'tsconfig.node.tsbuildinfo' -Force }; exit $code\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "code-review:webhook": "node scripts/send-code-review-webhook.mjs",
     "alpha:preflight": "pnpm smoke && pnpm runtime:preflight && pnpm probe:runtime && pnpm evidence:bundle",
-    "smoke": "pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo test --manifest-path src-tauri/Cargo.toml && pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:prompt-contract && pnpm test:say-now-scenarios && pnpm test:consistency && pnpm test:ipc-contract && pnpm copy:check"
+    "smoke": "pnpm typecheck && pnpm lint && pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo test --manifest-path src-tauri/Cargo.toml && pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:prompt-contract && pnpm test:say-now-scenarios && pnpm test:consistency && pnpm test:ipc-contract && pnpm copy:check",
+    "verify": "pnpm smoke && pnpm rust:deps && pnpm audit:npm"
   },
   "license": "MIT",
   "dependencies": {

@@ -5,7 +5,14 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["coverage/**", "dist/**", "src-tauri/**", "node_modules/**"],
+    ignores: [
+      "coverage/**",
+      "dist/**",
+      "src-tauri/**",
+      "node_modules/**",
+      "scratch/**",
+      "vite.config.js",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

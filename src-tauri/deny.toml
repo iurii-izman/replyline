@@ -11,7 +11,6 @@ unmaintained = "workspace"
 ignore = []
 
 [licenses]
-unlicensed = "deny"
 allow = [
     "MIT",
     "Apache-2.0",
@@ -23,8 +22,7 @@ allow = [
     "Zlib",
     "OpenSSL",
 ]
-copyleft = "warn"
-default = "deny"
+confidence-threshold = 0.8
 
 [bans]
 multiple-versions = "warn"

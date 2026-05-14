@@ -57,17 +57,22 @@ Run the full smoke gate before submitting:
 pnpm smoke
 ```
 
-This executes: Vite build, `cargo check`, `cargo test`, Vitest UI tests, fixture validation, prompt contract checks, say-now scenario checks, consistency gate, and copy check.
+This executes: TypeScript typecheck, ESLint, Vite build, `cargo check`, `cargo clippy`, `cargo fmt --check`, `cargo test`, Vitest UI coverage lane, fixture validation, prompt contract checks, say-now scenario checks, consistency gate, IPC contract gate, and copy check.
 
-Run the Rust supply-chain gate:
+Run the unified local verification gate:
 
 ```bash
-pnpm rust:deps
+pnpm verify
 ```
 
-This runs `cargo deny check` and `cargo audit` against the lockfile.
+`pnpm verify` runs `pnpm smoke` + `pnpm rust:deps` + `pnpm audit:npm`.
 
-Both gates must pass before a PR is mergeable.
+Additional required checks:
+
+- If `package.json` or `pnpm-lock.yaml` changed: run `pnpm audit:npm`.
+- If Rust dependencies changed (`src-tauri/Cargo.toml`/`Cargo.lock`): run `pnpm rust:deps`.
+
+All applicable gates must pass before a PR is mergeable.
 
 ## Branch strategy
 
@@ -100,6 +105,14 @@ Every PR should include:
 - **Scope**: Note if the change touches backend (Rust), frontend (TS/Solid.js), scripts, or docs.
 
 Keep PRs focused. One logical change per PR is easier to review and revert if needed.
+
+### PR checklist
+
+- [ ] `pnpm smoke` passes locally.
+- [ ] `pnpm verify` passes locally.
+- [ ] `pnpm audit:npm` run if JS dependencies changed.
+- [ ] `pnpm rust:deps` run if Rust dependencies changed.
+- [ ] CI status is fully green with no informational failures.
 
 ## Code style
 

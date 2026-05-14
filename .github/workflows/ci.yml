@@ -7,13 +7,17 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  check:
+  verify:
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v6
@@ -34,7 +38,7 @@ jobs:
           components: clippy, rustfmt
 
       - name: Cache Cargo registry and build
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -46,7 +50,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
 
       - name: Cache pnpm store
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
@@ -55,65 +59,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build frontend
-        run: pnpm build
-
-      - name: Cargo check
-        run: cargo check --manifest-path src-tauri/Cargo.toml
-
-      - name: Clippy
-        run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
-
-      - name: Rust format check
-        run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
-
-      - name: Rust tests
-        run: cargo test --manifest-path src-tauri/Cargo.toml
-
-      - name: UI tests with coverage
-        run: pnpm test:ui:coverage
-
-      - name: Fixture checks
-        run: pnpm test:fixtures
-
-      - name: Prompt contract
-        run: pnpm test:prompt-contract
-
-      - name: Say-now scenarios
-        run: pnpm test:say-now-scenarios
-
-      - name: Fixture gate (LLM-backed, informational)
-        if: env.OPENROUTER_API_KEY != ''
-        continue-on-error: true
-        env:
-          REPLYLINE_FIXTURE_GATE: "1"
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          REPLYLINE_FIXTURE_IDS: "client-pushback-1,scope-1,salary-1"
-        run: pnpm test:fixture-gate
-
-      - name: IPC contract gate
-        run: pnpm test:ipc-contract
-
-      - name: Consistency gate
-        run: pnpm test:consistency
-
-      - name: Copy discipline check
-        run: pnpm copy:check
-
-      - name: Install cargo-binstall
-        run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          irm https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.ps1 | iex
-        continue-on-error: true
-
       - name: Install cargo-deny and cargo-audit
-        run: cargo binstall cargo-deny cargo-audit --no-confirm --log-level info
-        continue-on-error: true
+        run: cargo install --locked cargo-deny cargo-audit
 
-      - name: Rust supply chain check
-        run: pnpm rust:deps
-        continue-on-error: true
+      - name: Local quality and security gate (fail-fast)
+        run: pnpm verify
 
-      - name: npm audit
-        run: pnpm audit --audit-level=high
-        continue-on-error: true
+      - name: Upload coverage and test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-artifacts-${{ github.run_id }}
+          path: |
+            coverage/**
+            artifacts/**
+          if-no-files-found: warn
