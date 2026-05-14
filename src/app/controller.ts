@@ -14,7 +14,6 @@ import {
   formatHotkeyFromEvent,
   invokeErrorMessage,
   isConfiguredLlmRoute,
-  isNotebookLmLaunchReady,
   mapSettingsSaveError,
   shortUrlForUi,
   userSafeBootstrapLoadError,
@@ -97,9 +96,6 @@ export function useReplylineController(platform: AppPlatform) {
   );
   const llmRouteConfigured = createMemo(() =>
     isConfiguredLlmRoute(settings.llmBaseUrl, settings.llmModel),
-  );
-  const notebookLmLaunchReady = createMemo(() =>
-    isNotebookLmLaunchReady(settings.notebookLmEnabled, settings.notebookLmLaunchUrl),
   );
   const hotkeyFilled = createMemo(() => Boolean(settings.hotkey.trim()));
   const pipelineActive = createMemo(() =>
@@ -439,8 +435,6 @@ export function useReplylineController(platform: AppPlatform) {
         hotkey: settings.hotkey,
         llmBaseUrl: settings.llmBaseUrl,
         llmModel: settings.llmModel,
-        notebookLmEnabled: settings.notebookLmEnabled,
-        notebookLmLaunchUrl: settings.notebookLmLaunchUrl,
         primaryLanguage: settings.primaryLanguage,
         deepgramModel: settings.deepgramModel,
         captureMaxSeconds: settings.captureMaxSeconds,
@@ -606,10 +600,6 @@ export function useReplylineController(platform: AppPlatform) {
     await runtimeSlice.copySection(section);
   }
 
-  async function openNotebookLm() {
-    await runtimeSlice.openNotebookLm(settings.notebookLmEnabled, settings.notebookLmLaunchUrl);
-  }
-
   async function runHealthCheck() {
     await runtimeSlice.runHealthCheck();
   }
@@ -677,14 +667,6 @@ export function useReplylineController(platform: AppPlatform) {
 
   function setLlmModel(value: string) {
     setSettings("llmModel", value);
-  }
-
-  function setNotebookLmEnabled(value: boolean) {
-    setSettings("notebookLmEnabled", value);
-  }
-
-  function setNotebookLmLaunchUrl(value: string) {
-    setSettings("notebookLmLaunchUrl", value);
   }
 
   function setCustomSystemPrompt(value: string | null) {
@@ -841,7 +823,6 @@ export function useReplylineController(platform: AppPlatform) {
     setupRequired,
     llmRouteIsPlaceholder,
     llmRouteConfigured,
-    notebookLmLaunchReady,
     hotkeyFilled,
     pipelineActive,
     phaseLabel,
@@ -860,7 +841,6 @@ export function useReplylineController(platform: AppPlatform) {
     copyAnswer,
     copySection,
     contextBadge,
-    openNotebookLm,
     runHealthCheck,
     quitApp,
     hideWindow,
@@ -875,8 +855,6 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmApiKeyDraft,
     setLlmBaseUrl,
     setLlmModel,
-    setNotebookLmEnabled,
-    setNotebookLmLaunchUrl,
     setCustomSystemPrompt,
     setUseStreamingStt,
     setShowAdvanced,

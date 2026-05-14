@@ -27,8 +27,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "https://openrouter.ai/api/v1",
   llmModel: "openai/gpt-4o-mini",
-  notebookLmEnabled: false,
-  notebookLmLaunchUrl: "https://notebooklm.google.com/",
   primaryLanguage: "ru",
   deepgramModel: "nova-3",
   captureMaxSeconds: 30,
@@ -133,7 +131,6 @@ function createMockPlatform(
     save_settings: async (args) => args?.input,
     save_secret: async () => null,
     collect_diagnostic_bundle: async () => bundleResult,
-    open_notebooklm: async () => null,
     dev_analyze_fixture_snippet: async () => DEFAULT_CARD,
     refresh_tray_menu: async () => null,
     quit_app: async () => null,
@@ -366,47 +363,6 @@ describe("Replyline UI lane", () => {
     expect(screen.getByText("last line")).toBeTruthy();
   });
 
-  it("saves NotebookLM settings and opens it from the settings screen", async () => {
-    const bootstrap = makeBootstrap({
-      runtimeReady: false,
-      settings: {
-        ...DEFAULT_SETTINGS,
-        notebookLmEnabled: true,
-      },
-    });
-    const mock = createMockPlatform({ bootstrap });
-    const user = userEvent.setup();
-
-    render(() => <App platform={mock.platform} />);
-
-    await screen.findByText("Подготовка к работе");
-    const checkbox = screen.getByLabelText("Включить быстрый запуск NotebookLM");
-    const urlInput = screen.getByDisplayValue("https://notebooklm.google.com/");
-
-    expect(checkbox).toBeTruthy();
-    await user.clear(urlInput);
-    await user.type(urlInput, "https://notebooklm.google.com/notebook/test");
-    await user.click(screen.getByRole("button", { name: "Сохранить на этой машине" }));
-
-    await waitFor(() => {
-      expect(mock.invokeMock).toHaveBeenCalledWith("save_settings", {
-        input: expect.objectContaining({
-          notebookLmEnabled: true,
-          notebookLmLaunchUrl: "https://notebooklm.google.com/notebook/test",
-        }),
-      });
-    });
-
-    await user.click(screen.getByRole("button", { name: "Открыть NotebookLM" }));
-
-    await waitFor(() => {
-      expect(mock.invokeMock).toHaveBeenCalledWith("open_notebooklm", {
-        url: "https://notebooklm.google.com/notebook/test",
-      });
-    });
-    expect(await screen.findByText("NotebookLM открыт в системном браузере.")).toBeTruthy();
-  });
-
   it("persists showAdvanced in save_settings payload", async () => {
     const mock = createMockPlatform({
       bootstrap: makeBootstrap({ runtimeReady: false, settings: { ...DEFAULT_SETTINGS, showAdvanced: false } }),
@@ -533,54 +489,6 @@ describe("Replyline UI lane", () => {
     expect(await screen.findByText("Подготовка к работе")).toBeTruthy();
     expect(screen.getByDisplayValue("https://openrouter.ai/api/v1")).toBeTruthy();
     expect(screen.getByDisplayValue("openai/gpt-4o-mini")).toBeTruthy();
-  });
-
-  it("shows NotebookLM launch action on the main screen when enabled", async () => {
-    const mock = createMockPlatform({
-      bootstrap: makeBootstrap({
-        settings: {
-          ...DEFAULT_SETTINGS,
-          notebookLmEnabled: true,
-        },
-      }),
-    });
-    const user = userEvent.setup();
-
-    render(() => <App platform={mock.platform} />);
-    await screen.findByRole("button", { name: "Открыть NotebookLM" });
-
-    await user.click(screen.getByRole("button", { name: "Открыть NotebookLM" }));
-
-    await waitFor(() => {
-      expect(mock.invokeMock).toHaveBeenCalledWith("open_notebooklm", {
-        url: "https://notebooklm.google.com/",
-      });
-    });
-  });
-
-  it("surfaces NotebookLM URL validation errors on save", async () => {
-    const mock = createMockPlatform({
-      bootstrap: makeBootstrap({ runtimeReady: false }),
-      commandHandlers: {
-        save_settings: async () => {
-          throw new Error("INVALID_NOTEBOOKLM_URL");
-        },
-      },
-    });
-    const user = userEvent.setup();
-
-    render(() => <App platform={mock.platform} />);
-    await screen.findByText("Подготовка к работе");
-
-    await user.click(screen.getByLabelText("Включить быстрый запуск NotebookLM"));
-    const urlInput = screen.getByDisplayValue("https://notebooklm.google.com/");
-    await user.clear(urlInput);
-    await user.type(urlInput, "notebooklm");
-    await user.click(screen.getByRole("button", { name: "Сохранить на этой машине" }));
-
-    expect(
-      await screen.findByText("Адрес NotebookLM: укажите полный http:// или https:// URL."),
-    ).toBeTruthy();
   });
 
   it("hides to tray instead of closing the window directly", async () => {

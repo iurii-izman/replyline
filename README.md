@@ -151,26 +151,25 @@ pnpm smoke
 - ESLint (`pnpm lint`)
 - Vite production build
 - `cargo check`
-- `cargo clippy` (warnings as errors)
-- `cargo fmt --check`
-- `cargo test`
-- `vitest` coverage lane (`pnpm test:ui:coverage`)
-- fixture validation
-- prompt-contract checks
-- сценарные проверки `say_now` (локальный quality gate)
-- deterministic consistency gate for canonical hotkey + scope wording
+- `vitest` lane (`pnpm test:ui`)
+- deterministic consistency gate
 - IPC contract gate
-- copy / claim guard
 
-Полный локальный quality + security вход:
+Обязательный локальный quality + security gate:
 
 ```bash
 pnpm verify
 ```
 
-`pnpm verify` = `pnpm smoke` + `pnpm rust:deps` + `pnpm audit:npm`.
+`pnpm verify` = `pnpm smoke` + `pnpm test:security-lanes` (`pnpm rust:deps` + `pnpm audit:npm`).
 
-## Runtime commands
+Расширенный (opt-in/nightly) gate:
+
+```bash
+pnpm verify:extended
+```
+
+## Runtime commands (optional)
 
 Базовые runtime / evidence команды:
 

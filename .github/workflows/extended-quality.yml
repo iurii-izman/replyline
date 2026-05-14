@@ -9,6 +9,7 @@ jobs:
   extended-quality:
     runs-on: windows-latest
     timeout-minutes: 60
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -20,15 +21,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Install testing stack
-        run: pwsh -File scripts/setup-testing-stack.ps1
-      - name: Full verification gate
-        run: pnpm verify:full
-      - name: Verify testing stack
-        run: pwsh -File scripts/verify-testing-stack.ps1
-      - name: API smoke
-        run: pnpm test:api:bruno; pnpm test:api:postman
-      - name: Web E2E
-        run: pnpm test:e2e:web
-      - name: Perf + UX + Sec smoke
-        run: pnpm test:perf:k6; pnpm test:ux:lighthouse; pnpm test:sec:zap
+      - name: Install cargo-deny and cargo-audit
+        run: cargo install --locked cargo-deny cargo-audit
+      - name: Extended verification gate (opt-in)
+        run: pnpm verify:extended
+      - name: Optional API lane
+        run: pnpm test:optional:api

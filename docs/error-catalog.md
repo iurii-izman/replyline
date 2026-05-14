@@ -30,7 +30,6 @@ When a `CommandError` is received:
 | `HOTKEY_REQUIRED`        | Клавиша: задайте сочетание ниже               |
 | `MODEL_REQUIRED`         | Модель ответа: заполните поле                 |
 | `INVALID_URL`            | Адрес шлюза: http:// или https://, полный URL |
-| `INVALID_NOTEBOOKLM_URL` | Адрес NotebookLM: полный http/https URL       |
 | `CAPTURE_RANGE_INVALID`  | Лимит фрагмента: 5–180 секунд                 |
 | `INVALID_LANGUAGE`       | Файл настроек повреждён (язык)                |
 | `INVALID_SCHEMA`         | Версия settings.json не подходит              |

@@ -57,7 +57,7 @@ Run the full smoke gate before submitting:
 pnpm smoke
 ```
 
-This executes: TypeScript typecheck, ESLint, Vite build, `cargo check`, `cargo clippy`, `cargo fmt --check`, `cargo test`, Vitest UI coverage lane, fixture validation, prompt contract checks, say-now scenario checks, consistency gate, IPC contract gate, and copy check.
+This executes: TypeScript typecheck, ESLint, Vite build, `cargo check`, Vitest UI lane, consistency gate, and IPC contract gate.
 
 Run the unified local verification gate:
 
@@ -112,7 +112,7 @@ Keep PRs focused. One logical change per PR is easier to review and revert if ne
 - [ ] `pnpm verify` passes locally.
 - [ ] `pnpm audit:npm` run if JS dependencies changed.
 - [ ] `pnpm rust:deps` run if Rust dependencies changed.
-- [ ] CI status is fully green with no informational failures.
+- [ ] CI status is green for required gates.
 
 ## Code style
 

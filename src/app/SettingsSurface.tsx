@@ -182,20 +182,6 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 <dd>{controller().settings.deepgramModel.trim() || "—"}</dd>
               </div>
               <div class="runtime-snapshot-row">
-                <dt>{st().settings.snapshotLabel.notebookLm}</dt>
-                <dd>
-                  {controller().settings.notebookLmEnabled
-                    ? st().settings.snapshotValue.enabled
-                    : st().settings.snapshotValue.disabled}
-                </dd>
-              </div>
-              <div class="runtime-snapshot-row">
-                <dt>{st().settings.snapshotLabel.notebookLmUrl}</dt>
-                <dd title={controller().settings.notebookLmLaunchUrl}>
-                  {controller().shortUrlForUi(controller().settings.notebookLmLaunchUrl)}
-                </dd>
-              </div>
-              <div class="runtime-snapshot-row">
                 <dt>{st().settings.snapshotLabel.fragmentLimit}</dt>
                 <dd>
                   {fmtSecondsSuffix(controller().settings.captureMaxSeconds, controller().strings())}
@@ -447,43 +433,6 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             />
           </label>
         </div>
-
-        <Show when={controller().settings.showAdvanced}>
-          <div class="settings-section">
-            <h3 class="settings-section-title">{st().settings.notebookLmSectionTitle}</h3>
-            <p class="settings-section-intro">{st().settings.notebookLmSectionIntro}</p>
-
-            <label class="field-checkbox">
-              <input
-                type="checkbox"
-                checked={controller().settings.notebookLmEnabled}
-                onChange={(event) => controller().setNotebookLmEnabled(event.currentTarget.checked)}
-              />
-              <span>{st().settings.notebookLmEnable}</span>
-            </label>
-
-            <label class="field">
-              <span class="field-label">{st().settings.notebookLmUrlLabel}</span>
-              <input
-                class="field-input"
-                value={controller().settings.notebookLmLaunchUrl}
-                onInput={(event) => controller().setNotebookLmLaunchUrl(event.currentTarget.value)}
-              />
-              <span class="field-hint">{st().settings.notebookLmUrlHint}</span>
-            </label>
-
-            <div class="runtime-snapshot-actions">
-              <button
-                class="btn-secondary"
-                type="button"
-                disabled={!controller().notebookLmLaunchReady()}
-                onClick={() => void controller().openNotebookLm()}
-              >
-                {st().settings.openNotebookLm}
-              </button>
-            </div>
-          </div>
-        </Show>
 
         <Show when={controller().settings.showAdvanced}>
           <div class="settings-section">

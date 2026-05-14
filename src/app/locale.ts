@@ -40,7 +40,6 @@ export const ui_ru = {
     clearContext: "Сбросить черновик реплик",
     clearContextTitle: "Убрать накопленные реплики из памяти (RAM), не с диска",
     supersededHint: "Старая карточка — ждите конца шага.",
-    openNotebookLm: "Открыть NotebookLM",
     lastTranscriptLabel: "Текст последнего захвата (усечённо)",
     lastTranscriptHint: "Кнопка «Пересобрать карточку» шлёт этот же текст в шлюз снова.",
   },
@@ -115,7 +114,6 @@ export const ui_ru = {
     cardSectionCopiedGist: "Раздел «Суть» скопирован в буфер.",
     cardSectionCopiedSayNow: "Раздел «Скажи сейчас» скопирован в буфер.",
     cardSectionCopiedNextMove: "Раздел «Дальше» скопирован в буфер.",
-    notebookLmOpened: "NotebookLM открыт в системном браузере.",
     retrying: "Пересбор…",
     hotkeyAlreadyRegistered: "Сочетание уже зарегистрировано здесь. Выберите другое.",
     readinessJsonCopied: "JSON готовности скопирован в буфер.",
@@ -178,8 +176,6 @@ export const ui_ru = {
       gateway: "Шлюз",
       model: "Модель",
       deepgram: "Deepgram",
-      notebookLm: "NotebookLM",
-      notebookLmUrl: "URL NotebookLM",
       fragmentLimit: "Лимит фрагмента",
       cardLanguage: "Язык карточки",
       contextDraft: "Черновик реплик",
@@ -234,14 +230,6 @@ export const ui_ru = {
     llmKeyPlaceholder: "Bearer / API key, если требует ваш шлюз",
     llmKeyIfNeeded: "если нужен шлюзу",
 
-    notebookLmSectionTitle: "Внешний инструмент: NotebookLM",
-    notebookLmSectionIntro:
-      "Это отдельный запуск web-интерфейса NotebookLM в системном браузере. Интеграция не подменяет текущий LLM-шлюз Replyline и не участвует в цепочке звук → текст → карточка.",
-    notebookLmEnable: "Включить быстрый запуск NotebookLM",
-    notebookLmUrlLabel: "URL запуска NotebookLM",
-    notebookLmUrlHint:
-      "По умолчанию подставлен consumer web-entry. При enterprise-сценарии можно указать свой рабочий URL.",
-    openNotebookLm: "Открыть NotebookLM",
 
     savedBadge: "сохранён",
     healthCheck: "Проверить провайдеров",
@@ -344,7 +332,6 @@ export const ui_en: UiStrings = {
     clearContext: "Clear draft replies",
     clearContextTitle: "Remove accumulated replies from memory (RAM), not from disk",
     supersededHint: "Outdated card — wait for the current step to finish.",
-    openNotebookLm: "Open NotebookLM",
     lastTranscriptLabel: "Last capture transcript (truncated)",
     lastTranscriptHint: "The 'Rebuild card' button sends this same text to the gateway again.",
   },
@@ -420,7 +407,6 @@ export const ui_en: UiStrings = {
     cardSectionCopiedGist: "'Gist' section copied to clipboard.",
     cardSectionCopiedSayNow: "'Say now' section copied to clipboard.",
     cardSectionCopiedNextMove: "'Next move' section copied to clipboard.",
-    notebookLmOpened: "NotebookLM opened in the system browser.",
     retrying: "Rebuilding…",
     hotkeyAlreadyRegistered: "This shortcut is already registered here. Choose another one.",
     readinessJsonCopied: "Readiness JSON copied to clipboard.",
@@ -483,8 +469,6 @@ export const ui_en: UiStrings = {
       gateway: "Gateway",
       model: "Model",
       deepgram: "Deepgram",
-      notebookLm: "NotebookLM",
-      notebookLmUrl: "NotebookLM URL",
       fragmentLimit: "Fragment limit",
       cardLanguage: "Card language",
       contextDraft: "Draft replies",
@@ -540,14 +524,6 @@ export const ui_en: UiStrings = {
     llmKeyPlaceholder: "Bearer / API key, if your gateway requires one",
     llmKeyIfNeeded: "if required by gateway",
 
-    notebookLmSectionTitle: "External tool: NotebookLM",
-    notebookLmSectionIntro:
-      "This opens the NotebookLM web interface in the system browser. It does not replace Replyline's LLM gateway and is not part of the audio → text → card pipeline.",
-    notebookLmEnable: "Enable quick-launch NotebookLM",
-    notebookLmUrlLabel: "NotebookLM launch URL",
-    notebookLmUrlHint:
-      "The default is the consumer web entry. For enterprise use you can specify your own URL.",
-    openNotebookLm: "Open NotebookLM",
 
     savedBadge: "saved",
     healthCheck: "Check providers",

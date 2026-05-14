@@ -20,8 +20,6 @@ Current schema version: **2**. Settings from version 1 are automatically migrate
 | `captureMaxSeconds`   | `u16`     | `30`                             | Maximum capture duration (5–180 seconds)          |
 | `useStreamingStt`     | `bool`    | `false`                          | Use WebSocket streaming STT instead of batch HTTP |
 | `customSystemPrompt`  | `string?` | `null`                           | Custom LLM system prompt (overrides built-in)     |
-| `notebookLmEnabled`   | `bool`    | `false`                          | Enable NotebookLM quick-launch integration        |
-| `notebookLmLaunchUrl` | `string`  | `https://notebooklm.google.com/` | NotebookLM URL to open                            |
 | `trayIntroSeen`       | `bool`    | `false`                          | Whether the tray intro has been acknowledged      |
 | `showAdvanced`        | `bool`    | `false`                          | Controls visibility of Advanced Mode UI sections  |
 
@@ -36,7 +34,6 @@ Current schema version: **2**. Settings from version 1 are automatically migrate
 - `captureMaxSeconds` must be between 5 and 180.
 - `llmTemperature` must be between 0.0 and 2.0.
 - `primaryLanguage` must be `ru` or `en`.
-- When `notebookLmEnabled` is true, `notebookLmLaunchUrl` must be a valid HTTP(S) URL.
 
 ## Corruption Recovery
 

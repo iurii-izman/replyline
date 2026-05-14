@@ -33,10 +33,6 @@ pub struct AppSettings {
     pub hotkey: String,
     pub llm_base_url: String,
     pub llm_model: String,
-    #[serde(default)]
-    pub notebook_lm_enabled: bool,
-    #[serde(default = "notebook_lm_launch_url_default")]
-    pub notebook_lm_launch_url: String,
     pub primary_language: String,
     pub deepgram_model: String,
     pub capture_max_seconds: u16,
@@ -62,10 +58,6 @@ fn tray_intro_seen_legacy_default() -> bool {
     true
 }
 
-fn notebook_lm_launch_url_default() -> String {
-    "https://notebooklm.google.com/".to_string()
-}
-
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
@@ -73,8 +65,6 @@ impl Default for AppSettings {
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
-            notebook_lm_enabled: false,
-            notebook_lm_launch_url: notebook_lm_launch_url_default(),
             primary_language: "ru".to_string(),
             deepgram_model: "nova-3".to_string(),
             capture_max_seconds: 30,
@@ -237,16 +227,6 @@ mod tests {
     fn default_hotkey_is_canonical() {
         let settings = AppSettings::default();
         assert_eq!(settings.hotkey, "Ctrl+Alt+Space");
-    }
-
-    #[test]
-    fn default_notebooklm_launch_url_is_set() {
-        let settings = AppSettings::default();
-        assert_eq!(
-            settings.notebook_lm_launch_url,
-            "https://notebooklm.google.com/"
-        );
-        assert!(!settings.notebook_lm_enabled);
     }
 
     #[test]

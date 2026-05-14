@@ -78,7 +78,6 @@ pub(crate) fn build_main_tray_menu<R: Runtime>(
 pub fn run() {
     tauri::Builder::default()
         .manage(ReplylineState::default())
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
@@ -178,7 +177,6 @@ pub fn run() {
             commands::get_log_status,
             commands::get_runtime_readiness,
             commands::log_client_event,
-            commands::open_notebooklm,
             commands::check_provider_health,
             commands::quit_app
         ])

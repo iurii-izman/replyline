@@ -6,14 +6,12 @@ import {
   formatHotkeyFromEvent,
   invokeErrorMessage,
   isConfiguredLlmRoute,
-  isNotebookLmLaunchReady,
   mapSettingsSaveError,
   parseCommandInvokeError,
   shortUrlForUi,
   userSafeBootstrapLoadError,
   userSafeCaptureStartError,
   userSafeHotkeyRegisterError,
-  userSafeNotebookLmOpenError,
   userSafePipelineError,
   usesPlaceholderLlmRoute,
   settingsAnchorForCommandErrorKind,
@@ -41,12 +39,6 @@ describe("model helpers", () => {
     expect(isConfiguredLlmRoute("https://gateway.example/v1", "model-x")).toBe(true);
   });
 
-  it("validates notebooklm launch readiness", () => {
-    expect(isNotebookLmLaunchReady(false, "https://notebooklm.google.com")).toBe(false);
-    expect(isNotebookLmLaunchReady(true, "ftp://host")).toBe(false);
-    expect(isNotebookLmLaunchReady(true, "https://notebooklm.google.com")).toBe(true);
-  });
-
   it("formats hotkey from keyboard event", () => {
     expect(formatHotkeyFromEvent(keyEvent("a", { ctrlKey: true, altKey: true }))).toBe(
       "Ctrl+Alt+A",
@@ -64,10 +56,9 @@ describe("model helpers", () => {
     expect(userSafePipelineError("RL_STT_STREAMING_FAILED")).toContain("Стриминг STT не удался");
   });
 
-  it("maps settings save and notebook open errors", () => {
+  it("maps settings save errors", () => {
     expect(mapSettingsSaveError("HOTKEY_REQUIRED")).toContain("Клавиша");
     expect(mapSettingsSaveError("INVALID_URL")).toContain("http:// или https://");
-    expect(userSafeNotebookLmOpenError("NOTEBOOKLM_DISABLED")).toContain("выключен");
   });
 
   it("returns stable language labels and short URL", () => {

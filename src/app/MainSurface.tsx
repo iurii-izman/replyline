@@ -63,15 +63,6 @@ export function MainSurface(props: { controller: ReplylineController }) {
                 >
                   {st().setup.openSetup}
                 </button>
-                <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
-                  <button
-                    class="btn-ghost"
-                    type="button"
-                    onClick={() => void controller().openNotebookLm()}
-                  >
-                    {st().card.openNotebookLm}
-                  </button>
-                </Show>
               </div>
             }
           >
@@ -182,16 +173,6 @@ export function MainSurface(props: { controller: ReplylineController }) {
                         {st().memory.saveToMemory}
                       </button>
                     </Show>
-                    <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
-                      <button
-                        class="btn-ghost"
-                        type="button"
-                        disabled={controller().pipelineActive()}
-                        onClick={() => void controller().openNotebookLm()}
-                      >
-                        {st().card.openNotebookLm}
-                      </button>
-                    </Show>
                   </div>
                   <Show when={controller().settings.showAdvanced && controller().contextTranscriptPreview()}>
                     <details class="last-transcript-block">
@@ -222,17 +203,6 @@ export function MainSurface(props: { controller: ReplylineController }) {
                   </strong>{" "}
                   {st().idle.captureMaxSuffix}
                 </p>
-                <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
-                  <div class="result-actions">
-                    <button
-                      class="btn-ghost"
-                      type="button"
-                      onClick={() => void controller().openNotebookLm()}
-                    >
-                      {st().card.openNotebookLm}
-                    </button>
-                  </div>
-                </Show>
                 <Show when={controller().settings.showAdvanced && controller().contextTranscriptPreview()}>
                   <details class="last-transcript-block last-transcript-block--idle">
                     <summary>{st().card.lastTranscriptLabel}</summary>

@@ -74,7 +74,7 @@ src/
   app/
     ChromeSurface.tsx   Shell chrome: header, status, messages, footer
     MainSurface.tsx     Result card display (gist / say_now / next_move)
-    SettingsSurface.tsx  Provider config, NotebookLM launch URL, hotkey, language, secrets
+    SettingsSurface.tsx  Provider config, hotkey, language, secrets
     controller.ts       Reactive state machine (Solid.js signals + store)
     model.ts            Type definitions: Phase, Panel, AppSettings, DTOs
     platform.ts         Tauri bridge abstraction (invoke, listen, shortcuts, clipboard)
@@ -109,7 +109,6 @@ Error recovery returns to `error` phase with a user-safe message.
 | `collect_diagnostic_bundle` | Gather runtime evidence into a bundle                             |
 | `get_log_status`            | Return log path, last line, last debug WAV path                   |
 | `log_client_event`          | Append a frontend event to the app log                            |
-| `open_notebooklm`           | Open the configured NotebookLM URL in the system browser          |
 | `check_provider_health`     | Ping Deepgram + LLM endpoints, return reachability status         |
 | `quit_app`                  | Exit the application                                              |
 
@@ -149,9 +148,8 @@ src-tauri/src/
 | ------------------- | -------------------------------- | ------------------------------------------ |
 | Deepgram            | Speech-to-text                   | HTTPS POST (WAV upload)                    |
 | User-configured LLM | Transcript analysis              | HTTPS POST (OpenAI chat completion format) |
-| NotebookLM          | External research/workspace tool | HTTPS URL opened in system browser         |
 
-Replyline does not bundle or host these services. The user configures endpoints, keys, and optional external tool URLs.
+Replyline does not bundle or host these services. The user configures endpoints and keys.
 
 ## State Management
 

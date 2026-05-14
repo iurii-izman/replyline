@@ -1,7 +1,5 @@
 use serde::Deserialize;
 use tauri::{AppHandle, Emitter, Manager, State};
-use tauri_plugin_opener::OpenerExt;
-use url::Url;
 
 use crate::app_log;
 use crate::audio::CaptureRun;
@@ -122,27 +120,6 @@ pub fn log_client_event(event: String, detail: Option<String>) -> Result<(), Com
 pub fn quit_app(app: AppHandle) -> Result<(), CommandError> {
     let _ = app_log::append_event("quit_app", "header_button");
     app.exit(0);
-    Ok(())
-}
-
-#[tauri::command]
-pub fn open_notebooklm(app: AppHandle, url: String) -> Result<(), CommandError> {
-    let trimmed = url.trim();
-    if trimmed.is_empty() {
-        return Err(CommandError::Settings(
-            "INVALID_NOTEBOOKLM_URL: missing url".to_string(),
-        ));
-    }
-    let parsed = Url::parse(trimmed)
-        .map_err(|_| CommandError::Settings("INVALID_NOTEBOOKLM_URL".to_string()))?;
-    if parsed.scheme() != "http" && parsed.scheme() != "https" {
-        return Err(CommandError::Settings("INVALID_NOTEBOOKLM_URL".to_string()));
-    }
-    let _ = app_log::append_event("notebooklm_open_attempt", trimmed);
-    app.opener()
-        .open_url(trimmed, None::<&str>)
-        .map_err(|err| CommandError::Internal(format!("NotebookLM open failed: {err}")))?;
-    let _ = app_log::append_event("notebooklm_open_ok", trimmed);
     Ok(())
 }
 

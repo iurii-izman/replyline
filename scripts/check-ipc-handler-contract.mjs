@@ -27,7 +27,6 @@ const EXPECTED = [
   "memory_get_space_record",
   "memory_list_spaces",
   "memory_save_space_record",
-  "open_notebooklm",
   "quit_app",
   "refresh_tray_menu",
   "retry_last_analysis",

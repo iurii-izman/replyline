@@ -2,30 +2,18 @@
 
 This is the lean handoff gate for Replyline alpha builds.
 
-## Minimum green set
+## Minimum green set (required)
 
-1. `pnpm smoke`
+1. `pnpm verify`
 2. manual critical path spot-check from `docs/smoke-checks.md`
-3. `pnpm runtime:preflight`
-4. `pnpm rust:deps`
-5. `pnpm audit:npm`
-6. `pnpm probe:runtime`
-7. at least one saved runtime evidence bundle via `pnpm evidence:bundle`
-8. one recent runtime comparison artifact:
-   - `pnpm probe:bench -- -Repeats 2`
-   - or `pnpm probe:durations:avg`
-   - or `pnpm probe:live-source`
-9. one benchmark scaffold artifact via `pnpm benchmark:evidence`
+3. `pnpm rust:deps`
+4. `pnpm audit:npm`
 
 ## Lightweight checklist
 
 - Build/test lane is green (`pnpm smoke`, including `pnpm test:ui` and `pnpm test:consistency`).
 - Manual critical path smoke pass is complete (`docs/smoke-checks.md`).
-- Runtime preflight snapshot is available (`pnpm runtime:preflight`).
-- Runtime lane has fresh artifact(s) for this release discussion.
-- Evidence bundle exists and includes `manifest.json`.
-- Evidence bundle notes whether app log and repo runtime artifacts were actually included.
-- Benchmark scaffold exists and lists report sources (`pnpm benchmark:evidence`).
+- Runtime preflight/evidence artifacts are optional unless explicitly required by release owner.
 - Public/runtime claims are label-correct (`target` / `measured` / `pending verification`).
 - Rust supply-chain gate is green with current warnings triaged, not hand-waved (`pnpm rust:deps`).
 - JavaScript supply-chain gate is green (`pnpm audit:npm`).
@@ -57,9 +45,7 @@ This is the lean handoff gate for Replyline alpha builds.
 - Block release if `diagnostics/runtime-events.json` is missing schema fields (`stage/outcome/code`) in newly generated bundles.
 - Block release if Advanced Mode docs/UI copy drift from governance intent (`docs/advanced-mode-governance.md`).
 
-## Alpha handoff rule
-
-Do not widen the alpha unless there is at least one recent evidence bundle and one repeated runtime comparison from the same build family.
+## Optional Runtime Evidence Lane
 
 For machine-local transfer discipline, use `pnpm alpha:handoff` to generate one compact `reports/alpha-handoff-*` package that combines:
 

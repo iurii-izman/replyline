@@ -26,9 +26,9 @@
 - [third-party-providers.md](third-party-providers.md)
 - [prompt-contract-lane.md](prompt-contract-lane.md)
 
-## Direction and roadmap
+## Archived strategy docs
 
-- [development-directions.md](development-directions.md) — единая канон-точка по 30 направлениям развития, текущему счёту и приоритетным шагам. Поглотила старые `improvement-plan.md` и `interviewforge-lessons.md`.
+- [archive/strategic/README.md](archive/strategic/README.md)
 
 ## Internal reference
 

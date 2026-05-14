@@ -26,8 +26,6 @@ pub enum SettingsError {
     InvalidLanguage,
     #[error("INVALID_URL")]
     InvalidUrl,
-    #[error("INVALID_NOTEBOOKLM_URL")]
-    InvalidNotebookLmUrl,
     #[error("INVALID_SCHEMA")]
     InvalidSchema,
     #[error("MODEL_REQUIRED")]
@@ -133,12 +131,6 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     }
     if !settings.llm_base_url.trim().is_empty() {
         validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
-    }
-    if settings.notebook_lm_enabled || !settings.notebook_lm_launch_url.trim().is_empty() {
-        validate_http_url(
-            settings.notebook_lm_launch_url.trim(),
-            SettingsError::InvalidNotebookLmUrl,
-        )?;
     }
     Ok(())
 }
@@ -260,17 +252,6 @@ mod tests {
         assert!(matches!(
             validate(&settings),
             Err(SettingsError::CaptureRangeInvalid)
-        ));
-    }
-
-    #[test]
-    fn rejects_invalid_notebooklm_url_when_enabled() {
-        let mut settings = AppSettings::default();
-        settings.notebook_lm_enabled = true;
-        settings.notebook_lm_launch_url = "not-a-url".to_string();
-        assert!(matches!(
-            validate(&settings),
-            Err(SettingsError::InvalidNotebookLmUrl)
         ));
     }
 

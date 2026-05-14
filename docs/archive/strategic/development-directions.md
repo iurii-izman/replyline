@@ -62,7 +62,7 @@
 | 3   | LLM Layer & Prompt Engineering                               |   92 |      80 |    −12 | Самый сильный слой: `PROMPT_VERSION="v2"`, 3-уровневый JSON parsing, validators, RU/EN prompts. |
 | 4   | End-to-End Latency & Performance                             |   90 |      50 |    −40 | **#1 продуктовый риск**: `release→card = 5217ms` на local probe. Borderline-useful для pressure moment. |
 | 5   | Context Layer (RAM ring buffer)                              |   90 |      82 |     −8 | 3 entries, 1500 chars, 20-min TTL, FIFO eviction, без panic. Чисто и дисциплинированно. |
-| 6   | Result Card UX (gist/say_now/next_move)                      |   92 |      78 |    −14 | Visual hierarchy на `say_now`, per-section copy, retry, save-to-memory, NotebookLM action. |
+| 6   | Result Card UX (gist/say_now/next_move)                      |   92 |      78 |    −14 | Visual hierarchy на `say_now`, per-section copy, retry, save-to-memory action. |
 | 7   | Hotkey System & Capture Ergonomics                           |   92 |      65 |    −27 | Сердце продукта, но самая слабая по доказательствам область. Cross-app не верифицирован. |
 | 8   | Memory Layer (separate track)                                |   75 |      45 |    −30 | Backend production-ready, UI частично, **не подключён к LLM context injection** — половина ценности на полу. |
 | 9   | Settings & Configuration UX                                  |   85 |      68 |    −17 | Schema migration v1→v2, scroll-anchor routing на error type. **Нет language dropdown в UI.** |
@@ -173,7 +173,7 @@
 ### 5.6 Result Card UX — 78 / 92
 
 - **Scope**: визуальное представление карточки с тремя полями.
-- **Покрыто**: visual hierarchy на `say_now`, per-section copy buttons, retry, save-to-memory, NotebookLM action, `result-section--primary` modifier, palette tokens.
+- **Покрыто**: visual hierarchy на `say_now`, per-section copy buttons, retry, save-to-memory, `result-section--primary` modifier, palette tokens.
 - **Не покрыто / риски**: нет incremental rendering при streaming (см. #3), нет responsive font scaling при overflow, нет confidence indicator, нет card history в текущей сессии (можно увидеть только последнюю).
 - **Следующий шаг**: добавить responsive font scaling для длинного `say_now` (auto-shrink при overflow). Сейчас длинная фраза выходит за пределы card.
 
@@ -210,7 +210,7 @@
 - **Scope**: первое впечатление + setup до первого useful capture.
 - **Покрыто**: settings открывается автоматически если runtime path не сконфигурирован, intro banner, hotkey-fallback nudge, readiness checklist.
 - **Не покрыто / риски**: текущий experience слишком developer-oriented (требует provider keys, понимания llm_base_url, понимания hotkey capture). Не-технический тестер увязнет в первые 5 минут.
-- **Следующий шаг**: добавить «default test mode» — кнопку «Использовать встроенный demo provider» которая позволяет нажать hotkey без настройки ключей и увидеть как работает workflow на mock-данных. Сразу за этим — реальный setup. (Альтернатива: NotebookLM-style first-run wizard на 3 экрана, но это сложнее.)
+- **Следующий шаг**: добавить «default test mode» — кнопку «Использовать встроенный demo provider» которая позволяет нажать hotkey без настройки ключей и увидеть как работает workflow на mock-данных. Сразу за этим — реальный setup.
 
 ### 5.12 i18n / Localization — 50 / 78
 

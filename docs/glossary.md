@@ -18,7 +18,7 @@
 ## D
 
 - **Deepgram** — текущий STT провайдер. Поддерживается batch и streaming, default = batch.
-- **development-directions.md** — канонический документ направлений развития: 30 dimension с scoring max/current. Заменяет старые improvement-plan и interviewforge-lessons.
+- **archive/strategic/** — архив стратегических и roadmap-документов, вынесенных из active beta-readiness контура.
 
 ## E
 
