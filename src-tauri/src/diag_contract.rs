@@ -8,6 +8,7 @@ pub const RL_CAPTURE_READY: &str = "RL_CAPTURE_READY";
 pub const RL_STT_KEY_MISSING: &str = "RL_STT_KEY_MISSING";
 pub const RL_STT_FAILED: &str = "RL_STT_FAILED";
 pub const RL_STT_OK: &str = "RL_STT_OK";
+pub const RL_STT_TOO_SHORT: &str = "RL_STT_TOO_SHORT";
 pub const RL_LLM_FAILED: &str = "RL_LLM_FAILED";
 pub const RL_LLM_OK: &str = "RL_LLM_OK";
 pub const RL_CARD_INVALID: &str = "RL_CARD_INVALID";
@@ -31,6 +32,7 @@ mod tests {
             RL_STT_KEY_MISSING,
             RL_STT_FAILED,
             RL_STT_OK,
+            RL_STT_TOO_SHORT,
             RL_LLM_FAILED,
             RL_LLM_OK,
             RL_CARD_INVALID,
@@ -43,6 +45,6 @@ mod tests {
             assert!(code.starts_with("RL_"), "code must keep RL_ prefix: {code}");
             assert!(seen.insert(code), "duplicate diagnostic code: {code}");
         }
-        assert_eq!(codes.len(), 14);
+        assert_eq!(codes.len(), 15);
     }
 }

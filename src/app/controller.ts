@@ -31,6 +31,7 @@ export function useReplylineController(platform: AppPlatform) {
   const [card, setCard] = createSignal<AnalysisCard | null>(null);
   const [error, setError] = createSignal<string | null>(null);
   const [statusDetail, setStatusDetail] = createSignal<string | null>(null);
+  const [captureQuality, setCaptureQuality] = createSignal<"short" | "normal" | "long">("normal");
   const [deepgramSaved, setDeepgramSaved] = createSignal(false);
   const [llmKeySaved, setLlmKeySaved] = createSignal(false);
   const [contextActive, setContextActive] = createSignal(false);
@@ -143,6 +144,7 @@ export function useReplylineController(platform: AppPlatform) {
         try {
           const result = await platform.invoke<AnalysisCard>("capture_stop_and_analyze");
           setCard(result);
+          setCaptureQuality(result.charsBand === "short" ? "short" : result.charsBand === "long" ? "long" : "normal");
           setContextActive(true);
           const status = await platform.invoke<ContextStatusDto>("get_context_status");
           applyContextStatus(status);
@@ -150,6 +152,7 @@ export function useReplylineController(platform: AppPlatform) {
         } catch (err) {
           setCommandErrorKind(err);
           setError(userSafePipelineError(err));
+          if (invokeErrorMessage(err).includes("SHORT_CAPTURE")) setCaptureQuality("short");
           pushNotice({ tone: "error", message: userSafePipelineError(err) });
           setPhase("idle");
         }
@@ -232,6 +235,7 @@ export function useReplylineController(platform: AppPlatform) {
     try {
       const result = await platform.invoke<AnalysisCard>("retry_last_analysis");
       setCard(result);
+      setCaptureQuality(result.charsBand === "short" ? "short" : result.charsBand === "long" ? "long" : "normal");
       const status = await platform.invoke<ContextStatusDto>("get_context_status");
       applyContextStatus(status);
       setPhase("ready");
@@ -340,6 +344,7 @@ export function useReplylineController(platform: AppPlatform) {
     card,
     error,
     statusDetail,
+    captureQuality,
     deepgramSaved,
     llmKeySaved,
     contextActive,

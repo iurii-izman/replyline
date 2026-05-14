@@ -10,7 +10,12 @@ type MockPlatform = {
   emitShortcut: (event: ShortcutEvent) => Promise<void>;
 };
 
-function createMockPlatform(): MockPlatform {
+type MockPlatformOptions = {
+  analysisError?: unknown;
+  analysisCard?: { gist: string; sayNow: string; nextMove: string };
+};
+
+function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
   const listeners = new Map<string, ((event: ListenerPayload<unknown>) => void)[]>();
   const shortcuts: ((event: ShortcutEvent) => void | Promise<void>)[] = [];
 
@@ -22,7 +27,7 @@ function createMockPlatform(): MockPlatform {
           hotkey: "Ctrl+Alt+Space",
           llmBaseUrl: "https://api.example/v1",
           llmModel: "gpt-4o-mini",
-          captureMaxSeconds: 30,
+          captureMaxSeconds: 45,
         },
         deepgramKeyPresent: true,
         llmKeyPresent: true,
@@ -35,7 +40,8 @@ function createMockPlatform(): MockPlatform {
       return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
     }
     if (command === "capture_stop_and_analyze" || command === "retry_last_analysis") {
-      return { gist: "g", sayNow: "say", nextMove: "next" };
+      if (options.analysisError) throw options.analysisError;
+      return options.analysisCard ?? { gist: "g", sayNow: "say", nextMove: "next" };
     }
     if (command === "clear_context") {
       return { contextActive: false, entryCount: 0, canRetryLastTranscript: false };
@@ -91,11 +97,18 @@ describe("App UX stabilization", () => {
   it("shows card shell and action row in idle", async () => {
     render(() => <App platform={mock.platform} />);
 
-    expect(await screen.findByTestId("main-card-shell")).toBeTruthy();
-    expect(screen.getByTestId("action-row")).toBeTruthy();
+    const shell = await screen.findByTestId("main-card-shell");
+    const surface = screen.getByTestId("main-surface");
+    const top = screen.getByTestId("main-card-top");
+    const body = screen.getByTestId("main-card-body");
+    const actions = screen.getByTestId("action-row");
+
+    expect(shell).toBeTruthy();
+    expect([...surface.children]).toEqual([top, body, actions]);
     expect(screen.getByText("Суть")).toBeTruthy();
     expect(screen.getByText("Скажи сейчас")).toBeTruthy();
     expect(screen.getByText("Дальше")).toBeTruthy();
+    expect(screen.getByRole("list", { name: "Статус цепочки" })).toBeTruthy();
   });
 
   it("keeps actions disabled in idle without card", async () => {
@@ -109,6 +122,20 @@ describe("App UX stabilization", () => {
     expect(copy.getAttribute("title")).toBe("Сначала получите карточку.");
   });
 
+  it("keeps action buttons fixed-height and out of the scroll body", async () => {
+    render(() => <App platform={mock.platform} />);
+
+    const copy = await screen.findByRole("button", { name: "Скопировать ответ" });
+    const actions = screen.getByTestId("action-row");
+    const body = screen.getByTestId("main-card-body");
+
+    expect(actions.parentElement).toBe(screen.getByTestId("main-surface"));
+    expect(body.contains(actions)).toBe(false);
+    expect(getComputedStyle(actions).alignItems).toBe("center");
+    expect(getComputedStyle(copy).height).toBe("38px");
+    expect(getComputedStyle(copy).maxHeight).toBe("38px");
+  });
+
   it("enables actions and handles keyboard shortcuts when card is ready", async () => {
     render(() => <App platform={mock.platform} />);
 
@@ -118,24 +145,48 @@ describe("App UX stabilization", () => {
 
     const copy = await screen.findByRole("button", { name: "Скопировать ответ" });
     const retry = screen.getByRole("button", { name: "Пересобрать" });
+    const actions = screen.getByTestId("action-row");
     await waitFor(() => {
       expect(copy).toHaveProperty("disabled", false);
       expect(retry).toHaveProperty("disabled", false);
     });
+    expect(actions.parentElement).toBe(screen.getByTestId("main-surface"));
+    expect(screen.getByText("Ответ готов к копированию.")).toBeTruthy();
 
     fireEvent.keyDown(window, { key: "c", ctrlKey: true });
     await waitFor(() => expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("say"));
 
     fireEvent.keyDown(window, { key: "r" });
-    await waitFor(() => expect(mock.invoke.mock.calls.some((c) => c[0] === "retry_last_analysis")).toBe(true));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "retry_last_analysis")).toBe(true),
+    );
 
     fireEvent.keyDown(window, { key: "Escape" });
     await waitFor(() => expect(screen.queryByText("Ответ скопирован.")).toBeNull());
   });
 
+  it("keeps the same action zone after a pipeline error", async () => {
+    mock = createMockPlatform({ analysisError: { kind: "Pipeline", message: "LLM timeout" } });
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    expect(
+      await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
+    ).toBeTruthy();
+    expect(screen.getByText("Повторите захват или проверьте настройки.")).toBeTruthy();
+    expect(screen.getByTestId("action-row").parentElement).toBe(screen.getByTestId("main-surface"));
+    expect(screen.getByRole("button", { name: "Скопировать ответ" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+  });
+
   it("renders localized settings CTA labels", async () => {
     render(() => <App platform={mock.platform} />);
-    fireEvent.click(await screen.findByTitle("Settings"));
+    fireEvent.click(await screen.findByTitle("Настройки"));
     await waitFor(() => expect(screen.getByText("Настройки")).toBeTruthy());
     expect(screen.getByRole("button", { name: "Сохранить" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();

@@ -104,6 +104,7 @@ export type AnalysisCard = {
   gist: string;
   sayNow: string;
   nextMove: string;
+  charsBand?: "short" | "medium" | "long";
 };
 
 export type StatusEvent = {
@@ -118,7 +119,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
-  captureMaxSeconds: 30,
+  captureMaxSeconds: 45,
 };
 
 export function isConfiguredLlmRoute(baseUrl: string, model: string): boolean {
@@ -163,6 +164,9 @@ export function userSafePipelineError(err: unknown): string {
   }
   if (/LLM|gateway|401|403|http|timeout/i.test(s)) {
     return "Нет ответа LLM-шлюза: проверьте URL, модель и ключ.";
+  }
+  if (/SHORT_CAPTURE|слишком короткий фрагмент/i.test(s)) {
+    return "Слишком короткий фрагмент, запишите 5-10 секунд.";
   }
   return "Цепочка прервалась. Повторите захват.";
 }

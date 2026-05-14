@@ -84,7 +84,7 @@ async fn main() -> Result<(), String> {
         capture_max_seconds: env::var("REPLYLINE_CAPTURE_MAX_SECONDS")
             .ok()
             .and_then(|value| value.parse::<u16>().ok())
-            .unwrap_or(30),
+            .unwrap_or(45),
         ..AppSettings::default()
     };
     let probe_text =
@@ -139,7 +139,8 @@ async fn main() -> Result<(), String> {
     let stt_ms = stt_started_at.elapsed().as_millis();
 
     let llm_started_at = Instant::now();
-    let card = llm::analyze_transcript(&settings, Some(&llm_api_key), &transcript, "").await?;
+    let outcome = llm::analyze_transcript(&settings, Some(&llm_api_key), &transcript, "").await?;
+    let card = outcome.card;
     let llm_ms = llm_started_at.elapsed().as_millis();
     let release_to_card_ms = release_started_at.elapsed().as_millis();
     let total_end_to_end_ms = started_at.elapsed().as_millis();

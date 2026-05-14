@@ -41,7 +41,7 @@ impl Default for AppSettings {
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
-            capture_max_seconds: 30,
+            capture_max_seconds: 45,
         }
     }
 }
@@ -103,6 +103,11 @@ pub struct AnalysisCardDto {
     pub gist: String,
     pub say_now: String,
     pub next_move: String,
+    pub chars_band: String,
+    #[serde(skip)]
+    pub next_move_fallback: bool,
+    #[serde(skip)]
+    pub say_now_repair: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

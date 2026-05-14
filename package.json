@@ -95,6 +95,8 @@
     "release:freeze:check:strict": "node scripts/check-release-freeze.mjs --strict",
     "probe:soak": "pwsh -File scripts/runtime-soak.ps1",
     "check:slo": "node scripts/check-slo-budget.mjs"
+    ,
+    "report:card-quality": "node scripts/runtime-card-quality-report.mjs"
   },
   "license": "MIT",
   "dependencies": {

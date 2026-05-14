@@ -57,8 +57,8 @@ assertIncludes(
 );
 assertIncludes(
   llmRaw,
-  "trim_line(&card.say_now, 220)",
-  "say_now clamp to 220 chars must stay in place.",
+  "max_tokens: 260",
+  "LLM max_tokens should be increased to 260.",
 );
 
 for (const fixture of fixtures) {

@@ -37,6 +37,7 @@ impl CaptureRun {
     }
 
     pub fn stop(self) -> Result<Vec<i16>, String> {
+        thread::sleep(Duration::from_millis(450));
         self.cancel.store(true, Ordering::SeqCst);
         self.join
             .join()

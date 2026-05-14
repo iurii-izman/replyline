@@ -14,11 +14,15 @@ Detail fields:
 - `outcome`: `start | ok | fail`
 - `code`: stable code (for example `RL_STT_FAILED`)
 - `detail`: sanitized short detail (no raw tokens, no raw PII)
+- `next_move_fallback=true|false`, `say_now_repair=true|false`, and `chars_band=short|medium|long` appear in `detail` for successful `llm` and `retry` card generation events.
+- failed `RL_CARD_INVALID` details now include `invalid_reason=...`.
+- short transcript gate is logged as `code=RL_STT_TOO_SHORT`.
 
 Example line:
 
 ```text
 2026-05-14T12:01:02 [diag_runtime_event] stage=stt outcome=fail code=RL_STT_FAILED detail=empty transcript
+2026-05-14T12:01:05 [diag_runtime_event] stage=llm outcome=ok code=RL_LLM_OK detail=card generated next_move_fallback=true
 ```
 
 ## 2) Stable error codes (current)
