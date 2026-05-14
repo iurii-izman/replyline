@@ -65,7 +65,7 @@ Run the unified local verification gate:
 pnpm verify
 ```
 
-`pnpm verify` runs `pnpm smoke` + `pnpm rust:deps` + `pnpm audit:npm`.
+`pnpm verify` runs `pnpm smoke` + `pnpm test:security-lanes` (`pnpm rust:deps` + `pnpm audit:npm`).
 
 Additional required checks:
 

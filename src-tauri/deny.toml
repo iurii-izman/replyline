@@ -6,9 +6,12 @@ feature-depth = 1
 
 [advisories]
 db-urls = ["https://github.com/rustsec/advisory-db"]
-yanked = "warn"
+yanked = "deny"
 unmaintained = "workspace"
-ignore = []
+ignore = [
+    # REVIEW_DATE=2026-07-01; reason=Tauri/wry GTK3 stack is transitive on Linux and not used on primary Windows target.
+    { crate = "fastrand@2.4.0", reason = "yanked transitive crate; locked by upstream tree until next dependency refresh." },
+]
 
 [licenses]
 allow = [
