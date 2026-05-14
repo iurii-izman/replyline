@@ -6,7 +6,12 @@
   "type": "module",
   "pnpm": {
     "overrides": {
-      "postcss": "8.5.14"
+      "postcss": "8.5.14",
+      "handlebars": "4.7.9",
+      "node-forge": "1.4.2",
+      "flatted": "3.4.2",
+      "underscore": "1.13.8",
+      "lodash": "4.18.1"
     },
     "onlyBuiltDependencies": [
       "edgedriver",
