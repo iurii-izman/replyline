@@ -65,12 +65,12 @@ jobs:
       - name: Local quality and security gate (fail-fast)
         run: pnpm verify
 
-      - name: Upload coverage and test artifacts
+      - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: verify-artifacts-${{ github.run_id }}
           path: |
-            coverage/**
             artifacts/**
+            test-results/**
           if-no-files-found: warn

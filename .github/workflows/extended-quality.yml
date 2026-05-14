@@ -22,8 +22,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Install testing stack
         run: pwsh -File scripts/setup-testing-stack.ps1
-      - name: Verify gate
-        run: pnpm verify
+      - name: Full verification gate
+        run: pnpm verify:full
       - name: Verify testing stack
         run: pwsh -File scripts/verify-testing-stack.ps1
       - name: API smoke

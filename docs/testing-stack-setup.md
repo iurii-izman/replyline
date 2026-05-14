@@ -26,7 +26,8 @@ pwsh -File scripts/verify-testing-stack.ps1
 
 - Baseline install gate: `pnpm install --frozen-lockfile`
 - PR fast lane: `pnpm verify`
-- Weekly extended lane: API + E2E + perf + UX + sec scripts
+- Full local lane (manual): `pnpm verify:full`
+- Weekly extended lane: `pnpm verify:full` + API/E2E/perf/UX/sec scripts
 
 ## Secrets And Env
 
