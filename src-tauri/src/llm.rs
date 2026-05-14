@@ -2,6 +2,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::{AnalysisCardDto, AppSettings};
 
+const HTTP_TIMEOUT_SECS: u64 = 20;
+const MAX_RETRIES: u32 = 2;
+
 #[derive(Debug, Serialize)]
 struct ChatRequest<'a> {
     model: &'a str,
@@ -127,7 +130,7 @@ pub async fn analyze_transcript(
     };
 
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(20))
+        .timeout(std::time::Duration::from_secs(HTTP_TIMEOUT_SECS))
         .build()
         .map_err(|err| format!("LLM client: {err}"))?;
 
@@ -137,10 +140,9 @@ pub async fn analyze_transcript(
     );
 
     let response = {
-        let max_retries = 2u32;
         let mut last_err = String::new();
         let mut resolved = None;
-        for attempt in 0..=max_retries {
+        for attempt in 0..=MAX_RETRIES {
             if attempt > 0 {
                 tokio::time::sleep(std::time::Duration::from_millis(
                     500 * 2u64.pow(attempt - 1),
@@ -152,7 +154,7 @@ pub async fn analyze_transcript(
                 req = req.bearer_auth(token);
             }
             match req.send().await {
-                Ok(resp) if resp.status().is_server_error() && attempt < max_retries => {
+                Ok(resp) if resp.status().is_server_error() && attempt < MAX_RETRIES => {
                     last_err = format!("LLM server error {}", resp.status());
                     continue;
                 }
@@ -160,7 +162,7 @@ pub async fn analyze_transcript(
                     resolved = Some(resp);
                     break;
                 }
-                Err(err) if (err.is_timeout() || err.is_connect()) && attempt < max_retries => {
+                Err(err) if (err.is_timeout() || err.is_connect()) && attempt < MAX_RETRIES => {
                     last_err = format!("LLM request failed: {err}");
                     continue;
                 }

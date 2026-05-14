@@ -7,6 +7,11 @@ use tokio_tungstenite::{
 
 use crate::types::AppSettings;
 
+const HTTP_TIMEOUT_SECS: u64 = 20;
+const WS_CONNECT_TIMEOUT_SECS: u64 = 10;
+const WS_READ_TIMEOUT_SECS: u64 = 15;
+const MAX_RETRIES: u32 = 2;
+
 #[derive(Debug, Deserialize)]
 struct DeepgramResponse {
     results: DeepgramResults,
@@ -57,16 +62,15 @@ pub async fn transcribe_wav(
     );
 
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(20))
+        .timeout(std::time::Duration::from_secs(HTTP_TIMEOUT_SECS))
         .build()
         .map_err(|err| format!("Deepgram client: {err}"))?;
 
     let body = bytes::Bytes::copy_from_slice(wav_bytes);
     let response = {
-        let max_retries = 2u32;
         let mut last_err = String::new();
         let mut resolved = None;
-        for attempt in 0..=max_retries {
+        for attempt in 0..=MAX_RETRIES {
             if attempt > 0 {
                 tokio::time::sleep(Duration::from_millis(500 * 2u64.pow(attempt - 1))).await;
             }
@@ -78,7 +82,7 @@ pub async fn transcribe_wav(
                 .send()
                 .await
             {
-                Ok(resp) if resp.status().is_server_error() && attempt < max_retries => {
+                Ok(resp) if resp.status().is_server_error() && attempt < MAX_RETRIES => {
                     last_err = format!("Deepgram server error {}", resp.status());
                     continue;
                 }
@@ -86,7 +90,7 @@ pub async fn transcribe_wav(
                     resolved = Some(resp);
                     break;
                 }
-                Err(err) if (err.is_timeout() || err.is_connect()) && attempt < max_retries => {
+                Err(err) if (err.is_timeout() || err.is_connect()) && attempt < MAX_RETRIES => {
                     last_err = format!("Deepgram request failed: {err}");
                     continue;
                 }
@@ -143,10 +147,13 @@ pub async fn transcribe_pcm_streaming(
             .map_err(|err| format!("Deepgram auth header failed: {err}"))?,
     );
 
-    let (mut socket, _) = timeout(Duration::from_secs(10), connect_async(request))
-        .await
-        .map_err(|_| "Deepgram WS connect timed out.".to_string())?
-        .map_err(|err| format!("Deepgram WS connect failed: {err}"))?;
+    let (mut socket, _) = timeout(
+        Duration::from_secs(WS_CONNECT_TIMEOUT_SECS),
+        connect_async(request),
+    )
+    .await
+    .map_err(|_| "Deepgram WS connect timed out.".to_string())?
+    .map_err(|err| format!("Deepgram WS connect failed: {err}"))?;
 
     let pcm_bytes = samples_to_le_bytes(pcm_samples);
     for chunk in pcm_bytes.chunks(3_200) {
@@ -167,7 +174,7 @@ pub async fn transcribe_pcm_streaming(
     let mut fallback_latest: Option<String> = None;
 
     loop {
-        let next = timeout(Duration::from_secs(15), socket.next())
+        let next = timeout(Duration::from_secs(WS_READ_TIMEOUT_SECS), socket.next())
             .await
             .map_err(|_| "Deepgram WS response timed out.".to_string())?;
 

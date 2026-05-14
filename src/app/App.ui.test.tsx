@@ -407,6 +407,28 @@ describe("Replyline UI lane", () => {
     expect(await screen.findByText("NotebookLM открыт в системном браузере.")).toBeTruthy();
   });
 
+  it("persists showAdvanced in save_settings payload", async () => {
+    const mock = createMockPlatform({
+      bootstrap: makeBootstrap({ runtimeReady: false, settings: { ...DEFAULT_SETTINGS, showAdvanced: false } }),
+    });
+    const user = userEvent.setup();
+
+    render(() => <App platform={mock.platform} />);
+    await screen.findByText("Подготовка к работе");
+
+    await user.click(screen.getByLabelText("Advanced Mode"));
+    await user.click(screen.getByRole("button", { name: "Сохранить на этой машине" }));
+
+    await waitFor(() => {
+      expect(mock.invokeMock).toHaveBeenCalledWith(
+        "save_settings",
+        expect.objectContaining({
+          input: expect.objectContaining({ showAdvanced: true }),
+        }),
+      );
+    });
+  });
+
   it("shows NotebookLM launch action on the main screen when enabled", async () => {
     const mock = createMockPlatform({
       bootstrap: makeBootstrap({
@@ -533,5 +555,40 @@ describe("Replyline UI lane", () => {
     await mock.triggerShortcut("Released");
 
     expect(await screen.findByText(/шлюза/)).toBeTruthy();
+  });
+
+  it("shows retry failure safely when retry_last_analysis fails", async () => {
+    const mock = createMockPlatform({
+      commandHandlers: {
+        retry_last_analysis: async () => {
+          throw new Error("nothing to retry");
+        },
+      },
+    });
+    const user = userEvent.setup();
+
+    render(() => <App platform={mock.platform} />);
+    await screen.findByText(/Удержите/);
+    await mock.triggerShortcut("Pressed");
+    await mock.triggerShortcut("Released");
+    await screen.findByText(DEFAULT_CARD.sayNow);
+    await user.click(screen.getByRole("button", { name: "Пересобрать карточку" }));
+
+    expect(await screen.findByText("Сначала сделайте захват — пересобрать пока нечего.")).toBeTruthy();
+  });
+
+  it("handles repeated capture cycles without degradation", async () => {
+    const mock = createMockPlatform();
+    render(() => <App platform={mock.platform} />);
+    await screen.findByText(/Удержите/);
+
+    for (let i = 0; i < 8; i += 1) {
+      await mock.triggerShortcut("Pressed");
+      await mock.triggerShortcut("Released");
+      expect(await screen.findByText(DEFAULT_CARD.sayNow)).toBeTruthy();
+    }
+
+    expect(mock.invokeMock.mock.calls.filter(([cmd]) => cmd === "capture_start")).toHaveLength(8);
+    expect(mock.invokeMock.mock.calls.filter(([cmd]) => cmd === "capture_stop_and_analyze")).toHaveLength(8);
   });
 });

@@ -309,6 +309,9 @@ export function userSafePipelineError(err: unknown): string {
   if (/Deepgram|API key|missing|Нет ключа Deepgram|распознаван/i.test(s)) {
     return "Нет текста из звука: ключ Deepgram и сеть → Настройки.";
   }
+  if (/stt_streaming_failed_then_batch_failed|stt_streaming_failed|Deepgram WS|websocket/i.test(s)) {
+    return "Стриминг STT не удался; приложение пробовало fallback на batch, но текста всё ещё нет. Проверьте ключ Deepgram, сеть и переключатель Streaming STT.";
+  }
   if (/Card output invalid|слишком расплывчат|too generic/i.test(s)) {
     return "Карточка вышла слишком расплывчатой. Повторите захват или уточните фрагмент.";
   }

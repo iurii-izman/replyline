@@ -98,6 +98,19 @@ fn capture_loopback(
     cancel: Arc<AtomicBool>,
     max_capture_duration: Duration,
 ) -> Result<Vec<i16>, String> {
+    struct MixFormatGuard(*mut windows::Win32::Media::Audio::WAVEFORMATEX);
+    impl Drop for MixFormatGuard {
+        fn drop(&mut self) {
+            unsafe { CoTaskMemFree(Some(self.0.cast())) };
+        }
+    }
+    struct AudioClientStopGuard(IAudioClient);
+    impl Drop for AudioClientStopGuard {
+        fn drop(&mut self) {
+            let _ = unsafe { self.0.Stop() };
+        }
+    }
+
     let enumerator: IMMDeviceEnumerator =
         unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
             .map_err(|e| e.to_string())?;
@@ -111,6 +124,7 @@ fn capture_loopback(
     if mix_ptr.is_null() {
         return Err("WASAPI returned a null mix format.".to_string());
     }
+    let _mix_guard = MixFormatGuard(mix_ptr);
 
     let mix = unsafe { *mix_ptr };
     let channels = mix.nChannels as usize;
@@ -137,6 +151,7 @@ fn capture_loopback(
         Vec::with_capacity(TARGET_SAMPLE_RATE as usize * max_capture_duration.as_secs() as usize);
 
     unsafe { client.Start() }.map_err(|e| e.to_string())?;
+    let _stop_guard = AudioClientStopGuard(client.clone());
 
     while !cancel.load(Ordering::SeqCst) && started.elapsed() < max_capture_duration {
         let mut packet_frames =
@@ -168,9 +183,6 @@ fn capture_loopback(
             packet_frames = unsafe { capture.GetNextPacketSize() }.map_err(|e| e.to_string())?;
         }
     }
-
-    unsafe { client.Stop() }.map_err(|e| e.to_string())?;
-    unsafe { CoTaskMemFree(Some(mix_ptr.cast())) };
 
     if pcm.is_empty() {
         return Err("No audio detected during snippet capture.".to_string());
