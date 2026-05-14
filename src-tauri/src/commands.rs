@@ -1,17 +1,14 @@
-use serde::Deserialize;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 use crate::app_log;
 use crate::audio::CaptureRun;
 use crate::credentials;
-use crate::diagnostic_bundle;
-use crate::memory::{MemorySpace, MemorySpaceRecord};
-use crate::services::{capture_pipeline, memory_service, provider_health};
+use crate::services::capture_pipeline;
 use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
-    AnalysisCardDto, AppSettings, BootstrapDto, CommandError, ContextStatusDto,
-    DiagnosticBundleDto, HealthCheckResult, RuntimeReadinessDto, SecretSlot, StatusEventDto,
+    AnalysisCardDto, AppSettings, BootstrapDto, CommandError, ContextStatusDto, SecretSlot,
+    StatusEventDto,
 };
 
 impl From<crate::settings::SettingsError> for CommandError {
@@ -23,12 +20,6 @@ impl From<crate::settings::SettingsError> for CommandError {
 impl From<crate::credentials::CredentialError> for CommandError {
     fn from(err: crate::credentials::CredentialError) -> Self {
         Self::Credential(err.to_string())
-    }
-}
-
-impl From<crate::memory::MemoryError> for CommandError {
-    fn from(err: crate::memory::MemoryError) -> Self {
-        Self::Memory(err.to_string())
     }
 }
 
@@ -69,44 +60,6 @@ pub fn load_bootstrap(state: State<'_, ReplylineState>) -> Result<BootstrapDto, 
         log_status,
         last_transcript_preview,
         can_retry_last_transcript,
-    })
-}
-
-#[tauri::command]
-pub fn collect_diagnostic_bundle() -> Result<DiagnosticBundleDto, CommandError> {
-    diagnostic_bundle::collect_runtime_evidence_bundle().map_err(CommandError::Internal)
-}
-
-#[tauri::command]
-pub fn get_log_status() -> Result<crate::types::LogStatusDto, CommandError> {
-    app_log::status().map_err(CommandError::Internal)
-}
-
-#[tauri::command]
-pub fn get_runtime_readiness(
-    state: State<'_, ReplylineState>,
-) -> Result<RuntimeReadinessDto, CommandError> {
-    let settings = settings::load()?;
-    let deepgram_key_present = credentials::present(SecretSlot::DeepgramApiKey)?;
-    let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
-    let runtime_ready = settings.runtime_path_configured(deepgram_key_present);
-    let mut guard = state
-        .context
-        .lock()
-        .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
-    let status = guard.status();
-    let char_count = guard.last_transcript().map(|t| t.chars().count());
-    Ok(RuntimeReadinessDto {
-        app_version: env!("CARGO_PKG_VERSION").to_string(),
-        settings_schema_version: settings.schema_version,
-        deepgram_key_present,
-        llm_key_present,
-        runtime_ready,
-        context_active: status.context_active,
-        context_entry_count: status.entry_count,
-        can_retry_last_transcript: status.can_retry_last_transcript,
-        last_transcript_char_count: char_count,
-        prompt_contract_version: crate::llm::PROMPT_VERSION.to_string(),
     })
 }
 
@@ -162,13 +115,6 @@ pub fn save_settings(input: AppSettings) -> Result<AppSettings, CommandError> {
             Err(CommandError::from(err))
         }
     }
-}
-
-#[tauri::command]
-pub fn acknowledge_tray_intro() -> Result<AppSettings, CommandError> {
-    let mut current = settings::load()?;
-    current.tray_intro_seen = true;
-    settings::save(&current).map_err(CommandError::from)
 }
 
 #[tauri::command]
@@ -276,63 +222,6 @@ pub fn tray_open_main(app: AppHandle) -> Result<(), CommandError> {
     Ok(())
 }
 
-#[tauri::command]
-pub fn memory_list_spaces() -> Result<Vec<MemorySpace>, CommandError> {
-    memory_service::list_spaces()
-}
-
-#[tauri::command]
-pub fn memory_get_space_record(space_id: String) -> Result<MemorySpaceRecord, CommandError> {
-    memory_service::get_space_record(&space_id)
-}
-
-#[tauri::command]
-pub fn memory_save_space_record(
-    input: MemorySpaceRecord,
-) -> Result<MemorySpaceRecord, CommandError> {
-    memory_service::save_space_record(input)
-}
-
-#[tauri::command]
-pub async fn check_provider_health() -> Result<HealthCheckResult, CommandError> {
-    let settings = settings::load()?;
-    let deepgram_key = credentials::load(SecretSlot::DeepgramApiKey)?;
-    let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
-    provider_health::check_provider_health(&settings, deepgram_key.as_deref(), llm_key.as_deref())
-        .await
-}
-
-#[derive(Debug, Deserialize)]
-#[cfg(any(debug_assertions, test))]
-struct FixtureSnippetRow {
-    id: String,
-    snippet: String,
-}
-
-/// Debug-only: run LLM card pipeline on a transcript snippet from `fixtures/ru-work-snippets.json` (no mic/STT).
-#[tauri::command]
-#[cfg(any(debug_assertions, test))]
-pub async fn dev_analyze_fixture_snippet(
-    fixture_id: String,
-) -> Result<AnalysisCardDto, CommandError> {
-    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../fixtures/ru-work-snippets.json");
-    let raw = std::fs::read_to_string(&path)
-        .map_err(|e| CommandError::Internal(format!("Не прочитан файл фикстур: {e}")))?;
-    let list: Vec<FixtureSnippetRow> = serde_json::from_str(&raw)
-        .map_err(|e| CommandError::Internal(format!("Фикстуры: неверный JSON ({e})")))?;
-    let id = fixture_id.trim();
-    let entry = list
-        .iter()
-        .find(|row| row.id == id)
-        .ok_or_else(|| CommandError::Internal(format!("Неизвестный id фикстуры: {id}")))?;
-    let settings = settings::load()?;
-    let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
-    crate::llm::analyze_transcript(&settings, llm_key.as_deref(), &entry.snippet, "")
-        .await
-        .map_err(CommandError::Pipeline)
-}
-
 fn emit_status(app: &AppHandle, phase: &str, detail: Option<&str>) {
     let _ = app.emit(
         "replyline://status",
@@ -346,114 +235,5 @@ fn emit_status(app: &AppHandle, phase: &str, detail: Option<&str>) {
 fn update_tray_title(app: &AppHandle, title: &str) {
     if let Some(tray) = app.tray_by_id("main-tray") {
         let _ = tray.set_tooltip(Some(title.to_string()));
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::memory::{
-        JsonMemoryStore, MemoryCommitment, MemoryCommitmentStatus, MemoryFact, MemoryFactCategory,
-        MemoryFactSourceKind, MemorySpaceKind, MemorySpaceStatus, MemoryTerm,
-    };
-    use chrono::Utc;
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    fn temp_store() -> JsonMemoryStore {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("time")
-            .as_nanos();
-        let root = std::env::temp_dir().join(format!("replyline-memory-api-test-{unique}"));
-        JsonMemoryStore::new(root)
-    }
-
-    fn sample_record() -> MemorySpaceRecord {
-        let ts = Utc::now();
-        MemorySpaceRecord {
-            space: MemorySpace {
-                id: "team:qa".to_string(),
-                kind: MemorySpaceKind::Team,
-                label: "QA team".to_string(),
-                status: MemorySpaceStatus::Active,
-                created_at: ts,
-                updated_at: ts,
-            },
-            facts: vec![MemoryFact {
-                id: "fact-qa-1".to_string(),
-                text: "Release window is Friday 17:00.".to_string(),
-                category: MemoryFactCategory::Constraint,
-                source_kind: MemoryFactSourceKind::Manual,
-                confidence: 1.0,
-                confirmed_by_user: true,
-                created_at: ts,
-                updated_at: ts,
-            }],
-            commitments: vec![MemoryCommitment {
-                id: "commit-qa-1".to_string(),
-                text: "Share test sign-off update.".to_string(),
-                owner: "olga".to_string(),
-                due_hint: Some("before release call".to_string()),
-                status: MemoryCommitmentStatus::Open,
-                confirmed_by_user: true,
-                created_at: ts,
-                updated_at: ts,
-            }],
-            terms: vec![MemoryTerm {
-                id: "term-qa-1".to_string(),
-                term: "Go/No-Go".to_string(),
-                preferred_text: "release decision checkpoint".to_string(),
-                note: None,
-                created_at: ts,
-                updated_at: ts,
-            }],
-        }
-    }
-
-    #[test]
-    fn memory_list_spaces_returns_empty_on_clean_store() {
-        let store = temp_store();
-        let spaces = memory_service::list_spaces_with_store(&store).expect("list");
-        assert!(spaces.is_empty());
-    }
-
-    #[test]
-    fn memory_list_spaces_returns_saved_spaces_after_writes() {
-        let store = temp_store();
-        let record = sample_record();
-        let _saved = memory_service::save_space_record_with_store(&store, record).expect("save");
-
-        let spaces = memory_service::list_spaces_with_store(&store).expect("list");
-        assert_eq!(spaces.len(), 1);
-        assert_eq!(spaces[0].id, "team:qa");
-    }
-
-    #[test]
-    fn memory_get_space_record_returns_saved_record() {
-        let store = temp_store();
-        let record = sample_record();
-        let _saved = memory_service::save_space_record_with_store(&store, record).expect("save");
-
-        let loaded = memory_service::get_space_record_with_store(&store, "team:qa").expect("get");
-        assert_eq!(loaded.space.label, "QA team");
-        assert_eq!(loaded.facts.len(), 1);
-    }
-
-    #[test]
-    fn memory_get_space_record_returns_user_safe_missing_error() {
-        let store = temp_store();
-        let err = memory_service::get_space_record_with_store(&store, "team:missing")
-            .expect_err("must fail");
-        assert_eq!(err.to_string(), "Memory space not found.");
-    }
-
-    #[test]
-    fn memory_save_space_record_rejects_invalid_input_cleanly() {
-        let store = temp_store();
-        let mut record = sample_record();
-        record.facts[0].confidence = 2.0;
-        let err =
-            memory_service::save_space_record_with_store(&store, record).expect_err("must fail");
-        assert_eq!(err.to_string(), "Memory input is invalid.");
     }
 }

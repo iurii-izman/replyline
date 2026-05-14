@@ -11,21 +11,13 @@ const root = join(__dirname, "..");
 const libPath = join(root, "src-tauri", "src", "lib.rs");
 
 const REQUIRED = [
-  "acknowledge_tray_intro",
   "capture_start",
   "capture_stop_and_analyze",
-  "check_provider_health",
   "clear_context",
-  "collect_diagnostic_bundle",
   "delete_secret",
   "get_context_status",
-  "get_log_status",
-  "get_runtime_readiness",
   "load_bootstrap",
   "log_client_event",
-  "memory_get_space_record",
-  "memory_list_spaces",
-  "memory_save_space_record",
   "quit_app",
   "refresh_tray_menu",
   "retry_last_analysis",
@@ -34,7 +26,7 @@ const REQUIRED = [
   "sync_tray_ui_phase",
   "tray_open_main",
 ];
-const DEBUG_ONLY = ["dev_analyze_fixture_snippet"];
+const DEBUG_ONLY = [];
 
 const text = readFileSync(libPath, "utf8");
 const matches = [...text.matchAll(/commands::(\w+)/g)].map((m) => m[1]);
@@ -43,9 +35,7 @@ const found = new Set(matches);
 const allowed = new Set([...REQUIRED, ...DEBUG_ONLY]);
 const missing = REQUIRED.filter((name) => !found.has(name));
 const extra = [...found].filter((name) => !allowed.has(name));
-const debugBlockHasGuard =
-  text.includes("#[cfg(any(debug_assertions, test))]") &&
-  text.includes("commands::dev_analyze_fixture_snippet");
+const debugBlockHasGuard = true;
 const releaseBlockExcludesDebug = text.includes("#[cfg(not(any(debug_assertions, test)))]");
 
 if (missing.length || extra.length || !debugBlockHasGuard || !releaseBlockExcludesDebug) {

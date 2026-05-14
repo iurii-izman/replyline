@@ -41,11 +41,6 @@ pub fn log_file_path() -> Result<PathBuf, String> {
     Ok(base.join("com.replyline.app").join("logs").join("app.log"))
 }
 
-pub fn bundle_root_dir() -> Result<PathBuf, String> {
-    let base = dirs::data_local_dir().ok_or_else(|| "local_data_dir_unavailable".to_string())?;
-    Ok(base.join("com.replyline.app").join("support-bundles"))
-}
-
 fn read_last_line(path: &PathBuf) -> Result<Option<String>, String> {
     if !path.is_file() {
         return Ok(None);

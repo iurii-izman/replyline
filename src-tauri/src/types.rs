@@ -8,7 +8,6 @@ pub enum CommandError {
     Credential(String),
     Capture(String),
     Pipeline(String),
-    Memory(String),
     Internal(String),
 }
 
@@ -19,7 +18,6 @@ impl std::fmt::Display for CommandError {
             | Self::Credential(m)
             | Self::Capture(m)
             | Self::Pipeline(m)
-            | Self::Memory(m)
             | Self::Internal(m) => f.write_str(m),
         }
     }
@@ -42,20 +40,10 @@ pub struct AppSettings {
     pub use_streaming_stt: bool,
     #[serde(default)]
     pub custom_system_prompt: Option<String>,
-    #[serde(default)]
-    pub show_advanced: bool,
-    /// After user acknowledges tray/hide behavior; enables tray-first startup when setup is complete.
-    /// Missing in legacy `settings.json` defaults to true so existing installs are not nagged once.
-    #[serde(default = "tray_intro_seen_legacy_default")]
-    pub tray_intro_seen: bool,
 }
 
 fn default_llm_temperature() -> f32 {
     0.25
-}
-
-fn tray_intro_seen_legacy_default() -> bool {
-    true
 }
 
 impl Default for AppSettings {
@@ -71,8 +59,6 @@ impl Default for AppSettings {
             llm_temperature: default_llm_temperature(),
             use_streaming_stt: false,
             custom_system_prompt: None,
-            show_advanced: false,
-            tray_intro_seen: false,
         }
     }
 }
@@ -120,45 +106,12 @@ pub struct BootstrapDto {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DiagnosticBundleDto {
-    pub bundle_path: String,
-    pub manifest_path: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ContextStatusDto {
     pub context_active: bool,
     pub entry_count: usize,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_transcript_preview: Option<String>,
     pub can_retry_last_transcript: bool,
-}
-
-/// Compact readiness snapshot for UI/support (no raw transcript text).
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RuntimeReadinessDto {
-    pub app_version: String,
-    pub settings_schema_version: u32,
-    pub deepgram_key_present: bool,
-    pub llm_key_present: bool,
-    pub runtime_ready: bool,
-    pub context_active: bool,
-    pub context_entry_count: usize,
-    pub can_retry_last_transcript: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub last_transcript_char_count: Option<usize>,
-    /// Bumps with system prompt changes; for support / regression tracking.
-    pub prompt_contract_version: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HealthCheckResult {
-    pub deepgram_ok: bool,
-    pub llm_ok: bool,
-    pub detail: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

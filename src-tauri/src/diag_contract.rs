@@ -16,28 +16,6 @@ pub const RL_ANALYSIS_OK: &str = "RL_ANALYSIS_OK";
 pub const RL_RETRY_EMPTY: &str = "RL_RETRY_EMPTY";
 pub const RL_RETRY_OK: &str = "RL_RETRY_OK";
 
-pub const RL_DIAG_CODES: [&str; 15] = [
-    RL_CAPTURE_START,
-    RL_CAPTURE_NOT_ACTIVE,
-    RL_CAPTURE_JOIN_FAILED,
-    RL_CAPTURE_STOP_FAILED,
-    RL_CAPTURE_READY,
-    RL_STT_KEY_MISSING,
-    RL_STT_FAILED,
-    RL_STT_STREAMING_FAILED,
-    RL_STT_OK,
-    RL_LLM_FAILED,
-    RL_LLM_OK,
-    RL_CARD_INVALID,
-    RL_ANALYSIS_OK,
-    RL_RETRY_EMPTY,
-    RL_RETRY_OK,
-];
-
-pub fn is_known_diag_code(code: &str) -> bool {
-    RL_DIAG_CODES.contains(&code)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -45,17 +23,28 @@ mod tests {
 
     #[test]
     fn diag_codes_are_stable_unique_and_rl_prefixed() {
+        let codes = [
+            RL_CAPTURE_START,
+            RL_CAPTURE_NOT_ACTIVE,
+            RL_CAPTURE_JOIN_FAILED,
+            RL_CAPTURE_STOP_FAILED,
+            RL_CAPTURE_READY,
+            RL_STT_KEY_MISSING,
+            RL_STT_FAILED,
+            RL_STT_STREAMING_FAILED,
+            RL_STT_OK,
+            RL_LLM_FAILED,
+            RL_LLM_OK,
+            RL_CARD_INVALID,
+            RL_ANALYSIS_OK,
+            RL_RETRY_EMPTY,
+            RL_RETRY_OK,
+        ];
         let mut seen = HashSet::new();
-        for code in RL_DIAG_CODES {
+        for code in codes {
             assert!(code.starts_with("RL_"), "code must keep RL_ prefix: {code}");
             assert!(seen.insert(code), "duplicate diagnostic code: {code}");
         }
-        assert_eq!(RL_DIAG_CODES.len(), 15);
-    }
-
-    #[test]
-    fn lookup_accepts_known_rejects_unknown_codes() {
-        assert!(is_known_diag_code(RL_STT_FAILED));
-        assert!(!is_known_diag_code("RL_UNKNOWN_FUTURE"));
+        assert_eq!(codes.len(), 15);
     }
 }

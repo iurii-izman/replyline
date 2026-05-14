@@ -6,10 +6,8 @@ mod context;
 mod credentials;
 mod deepgram;
 mod diag_contract;
-mod diagnostic_bundle;
 mod fs_atomic;
 mod llm;
-mod memory;
 mod providers;
 mod services;
 mod settings;
@@ -45,32 +43,11 @@ pub(crate) fn build_main_tray_menu<R: Runtime>(
         pick_lang(lang, en::MENU_CLEAR_CONTEXT, ru::MENU_CLEAR_CONTEXT),
     )
     .build(app)?;
-    let bundle_item = MenuItemBuilder::with_id(
-        "collect-diagnostic",
-        pick_lang(
-            lang,
-            en::MENU_COLLECT_DIAGNOSTIC,
-            ru::MENU_COLLECT_DIAGNOSTIC,
-        ),
-    )
-    .build(app)?;
-    let readiness_item = MenuItemBuilder::with_id(
-        "copy-runtime-readiness",
-        pick_lang(lang, en::MENU_COPY_READINESS, ru::MENU_COPY_READINESS),
-    )
-    .build(app)?;
     let quit_item = MenuItemBuilder::with_id("quit", pick_lang(lang, en::MENU_QUIT, ru::MENU_QUIT))
         .build(app)?;
 
     MenuBuilder::new(app)
-        .items(&[
-            &open_item,
-            &settings_item,
-            &clear_item,
-            &bundle_item,
-            &readiness_item,
-            &quit_item,
-        ])
+        .items(&[&open_item, &settings_item, &clear_item, &quit_item])
         .build()
 }
 
@@ -117,17 +94,6 @@ pub fn run() {
                         }
                         let _ = app.emit("replyline://context-cleared", ());
                     }
-                    "collect-diagnostic" => {
-                        let _ = app_log::append_event("tray_action_received", "collect-diagnostic");
-                        let _ = open_main_window(app);
-                        let _ = app.emit("replyline://collect-diagnostic", ());
-                    }
-                    "copy-runtime-readiness" => {
-                        let _ =
-                            app_log::append_event("tray_action_received", "copy-runtime-readiness");
-                        let _ = open_main_window(app);
-                        let _ = app.emit("replyline://copy-runtime-readiness", ());
-                    }
                     "quit" => {
                         let _ = app_log::append_event("tray_action_received", "quit");
                         app.exit(0);
@@ -146,7 +112,7 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            if !settings.tray_intro_seen || needs_setup {
+            if needs_setup {
                 let _ = open_main_window(app.handle());
                 if needs_setup {
                     let _ = app.emit("replyline://open-settings", ());
@@ -159,11 +125,9 @@ pub fn run() {
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::load_bootstrap,
         commands::save_settings,
-        commands::acknowledge_tray_intro,
         commands::save_secret,
         commands::clear_context,
         commands::delete_secret,
-        commands::dev_analyze_fixture_snippet,
         commands::get_context_status,
         commands::capture_start,
         commands::capture_stop_and_analyze,
@@ -171,21 +135,13 @@ pub fn run() {
         commands::sync_tray_ui_phase,
         commands::refresh_tray_menu,
         commands::tray_open_main,
-        commands::memory_list_spaces,
-        commands::memory_get_space_record,
-        commands::memory_save_space_record,
-        commands::collect_diagnostic_bundle,
-        commands::get_log_status,
-        commands::get_runtime_readiness,
         commands::log_client_event,
-        commands::check_provider_health,
         commands::quit_app
     ]);
     #[cfg(not(any(debug_assertions, test)))]
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::load_bootstrap,
         commands::save_settings,
-        commands::acknowledge_tray_intro,
         commands::save_secret,
         commands::clear_context,
         commands::delete_secret,
@@ -196,14 +152,7 @@ pub fn run() {
         commands::sync_tray_ui_phase,
         commands::refresh_tray_menu,
         commands::tray_open_main,
-        commands::memory_list_spaces,
-        commands::memory_get_space_record,
-        commands::memory_save_space_record,
-        commands::collect_diagnostic_bundle,
-        commands::get_log_status,
-        commands::get_runtime_readiness,
         commands::log_client_event,
-        commands::check_provider_health,
         commands::quit_app
     ]);
     builder
