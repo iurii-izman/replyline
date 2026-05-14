@@ -46,6 +46,8 @@ pub struct AppSettings {
     pub use_streaming_stt: bool,
     #[serde(default)]
     pub custom_system_prompt: Option<String>,
+    #[serde(default)]
+    pub show_advanced: bool,
     /// After user acknowledges tray/hide behavior; enables tray-first startup when setup is complete.
     /// Missing in legacy `settings.json` defaults to true so existing installs are not nagged once.
     #[serde(default = "tray_intro_seen_legacy_default")]
@@ -69,7 +71,7 @@ impl Default for AppSettings {
         Self {
             schema_version: 2,
             hotkey: "Ctrl+Alt+Space".to_string(),
-            llm_base_url: "http://127.0.0.1:4000/v1".to_string(),
+            llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
             notebook_lm_enabled: false,
             notebook_lm_launch_url: notebook_lm_launch_url_default(),
@@ -79,6 +81,7 @@ impl Default for AppSettings {
             llm_temperature: default_llm_temperature(),
             use_streaming_stt: false,
             custom_system_prompt: None,
+            show_advanced: false,
             tray_intro_seen: false,
         }
     }
@@ -87,7 +90,7 @@ impl Default for AppSettings {
 impl AppSettings {
     fn has_placeholder_llm_route(&self) -> bool {
         self.llm_base_url.trim() == "http://127.0.0.1:4000/v1"
-            && self.llm_model.trim() == "gpt-4o-mini"
+            || (self.llm_base_url.trim() == "" && self.llm_model.trim() == "gpt-4o-mini")
     }
 
     /// True when saved secrets and a non-placeholder LLM route are present.

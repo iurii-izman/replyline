@@ -37,9 +37,9 @@
 - Memory backend существует отдельно от core live-card цикла.
 - Memory layer не должен становиться hero story текущей MVP alpha.
 
-## Local-Only Operation
+## Advanced Mode: Local-First Operation
 
-Replyline can run entirely on-device by replacing cloud providers with local alternatives:
+Replyline can run entirely on-device by replacing cloud providers with local alternatives. This path is hidden behind the **Advanced Mode** toggle in Settings.
 
 | Role | Local Alternative                                                                                                                    | Setup                                                                                                                     |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
@@ -48,10 +48,11 @@ Replyline can run entirely on-device by replacing cloud providers with local alt
 
 **Steps:**
 
-1. Install and start a Deepgram-compatible local STT server (e.g. `faster-whisper-server --model large-v3 --port 8080`).
-2. Install and start an OpenAI-compatible local LLM server (e.g. `ollama serve` then `ollama pull llama3`).
-3. In Replyline settings, set `llmBaseUrl` to the local LLM endpoint.
-4. API keys can be set to any non-empty value if the local server requires auth, or left as dummy tokens.
+1. Enable **Advanced Mode** in settings.
+2. Install and start a Deepgram-compatible local STT server (e.g. `faster-whisper-server --model large-v3 --port 8080`).
+3. Install and start an OpenAI-compatible local LLM server (e.g. `ollama serve` then `ollama pull llama3`).
+4. In Replyline settings, set `llmBaseUrl` to the local LLM endpoint.
+5. API keys can be set to any non-empty value if the local server requires auth, or left as dummy tokens.
 
 In this configuration, **no audio or text leaves the machine**. Latency depends on local hardware (GPU recommended for acceptable STT/LLM speed).
 

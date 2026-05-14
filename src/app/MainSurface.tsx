@@ -63,7 +63,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                 >
                   {st().setup.openSetup}
                 </button>
-                <Show when={controller().settings.notebookLmEnabled}>
+                <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
                   <button
                     class="btn-ghost"
                     type="button"
@@ -169,7 +169,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                     >
                       {st().card.clearContext}
                     </button>
-                    <Show when={controller().memorySpaces().length > 0}>
+                    <Show when={controller().settings.showAdvanced && controller().memorySpaces().length > 0}>
                       <button
                         class="btn-ghost"
                         type="button"
@@ -179,7 +179,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                         {st().memory.saveToMemory}
                       </button>
                     </Show>
-                    <Show when={controller().settings.notebookLmEnabled}>
+                    <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
                       <button
                         class="btn-ghost"
                         type="button"
@@ -190,7 +190,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                       </button>
                     </Show>
                   </div>
-                  <Show when={controller().contextTranscriptPreview()}>
+                  <Show when={controller().settings.showAdvanced && controller().contextTranscriptPreview()}>
                     <details class="last-transcript-block">
                       <summary>{st().card.lastTranscriptLabel}</summary>
                       <p class="last-transcript-hint">{st().card.lastTranscriptHint}</p>
@@ -219,7 +219,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                   </strong>{" "}
                   {st().idle.captureMaxSuffix}
                 </p>
-                <Show when={controller().settings.notebookLmEnabled}>
+                <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
                   <div class="result-actions">
                     <button
                       class="btn-ghost"
@@ -230,7 +230,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                     </button>
                   </div>
                 </Show>
-                <Show when={controller().contextTranscriptPreview()}>
+                <Show when={controller().settings.showAdvanced && controller().contextTranscriptPreview()}>
                   <details class="last-transcript-block last-transcript-block--idle">
                     <summary>{st().card.lastTranscriptLabel}</summary>
                     <p class="last-transcript-hint">{st().card.lastTranscriptHint}</p>

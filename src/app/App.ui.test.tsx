@@ -35,6 +35,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   llmTemperature: 0.25,
   useStreamingStt: false,
   customSystemPrompt: null,
+  showAdvanced: true,
   trayIntroSeen: true,
 };
 
@@ -141,28 +142,38 @@ function createMockPlatform(
       throw new Error("Memory space not found");
     },
     memory_save_space_record: async () => null,
+    delete_secret: async () => null,
+    tray_open_main: async () => null,
+    check_provider_health: async () => ({
+      deepgramOk: true,
+      llmOk: true,
+      detail: "mock",
+    }),
   };
 
-  const invokeMock = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+  const invokeMock = vi.fn((command: string, args?: Record<string, unknown>) => {
     const handler = options.commandHandlers?.[command] ?? defaultHandlers[command];
     if (!handler) {
-      throw new Error(`Unhandled invoke command: ${command}`);
+      return Promise.reject(new Error(`Unhandled invoke command: ${command}`));
     }
-    const result = await handler(args);
-    if (command === "get_log_status" && result) {
-      currentLogStatus = result as LogStatusDto;
-    }
-    return result;
+    return Promise.resolve(handler(args)).then((result) => {
+      if (command === "get_log_status" && result) {
+        currentLogStatus = result as LogStatusDto;
+      }
+      return result;
+    });
   });
 
-  const registerMock = vi.fn(
-    async (_hotkey: string, handler: (event: ShortcutEvent) => void | Promise<void>) => {
-      if (options.registerError) {
-        throw options.registerError;
-      }
-      shortcutHandler = handler;
-    },
-  );
+  // Use explicit Promise.resolve/reject (not `async` vi.fn) so the shortcut
+  // register promise always settles under Vitest + jsdom; otherwise
+  // `await platform.shortcuts.register` can stall and leave the UI on booting.
+  const registerMock = vi.fn((_hotkey: string, handler: (event: ShortcutEvent) => void | Promise<void>) => {
+    if (options.registerError) {
+      return Promise.reject(options.registerError);
+    }
+    shortcutHandler = handler;
+    return Promise.resolve();
+  });
 
   const platform: AppPlatform = {
     invoke: invokeMock,
@@ -175,8 +186,8 @@ function createMockPlatform(
       };
     }),
     shortcuts: {
-      unregisterAll: vi.fn(async () => undefined),
-      isRegistered: vi.fn(async () => options.alreadyRegistered ?? false),
+      unregisterAll: vi.fn(() => Promise.resolve()),
+      isRegistered: vi.fn(() => Promise.resolve(options.alreadyRegistered ?? false)),
       register: registerMock,
     },
     clipboard: {

@@ -683,6 +683,10 @@ export function useReplylineController(platform: AppPlatform) {
     setSettings("useStreamingStt", value);
   }
 
+  function setShowAdvanced(value: boolean) {
+    setSettings("showAdvanced", value);
+  }
+
   onMount(() => {
     let disposed = false;
     const cleanups: Array<() => void> = [];
@@ -778,6 +782,9 @@ export function useReplylineController(platform: AppPlatform) {
   });
 
   createEffect(() => {
+    if (phase() === "booting") {
+      return;
+    }
     const { phase: trayPhase, detail } = traySyncPayload({
       phase: phase(),
       statusDetail: statusDetail(),
@@ -860,6 +867,7 @@ export function useReplylineController(platform: AppPlatform) {
     setNotebookLmLaunchUrl,
     setCustomSystemPrompt,
     setUseStreamingStt,
+    setShowAdvanced,
     setPanel,
     memorySpaces,
     activeSpaceId,

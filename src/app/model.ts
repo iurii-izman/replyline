@@ -22,6 +22,7 @@ export type AppSettings = {
   llmTemperature: number;
   useStreamingStt: boolean;
   customSystemPrompt: string | null;
+  showAdvanced: boolean;
   trayIntroSeen: boolean;
 };
 
@@ -223,7 +224,7 @@ export type StatusEvent = {
 export const DEFAULT_SETTINGS: AppSettings = {
   schemaVersion: 2,
   hotkey: "Ctrl+Alt+Space",
-  llmBaseUrl: "http://127.0.0.1:4000/v1",
+  llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
   notebookLmEnabled: false,
   notebookLmLaunchUrl: "https://notebooklm.google.com/",
@@ -233,12 +234,14 @@ export const DEFAULT_SETTINGS: AppSettings = {
   llmTemperature: 0.25,
   useStreamingStt: false,
   customSystemPrompt: null,
+  showAdvanced: false,
   trayIntroSeen: false,
 };
 
 export function usesPlaceholderLlmRoute(baseUrl: string, model: string): boolean {
   return (
-    baseUrl.trim() === DEFAULT_SETTINGS.llmBaseUrl && model.trim() === DEFAULT_SETTINGS.llmModel
+    baseUrl.trim() === "http://127.0.0.1:4000/v1" ||
+    (baseUrl.trim() === "" && model.trim() === "gpt-4o-mini")
   );
 }
 

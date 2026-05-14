@@ -131,7 +131,9 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
         "ru" | "en" => {}
         _ => return Err(SettingsError::InvalidLanguage),
     }
-    validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
+    if !settings.llm_base_url.trim().is_empty() {
+        validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
+    }
     if settings.notebook_lm_enabled || !settings.notebook_lm_launch_url.trim().is_empty() {
         validate_http_url(
             settings.notebook_lm_launch_url.trim(),
