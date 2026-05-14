@@ -54,6 +54,8 @@ This is the lean handoff gate for Replyline alpha builds.
 - Block release if `pnpm rust:deps` fails or reports non-allowlisted warnings.
 - Block release if allowlist review date has passed without refresh decision.
 - Block release if logs/diagnostics can include raw credential material.
+- Block release if `diagnostics/runtime-events.json` is missing schema fields (`stage/outcome/code`) in newly generated bundles.
+- Block release if Advanced Mode docs/UI copy drift from governance intent (`docs/advanced-mode-governance.md`).
 
 ## Alpha handoff rule
 

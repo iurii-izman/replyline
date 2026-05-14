@@ -61,6 +61,7 @@ describe("model helpers", () => {
     expect(userSafeCaptureStartError("not active")).toContain("не была активна");
     expect(userSafePipelineError("empty transcript")).toContain("Текст из звука не получился");
     expect(userSafePipelineError("Deepgram missing API key")).toContain("ключ Deepgram");
+    expect(userSafePipelineError("RL_STT_STREAMING_FAILED")).toContain("Стриминг STT не удался");
   });
 
   it("maps settings save and notebook open errors", () => {

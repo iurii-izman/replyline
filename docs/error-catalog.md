@@ -50,6 +50,21 @@ When a `CommandError` is received:
 | `gateway / 401 / fetch` | Нет ответа шлюза: адрес, модель, ключ → Настройки |
 | _(fallback)_            | Цепочка оборвалась: настройки, ключи, сеть        |
 
+## Diagnostic Runtime Event Contract
+
+Runtime observability uses one stable event name in `app.log`:
+
+- `diag_runtime_event`
+
+Field contract inside detail:
+
+- `stage`: `capture | stt | llm | card | retry`
+- `outcome`: `start | ok | fail`
+- `code`: stable `RL_*` diagnostic code
+- `detail`: sanitized short explanation
+
+This contract is exported into bundle file `diagnostics/runtime-events.json`.
+
 ## Adding New Error Types
 
 1. Add variant to `CommandError` in `src-tauri/src/types.rs`

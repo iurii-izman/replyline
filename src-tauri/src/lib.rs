@@ -5,6 +5,7 @@ mod commands;
 mod context;
 mod credentials;
 mod deepgram;
+mod diag_contract;
 mod diagnostic_bundle;
 mod fs_atomic;
 mod llm;

@@ -260,6 +260,15 @@ export const ui_ru = {
   advanced: {
     sectionTitle: "Дополнительно",
     showAdvancedLabel: "Расширенные настройки",
+    governancePurpose: "Назначение режима: диагностика и тонкая настройка для beta-ops, не для скрытого автопилота.",
+    governanceRisks:
+      "Риски: Streaming STT и свой промпт могут ухудшить стабильность, повысить задержку и увести карточку от ожидаемого формата.",
+    governanceVisible:
+      "Что видно пользователю: отдельный блок предупреждения, явные переключатели и необходимость вручную сохранить изменения.",
+    governanceEnable:
+      "Когда включать: есть задача дебага/эксперимента, есть owner, зафиксирован сценарий проверки и план отката.",
+    governanceDisable:
+      "Когда выключать: штатная работа без экспериментов, рост ошибок pipeline или подтверждённый регресс качества карточки.",
     customPromptLabel: "Свой системный промпт (вместо встроенного)",
     customPromptHint: "Оставьте пустым для использования стандартного промпта.",
     streamingSttLabel: "Стриминг STT (WebSocket, экспериментально)",
@@ -557,6 +566,16 @@ export const ui_en: UiStrings = {
   advanced: {
     sectionTitle: "Advanced",
     showAdvancedLabel: "Show advanced settings",
+    governancePurpose:
+      "Mode purpose: diagnostics and fine-tuning for beta ops, not hidden autopilot behavior.",
+    governanceRisks:
+      "Risks: Streaming STT and custom prompt can reduce stability, increase latency, and drift card format.",
+    governanceVisible:
+      "User-visible behavior: dedicated warning block, explicit toggles, and manual Save required for changes.",
+    governanceEnable:
+      "Enable when: there is a debug/experiment task, a clear owner, a recorded verification scenario, and rollback plan.",
+    governanceDisable:
+      "Disable when: routine operation, rising pipeline errors, or confirmed card-quality regression.",
     customPromptLabel: "Custom system prompt (replaces built-in)",
     customPromptHint: "Leave empty to use the default prompt.",
     streamingSttLabel: "Streaming STT (WebSocket, experimental)",

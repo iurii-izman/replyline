@@ -7,6 +7,7 @@ use chrono::Local;
 use serde::Serialize;
 
 use crate::app_log;
+use crate::diag_contract::is_known_diag_code;
 use crate::types::DiagnosticBundleDto;
 
 #[derive(Serialize)]
@@ -21,6 +22,7 @@ struct Manifest<'a> {
     log_included: bool,
     runtime_artifacts_optional: bool,
     files: Vec<String>,
+    sections: BundleSections,
     provenance_notes: Vec<String>,
     benchmark_labels: BenchmarkLabels<'a>,
     honesty: Honesty<'a>,
@@ -39,6 +41,24 @@ struct BenchmarkLabels<'a> {
 struct Honesty<'a> {
     proves: [&'a str; 2],
     does_not_prove: [&'a str; 3],
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BundleSections {
+    runtime: String,
+    logs: String,
+    diagnostics: String,
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+struct RuntimeEvent {
+    ts_local: String,
+    stage: String,
+    outcome: String,
+    code: String,
+    detail: String,
 }
 
 pub fn collect_runtime_evidence_bundle() -> Result<DiagnosticBundleDto, String> {
@@ -118,15 +138,51 @@ fn collect_runtime_evidence_bundle_with_inputs(
     fs::create_dir_all(&bundle_dir).map_err(|err| err.to_string())?;
 
     let mut copied_names: Vec<String> = Vec::new();
+    let runtime_target_dir = bundle_dir.join("runtime");
+    let logs_target_dir = bundle_dir.join("logs");
+    fs::create_dir_all(&runtime_target_dir).map_err(|err| err.to_string())?;
+    fs::create_dir_all(&logs_target_dir).map_err(|err| err.to_string())?;
+
     for path in &files {
         let name = path
             .file_name()
             .and_then(|n| n.to_str())
             .ok_or_else(|| "Некорректное имя файла в evidence bundle.".to_string())?;
-        let dest = bundle_dir.join(name);
+        let dest = if path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map(|n| n.eq_ignore_ascii_case("app.log"))
+            .unwrap_or(false)
+        {
+            logs_target_dir.join(name)
+        } else {
+            runtime_target_dir.join(name)
+        };
         fs::copy(path, &dest).map_err(|err| err.to_string())?;
-        copied_names.push(name.to_string());
+        let rel = dest
+            .strip_prefix(&bundle_dir)
+            .map_err(|err| err.to_string())?
+            .display()
+            .to_string();
+        copied_names.push(rel);
     }
+    copied_names.sort();
+
+    let runtime_events = parse_runtime_events(
+        log_path
+            .as_ref()
+            .map(|p| p.as_path())
+            .unwrap_or_else(|| Path::new("")),
+    )?;
+    let diagnostics_target_dir = bundle_dir.join("diagnostics");
+    fs::create_dir_all(&diagnostics_target_dir).map_err(|err| err.to_string())?;
+    let runtime_events_path = diagnostics_target_dir.join("runtime-events.json");
+    fs::write(
+        &runtime_events_path,
+        serde_json::to_vec_pretty(&runtime_events).map_err(|err| err.to_string())?,
+    )
+    .map_err(|err| err.to_string())?;
+    copied_names.push("diagnostics/runtime-events.json".to_string());
     copied_names.sort();
 
     let manifest = Manifest {
@@ -142,6 +198,11 @@ fn collect_runtime_evidence_bundle_with_inputs(
         log_included,
         runtime_artifacts_optional: true,
         files: copied_names.clone(),
+        sections: BundleSections {
+            runtime: "runtime/".to_string(),
+            logs: "logs/".to_string(),
+            diagnostics: "diagnostics/".to_string(),
+        },
         provenance_notes: vec![
             "Runtime artifacts are copied only from a detected local Replyline workspace reports/runtime directory.".to_string(),
             "App log is included when available, even if no nearby repo runtime artifacts exist.".to_string(),
@@ -182,6 +243,52 @@ fn collect_runtime_evidence_bundle_with_inputs(
         bundle_path: bundle_dir.display().to_string(),
         manifest_path: manifest_path.display().to_string(),
     })
+}
+
+fn parse_runtime_events(log_path: &Path) -> Result<Vec<RuntimeEvent>, String> {
+    if !log_path.is_file() {
+        return Ok(Vec::new());
+    }
+    let body = fs::read_to_string(log_path).map_err(|err| err.to_string())?;
+    let mut events = Vec::new();
+    for line in body.lines() {
+        if !line.contains("[diag_runtime_event]") {
+            continue;
+        }
+        let ts = line.split_whitespace().next().unwrap_or("").to_string();
+        let stage = parse_field(line, "stage=").unwrap_or_else(|| "unknown".to_string());
+        let outcome = parse_field(line, "outcome=").unwrap_or_else(|| "unknown".to_string());
+        let code_raw = parse_field(line, "code=").unwrap_or_else(|| "RL_UNKNOWN".to_string());
+        let code = if is_known_diag_code(&code_raw) {
+            code_raw
+        } else {
+            "RL_UNKNOWN".to_string()
+        };
+        let detail = parse_field(line, "detail=").unwrap_or_else(|| "-".to_string());
+        events.push(RuntimeEvent {
+            ts_local: ts,
+            stage,
+            outcome,
+            code,
+            detail,
+        });
+    }
+    Ok(events)
+}
+
+fn parse_field(line: &str, key: &str) -> Option<String> {
+    let start = line.find(key)? + key.len();
+    let tail = &line[start..];
+    let mut end = tail.len();
+    for marker in [" stage=", " outcome=", " code=", " detail="] {
+        if key == marker.trim_start() {
+            continue;
+        }
+        if let Some(pos) = tail.find(marker) {
+            end = end.min(pos);
+        }
+    }
+    Some(tail[..end].trim().to_string())
 }
 
 fn resolve_workspace_root() -> Option<PathBuf> {
@@ -268,7 +375,8 @@ mod tests {
         let manifest_path = PathBuf::from(&dto.manifest_path);
         assert!(bundle_path.starts_with(&bundle_root));
         assert!(manifest_path.is_file());
-        assert!(bundle_path.join("app.log").is_file());
+        assert!(bundle_path.join("logs").join("app.log").is_file());
+        assert!(bundle_path.join("diagnostics").join("runtime-events.json").is_file());
 
         let manifest: Value =
             serde_json::from_slice(&fs::read(&manifest_path).expect("manifest bytes"))
@@ -276,6 +384,7 @@ mod tests {
         assert_eq!(manifest["runtimeReportCount"], 0);
         assert_eq!(manifest["logIncluded"], true);
         assert_eq!(manifest["runtimeArtifactsOptional"], true);
+        assert_eq!(manifest["sections"]["logs"], "logs/");
     }
 
     #[test]
@@ -310,9 +419,37 @@ mod tests {
         .expect("collect bundle");
 
         let bundle_path = PathBuf::from(&dto.bundle_path);
-        assert!(bundle_path.join("first-latency-report.json").is_file());
-        assert!(bundle_path.join("duration-comparison.md").is_file());
-        assert!(bundle_path.join("app.log").is_file());
+        assert!(bundle_path.join("runtime").join("first-latency-report.json").is_file());
+        assert!(bundle_path.join("runtime").join("duration-comparison.md").is_file());
+        assert!(bundle_path.join("logs").join("app.log").is_file());
+    }
+
+    #[test]
+    fn bundle_extracts_diag_runtime_events_from_log() {
+        let root = temp_root("diag-events");
+        write_file(&root.join("package.json"), "{\"name\":\"replyline\"}\n");
+        fs::create_dir_all(root.join("reports").join("runtime")).expect("runtime dir");
+        let log_path = root.join("logs").join("app.log");
+        write_file(
+            &log_path,
+            "2026-04-07T12:00:00 [diag_runtime_event] stage=stt outcome=fail code=RL_STT_FAILED detail=empty transcript\n",
+        );
+
+        let dto = collect_runtime_evidence_bundle_with_inputs(
+            Some(root.clone()),
+            root.join("reports"),
+            Some(log_path),
+        )
+        .expect("collect bundle");
+        let bundle_path = PathBuf::from(&dto.bundle_path);
+        let events_raw = fs::read(bundle_path.join("diagnostics").join("runtime-events.json"))
+            .expect("events bytes");
+        let events: Value = serde_json::from_slice(&events_raw).expect("events json");
+        assert!(events.is_array());
+        let first = &events[0];
+        assert_eq!(first["stage"], "stt");
+        assert_eq!(first["outcome"], "fail");
+        assert_eq!(first["code"], "RL_STT_FAILED");
     }
 
     #[test]

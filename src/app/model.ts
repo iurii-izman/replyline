@@ -14,8 +14,6 @@ export type AppSettings = {
   hotkey: string;
   llmBaseUrl: string;
   llmModel: string;
-  notebookLmEnabled: boolean;
-  notebookLmLaunchUrl: string;
   primaryLanguage: string;
   deepgramModel: string;
   captureMaxSeconds: number;
@@ -226,8 +224,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
-  notebookLmEnabled: false,
-  notebookLmLaunchUrl: "https://notebooklm.google.com/",
   primaryLanguage: "ru",
   deepgramModel: "nova-3",
   captureMaxSeconds: 30,
@@ -247,16 +243,6 @@ export function usesPlaceholderLlmRoute(baseUrl: string, model: string): boolean
 
 export function isConfiguredLlmRoute(baseUrl: string, model: string): boolean {
   return Boolean(baseUrl.trim() && model.trim()) && !usesPlaceholderLlmRoute(baseUrl, model);
-}
-
-export function isNotebookLmLaunchReady(enabled: boolean, launchUrl: string): boolean {
-  if (!enabled) return false;
-  try {
-    const parsed = new URL(launchUrl.trim());
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 function normalizeHotkeyKey(key: string): string | null {
@@ -309,7 +295,11 @@ export function userSafePipelineError(err: unknown): string {
   if (/Deepgram|API key|missing|Нет ключа Deepgram|распознаван/i.test(s)) {
     return "Нет текста из звука: ключ Deepgram и сеть → Настройки.";
   }
-  if (/stt_streaming_failed_then_batch_failed|stt_streaming_failed|Deepgram WS|websocket/i.test(s)) {
+  if (
+    /stt_streaming_failed_then_batch_failed|stt_streaming_failed|RL_STT_STREAMING_FAILED|Deepgram WS|websocket/i.test(
+      s,
+    )
+  ) {
     return "Стриминг STT не удался; приложение пробовало fallback на batch, но текста всё ещё нет. Проверьте ключ Deepgram, сеть и переключатель Streaming STT.";
   }
   if (/Card output invalid|слишком расплывчат|too generic/i.test(s)) {
@@ -385,9 +375,6 @@ export function mapSettingsSaveError(err: unknown): string | null {
   if (s.includes("INVALID_URL") || /^URL:/i.test(s)) {
     return "Адрес шлюза: http:// или https://, полный URL.";
   }
-  if (s.includes("INVALID_NOTEBOOKLM_URL")) {
-    return "Адрес NotebookLM: укажите полный http:// или https:// URL.";
-  }
   if (s.includes("CAPTURE_RANGE_INVALID")) {
     return "Лимит фрагмента: 5–180 секунд.";
   }
@@ -425,16 +412,3 @@ export function userSafePersistOuterError(err: unknown): string {
   return "Сохранение не завершилось. Повторите или откройте подготовку.";
 }
 
-export function userSafeNotebookLmOpenError(err: unknown): string {
-  const s = invokeErrorMessage(err);
-  if (/NOTEBOOKLM_DISABLED/i.test(s)) {
-    return "NotebookLM выключен в настройках. Включите интеграцию и сохраните изменения.";
-  }
-  if (/INVALID_NOTEBOOKLM_URL|missing.*url|invalid.*url|URL:/i.test(s)) {
-    return "NotebookLM не открыт: проверьте адрес в настройках.";
-  }
-  if (/opener|open url|browser|launch/i.test(s)) {
-    return "Не удалось открыть NotebookLM в браузере. Проверьте адрес и системный браузер.";
-  }
-  return "NotebookLM не открылся. Проверьте настройки и повторите.";
-}

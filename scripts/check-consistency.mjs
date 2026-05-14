@@ -27,8 +27,21 @@ const requiredIncludes = [
     includes: [...guardrailTokens],
   },
   {
+    path: "docs/privacy-and-trust.md",
+    includes: ["Internal Alpha", "STT -> LLM -> карточка", "санитизацию/редакцию"],
+    excludes: ["Pre-Alpha"],
+  },
+  {
     path: "docs/tester-brief.md",
     includes: [canonicalCard, ...guardrailTokens],
+  },
+  {
+    path: "docs/beta-ops-diagnostics.md",
+    includes: ["diag_runtime_event", "stage", "outcome", "code"],
+  },
+  {
+    path: "docs/advanced-mode-governance.md",
+    includes: ["Purpose", "Enable criteria", "Disable criteria"],
   },
   {
     path: "landing/index.html",

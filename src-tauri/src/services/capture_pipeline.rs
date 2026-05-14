@@ -2,6 +2,12 @@ use tauri::{AppHandle, Emitter};
 
 use crate::app_log;
 use crate::credentials;
+use crate::diag_contract::{
+    DIAG_RUNTIME_EVENT_NAME, RL_ANALYSIS_OK, RL_CAPTURE_JOIN_FAILED, RL_CAPTURE_NOT_ACTIVE,
+    RL_CAPTURE_READY, RL_CAPTURE_START, RL_CAPTURE_STOP_FAILED, RL_CARD_INVALID, RL_LLM_FAILED,
+    RL_LLM_OK, RL_RETRY_EMPTY, RL_RETRY_OK, RL_STT_FAILED, RL_STT_KEY_MISSING,
+    RL_STT_OK, RL_STT_STREAMING_FAILED,
+};
 use crate::llm;
 use crate::providers::stt_provider;
 use crate::settings;
@@ -14,6 +20,7 @@ pub async fn capture_stop_and_analyze(
     app: &AppHandle,
 ) -> Result<AnalysisCardDto, CommandError> {
     let _ = app_log::append_event("analysis_start", "-");
+    let _ = log_diag("capture", "start", RL_CAPTURE_START, "capture_stop_and_analyze");
     let settings = settings::load()?;
     let lang = settings.primary_language.as_str();
 
@@ -23,6 +30,7 @@ pub async fn capture_stop_and_analyze(
             .lock()
             .map_err(|_| CommandError::Internal("Capture lock poisoned".to_string()))?;
         capture.active.take().ok_or_else(|| {
+            let _ = log_diag("capture", "fail", RL_CAPTURE_NOT_ACTIVE, "capture was not active");
             CommandError::Capture(
                 pick_lang(lang, en::ERR_NO_ACTIVE_CAPTURE, ru::ERR_NO_ACTIVE_CAPTURE).to_string(),
             )
@@ -41,10 +49,18 @@ pub async fn capture_stop_and_analyze(
 
     let pcm = tauri::async_runtime::spawn_blocking(move || capture_run.stop())
         .await
-        .map_err(|_| CommandError::Capture("Capture join failed".to_string()))?
-        .map_err(CommandError::Capture)?;
+        .map_err(|_| {
+            let _ = log_diag("capture", "fail", RL_CAPTURE_JOIN_FAILED, "capture join failed");
+            CommandError::Capture("Capture join failed".to_string())
+        })?
+        .map_err(|err| {
+            let _ = log_diag("capture", "fail", RL_CAPTURE_STOP_FAILED, &err);
+            CommandError::Capture(err)
+        })?;
+    let _ = log_diag("capture", "ok", RL_CAPTURE_READY, format!("pcm_bytes={}", pcm.len()));
 
     let deepgram_key = credentials::load(SecretSlot::DeepgramApiKey)?.ok_or_else(|| {
+        let _ = log_diag("stt", "fail", RL_STT_KEY_MISSING, "deepgram key missing");
         CommandError::Credential(
             pick_lang(lang, en::ERR_NO_DEEPGRAM_KEY, ru::ERR_NO_DEEPGRAM_KEY).to_string(),
         )
@@ -60,11 +76,23 @@ pub async fn capture_stop_and_analyze(
                 "analysis_stt_failed"
             };
             let _ = app_log::append_event(event, &err);
+            let code = if settings.use_streaming_stt {
+                RL_STT_STREAMING_FAILED
+            } else {
+                RL_STT_FAILED
+            };
+            let _ = log_diag("stt", "fail", code, &err);
             return Err(CommandError::Pipeline(err));
         }
     };
     let _ = app_log::append_event(
         "analysis_stt_ok",
+        format!("transcript_chars={}", transcript.chars().count()),
+    );
+    let _ = log_diag(
+        "stt",
+        "ok",
+        RL_STT_OK,
         format!("transcript_chars={}", transcript.chars().count()),
     );
 
@@ -92,15 +120,21 @@ pub async fn capture_stop_and_analyze(
         {
             Ok(card) => card,
             Err(err) => {
-                let event = if err.contains("Card output invalid:") {
-                    "analysis_card_invalid"
-                } else {
-                    "analysis_llm_failed"
-                };
-                let _ = app_log::append_event(event, format!("llm: {err}"));
-                return Err(CommandError::Pipeline(err));
-            }
-        };
+            let event = if err.contains("Card output invalid:") {
+                "analysis_card_invalid"
+            } else {
+                "analysis_llm_failed"
+            };
+            let _ = app_log::append_event(event, format!("llm: {err}"));
+            let code = if err.contains("Card output invalid:") {
+                RL_CARD_INVALID
+            } else {
+                RL_LLM_FAILED
+            };
+            let _ = log_diag("llm", "fail", code, &err);
+            return Err(CommandError::Pipeline(err));
+        }
+    };
     let _ = app_log::append_event(
         "analysis_llm_ok",
         format!(
@@ -110,6 +144,7 @@ pub async fn capture_stop_and_analyze(
             card.next_move.chars().count()
         ),
     );
+    let _ = log_diag("llm", "ok", RL_LLM_OK, "card generated");
 
     {
         let mut context = state
@@ -126,6 +161,7 @@ pub async fn capture_stop_and_analyze(
         &crate::tray_status::tooltip_for_phase(lang, "ready_card", None),
     );
     let _ = app_log::append_event("analysis_ok", "card_ready");
+    let _ = log_diag("card", "ok", RL_ANALYSIS_OK, "card_ready");
     Ok(card)
 }
 
@@ -143,6 +179,7 @@ pub async fn retry_last_analysis(
             .lock()
             .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
         let transcript = context.last_transcript().ok_or_else(|| {
+            let _ = log_diag("retry", "fail", RL_RETRY_EMPTY, "nothing to retry");
             CommandError::Pipeline(
                 pick_lang(lang, en::ERR_NOTHING_TO_RETRY, ru::ERR_NOTHING_TO_RETRY).to_string(),
             )
@@ -168,15 +205,21 @@ pub async fn retry_last_analysis(
         {
             Ok(card) => card,
             Err(err) => {
-                let event = if err.contains("Card output invalid:") {
-                    "analysis_card_invalid"
-                } else {
-                    "analysis_llm_failed"
-                };
-                let _ = app_log::append_event(event, format!("retry_llm: {err}"));
-                return Err(CommandError::Pipeline(err));
-            }
-        };
+            let event = if err.contains("Card output invalid:") {
+                "analysis_card_invalid"
+            } else {
+                "analysis_llm_failed"
+            };
+            let _ = app_log::append_event(event, format!("retry_llm: {err}"));
+            let code = if err.contains("Card output invalid:") {
+                RL_CARD_INVALID
+            } else {
+                RL_LLM_FAILED
+            };
+            let _ = log_diag("retry", "fail", code, &err);
+            return Err(CommandError::Pipeline(err));
+        }
+    };
     {
         let mut context = state
             .context
@@ -189,7 +232,18 @@ pub async fn retry_last_analysis(
         app,
         &crate::tray_status::tooltip_for_phase(lang, "ready_card", None),
     );
+    let _ = log_diag("retry", "ok", RL_RETRY_OK, "card regenerated");
     Ok(card)
+}
+
+fn log_diag(stage: &str, outcome: &str, code: &str, detail: impl AsRef<str>) -> Result<(), String> {
+    app_log::append_event(
+        DIAG_RUNTIME_EVENT_NAME,
+        format!(
+            "stage={stage} outcome={outcome} code={code} detail={}",
+            detail.as_ref()
+        ),
+    )
 }
 
 fn emit_status(app: &AppHandle, phase: &str, detail: Option<String>) {

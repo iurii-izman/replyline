@@ -12,7 +12,7 @@ Current schema version: **2**. Settings from version 1 are automatically migrate
 | --------------------- | --------- | -------------------------------- | ------------------------------------------------- |
 | `schemaVersion`       | `u32`     | `2`                              | Settings schema version for migration             |
 | `hotkey`              | `string`  | `Ctrl+Alt+Space`                 | Global hotkey for capture start/stop              |
-| `llmBaseUrl`          | `string`  | `http://127.0.0.1:4000/v1`       | OpenAI-compatible API base URL                    |
+| `llmBaseUrl`          | `string`  | ``                               | OpenAI-compatible API base URL                    |
 | `llmModel`            | `string`  | `gpt-4o-mini`                    | Model identifier for LLM analysis                 |
 | `llmTemperature`      | `f32`     | `0.25`                           | LLM temperature (0.0–2.0)                         |
 | `primaryLanguage`     | `string`  | `ru`                             | UI and prompt language (`ru` or `en`)             |
@@ -23,6 +23,7 @@ Current schema version: **2**. Settings from version 1 are automatically migrate
 | `notebookLmEnabled`   | `bool`    | `false`                          | Enable NotebookLM quick-launch integration        |
 | `notebookLmLaunchUrl` | `string`  | `https://notebooklm.google.com/` | NotebookLM URL to open                            |
 | `trayIntroSeen`       | `bool`    | `false`                          | Whether the tray intro has been acknowledged      |
+| `showAdvanced`        | `bool`    | `false`                          | Controls visibility of Advanced Mode UI sections  |
 
 ## Validation Rules
 

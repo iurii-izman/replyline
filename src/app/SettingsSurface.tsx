@@ -488,6 +488,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
         <Show when={controller().settings.showAdvanced}>
           <div class="settings-section">
             <h3 class="settings-section-title">{st().advanced.sectionTitle}</h3>
+            <p class="settings-section-intro">{st().advanced.governancePurpose}</p>
+            <p class="field-hint field-hint--tight">{st().advanced.governanceRisks}</p>
+            <p class="field-hint field-hint--tight">{st().advanced.governanceVisible}</p>
+            <p class="field-hint field-hint--tight">{st().advanced.governanceEnable}</p>
+            <p class="field-hint field-hint--tight">{st().advanced.governanceDisable}</p>
 
             <label class="field">
               <span class="field-label">{st().advanced.customPromptLabel}</span>

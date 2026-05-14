@@ -174,3 +174,12 @@ pnpm smoke
 - Verify available disk space.
 - Add an antivirus exclusion for the Replyline app data directory.
 - Check the app log at `%LOCALAPPDATA%\com.replyline.app\app.log` for error details.
+
+## 11. How to triage with diagnostic events
+
+If runtime fails unpredictably, collect a diagnostic bundle and inspect:
+
+- `diagnostics/runtime-events.json` for `stage/outcome/code`
+- `logs/app.log` for nearby context
+
+Prioritize the latest `outcome=fail` event and match by timestamp.
