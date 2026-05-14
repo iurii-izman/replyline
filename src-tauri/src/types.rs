@@ -31,19 +31,7 @@ pub struct AppSettings {
     pub hotkey: String,
     pub llm_base_url: String,
     pub llm_model: String,
-    pub primary_language: String,
-    pub deepgram_model: String,
     pub capture_max_seconds: u16,
-    #[serde(default = "default_llm_temperature")]
-    pub llm_temperature: f32,
-    #[serde(default)]
-    pub use_streaming_stt: bool,
-    #[serde(default)]
-    pub custom_system_prompt: Option<String>,
-}
-
-fn default_llm_temperature() -> f32 {
-    0.25
 }
 
 impl Default for AppSettings {
@@ -53,12 +41,7 @@ impl Default for AppSettings {
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
-            primary_language: "ru".to_string(),
-            deepgram_model: "nova-3".to_string(),
             capture_max_seconds: 30,
-            llm_temperature: default_llm_temperature(),
-            use_streaming_stt: false,
-            custom_system_prompt: None,
         }
     }
 }

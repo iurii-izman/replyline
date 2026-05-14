@@ -6,7 +6,6 @@ use crate::diag_contract::{
     DIAG_RUNTIME_EVENT_NAME, RL_ANALYSIS_OK, RL_CAPTURE_JOIN_FAILED, RL_CAPTURE_NOT_ACTIVE,
     RL_CAPTURE_READY, RL_CAPTURE_START, RL_CAPTURE_STOP_FAILED, RL_CARD_INVALID, RL_LLM_FAILED,
     RL_LLM_OK, RL_RETRY_EMPTY, RL_RETRY_OK, RL_STT_FAILED, RL_STT_KEY_MISSING, RL_STT_OK,
-    RL_STT_STREAMING_FAILED,
 };
 use crate::llm;
 use crate::providers::stt_provider;
@@ -27,7 +26,7 @@ pub async fn capture_stop_and_analyze(
         "capture_stop_and_analyze",
     );
     let settings = settings::load()?;
-    let lang = settings.primary_language.as_str();
+    let lang = "ru";
 
     let capture_run = {
         let mut capture = state
@@ -90,17 +89,9 @@ pub async fn capture_stop_and_analyze(
     let transcript = match stt_provider::transcribe(&settings, &deepgram_key, &pcm).await {
         Ok(t) => t,
         Err(err) => {
-            let event = if settings.use_streaming_stt {
-                "analysis_stt_streaming_failed"
-            } else {
-                "analysis_stt_failed"
-            };
+            let event = "analysis_stt_failed";
             let _ = app_log::append_event(event, &err);
-            let code = if settings.use_streaming_stt {
-                RL_STT_STREAMING_FAILED
-            } else {
-                RL_STT_FAILED
-            };
+            let code = RL_STT_FAILED;
             let _ = log_diag("stt", "fail", code, &err);
             return Err(CommandError::Pipeline(err));
         }
@@ -190,7 +181,7 @@ pub async fn retry_last_analysis(
     app: &AppHandle,
 ) -> Result<AnalysisCardDto, CommandError> {
     let settings = settings::load()?;
-    let lang = settings.primary_language.as_str();
+    let lang = "ru";
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
 
     let (transcript, context_text) = {

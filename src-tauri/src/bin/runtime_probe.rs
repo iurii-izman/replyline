@@ -30,7 +30,6 @@ const DEFAULT_PROBE_TEXT: &str =
 const DEFAULT_LLM_BASE_URL: &str = "https://openrouter.ai/api/v1";
 const DEFAULT_LLM_MODEL: &str = "openai/gpt-4o-mini";
 const DEFAULT_SCENARIO: &str = "loopback-tts-ru";
-const DEFAULT_STT_MODE: &str = "batch";
 const DEFAULT_AUDIO_MODE: &str = "tts";
 
 #[derive(Debug, Serialize)]
@@ -48,9 +47,6 @@ struct RuntimeLatencyReport {
     voice: String,
     llm_base_url: String,
     llm_model: String,
-    stt_mode: String,
-    deepgram_model: String,
-    primary_language: String,
     capture_max_seconds: u16,
     capture_samples: usize,
     capture_window_ms: u128,
@@ -96,7 +92,6 @@ async fn main() -> Result<(), String> {
     let voice_name =
         env::var("REPLYLINE_PROBE_VOICE").unwrap_or_else(|_| "Microsoft Irina Desktop".to_string());
     let scenario = env::var("REPLYLINE_SCENARIO").unwrap_or_else(|_| DEFAULT_SCENARIO.to_string());
-    let stt_mode = env::var("REPLYLINE_STT_MODE").unwrap_or_else(|_| DEFAULT_STT_MODE.to_string());
     let audio_mode =
         env::var("REPLYLINE_AUDIO_MODE").unwrap_or_else(|_| DEFAULT_AUDIO_MODE.to_string());
     let audio_source_label = env::var("REPLYLINE_AUDIO_SOURCE_LABEL").unwrap_or_else(|_| {
@@ -121,7 +116,6 @@ async fn main() -> Result<(), String> {
     println!("Scenario: {scenario}");
     println!("Audio mode: {audio_mode}");
     println!("Audio source: {audio_source_label}");
-    println!("STT mode: {stt_mode}");
     println!("Voice: {voice_name}");
     println!("Model: {}", settings.llm_model);
     println!("Capture cap: {}s", settings.capture_max_seconds);
@@ -140,16 +134,8 @@ async fn main() -> Result<(), String> {
     let capture_window_ms = capture_started_at.elapsed().as_millis();
     let captured_audio_ms = (pcm.len() as u128 * 1000) / 16_000;
     let stt_started_at = Instant::now();
-    let transcript = match stt_mode.as_str() {
-        "streaming" => {
-            deepgram::transcribe_pcm_streaming(&settings, &deepgram_api_key, &pcm).await?
-        }
-        "batch" => {
-            let wav = audio::encode_wav(&pcm);
-            deepgram::transcribe_wav(&settings, &deepgram_api_key, &wav).await?
-        }
-        other => return Err(format!("Unknown REPLYLINE_STT_MODE: {other}")),
-    };
+    let wav = audio::encode_wav(&pcm);
+    let transcript = deepgram::transcribe_wav(&settings, &deepgram_api_key, &wav).await?;
     let stt_ms = stt_started_at.elapsed().as_millis();
 
     let llm_started_at = Instant::now();
@@ -171,9 +157,6 @@ async fn main() -> Result<(), String> {
         voice: voice_name,
         llm_base_url: settings.llm_base_url.clone(),
         llm_model: settings.llm_model.clone(),
-        stt_mode,
-        deepgram_model: settings.deepgram_model.clone(),
-        primary_language: settings.primary_language.clone(),
         capture_max_seconds: settings.capture_max_seconds,
         capture_samples: pcm.len(),
         capture_window_ms,

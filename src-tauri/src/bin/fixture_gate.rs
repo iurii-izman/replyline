@@ -119,8 +119,6 @@ async fn main() -> Result<(), String> {
             .unwrap_or_else(|_| "https://openrouter.ai/api/v1".to_string()),
         llm_model: env::var("REPLYLINE_LLM_MODEL")
             .unwrap_or_else(|_| "openai/gpt-4o-mini".to_string()),
-        // Keep fixture gate deterministic; reduces flaky LLM wording drift.
-        llm_temperature: 0.0,
         ..AppSettings::default()
     };
 

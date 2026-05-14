@@ -104,13 +104,9 @@ pub async fn analyze_transcript(
     transcript: &str,
     context: &str,
 ) -> Result<AnalysisCardDto, String> {
-    let language = settings.primary_language.trim().to_lowercase();
+    let language = "ru".to_string();
     let prompt = build_user_prompt(transcript, context, &language);
-    let system_prompt = settings
-        .custom_system_prompt
-        .as_deref()
-        .filter(|s| !s.trim().is_empty())
-        .unwrap_or_else(|| system_prompt_for_language(&language));
+    let system_prompt = system_prompt_for_language(&language);
     let request = ChatRequest {
         model: settings.llm_model.trim(),
         messages: vec![
@@ -123,7 +119,7 @@ pub async fn analyze_transcript(
                 content: &prompt,
             },
         ],
-        temperature: settings.llm_temperature.clamp(0.0, 2.0),
+        temperature: 0.25,
         max_tokens: 160,
     };
 

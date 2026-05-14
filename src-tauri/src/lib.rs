@@ -60,7 +60,7 @@ pub fn run() {
         .setup(|app| {
             let _ = app_log::append_event("app_boot_start", "setup");
             let settings = settings::load().unwrap_or_default();
-            let lang = settings.primary_language.as_str();
+            let lang = "ru";
             let handle = app.handle().clone();
             let menu = build_main_tray_menu(&handle, lang)?;
 

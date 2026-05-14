@@ -22,8 +22,6 @@ pub enum SettingsError {
     Json(#[from] serde_json::Error),
     #[error("URL: {0}")]
     Url(#[from] url::ParseError),
-    #[error("INVALID_LANGUAGE")]
-    InvalidLanguage,
     #[error("INVALID_URL")]
     InvalidUrl,
     #[error("INVALID_SCHEMA")]
@@ -129,13 +127,6 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     if !(5..=180).contains(&settings.capture_max_seconds) {
         return Err(SettingsError::CaptureRangeInvalid);
     }
-    if !(0.0..=2.0).contains(&settings.llm_temperature) {
-        return Err(SettingsError::CaptureRangeInvalid);
-    }
-    match settings.primary_language.trim() {
-        "ru" | "en" => {}
-        _ => return Err(SettingsError::InvalidLanguage),
-    }
     if !settings.llm_base_url.trim().is_empty() {
         validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
     }
@@ -151,8 +142,6 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "hotkey",
         "llmBaseUrl",
         "llmModel",
-        "primaryLanguage",
-        "deepgramModel",
         "captureMaxSeconds",
     ] {
         if !obj.contains_key(key) {
@@ -281,16 +270,6 @@ mod tests {
     }
 
     #[test]
-    fn rejects_unknown_language() {
-        let mut settings = AppSettings::default();
-        settings.primary_language = "de".to_string();
-        assert!(matches!(
-            validate(&settings),
-            Err(SettingsError::InvalidLanguage)
-        ));
-    }
-
-    #[test]
     fn rejects_capture_range_outside_bounds() {
         let mut settings = AppSettings::default();
         settings.capture_max_seconds = 4;
@@ -331,8 +310,6 @@ mod tests {
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
-            "primaryLanguage": "ru",
-            "deepgramModel": "nova-3",
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
@@ -347,8 +324,6 @@ mod tests {
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
-            "primaryLanguage": "ru",
-            "deepgramModel": "nova-3",
             "captureMaxSeconds": 30,
             "llmTemperature": 0.5
         });
@@ -358,26 +333,11 @@ mod tests {
     }
 
     #[test]
-    fn rejects_temperature_out_of_range() {
-        let mut settings = AppSettings::default();
-        settings.llm_temperature = 3.0;
-        assert!(validate(&settings).is_err());
-
-        settings.llm_temperature = -0.5;
-        assert!(validate(&settings).is_err());
-
-        settings.llm_temperature = 1.0;
-        assert!(validate(&settings).is_ok());
-    }
-
-    #[test]
     fn required_fields_reject_missing_hotkey() {
         let value = serde_json::json!({
             "schemaVersion": 2,
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
-            "primaryLanguage": "ru",
-            "deepgramModel": "nova-3",
             "captureMaxSeconds": 30
         });
         assert!(matches!(

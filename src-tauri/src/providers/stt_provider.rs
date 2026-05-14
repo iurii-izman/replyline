@@ -8,22 +8,6 @@ pub async fn transcribe(
     deepgram_key: &str,
     pcm: &[i16],
 ) -> Result<String, String> {
-    if settings.use_streaming_stt {
-        match deepgram::transcribe_pcm_streaming(settings, deepgram_key, pcm).await {
-            Ok(t) => return Ok(t),
-            Err(stream_err) if should_fallback_to_batch(&stream_err) => {
-                let wav = encode_wav(pcm);
-                return match deepgram::transcribe_wav(settings, deepgram_key, &wav).await {
-                    Ok(t) => Ok(t),
-                    Err(batch_err) => Err(format!(
-                        "STT_FALLBACK_FAILED: streaming={stream_err}; batch={batch_err}"
-                    )),
-                };
-            }
-            Err(stream_err) => return Err(format!("STT_STREAMING_FAILED: {stream_err}")),
-        }
-    }
-
     let wav = encode_wav(pcm);
     match deepgram::transcribe_wav(settings, deepgram_key, &wav).await {
         Ok(t) => Ok(t),
@@ -41,30 +25,7 @@ pub async fn transcribe(
     }
 }
 
-fn should_fallback_to_batch(err: &str) -> bool {
-    let s = err.to_ascii_lowercase();
-    s.contains("ws")
-        || s.contains("websocket")
-        || s.contains("timed out")
-        || s.contains("timeout")
-        || s.contains("connect failed")
-        || s.contains("server error")
-}
-
 #[cfg(test)]
 mod tests {
-    use super::should_fallback_to_batch;
-
-    #[test]
-    fn fallback_policy_matches_transport_failures() {
-        assert!(should_fallback_to_batch(
-            "STT_WS_TIMEOUT: Deepgram WS response timed out."
-        ));
-        assert!(should_fallback_to_batch(
-            "STT_WS_CONNECT_FAILED: Deepgram WS connect failed: dns error"
-        ));
-        assert!(!should_fallback_to_batch(
-            "STT_EMPTY: Deepgram returned an empty transcript."
-        ));
-    }
+    // reserved for future provider transport tests
 }

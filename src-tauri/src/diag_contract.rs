@@ -7,7 +7,6 @@ pub const RL_CAPTURE_STOP_FAILED: &str = "RL_CAPTURE_STOP_FAILED";
 pub const RL_CAPTURE_READY: &str = "RL_CAPTURE_READY";
 pub const RL_STT_KEY_MISSING: &str = "RL_STT_KEY_MISSING";
 pub const RL_STT_FAILED: &str = "RL_STT_FAILED";
-pub const RL_STT_STREAMING_FAILED: &str = "RL_STT_STREAMING_FAILED";
 pub const RL_STT_OK: &str = "RL_STT_OK";
 pub const RL_LLM_FAILED: &str = "RL_LLM_FAILED";
 pub const RL_LLM_OK: &str = "RL_LLM_OK";
@@ -31,7 +30,6 @@ mod tests {
             RL_CAPTURE_READY,
             RL_STT_KEY_MISSING,
             RL_STT_FAILED,
-            RL_STT_STREAMING_FAILED,
             RL_STT_OK,
             RL_LLM_FAILED,
             RL_LLM_OK,
@@ -45,6 +43,6 @@ mod tests {
             assert!(code.starts_with("RL_"), "code must keep RL_ prefix: {code}");
             assert!(seen.insert(code), "duplicate diagnostic code: {code}");
         }
-        assert_eq!(codes.len(), 15);
+        assert_eq!(codes.len(), 14);
     }
 }
