@@ -103,6 +103,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                         class="copy-section-btn"
                         type="button"
                         title={st().card.copyToClipboardTitle}
+                        aria-label={`${st().card.copyToClipboardTitle}: ${st().card.gistLabel}`}
                         onClick={() => void controller().copySection("gist")}
                       >
                         ⎘
@@ -118,6 +119,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                         class="copy-section-btn"
                         type="button"
                         title={st().card.copyToClipboardTitle}
+                        aria-label={`${st().card.copyToClipboardTitle}: ${st().card.sayNowLabel}`}
                         onClick={() => void controller().copySection("sayNow")}
                       >
                         ⎘
@@ -133,6 +135,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                         class="copy-section-btn"
                         type="button"
                         title={st().card.copyToClipboardTitle}
+                        aria-label={`${st().card.copyToClipboardTitle}: ${st().card.nextMoveLabel}`}
                         onClick={() => void controller().copySection("nextMove")}
                       >
                         ⎘

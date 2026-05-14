@@ -1,11 +1,2 @@
 packages:
   - "."
-
-overrides:
-  postcss: 8.5.14
-
-allowBuilds:
-  edgedriver: true
-  esbuild: true
-  geckodriver: true
-  protobufjs: true

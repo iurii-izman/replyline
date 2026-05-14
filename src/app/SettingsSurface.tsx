@@ -8,6 +8,20 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   const [devFixtureId, setDevFixtureId] = createSignal(fixtureSnippets[0]?.id ?? "");
+  const hotkeyInvalid = () => !controller().settings.hotkey.trim();
+  const llmModelInvalid = () => !controller().settings.llmModel.trim();
+  const llmUrlInvalid = () => {
+    const value = controller().settings.llmBaseUrl.trim();
+    if (!value) return false;
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol !== "http:" && parsed.protocol !== "https:";
+    } catch {
+      return true;
+    }
+  };
+  const captureMaxInvalid = () =>
+    controller().settings.captureMaxSeconds < 5 || controller().settings.captureMaxSeconds > 180;
 
   createEffect(() => {
     if (controller().panel() !== "settings") return;
@@ -45,6 +59,14 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
         <h2 class="section-title">{st().settings.title}</h2>
         <p class="section-copy settings-lead">{st().settings.lead}</p>
 
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!controller().saving()) {
+              void controller().persistSettings();
+            }
+          }}
+        >
         <div class="settings-section">
           <label class="field-checkbox">
             <input
@@ -52,7 +74,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               checked={controller().settings.showAdvanced}
               onChange={(e) => controller().setShowAdvanced(e.currentTarget.checked)}
             />
-            <span style="font-weight: 600;">{st().advanced.showAdvancedLabel || "Advanced Mode"}</span>
+            <span style="font-weight: 600;">{st().advanced.showAdvancedLabel}</span>
           </label>
         </div>
 
@@ -309,9 +331,16 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             <input
               class="field-input"
               value={controller().settings.hotkey}
+              aria-invalid={hotkeyInvalid()}
+              aria-describedby={hotkeyInvalid() ? "settings-hotkey-inline-error" : undefined}
               onKeyDown={(event) => controller().captureHotkeyInput(event as KeyboardEvent)}
               onInput={(event) => controller().setHotkeyFromInput(event.currentTarget.value)}
             />
+            <Show when={hotkeyInvalid()}>
+              <span id="settings-hotkey-inline-error" class="field-error" role="alert">
+                {st().settings.hotkeyInlineRequired}
+              </span>
+            </Show>
           </label>
 
           <label class="field">
@@ -322,11 +351,18 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               min="5"
               max="180"
               value={String(controller().settings.captureMaxSeconds)}
+              aria-invalid={captureMaxInvalid()}
+              aria-describedby={captureMaxInvalid() ? "settings-capture-inline-error" : undefined}
               onInput={(event) =>
                 controller().setCaptureMaxSecondsFromInput(event.currentTarget.value)
               }
             />
             <span class="field-hint">{st().settings.captureMaxHint}</span>
+            <Show when={captureMaxInvalid()}>
+              <span id="settings-capture-inline-error" class="field-error" role="alert">
+                {st().settings.captureMaxInlineInvalid}
+              </span>
+            </Show>
           </label>
         </div>
 
@@ -362,12 +398,19 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             <input
               class="field-input"
               value={controller().settings.llmBaseUrl}
+              aria-invalid={llmUrlInvalid()}
+              aria-describedby={llmUrlInvalid() ? "settings-llm-url-inline-error" : undefined}
               onInput={(event) => controller().setLlmBaseUrl(event.currentTarget.value)}
               placeholder="https://api.openai.com/v1"
             />
             <span class="field-hint">
               <code>{st().settings.llmBaseUrlHint}</code>
             </span>
+            <Show when={llmUrlInvalid()}>
+              <span id="settings-llm-url-inline-error" class="field-error" role="alert">
+                {st().settings.llmUrlInlineInvalid}
+              </span>
+            </Show>
           </label>
 
           <label class="field">
@@ -375,8 +418,15 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             <input
               class="field-input"
               value={controller().settings.llmModel}
+              aria-invalid={llmModelInvalid()}
+              aria-describedby={llmModelInvalid() ? "settings-llm-model-inline-error" : undefined}
               onInput={(event) => controller().setLlmModel(event.currentTarget.value)}
             />
+            <Show when={llmModelInvalid()}>
+              <span id="settings-llm-model-inline-error" class="field-error" role="alert">
+                {st().settings.llmModelInlineRequired}
+              </span>
+            </Show>
           </label>
 
           <label class="field">
@@ -543,25 +593,16 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
         </Show>
 
         <Show when={controller().settingsFormHint()}>
-          <div class="settings-form-hint" role="alert">
+          <div class="settings-form-hint" role="alert" aria-live="assertive">
             {controller().settingsFormHint()}
           </div>
         </Show>
 
-        <div
-          class="settings-actions"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !controller().saving()) {
-              e.preventDefault();
-              void controller().persistSettings();
-            }
-          }}
-        >
+        <div class="settings-actions">
           <button
             class="btn-primary"
-            type="button"
+            type="submit"
             disabled={controller().saving()}
-            onClick={() => void controller().persistSettings()}
           >
             {controller().saving() ? st().settings.saving : st().settings.save}
           </button>
@@ -569,6 +610,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             {st().settings.toCard}
           </button>
         </div>
+        </form>
       </section>
     </Show>
   );

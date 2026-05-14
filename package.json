@@ -2,7 +2,19 @@
   "name": "replyline",
   "version": "0.1.0",
   "description": "Replyline — Windows-first tray app для сложных рабочих разговоров (internal RU alpha).",
+  "packageManager": "pnpm@9.15.9",
   "type": "module",
+  "pnpm": {
+    "overrides": {
+      "postcss": "8.5.14"
+    },
+    "onlyBuiltDependencies": [
+      "edgedriver",
+      "esbuild",
+      "geckodriver",
+      "protobufjs"
+    ]
+  },
   "scripts": {
     "start": "vite",
     "dev": "vite",
@@ -54,7 +66,7 @@
     "alpha:preflight": "pnpm smoke && pnpm runtime:preflight && pnpm probe:runtime && pnpm evidence:bundle",
     "smoke": "pnpm typecheck && pnpm lint && pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo test --manifest-path src-tauri/Cargo.toml && pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:prompt-contract && pnpm test:say-now-scenarios && pnpm test:consistency && pnpm test:ipc-contract && pnpm copy:check",
     "verify": "pnpm smoke && pnpm test:security-lanes",
-    "test:api:bruno": "pnpm dlx @usebruno/cli run tests/api/bruno/collection --env-file tests/api/bruno/environments/local.bru --reporter-json artifacts/bruno/bruno-report.json",
+    "test:api:bruno": "pwsh -NoProfile -Command \"New-Item -ItemType Directory -Force artifacts/bruno | Out-Null; Push-Location tests/api/bruno; pnpm dlx @usebruno/cli run . -r --env-file environments/local.bru --reporter-json ../../../artifacts/bruno/bruno-report.json; $code=$LASTEXITCODE; Pop-Location; exit $code\"",
     "test:api:postman": "pnpm exec newman run tests/api/postman/Replyline.postman_collection.json -e tests/api/postman/Replyline.local.postman_environment.json",
     "test:e2e:web": "pnpm exec playwright test",
     "test:e2e:web:ui": "pnpm exec playwright test --ui",
@@ -63,7 +75,7 @@
     "test:ux:lighthouse": "pnpm exec lhci autorun --config=./lighthouserc.json",
     "test:sec:zap": "pwsh -File scripts/run-zap-baseline.ps1",
     "test:quick": "pnpm typecheck && pnpm lint && pnpm test:ui",
-    "test:extended": "pnpm test:api:postman && pnpm test:e2e:web && pnpm test:perf:k6 && pnpm test:ux:lighthouse && pnpm test:sec:zap"
+    "test:extended": "pnpm test:api:postman && pnpm test:e2e:web && pnpm test:perf:k6 && pnpm test:sec:zap"
   },
   "license": "MIT",
   "dependencies": {

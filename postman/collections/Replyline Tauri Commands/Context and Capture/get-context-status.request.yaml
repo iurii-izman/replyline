@@ -1,0 +1,10 @@
+$kind: http-request
+name: 'get_context_status'
+method: POST
+url: '{{commandBaseUrl}}/tauri/get_context_status'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

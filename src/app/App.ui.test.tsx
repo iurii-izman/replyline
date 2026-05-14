@@ -416,7 +416,7 @@ describe("Replyline UI lane", () => {
     render(() => <App platform={mock.platform} />);
     await screen.findByText("Подготовка к работе");
 
-    await user.click(screen.getByLabelText("Advanced Mode"));
+    await user.click(screen.getByLabelText("Расширенные настройки"));
     await user.click(screen.getByRole("button", { name: "Сохранить на этой машине" }));
 
     await waitFor(() => {
@@ -427,6 +427,112 @@ describe("Replyline UI lane", () => {
         }),
       );
     });
+  });
+
+  it("shows section-specific notice when copying card section", async () => {
+    const mock = createMockPlatform();
+    const user = userEvent.setup();
+
+    render(() => <App platform={mock.platform} />);
+    await screen.findByText(/Удержите/);
+    await mock.triggerShortcut("Pressed");
+    await mock.triggerShortcut("Released");
+    await screen.findByText(DEFAULT_CARD.sayNow);
+
+    await user.click(screen.getByRole("button", { name: "В буфер обмена: Суть" }));
+    expect(await screen.findByText("Раздел «Суть» скопирован в буфер.")).toBeTruthy();
+  });
+
+  it("submits settings by Enter and shows inline validation before submit", async () => {
+    const mock = createMockPlatform({
+      bootstrap: makeBootstrap({ runtimeReady: false }),
+    });
+    const user = userEvent.setup();
+
+    render(() => <App platform={mock.platform} />);
+    await screen.findByText("Подготовка к работе");
+
+    const modelInput = screen.getByDisplayValue("openai/gpt-4o-mini");
+    await user.clear(modelInput);
+    expect(await screen.findByText("Укажите модель ответа.")).toBeTruthy();
+
+    const urlInput = screen.getByDisplayValue("https://openrouter.ai/api/v1");
+    await user.clear(urlInput);
+    await user.type(urlInput, "not-a-url");
+    expect(await screen.findByText("Укажите полный URL шлюза с http:// или https://.")).toBeTruthy();
+
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://openrouter.ai/api/v1");
+    await user.type(modelInput, "openai/gpt-4o-mini{Enter}");
+
+    await waitFor(() => {
+      expect(mock.invokeMock).toHaveBeenCalledWith(
+        "save_settings",
+        expect.objectContaining({
+          input: expect.objectContaining({
+            llmBaseUrl: "https://openrouter.ai/api/v1",
+            llmModel: "openai/gpt-4o-mini",
+          }),
+        }),
+      );
+    });
+  });
+
+  it("keeps first-run setup -> save -> reopen flow stable", async () => {
+    let persisted = {
+      ...DEFAULT_SETTINGS,
+      llmBaseUrl: "",
+      llmModel: "",
+      showAdvanced: false,
+    };
+    let deepgramSaved = false;
+    const mock = createMockPlatform({
+      bootstrap: makeBootstrap({
+        runtimeReady: false,
+        deepgramKeyPresent: false,
+        llmKeyPresent: false,
+        settings: persisted,
+      }),
+      commandHandlers: {
+        load_bootstrap: async () =>
+          makeBootstrap({
+            runtimeReady: deepgramSaved && Boolean(persisted.llmBaseUrl.trim() && persisted.llmModel.trim()),
+            deepgramKeyPresent: deepgramSaved,
+            llmKeyPresent: true,
+            settings: persisted,
+          }),
+        save_settings: async (args) => {
+          persisted = { ...(args?.input as AppSettings) };
+          return persisted;
+        },
+        save_secret: async () => {
+          deepgramSaved = true;
+          return null;
+        },
+      },
+    });
+    const user = userEvent.setup();
+
+    render(() => <App platform={mock.platform} />);
+    await screen.findByText("Подготовка к работе");
+
+    await user.type(screen.getByPlaceholderText("вставьте ключ"), "dg-key");
+    const urlInput = screen.getByPlaceholderText("https://api.openai.com/v1");
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://openrouter.ai/api/v1");
+    const modelField = screen.getByText("Модель").closest("label")?.querySelector("input");
+    expect(modelField).toBeTruthy();
+    await user.clear(modelField!);
+    await user.type(modelField!, "openai/gpt-4o-mini");
+    await user.click(screen.getByRole("button", { name: "Сохранить на этой машине" }));
+    await screen.findByText(/Сохранено\./);
+
+    expect(await screen.findByText(/Удержите/)).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: "Настройки" }));
+    expect(await screen.findByText("Подготовка к работе")).toBeTruthy();
+    expect(screen.getByDisplayValue("https://openrouter.ai/api/v1")).toBeTruthy();
+    expect(screen.getByDisplayValue("openai/gpt-4o-mini")).toBeTruthy();
   });
 
   it("shows NotebookLM launch action on the main screen when enabled", async () => {

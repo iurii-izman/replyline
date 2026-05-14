@@ -1,0 +1,18 @@
+$kind: http-request
+name: 'memory_save_space_record'
+method: POST
+url: '{{commandBaseUrl}}/tauri/memory_save_space_record'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "input": {
+        "spaceId": "default",
+        "summary": "Example memory summary",
+        "items": []
+      }
+    }

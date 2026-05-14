@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'log_client_event'
+method: POST
+url: '{{commandBaseUrl}}/tauri/log_client_event'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "event": "ui.clicked",
+      "detail": "optional detail"
+    }

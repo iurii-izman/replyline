@@ -116,7 +116,13 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
     const value = currentCard[section]?.trim();
     if (!value) return;
     const copied = await deps.tryWriteClipboard(value);
-    deps.setCopyNotice(copied ? deps.strings().notices.cardSectionCopied : value);
+    const sectionNotice =
+      section === "gist"
+        ? deps.strings().notices.cardSectionCopiedGist
+        : section === "sayNow"
+          ? deps.strings().notices.cardSectionCopiedSayNow
+          : deps.strings().notices.cardSectionCopiedNextMove;
+    deps.setCopyNotice(copied ? sectionNotice : value);
   }
 
   async function openNotebookLm(notebookLmEnabled: boolean, notebookLmLaunchUrl: string) {

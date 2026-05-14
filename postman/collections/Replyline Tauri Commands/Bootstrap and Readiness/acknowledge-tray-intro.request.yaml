@@ -1,0 +1,10 @@
+$kind: http-request
+name: 'acknowledge_tray_intro'
+method: POST
+url: '{{commandBaseUrl}}/tauri/acknowledge_tray_intro'
+order: 6000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

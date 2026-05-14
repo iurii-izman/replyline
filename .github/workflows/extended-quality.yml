@@ -1,0 +1,34 @@
+name: Extended Quality
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * 1'
+
+jobs:
+  extended-quality:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 9
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install testing stack
+        run: pwsh -File scripts/setup-testing-stack.ps1
+      - name: Verify gate
+        run: pnpm verify
+      - name: Verify testing stack
+        run: pwsh -File scripts/verify-testing-stack.ps1
+      - name: API smoke
+        run: pnpm test:api:bruno; pnpm test:api:postman
+      - name: Web E2E
+        run: pnpm test:e2e:web
+      - name: Perf + UX + Sec smoke
+        run: pnpm test:perf:k6; pnpm test:ux:lighthouse; pnpm test:sec:zap

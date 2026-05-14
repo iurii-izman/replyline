@@ -329,7 +329,7 @@ export function userSafeBootstrapLoadError(err: unknown): string {
   if (/config|credential|IO:|JSON|NotFound|denied/i.test(s)) {
     return "Не прочитались настройки или ключи Windows. Проверьте профиль и повторите загрузку.";
   }
-  return "Не удалось загрузить приложение. Нажмите «Повторить» или откройте настройки.";
+  return "Не удалось загрузить приложение. Нажмите «Повторить», затем проверьте настройки ключей и адрес шлюза.";
 }
 
 export function userSafeClearContextError(err: unknown): string {
@@ -392,10 +392,10 @@ export function mapSettingsSaveError(err: unknown): string | null {
     return "Лимит фрагмента: 5–180 секунд.";
   }
   if (s.includes("INVALID_LANGUAGE")) {
-    return "Файл настроек повреждён (язык). Напишите разработчикам.";
+    return "Параметр языка в настройках некорректен. Выберите RU/EN и сохраните снова.";
   }
   if (s.includes("INVALID_SCHEMA")) {
-    return "Версия settings.json не подходит. См. docs или удалите файл для сброса.";
+    return "Формат settings.json устарел. Обновите приложение или сбросьте настройки и сохраните заново.";
   }
   if (s.includes("IO:")) {
     return "Не записался файл настроек. Проверьте профиль Windows.";
