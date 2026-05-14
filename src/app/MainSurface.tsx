@@ -1,6 +1,7 @@
 import { Show } from "solid-js";
 
 import type { ReplylineController } from "./controller";
+import { pipelineStageForPhase } from "./model";
 
 export function MainSurface(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
@@ -17,7 +18,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
       <Show when={controller().phase() === "error" && controller().panel() !== "settings"}>
         <section class="main-card boot-card">
           <h2 class="section-title">{st().startError.title}</h2>
-          <p class="section-copy">{st().startError.body}</p>
+          <p class="section-copy">{controller().error() ?? st().startError.body}</p>
           <div class="settings-actions">
             <button
               class="btn-primary"
@@ -45,6 +46,30 @@ export function MainSurface(props: { controller: ReplylineController }) {
         }
       >
         <section class="main-card">
+          <div class="main-focus-top">
+            <div class={`status-pill ${controller().statusPillClass()}`}>{controller().phaseLabel()}</div>
+            <ol class="pipeline-timeline" aria-label={st().pipeline.ariaLabel}>
+              {(["capture", "stt", "llm", "card"] as const).map((stage) => {
+                const current = pipelineStageForPhase(controller().phase());
+                const done =
+                  current === "card" ||
+                  (current === "llm" && (stage === "capture" || stage === "stt")) ||
+                  (current === "stt" && stage === "capture");
+                const active = current === stage;
+                return (
+                  <li class={`pipeline-stage${done ? " is-done" : ""}${active ? " is-active" : ""}`}>
+                    {st().pipeline[stage]}
+                  </li>
+                );
+              })}
+            </ol>
+            <Show when={controller().pipelineActive()}>
+              <p class="elapsed-chip" aria-live="polite">
+                {st().livePhase.elapsedLabel}: {controller().elapsedSeconds()}s
+              </p>
+            </Show>
+          </div>
+
           <Show
             when={!controller().setupRequired()}
             fallback={
@@ -213,6 +238,21 @@ export function MainSurface(props: { controller: ReplylineController }) {
               </div>
             </Show>
           </Show>
+          <div class="main-primary-actions">
+            <button class="btn-primary" type="button" onClick={() => controller().openSettingsPanel()}>
+              {st().startError.toSetup}
+            </button>
+            <Show when={!controller().card()}>
+              <button
+                class="btn-secondary"
+                type="button"
+                disabled={controller().pipelineActive()}
+                onClick={() => void controller().retryAnalysis()}
+              >
+                {st().card.retryCard}
+              </button>
+            </Show>
+          </div>
         </section>
       </Show>
     </>

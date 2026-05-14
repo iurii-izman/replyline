@@ -276,7 +276,7 @@ fn try_partial_extract(text: &str) -> Option<RawCard> {
 fn normalize_card(card: RawCard) -> Result<AnalysisCardDto, String> {
     let gist = trim_line(&card.gist, 110);
     let say_now = trim_line(&card.say_now, 220);
-    let next_move = trim_line(&card.next_move, 110);
+    let mut next_move = trim_line(&card.next_move, 110);
 
     if gist.is_empty() {
         return Err("Card output invalid: gist is empty.".to_string());
@@ -289,7 +289,16 @@ fn normalize_card(card: RawCard) -> Result<AnalysisCardDto, String> {
     }
 
     validate_say_now(&say_now)?;
-    validate_next_move(&next_move)?;
+    if let Err(err) = validate_next_move(&next_move) {
+        if err.contains("next_move is too vague.")
+            || err.contains("next_move is too short.")
+            || err.contains("next_move has no concrete coordination artifact.")
+        {
+            next_move = build_fallback_next_move(&say_now);
+        } else {
+            return Err(err);
+        }
+    }
 
     Ok(AnalysisCardDto {
         gist,
@@ -412,6 +421,15 @@ fn trim_line(value: &str, max_chars: usize) -> String {
     clean.chars().take(max_chars).collect()
 }
 
+fn build_fallback_next_move(say_now: &str) -> String {
+    let lower = say_now.to_lowercase();
+    if contains_any(&lower, &["сегодня", "до ", "к ", "утра", "вечера"]) {
+        "Отправлю короткое письмо с владельцем, сроком и чекпоинтом.".to_string()
+    } else {
+        "Зафиксирую в чате владельца, следующий шаг и время чекпоинта.".to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{normalize_card, parse_card_json, try_partial_extract, RawCard};
@@ -473,5 +491,17 @@ mod tests {
         let card = parse_card_json(garbled).expect("should fall back to partial");
         assert!(card.gist.starts_with("[partial]"));
         assert_eq!(card.say_now, "Check status");
+    }
+
+    #[test]
+    fn repairs_vague_next_move_instead_of_failing_card() {
+        let card = normalize_card(RawCard {
+            gist: "Есть риск сдвига срока.".to_string(),
+            say_now: "Давайте согласуем приоритеты и срок сегодня до 17:00.".to_string(),
+            next_move: "Потом посмотрим.".to_string(),
+        })
+        .expect("must repair");
+
+        assert!(card.next_move.contains("письмо") || card.next_move.contains("чате"));
     }
 }

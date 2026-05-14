@@ -58,6 +58,29 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
         </Show>
         <h2 class="section-title">{st().settings.title}</h2>
         <p class="section-copy settings-lead">{st().settings.lead}</p>
+        <Show when={controller().setupRequired()}>
+          <div class="setup-guide" role="status">
+            <p class="settings-section-title">{st().setup.title}</p>
+            <ol class="setup-steps">
+              <li>{st().setup.step1}</li>
+              <li>{st().setup.step2}</li>
+              <li>{st().setup.step3}</li>
+            </ol>
+            <div class="result-actions">
+              <button
+                class="btn-secondary"
+                type="button"
+                disabled={controller().healthCheckBusy()}
+                onClick={() => void controller().runHealthCheck()}
+              >
+                {controller().healthCheckBusy() ? st().settings.healthCheckBusy : st().settings.healthCheck}
+              </button>
+              <button class="btn-ghost" type="button" onClick={() => controller().openMainPanel()}>
+                {st().settings.testCapture}
+              </button>
+            </div>
+          </div>
+        </Show>
 
         <form
           onSubmit={(event) => {
@@ -68,6 +91,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
           }}
         >
         <div class="settings-section">
+          <h3 class="settings-section-title">{st().settings.basicTitle}</h3>
           <label class="field-checkbox">
             <input
               type="checkbox"
@@ -79,8 +103,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
           <p class="field-hint field-hint--tight">{st().advanced.showAdvancedHint}</p>
         </div>
 
-        <Show when={controller().settings.showAdvanced}>
-          <div class="readiness-panel" role="region" aria-label={st().settings.readinessTitle}>
+        <div class="readiness-panel" role="region" aria-label={st().settings.readinessTitle}>
             <div class="readiness-panel-title">{st().settings.readinessTitle}</div>
             <ul class="readiness-list">
               <li
@@ -159,7 +182,6 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </Show>
             </div>
           </div>
-        </Show>
 
         <Show when={controller().settings.showAdvanced}>
           <div class="settings-section settings-section--snapshot">
@@ -437,7 +459,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
 
         <Show when={controller().settings.showAdvanced}>
           <div class="settings-section">
-            <h3 class="settings-section-title">{st().advanced.sectionTitle}</h3>
+            <h3 class="settings-section-title">{st().settings.advancedTitle}</h3>
             <p class="settings-section-intro">{st().advanced.governancePurpose}</p>
             <p class="field-hint field-hint--tight">{st().advanced.governanceRisks}</p>
             <p class="field-hint field-hint--tight">{st().advanced.governanceVisible}</p>
@@ -465,6 +487,23 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 onChange={(e) => controller().setUseStreamingStt(e.currentTarget.checked)}
               />
               <span>{st().advanced.streamingSttLabel}</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">{st().advanced.densityPresetLabel}</span>
+              <select
+                class="field-input"
+                value={controller().settings.uiDensity}
+                onChange={(e) =>
+                  controller().setUiDensity(
+                    e.currentTarget.value as "compact" | "default" | "comfortable",
+                  )
+                }
+              >
+                <option value="compact">compact</option>
+                <option value="default">default</option>
+                <option value="comfortable">comfortable</option>
+              </select>
             </label>
 
             <Show when={import.meta.env.DEV}>

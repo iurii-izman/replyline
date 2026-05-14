@@ -27,6 +27,14 @@ export const ui_ru = {
     transcribingSub: "Ждём текст (Deepgram).",
     analyzingHeadline: "Ответ по тексту",
     analyzingSub: "Ждём карточку от шлюза.",
+    elapsedLabel: "elapsed",
+  },
+  pipeline: {
+    ariaLabel: "Линейка этапов",
+    capture: "capture",
+    stt: "stt",
+    llm: "llm",
+    card: "card",
   },
 
   card: {
@@ -142,6 +150,9 @@ export const ui_ru = {
     save: "Сохранить на этой машине",
     saving: "Сохраняю…",
     toCard: "К карточке",
+    testCapture: "Тестовый захват",
+    basicTitle: "Basic",
+    advancedTitle: "Advanced",
     retryLoad: "Повторить загрузку",
 
     hotkeyNudge:
@@ -268,6 +279,7 @@ export const ui_ru = {
     devFixtureRun: "Построить карточку",
     devFixtureBusy: "Строю карточку…",
     devFixtureOk: "Карточка по фикстуре готова (смотрите основную панель).",
+    densityPresetLabel: "Density preset",
   },
 
   memory: {
@@ -321,6 +333,14 @@ export const ui_en: UiStrings = {
     transcribingSub: "Waiting for transcript (Deepgram).",
     analyzingHeadline: "Generating response",
     analyzingSub: "Waiting for card from the gateway.",
+    elapsedLabel: "elapsed",
+  },
+  pipeline: {
+    ariaLabel: "Pipeline timeline",
+    capture: "capture",
+    stt: "stt",
+    llm: "llm",
+    card: "card",
   },
 
   card: {
@@ -437,6 +457,9 @@ export const ui_en: UiStrings = {
     save: "Save on this machine",
     saving: "Saving…",
     toCard: "Go to card",
+    testCapture: "Test capture",
+    basicTitle: "Basic",
+    advancedTitle: "Advanced",
     retryLoad: "Retry loading",
 
     hotkeyNudge:
@@ -565,6 +588,7 @@ export const ui_en: UiStrings = {
     devFixtureRun: "Build card",
     devFixtureBusy: "Building card…",
     devFixtureOk: "Fixture card ready (check the main panel).",
+    densityPresetLabel: "Density preset",
   },
 
   memory: {

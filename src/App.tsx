@@ -14,7 +14,7 @@ function App(props: AppProps) {
   const controller = useReplylineController(props.platform ?? getDefaultPlatform());
 
   return (
-    <main class="shell">
+    <main class={`shell density-${controller.settings.uiDensity}`}>
       <ShellChrome controller={controller} />
       <div class="shell-body">
         <MainSurface controller={controller} />

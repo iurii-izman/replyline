@@ -35,6 +35,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   customSystemPrompt: null,
   showAdvanced: true,
   trayIntroSeen: true,
+  uiDensity: "default",
 };
 
 const DEFAULT_CARD: AnalysisCard = {

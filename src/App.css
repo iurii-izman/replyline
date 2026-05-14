@@ -66,8 +66,8 @@ input {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  padding: 10px;
-  gap: 8px;
+  padding: var(--density-pad, 10px);
+  gap: var(--density-gap, 8px);
   background: rgba(252, 249, 244, 0.92);
   border: 1px solid rgba(27, 54, 51, 0.18);
   border-radius: 20px;
@@ -1038,4 +1038,104 @@ select:focus-visible {
 .memory-create-kind {
   width: 120px;
   flex-shrink: 0;
+}
+
+.density-compact {
+  --density-gap: 6px;
+  --density-pad: 10px;
+}
+
+.density-default {
+  --density-gap: 8px;
+  --density-pad: 14px;
+}
+
+.density-comfortable {
+  --density-gap: 12px;
+  --density-pad: 18px;
+}
+
+.notice-center {
+  display: grid;
+  gap: 6px;
+}
+
+.notice-item {
+  border-radius: 12px;
+  padding: 8px 11px;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--density-gap, 8px);
+}
+
+.notice-item.is-info {
+  background: rgba(28, 91, 80, 0.92);
+  color: #f7f4ef;
+}
+
+.notice-item.is-error {
+  background: rgba(141, 32, 32, 0.92);
+  color: #fff5f5;
+}
+
+.main-focus-top {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pipeline-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pipeline-stage {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  color: rgba(20, 35, 33, 0.65);
+  text-align: center;
+}
+
+.pipeline-stage.is-active {
+  background: rgba(185, 135, 37, 0.16);
+  border-color: rgba(185, 135, 37, 0.34);
+  color: #5c4207;
+}
+
+.pipeline-stage.is-done {
+  background: rgba(34, 116, 98, 0.14);
+  border-color: rgba(34, 116, 98, 0.22);
+  color: #0f5d4f;
+}
+
+.elapsed-chip {
+  margin: 0;
+  font-size: 0.72rem;
+  color: rgba(20, 35, 33, 0.72);
+}
+
+.main-primary-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.setup-guide {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(35, 116, 98, 0.22);
+  background: rgba(255, 255, 255, 0.74);
 }

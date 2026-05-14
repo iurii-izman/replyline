@@ -102,20 +102,15 @@ export function MessagesAndFooter(props: { controller: ReplylineController }) {
 
   return (
     <>
-      <div class="shell-messages">
-        <Show when={controller().error()}>
-          <div class="error-bar" role="alert">
-            <span class="error-bar-text">{controller().error()}</span>
+      <div class="notice-center">
+        <Show when={controller().copyNotice()}>
+          <div
+            class={controller().noticeKind() === "error" ? "notice-item is-error" : "notice-item is-info"}
+            role={controller().noticeKind() === "error" ? "alert" : "status"}
+            aria-live={controller().noticeKind() === "error" ? "assertive" : "polite"}
+          >
+            <span class="error-bar-text">{controller().copyNotice()}</span>
             <div class="error-bar-actions">
-              <Show when={controller().hotkeyFailed() && controller().phase() !== "error"}>
-                <button
-                  type="button"
-                  class="error-bar-action"
-                  onClick={() => controller().openSettingsPanel()}
-                >
-                  {st().startError.toSetup}
-                </button>
-              </Show>
               <Show when={controller().lastCommandErrorKind()}>
                 {(kind) => {
                   const anchor = settingsAnchorForCommandErrorKind(kind as CommandErrorKind);
@@ -138,12 +133,12 @@ export function MessagesAndFooter(props: { controller: ReplylineController }) {
                   );
                 }}
               </Show>
+              <Show when={!controller().lastCommandErrorKind() && controller().noticeKind() === "error"}>
+                <button type="button" class="error-bar-action" onClick={() => void controller().retryAnalysis()}>
+                  {st().card.retryCard}
+                </button>
+              </Show>
             </div>
-          </div>
-        </Show>
-        <Show when={controller().copyNotice()}>
-          <div class="notice-bar" role="status">
-            {controller().copyNotice()}
           </div>
         </Show>
       </div>

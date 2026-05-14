@@ -8,6 +8,7 @@ export type Phase =
   | "error";
 
 export type Panel = "main" | "settings";
+export type UiDensity = "compact" | "default" | "comfortable";
 
 export type AppSettings = {
   schemaVersion: number;
@@ -22,6 +23,7 @@ export type AppSettings = {
   customSystemPrompt: string | null;
   showAdvanced: boolean;
   trayIntroSeen: boolean;
+  uiDensity: UiDensity;
 };
 
 export type BootstrapDto = {
@@ -232,7 +234,18 @@ export const DEFAULT_SETTINGS: AppSettings = {
   customSystemPrompt: null,
   showAdvanced: false,
   trayIntroSeen: false,
+  uiDensity: "default",
 };
+
+export type PipelineStageKey = "capture" | "stt" | "llm" | "card";
+
+export function pipelineStageForPhase(phase: Phase): PipelineStageKey | null {
+  if (phase === "capturing") return "capture";
+  if (phase === "transcribing") return "stt";
+  if (phase === "analyzing") return "llm";
+  if (phase === "ready") return "card";
+  return null;
+}
 
 export function usesPlaceholderLlmRoute(baseUrl: string, model: string): boolean {
   return (

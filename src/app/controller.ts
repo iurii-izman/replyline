@@ -4,6 +4,7 @@ import {
   createSignal,
   onCleanup,
   onMount,
+  on,
   type Accessor,
 } from "solid-js";
 import { createStore } from "solid-js/store";
@@ -35,6 +36,7 @@ import {
   type Panel,
   type Phase,
   type HealthCheckResult,
+  type UiDensity,
   type MemorySpace,
   type MemorySpaceRecord,
   type StatusEvent,
@@ -64,6 +66,9 @@ export function useReplylineController(platform: AppPlatform) {
   const [diagnosticBusy, setDiagnosticBusy] = createSignal(false);
   const [diagnosticLocalError, setDiagnosticLocalError] = createSignal<string | null>(null);
   const [copyNotice, setCopyNotice] = createSignal<string | null>(null);
+  const [noticeKind, setNoticeKind] = createSignal<"info" | "error">("info");
+  const [pipelineStartedAt, setPipelineStartedAt] = createSignal<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = createSignal(0);
   const [hotkeyFailed, setHotkeyFailed] = createSignal(false);
   const [setupHotkeyNudge, setSetupHotkeyNudge] = createSignal(false);
   const [settingsFormHint, setSettingsFormHint] = createSignal<string | null>(null);
@@ -100,6 +105,9 @@ export function useReplylineController(platform: AppPlatform) {
   const hotkeyFilled = createMemo(() => Boolean(settings.hotkey.trim()));
   const pipelineActive = createMemo(() =>
     ["capturing", "transcribing", "analyzing"].includes(phase()),
+  );
+  const isMacLike = createMemo(() =>
+    typeof navigator !== "undefined" ? /Mac|iPhone|iPad|iPod/i.test(navigator.platform) : false,
   );
 
   const strings: Accessor<UiStrings> = createMemo(() => getUi(settings.primaryLanguage));
@@ -238,7 +246,8 @@ export function useReplylineController(platform: AppPlatform) {
 
   function showRecoverableError(message: string, invokeErr?: unknown) {
     setStatusDetail(null);
-    setCopyNotice(null);
+    setCopyNotice(message);
+    setNoticeKind("error");
     setCommandErrorKind(invokeErr ?? null);
     setError(message);
     setPhase("idle");
@@ -364,7 +373,7 @@ export function useReplylineController(platform: AppPlatform) {
     setDiagnosticLocalError(null);
     try {
       const boot = await platform.invoke<BootstrapDto>("load_bootstrap");
-      setSettings(boot.settings);
+      setSettings({ ...DEFAULT_SETTINGS, ...boot.settings });
       setDeepgramSaved(boot.deepgramKeyPresent);
       setLlmKeySaved(boot.llmKeyPresent);
       applyContextStatus({
@@ -443,6 +452,7 @@ export function useReplylineController(platform: AppPlatform) {
         customSystemPrompt: settings.customSystemPrompt,
         showAdvanced: settings.showAdvanced,
         trayIntroSeen: settings.trayIntroSeen,
+        uiDensity: settings.uiDensity,
       };
 
       await platform.invoke("save_settings", { input });
@@ -677,6 +687,10 @@ export function useReplylineController(platform: AppPlatform) {
     setSettings("useStreamingStt", value);
   }
 
+  function setUiDensity(value: UiDensity) {
+    setSettings("uiDensity", value);
+  }
+
   function setShowAdvanced(value: boolean) {
     setSettings("showAdvanced", value);
   }
@@ -767,6 +781,38 @@ export function useReplylineController(platform: AppPlatform) {
         return;
       }
       cleanups.push(unlistenCopyReadiness);
+
+      const onKeyDown = (event: KeyboardEvent) => {
+        const target = event.target as HTMLElement | null;
+        const tagName = target?.tagName?.toLowerCase();
+        const editing = tagName === "input" || tagName === "textarea" || tagName === "select";
+        const mod = isMacLike() ? event.metaKey : event.ctrlKey;
+
+        if (event.key === "Escape" && (copyNotice() || error())) {
+          event.preventDefault();
+          setCopyNotice(null);
+          setError(null);
+          return;
+        }
+        if (mod && event.key === ",") {
+          event.preventDefault();
+          openSettingsPanel();
+          return;
+        }
+        if (event.key.toLowerCase() === "r" && !editing && !pipelineActive()) {
+          event.preventDefault();
+          void retryAnalysis();
+          return;
+        }
+        if (mod && event.key.toLowerCase() === "c" && !editing) {
+          const sayNow = card()?.sayNow?.trim();
+          if (!sayNow) return;
+          event.preventDefault();
+          void copySection("sayNow");
+        }
+      };
+      window.addEventListener("keydown", onKeyDown);
+      cleanups.push(() => window.removeEventListener("keydown", onKeyDown));
     })();
   });
 
@@ -774,6 +820,37 @@ export function useReplylineController(platform: AppPlatform) {
     activeSpaceId();
     void refreshMemorySavedCardPreview();
   });
+
+  createEffect(
+    on(phase, (next) => {
+      if (["capturing", "transcribing", "analyzing"].includes(next)) {
+        if (pipelineStartedAt() == null) {
+          setPipelineStartedAt(Date.now());
+        }
+        return;
+      }
+      setPipelineStartedAt(null);
+      setElapsedSeconds(0);
+    }),
+  );
+
+  createEffect(() => {
+    const startedAt = pipelineStartedAt();
+    if (startedAt == null) return;
+    setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+    const timer = window.setInterval(() => {
+      setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+    }, 1000);
+    onCleanup(() => window.clearInterval(timer));
+  });
+
+  createEffect(
+    on(copyNotice, (message) => {
+      if (!message || noticeKind() === "error") return;
+      const timer = window.setTimeout(() => setCopyNotice(null), 4200);
+      onCleanup(() => window.clearTimeout(timer));
+    }),
+  );
 
   createEffect(() => {
     if (phase() === "booting") {
@@ -857,6 +934,7 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmModel,
     setCustomSystemPrompt,
     setUseStreamingStt,
+    setUiDensity,
     setShowAdvanced,
     setPanel,
     memorySpaces,
@@ -873,6 +951,10 @@ export function useReplylineController(platform: AppPlatform) {
     clearSettingsScrollAnchor,
     runDevFixtureAnalysis,
     collectTicketSupportPackage,
+    elapsedSeconds,
+    noticeKind,
+    setCopyNotice,
+    setError,
   };
 }
 
