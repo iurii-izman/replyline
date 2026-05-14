@@ -4,7 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
 import type { AppPlatform, ListenerPayload, ShortcutEvent, Unlisten } from "./platform";
 
-function createMockPlatform(): AppPlatform {
+type MockPlatform = {
+  platform: AppPlatform;
+  invoke: ReturnType<typeof vi.fn>;
+  emitShortcut: (event: ShortcutEvent) => Promise<void>;
+};
+
+function createMockPlatform(): MockPlatform {
   const listeners = new Map<string, ((event: ListenerPayload<unknown>) => void)[]>();
   const shortcuts: ((event: ShortcutEvent) => void | Promise<void>)[] = [];
 
@@ -37,7 +43,7 @@ function createMockPlatform(): AppPlatform {
     return null;
   });
 
-  return {
+  const platform: AppPlatform = {
     invoke,
     listen: vi.fn(async (event, handler) => {
       const arr = listeners.get(event) ?? [];
@@ -63,20 +69,75 @@ function createMockPlatform(): AppPlatform {
       onCloseRequested: vi.fn(async () => (() => undefined) as Unlisten),
     },
   };
+
+  return {
+    platform,
+    invoke,
+    emitShortcut: async (event: ShortcutEvent) => {
+      for (const handler of shortcuts) {
+        await handler(event);
+      }
+    },
+  };
 }
 
-describe("App slim flow", () => {
-  let platform: AppPlatform;
+describe("App UX stabilization", () => {
+  let mock: MockPlatform;
 
   beforeEach(() => {
-    platform = createMockPlatform();
+    mock = createMockPlatform();
   });
 
-  it("renders settings and saves", async () => {
-    render(() => <App platform={platform} />);
+  it("shows card shell and action row in idle", async () => {
+    render(() => <App platform={mock.platform} />);
+
+    expect(await screen.findByTestId("main-card-shell")).toBeTruthy();
+    expect(screen.getByTestId("action-row")).toBeTruthy();
+    expect(screen.getByText("Суть")).toBeTruthy();
+    expect(screen.getByText("Скажи сейчас")).toBeTruthy();
+    expect(screen.getByText("Дальше")).toBeTruthy();
+  });
+
+  it("keeps actions disabled in idle without card", async () => {
+    render(() => <App platform={mock.platform} />);
+
+    const copy = await screen.findByRole("button", { name: "Скопировать ответ" });
+    const retry = screen.getByRole("button", { name: "Пересобрать" });
+
+    expect(copy).toHaveProperty("disabled", true);
+    expect(retry).toHaveProperty("disabled", true);
+    expect(copy.getAttribute("title")).toBe("Сначала получите карточку.");
+  });
+
+  it("enables actions and handles keyboard shortcuts when card is ready", async () => {
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    const copy = await screen.findByRole("button", { name: "Скопировать ответ" });
+    const retry = screen.getByRole("button", { name: "Пересобрать" });
+    await waitFor(() => {
+      expect(copy).toHaveProperty("disabled", false);
+      expect(retry).toHaveProperty("disabled", false);
+    });
+
+    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    await waitFor(() => expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("say"));
+
+    fireEvent.keyDown(window, { key: "r" });
+    await waitFor(() => expect(mock.invoke.mock.calls.some((c) => c[0] === "retry_last_analysis")).toBe(true));
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByText("Ответ скопирован.")).toBeNull());
+  });
+
+  it("renders localized settings CTA labels", async () => {
+    render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Settings"));
-    await waitFor(() => expect(screen.getByText("Settings")).toBeTruthy());
-    fireEvent.click(screen.getByText("Save"));
-    await waitFor(() => expect((platform.invoke as ReturnType<typeof vi.fn>).mock.calls.some((c) => c[0] === "save_settings")).toBe(true));
+    await waitFor(() => expect(screen.getByText("Настройки")).toBeTruthy());
+    expect(screen.getByRole("button", { name: "Сохранить" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
   });
 });

@@ -16,6 +16,7 @@ import {
   type BootstrapDto,
   type CommandErrorKind,
   type ContextStatusDto,
+  type MainUiState,
   type Panel,
   type Phase,
   type StatusEvent,
@@ -35,7 +36,7 @@ export function useReplylineController(platform: AppPlatform) {
   const [contextActive, setContextActive] = createSignal(false);
   const [contextEntryCount, setContextEntryCount] = createSignal(0);
   const [saving, setSaving] = createSignal(false);
-  const [copyNotice, setCopyNotice] = createSignal<string | null>(null);
+  const [notice, setNotice] = createSignal<{ tone: "info" | "error"; message: string } | null>(null);
   const [hotkeyFailed, setHotkeyFailed] = createSignal(false);
   const [settingsFormHint, setSettingsFormHint] = createSignal<string | null>(null);
   const [lastCommandErrorKind, setLastCommandErrorKind] = createSignal<CommandErrorKind | null>(null);
@@ -47,6 +48,48 @@ export function useReplylineController(platform: AppPlatform) {
   const setupRequired = createMemo(() => !deepgramSaved() || !isConfiguredLlmRoute(settings.llmBaseUrl, settings.llmModel));
   const phaseLabel = createMemo(() => phaseLabelFor(phase(), setupRequired(), hotkeyFailed(), strings()));
   const pipelineActive = createMemo(() => ["capturing", "transcribing", "analyzing"].includes(phase()));
+  const mainUiState = createMemo<MainUiState>(() => {
+    if (phase() === "capturing") return "capturing";
+    if (phase() === "transcribing") return "transcribing";
+    if (phase() === "analyzing") return "analyzing";
+    if (phase() === "ready" && card()) return "ready";
+    if (error()) return "error";
+    return "idle";
+  });
+  const canCopySayNow = createMemo(() => mainUiState() === "ready" && Boolean(card()?.sayNow?.trim()));
+  const canRetry = createMemo(() => !pipelineActive() && Boolean(card()));
+  const canClear = createMemo(() => !pipelineActive() && (contextActive() || Boolean(card())));
+  const copyDisabledReason = createMemo(() => (canCopySayNow() ? null : strings().card.copyDisabledNoCard));
+  const retryDisabledReason = createMemo(() => {
+    if (canRetry()) return null;
+    return pipelineActive() ? strings().card.retryDisabledBusy : strings().card.retryDisabledNoCard;
+  });
+  const clearDisabledReason = createMemo(() => {
+    if (canClear()) return null;
+    return pipelineActive() ? strings().card.clearDisabledBusy : strings().card.clearDisabledNoCard;
+  });
+
+  let noticeTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function clearNoticeTimer() {
+    if (!noticeTimer) return;
+    clearTimeout(noticeTimer);
+    noticeTimer = null;
+  }
+
+  function pushNotice(next: { tone: "info" | "error"; message: string }, durationMs = 2800) {
+    clearNoticeTimer();
+    setNotice(next);
+    noticeTimer = setTimeout(() => {
+      setNotice(null);
+      noticeTimer = null;
+    }, durationMs);
+  }
+
+  function dismissNotice() {
+    clearNoticeTimer();
+    setNotice(null);
+  }
 
   function setCommandErrorKind(err: unknown | null) {
     if (err == null) return setLastCommandErrorKind(null);
@@ -73,7 +116,7 @@ export function useReplylineController(platform: AppPlatform) {
       if (event.state === "Pressed") {
         if (pipelineActive()) return;
         setError(null);
-        setCopyNotice(null);
+        dismissNotice();
         if (setupRequired()) {
           setPanel("settings");
           setPhase("idle");
@@ -88,6 +131,7 @@ export function useReplylineController(platform: AppPlatform) {
         } catch (err) {
           armed = false;
           setError(userSafeCaptureStartError());
+          pushNotice({ tone: "error", message: userSafeCaptureStartError() });
           setCommandErrorKind(err);
           setPhase("idle");
         }
@@ -106,6 +150,7 @@ export function useReplylineController(platform: AppPlatform) {
         } catch (err) {
           setCommandErrorKind(err);
           setError(userSafePipelineError(err));
+          pushNotice({ tone: "error", message: userSafePipelineError(err) });
           setPhase("idle");
         }
       }
@@ -150,7 +195,10 @@ export function useReplylineController(platform: AppPlatform) {
       }
       await registerCurrentHotkey(input.hotkey);
       setHotkeyFailed(false);
-      setCopyNotice(setupRequired() ? strings().notices.settingsSavedPartial : strings().notices.settingsSaved);
+      pushNotice({
+        tone: "info",
+        message: setupRequired() ? strings().notices.settingsSavedPartial : strings().notices.settingsSaved,
+      });
       if (!setupRequired()) setPanel("main");
     } catch (err) {
       setCommandErrorKind(err);
@@ -163,17 +211,23 @@ export function useReplylineController(platform: AppPlatform) {
 
   async function clearContext() {
     try {
+      setError(null);
       const status = await platform.invoke<ContextStatusDto>("clear_context");
       applyContextStatus(status);
-      setCopyNotice(strings().notices.contextCleared);
+      setCard(null);
+      setPhase("idle");
+      pushNotice({ tone: "info", message: strings().notices.contextCleared });
     } catch (err) {
       setError(userSafeClearContextError());
+      pushNotice({ tone: "error", message: userSafeClearContextError() });
       setCommandErrorKind(err);
     }
   }
 
   async function retryAnalysis() {
+    setError(null);
     setPhase("analyzing");
+    pushNotice({ tone: "info", message: strings().notices.retrying });
     setStatusDetail(strings().notices.retrying);
     try {
       const result = await platform.invoke<AnalysisCard>("retry_last_analysis");
@@ -182,18 +236,21 @@ export function useReplylineController(platform: AppPlatform) {
       applyContextStatus(status);
       setPhase("ready");
       setStatusDetail(null);
+      pushNotice({ tone: "info", message: strings().notices.retryDone });
     } catch (err) {
       setError(userSafePipelineError(err));
+      pushNotice({ tone: "error", message: userSafePipelineError(err) });
       setCommandErrorKind(err);
       setPhase("idle");
     }
   }
 
   async function copySection(section: "sayNow") {
+    setError(null);
     const value = card()?.[section]?.trim();
-    if (!value) return;
+    if (!value || !canCopySayNow()) return;
     await platform.clipboard.writeText(value);
-    setCopyNotice(strings().notices.sayNowCopied);
+    pushNotice({ tone: "info", message: strings().notices.sayNowCopied });
   }
 
   function captureHotkeyInput(event: KeyboardEvent) {
@@ -206,6 +263,7 @@ export function useReplylineController(platform: AppPlatform) {
     const cleanups: Array<() => void> = [];
     onCleanup(() => {
       for (const c of cleanups) c();
+      clearNoticeTimer();
       void platform.shortcuts.unregisterAll();
     });
     void reloadBootstrap();
@@ -226,10 +284,41 @@ export function useReplylineController(platform: AppPlatform) {
         await platform.listen("replyline://context-cleared", () => {
           setContextActive(false);
           setContextEntryCount(0);
-          setCopyNotice(strings().notices.contextCleared);
+          setCard(null);
+          setPhase("idle");
+          pushNotice({ tone: "info", message: strings().notices.contextCleared });
         }),
       );
     })();
+  });
+
+  onMount(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target;
+      const editable =
+        target instanceof Element
+          ? Boolean(target.closest("input, textarea, select, [contenteditable='true'], [contenteditable='']"))
+          : false;
+      if (event.key === "Escape") {
+        dismissNotice();
+        setError(null);
+        return;
+      }
+      if (panel() !== "main" || editable) return;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+        if (!canCopySayNow()) return;
+        event.preventDefault();
+        void copySection("sayNow");
+        return;
+      }
+      if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "r") {
+        if (!canRetry()) return;
+        event.preventDefault();
+        void retryAnalysis();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    onCleanup(() => window.removeEventListener("keydown", onKeyDown));
   });
 
   createEffect(() => {
@@ -256,7 +345,7 @@ export function useReplylineController(platform: AppPlatform) {
     contextActive,
     contextEntryCount,
     saving,
-    copyNotice,
+    notice,
     hotkeyFailed,
     settingsFormHint,
     settings,
@@ -264,6 +353,13 @@ export function useReplylineController(platform: AppPlatform) {
     setupRequired,
     phaseLabel,
     pipelineActive,
+    mainUiState,
+    canCopySayNow,
+    canRetry,
+    canClear,
+    copyDisabledReason,
+    retryDisabledReason,
+    clearDisabledReason,
     lastCommandErrorKind,
     reloadBootstrap,
     persistSettings,
@@ -287,7 +383,7 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmBaseUrl: (value: string) => setSettings("llmBaseUrl", value),
     setLlmModel: (value: string) => setSettings("llmModel", value),
     setError,
-    setCopyNotice,
+    dismissNotice,
   };
 }
 

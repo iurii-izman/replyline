@@ -26,17 +26,14 @@ export function ShellChrome(props: { controller: ReplylineController }) {
 export function MessagesAndFooter(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
   return (
-    <div class="notice-center">
-      <Show when={controller().copyNotice()}>
-        <div class="notice-item is-info" role="status">
-          <span class="error-bar-text">{controller().copyNotice()}</span>
+    <Show when={controller().notice()}>
+      {(notice) => (
+        <div class="notice-center" aria-live="polite" aria-atomic="true">
+          <div class={`notice-item ${notice().tone === "error" ? "is-error" : "is-info"}`} role={notice().tone === "error" ? "alert" : "status"}>
+            <span class="error-bar-text">{notice().message}</span>
+          </div>
         </div>
-      </Show>
-      <Show when={controller().error()}>
-        <div class="notice-item is-error" role="alert">
-          <span class="error-bar-text">{controller().error()}</span>
-        </div>
-      </Show>
-    </div>
+      )}
+    </Show>
   );
 }

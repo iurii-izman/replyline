@@ -111,6 +111,8 @@ export type StatusEvent = {
   detail?: string | null;
 };
 
+export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
+
 export const DEFAULT_SETTINGS: AppSettings = {
   schemaVersion: 2,
   hotkey: "Ctrl+Alt+Space",

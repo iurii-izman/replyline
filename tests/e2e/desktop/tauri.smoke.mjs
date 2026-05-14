@@ -1,28 +1,18 @@
-/* global console */
-import process from 'node:process';
-import { remote } from 'webdriverio';
+/* global describe, it, browser */
 
-const port = Number(process.env.TAURI_DRIVER_PORT ?? '4444');
-const appPath = process.env.TAURI_APP_PATH;
+describe('tauri desktop smoke', () => {
+  it('creates a desktop webdriver session', async () => {
+    const handle = await browser.getWindowHandle();
+    if (!handle || handle.length === 0) {
+      throw new Error('Expected a valid window handle');
+    }
+  });
 
-if (!appPath) {
-  console.error('TAURI_APP_PATH is required for desktop smoke test');
-  process.exit(2);
-}
-
-const browser = await remote({
-  hostname: '127.0.0.1',
-  port,
-  path: '/',
-  capabilities: {
-    browserName: 'wry',
-    'tauri:options': { application: appPath }
-  }
+  it('accepts keyboard input without crashing', async () => {
+    await browser.keys(['r']);
+    const stillAlive = await browser.getWindowHandle();
+    if (!stillAlive) {
+      throw new Error('Session became unavailable after keyboard input');
+    }
+  });
 });
-
-try {
-  const title = await browser.getTitle();
-  console.log(`Desktop title: ${title}`);
-} finally {
-  await browser.deleteSession();
-}

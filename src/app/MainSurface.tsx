@@ -9,42 +9,69 @@ export function MainSurface(props: { controller: ReplylineController }) {
     <Show when={controller().panel() === "main"}>
       <section class="main-card">
         <div class="status-pill">{controller().phaseLabel()}</div>
-
+        <Show when={controller().mainUiState() === "idle" && !controller().setupRequired()}>
+          <p class="empty-flow-hint">{st().card.emptyFlow}</p>
+        </Show>
         <Show when={controller().setupRequired()}>
-          <div class="empty-card">
-            <h2 class="section-title">{st().setup.title}</h2>
-            <p class="section-copy">{st().setup.body}</p>
-            <button class="btn-primary" type="button" onClick={() => controller().openSettingsPanel()}>
+          <p class="empty-flow-hint">
+            {st().setup.body}{" "}
+            <button class="inline-link-btn" type="button" onClick={() => controller().openSettingsPanel()}>
               {st().setup.openSetup}
             </button>
-          </div>
+          </p>
         </Show>
 
-        <Show when={controller().card()}>
-          {(resolvedCard) => (
-            <article class="result-card">
-              <section class="result-section">
-                <div class="result-label">{st().card.gistLabel}</div>
-                <p class="result-text">{resolvedCard().gist}</p>
-              </section>
+        <article class="result-card" data-testid="main-card-shell">
+          <section class="result-section" data-testid="section-gist">
+            <div class="result-label">{st().card.gistLabel}</div>
+            <p class={`result-text ${controller().card()?.gist?.trim() ? "" : "result-text--placeholder"}`}>
+              {controller().card()?.gist?.trim() || st().card.emptyGist}
+            </p>
+          </section>
 
-              <section class="result-section result-section--primary">
-                <div class="result-label">{st().card.sayNowLabel}</div>
-                <p class="result-text result-text--speak">{resolvedCard().sayNow}</p>
-              </section>
+          <section class="result-section result-section--primary" data-testid="section-say-now">
+            <div class="result-label">{st().card.sayNowLabel}</div>
+            <p class={`result-text result-text--speak ${controller().card()?.sayNow?.trim() ? "" : "result-text--placeholder"}`}>
+              {controller().card()?.sayNow?.trim() || st().card.emptySayNow}
+            </p>
+          </section>
 
-              <section class="result-section">
-                <div class="result-label">{st().card.nextMoveLabel}</div>
-                <p class="result-text">{resolvedCard().nextMove}</p>
-              </section>
-            </article>
-          )}
-        </Show>
+          <section class="result-section" data-testid="section-next-move">
+            <div class="result-label">{st().card.nextMoveLabel}</div>
+            <p class={`result-text ${controller().card()?.nextMove?.trim() ? "" : "result-text--placeholder"}`}>
+              {controller().card()?.nextMove?.trim() || st().card.emptyNextMove}
+            </p>
+          </section>
+        </article>
 
-        <div class="result-actions">
-          <button class="btn-primary" type="button" onClick={() => void controller().copySection("sayNow")}>{st().card.copySayNow}</button>
-          <button class="btn-secondary" type="button" onClick={() => void controller().retryAnalysis()}>{st().card.retryCard}</button>
-          <button class="btn-ghost" type="button" onClick={() => void controller().clearContext()}>{st().card.clearContext}</button>
+        <div class="result-actions" data-testid="action-row">
+          <button
+            class="btn-primary"
+            type="button"
+            disabled={!controller().canCopySayNow()}
+            title={controller().copyDisabledReason() ?? ""}
+            onClick={() => void controller().copySection("sayNow")}
+          >
+            {st().card.copySayNow}
+          </button>
+          <button
+            class="btn-secondary"
+            type="button"
+            disabled={!controller().canRetry()}
+            title={controller().retryDisabledReason() ?? ""}
+            onClick={() => void controller().retryAnalysis()}
+          >
+            {st().card.retryCard}
+          </button>
+          <button
+            class="btn-ghost"
+            type="button"
+            disabled={!controller().canClear()}
+            title={controller().clearDisabledReason() ?? ""}
+            onClick={() => void controller().clearContext()}
+          >
+            {st().card.clearContext}
+          </button>
         </div>
       </section>
     </Show>

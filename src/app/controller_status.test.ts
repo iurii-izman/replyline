@@ -16,7 +16,7 @@ describe("controller_status", () => {
   });
 
   it("returns translated phase labels", () => {
-    expect(phaseLabelFor("capturing", false, false, ui_ru)).toBe("capture");
+    expect(phaseLabelFor("capturing", false, false, ui_ru)).toBe("Запись");
     expect(phaseLabelFor("idle", false, false, ui_ru)).toBe("Готово");
   });
 });
