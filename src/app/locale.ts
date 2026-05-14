@@ -111,6 +111,10 @@ export const ui_ru = {
     settingsSaved: "Сохранено. Можно проверять удержанием клавиши.",
     settingsSavedPartial: "Сохранено. Осталось завершить подготовку.",
     sayNowCopied: "Строка «Скажи сейчас» в буфере.",
+    cardSectionCopied: "Раздел карточки скопирован в буфер.",
+    cardSectionCopiedGist: "Раздел «Суть» скопирован в буфер.",
+    cardSectionCopiedSayNow: "Раздел «Скажи сейчас» скопирован в буфер.",
+    cardSectionCopiedNextMove: "Раздел «Дальше» скопирован в буфер.",
     notebookLmOpened: "NotebookLM открыт в системном браузере.",
     retrying: "Пересбор…",
     hotkeyAlreadyRegistered: "Сочетание уже зарегистрировано здесь. Выберите другое.",
@@ -242,6 +246,10 @@ export const ui_ru = {
     savedBadge: "сохранён",
     healthCheck: "Проверить провайдеров",
     healthCheckBusy: "Проверяю…",
+    hotkeyInlineRequired: "Укажите сочетание клавиш (например, Ctrl+Alt+Space).",
+    llmUrlInlineInvalid: "Укажите полный URL шлюза с http:// или https://.",
+    llmModelInlineRequired: "Укажите модель ответа.",
+    captureMaxInlineInvalid: "Укажите лимит фрагмента от 5 до 180 секунд.",
   },
 
   language: {
@@ -251,6 +259,7 @@ export const ui_ru = {
 
   advanced: {
     sectionTitle: "Дополнительно",
+    showAdvancedLabel: "Расширенные настройки",
     customPromptLabel: "Свой системный промпт (вместо встроенного)",
     customPromptHint: "Оставьте пустым для использования стандартного промпта.",
     streamingSttLabel: "Стриминг STT (WebSocket, экспериментально)",
@@ -398,6 +407,10 @@ export const ui_en: UiStrings = {
     settingsSaved: "Saved. You can now verify by holding the hotkey.",
     settingsSavedPartial: "Saved. Finish setup to complete configuration.",
     sayNowCopied: "'Say now' line copied to clipboard.",
+    cardSectionCopied: "Card section copied to clipboard.",
+    cardSectionCopiedGist: "'Gist' section copied to clipboard.",
+    cardSectionCopiedSayNow: "'Say now' section copied to clipboard.",
+    cardSectionCopiedNextMove: "'Next move' section copied to clipboard.",
     notebookLmOpened: "NotebookLM opened in the system browser.",
     retrying: "Rebuilding…",
     hotkeyAlreadyRegistered: "This shortcut is already registered here. Choose another one.",
@@ -530,6 +543,10 @@ export const ui_en: UiStrings = {
     savedBadge: "saved",
     healthCheck: "Check providers",
     healthCheckBusy: "Checking…",
+    hotkeyInlineRequired: "Set a shortcut (for example, Ctrl+Alt+Space).",
+    llmUrlInlineInvalid: "Enter a full gateway URL with http:// or https://.",
+    llmModelInlineRequired: "Enter a response model.",
+    captureMaxInlineInvalid: "Set fragment limit between 5 and 180 seconds.",
   },
 
   language: {
@@ -539,6 +556,7 @@ export const ui_en: UiStrings = {
 
   advanced: {
     sectionTitle: "Advanced",
+    showAdvancedLabel: "Show advanced settings",
     customPromptLabel: "Custom system prompt (replaces built-in)",
     customPromptHint: "Leave empty to use the default prompt.",
     streamingSttLabel: "Streaming STT (WebSocket, experimental)",

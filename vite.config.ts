@@ -1,9 +1,7 @@
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
-// @ts-expect-error process is a nodejs global
 const isVitest = process.env.VITEST === "true";
 
 // https://vite.dev/config/
@@ -12,6 +10,8 @@ export default defineConfig(async () => ({
   test: {
     environment: "jsdom",
     globals: true,
+    include: ["src/**/*.test.{ts,tsx}"],
+    exclude: ["tests/e2e/**", "**/node_modules/**", "**/dist/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],

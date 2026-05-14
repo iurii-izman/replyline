@@ -7,6 +7,10 @@ reports
 
 # Build / test artefacts
 coverage/
+artifacts/
+test-results/
+playwright-report/
+msedgedriver.exe
 
 # Personal / AI-assistant config (not project code)
 AI/

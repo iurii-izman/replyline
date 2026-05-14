@@ -3,7 +3,7 @@
   --color-text: #142321;
   --color-text-accent: #17322f;
   --color-text-muted: rgba(20, 35, 33, 0.72);
-  --color-text-subtle: rgba(20, 35, 33, 0.55);
+  --color-text-subtle: rgba(20, 35, 33, 0.62);
   --color-success: #0f5d4f;
   --color-warning: #5c4207;
   --color-error: #8d2020;
@@ -313,7 +313,7 @@ input {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(20, 35, 33, 0.55);
+  color: rgba(20, 35, 33, 0.7);
   margin-bottom: 10px;
 }
 
@@ -440,7 +440,7 @@ input {
 
 .runtime-snapshot-row dt {
   margin: 0;
-  color: rgba(20, 35, 33, 0.55);
+  color: rgba(20, 35, 33, 0.72);
   font-weight: 600;
 }
 
@@ -676,7 +676,7 @@ input {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(20, 35, 33, 0.6);
+  color: rgba(20, 35, 33, 0.75);
 }
 
 .copy-section-btn {
@@ -685,7 +685,7 @@ input {
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: rgba(20, 35, 33, 0.4);
+  color: rgba(20, 35, 33, 0.62);
   cursor: pointer;
   font-size: 0.82rem;
   display: inline-flex;
@@ -764,7 +764,13 @@ input {
 
 .field-hint {
   font-size: 0.72rem;
-  color: rgba(20, 35, 33, 0.62);
+  color: rgba(20, 35, 33, 0.72);
+}
+
+.field-error {
+  font-size: 0.72rem;
+  color: #8d2020;
+  line-height: 1.35;
 }
 
 .field-input {
@@ -843,6 +849,12 @@ input {
   outline: 2px solid var(--color-btn-primary-bg);
   outline-offset: 1px;
   border-color: transparent;
+}
+
+.copy-section-btn:focus-visible {
+  outline: 2px solid var(--color-btn-primary-bg);
+  outline-offset: 2px;
+  background: rgba(20, 35, 33, 0.1);
 }
 
 .field-checkbox input:focus-visible {
@@ -933,7 +945,7 @@ select:focus-visible {
 }
 
 .settings-memory-empty {
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(20, 35, 33, 0.72);
   font-size: 0.82rem;
   font-style: italic;
 }
@@ -946,15 +958,15 @@ select:focus-visible {
   margin-top: 12px;
   padding: 10px 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(20, 35, 33, 0.12);
 }
 
 .memory-saved-card-text {
   margin: 6px 0 10px;
   font-size: 0.88rem;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(20, 35, 33, 0.82);
   word-break: break-word;
 }
 
@@ -962,8 +974,8 @@ select:focus-visible {
   margin-top: 14px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(20, 35, 33, 0.12);
   font-size: 0.82rem;
 }
 
@@ -973,20 +985,20 @@ select:focus-visible {
 
 .last-transcript-block summary {
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(20, 35, 33, 0.8);
   font-weight: 500;
 }
 
 .last-transcript-hint {
   margin: 6px 0 4px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(20, 35, 33, 0.66);
   font-size: 0.78rem;
   line-height: 1.35;
 }
 
 .last-transcript-text {
   margin: 0;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(20, 35, 33, 0.82);
   line-height: 1.45;
   white-space: pre-wrap;
   word-break: break-word;
@@ -995,7 +1007,7 @@ select:focus-visible {
 .dev-fixture-panel {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(20, 35, 33, 0.12);
 }
 
 .dev-fixture-row {

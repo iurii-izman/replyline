@@ -1,0 +1,10 @@
+$kind: http-request
+name: 'collect_diagnostic_bundle'
+method: POST
+url: '{{commandBaseUrl}}/tauri/collect_diagnostic_bundle'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

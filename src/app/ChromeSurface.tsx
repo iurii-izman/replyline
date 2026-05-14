@@ -25,6 +25,7 @@ export function ShellChrome(props: { controller: ReplylineController }) {
             class="icon-btn"
             type="button"
             title={st().tray.settings}
+            aria-label={st().tray.settings}
             onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
@@ -37,6 +38,7 @@ export function ShellChrome(props: { controller: ReplylineController }) {
             class="icon-btn"
             type="button"
             title={st().chrome.hideToTray}
+            aria-label={st().chrome.hideToTray}
             onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
@@ -49,6 +51,7 @@ export function ShellChrome(props: { controller: ReplylineController }) {
             class="icon-btn"
             type="button"
             title={st().chrome.closeApp}
+            aria-label={st().chrome.closeApp}
             onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();

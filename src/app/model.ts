@@ -22,6 +22,7 @@ export type AppSettings = {
   llmTemperature: number;
   useStreamingStt: boolean;
   customSystemPrompt: string | null;
+  showAdvanced: boolean;
   trayIntroSeen: boolean;
 };
 
@@ -223,7 +224,7 @@ export type StatusEvent = {
 export const DEFAULT_SETTINGS: AppSettings = {
   schemaVersion: 2,
   hotkey: "Ctrl+Alt+Space",
-  llmBaseUrl: "http://127.0.0.1:4000/v1",
+  llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
   notebookLmEnabled: false,
   notebookLmLaunchUrl: "https://notebooklm.google.com/",
@@ -233,12 +234,14 @@ export const DEFAULT_SETTINGS: AppSettings = {
   llmTemperature: 0.25,
   useStreamingStt: false,
   customSystemPrompt: null,
+  showAdvanced: false,
   trayIntroSeen: false,
 };
 
 export function usesPlaceholderLlmRoute(baseUrl: string, model: string): boolean {
   return (
-    baseUrl.trim() === DEFAULT_SETTINGS.llmBaseUrl && model.trim() === DEFAULT_SETTINGS.llmModel
+    baseUrl.trim() === "http://127.0.0.1:4000/v1" ||
+    (baseUrl.trim() === "" && model.trim() === "gpt-4o-mini")
   );
 }
 
@@ -306,6 +309,9 @@ export function userSafePipelineError(err: unknown): string {
   if (/Deepgram|API key|missing|Нет ключа Deepgram|распознаван/i.test(s)) {
     return "Нет текста из звука: ключ Deepgram и сеть → Настройки.";
   }
+  if (/stt_streaming_failed_then_batch_failed|stt_streaming_failed|Deepgram WS|websocket/i.test(s)) {
+    return "Стриминг STT не удался; приложение пробовало fallback на batch, но текста всё ещё нет. Проверьте ключ Deepgram, сеть и переключатель Streaming STT.";
+  }
   if (/Card output invalid|слишком расплывчат|too generic/i.test(s)) {
     return "Карточка вышла слишком расплывчатой. Повторите захват или уточните фрагмент.";
   }
@@ -323,7 +329,7 @@ export function userSafeBootstrapLoadError(err: unknown): string {
   if (/config|credential|IO:|JSON|NotFound|denied/i.test(s)) {
     return "Не прочитались настройки или ключи Windows. Проверьте профиль и повторите загрузку.";
   }
-  return "Не удалось загрузить приложение. Нажмите «Повторить» или откройте настройки.";
+  return "Не удалось загрузить приложение. Нажмите «Повторить», затем проверьте настройки ключей и адрес шлюза.";
 }
 
 export function userSafeClearContextError(err: unknown): string {
@@ -386,10 +392,10 @@ export function mapSettingsSaveError(err: unknown): string | null {
     return "Лимит фрагмента: 5–180 секунд.";
   }
   if (s.includes("INVALID_LANGUAGE")) {
-    return "Файл настроек повреждён (язык). Напишите разработчикам.";
+    return "Параметр языка в настройках некорректен. Выберите RU/EN и сохраните снова.";
   }
   if (s.includes("INVALID_SCHEMA")) {
-    return "Версия settings.json не подходит. См. docs или удалите файл для сброса.";
+    return "Формат settings.json устарел. Обновите приложение или сбросьте настройки и сохраните заново.";
   }
   if (s.includes("IO:")) {
     return "Не записался файл настроек. Проверьте профиль Windows.";

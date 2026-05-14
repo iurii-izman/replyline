@@ -1,0 +1,10 @@
+$kind: http-request
+name: 'load_bootstrap'
+method: POST
+url: '{{commandBaseUrl}}/tauri/load_bootstrap'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

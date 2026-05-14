@@ -1,0 +1,10 @@
+$kind: http-request
+name: 'quit_app'
+method: POST
+url: '{{commandBaseUrl}}/tauri/quit_app'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

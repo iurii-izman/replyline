@@ -147,15 +147,28 @@ pnpm smoke
 
 Эта команда запускает:
 
+- TypeScript typecheck (`pnpm typecheck`)
+- ESLint (`pnpm lint`)
 - Vite production build
 - `cargo check`
+- `cargo clippy` (warnings as errors)
+- `cargo fmt --check`
 - `cargo test`
-- `vitest` mock/UI lane (`pnpm test:ui`)
+- `vitest` coverage lane (`pnpm test:ui:coverage`)
 - fixture validation
 - prompt-contract checks
 - сценарные проверки `say_now` (локальный quality gate)
 - deterministic consistency gate for canonical hotkey + scope wording
+- IPC contract gate
 - copy / claim guard
+
+Полный локальный quality + security вход:
+
+```bash
+pnpm verify
+```
+
+`pnpm verify` = `pnpm smoke` + `pnpm rust:deps` + `pnpm audit:npm`.
 
 ## Runtime commands
 

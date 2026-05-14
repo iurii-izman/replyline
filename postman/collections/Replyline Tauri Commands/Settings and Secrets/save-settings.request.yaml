@@ -1,0 +1,18 @@
+$kind: http-request
+name: 'save_settings'
+method: POST
+url: '{{commandBaseUrl}}/tauri/save_settings'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "input": {
+        "launchAtLogin": false,
+        "trayNotifications": true,
+        "autoCopyEnabled": false
+      }
+    }

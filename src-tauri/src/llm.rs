@@ -2,6 +2,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::{AnalysisCardDto, AppSettings};
 
+const HTTP_TIMEOUT_SECS: u64 = 20;
+const MAX_RETRIES: u32 = 2;
+
 #[derive(Debug, Serialize)]
 struct ChatRequest<'a> {
     model: &'a str,
@@ -103,12 +106,13 @@ pub async fn analyze_transcript(
     transcript: &str,
     context: &str,
 ) -> Result<AnalysisCardDto, String> {
-    let prompt = build_user_prompt(transcript, context);
+    let language = settings.primary_language.trim().to_lowercase();
+    let prompt = build_user_prompt(transcript, context, &language);
     let system_prompt = settings
         .custom_system_prompt
         .as_deref()
         .filter(|s| !s.trim().is_empty())
-        .unwrap_or_else(|| system_prompt_for_language(settings.primary_language.trim()));
+        .unwrap_or_else(|| system_prompt_for_language(&language));
     let request = ChatRequest {
         model: settings.llm_model.trim(),
         messages: vec![
@@ -126,7 +130,7 @@ pub async fn analyze_transcript(
     };
 
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(20))
+        .timeout(std::time::Duration::from_secs(HTTP_TIMEOUT_SECS))
         .build()
         .map_err(|err| format!("LLM client: {err}"))?;
 
@@ -136,10 +140,9 @@ pub async fn analyze_transcript(
     );
 
     let response = {
-        let max_retries = 2u32;
         let mut last_err = String::new();
         let mut resolved = None;
-        for attempt in 0..=max_retries {
+        for attempt in 0..=MAX_RETRIES {
             if attempt > 0 {
                 tokio::time::sleep(std::time::Duration::from_millis(
                     500 * 2u64.pow(attempt - 1),
@@ -151,7 +154,7 @@ pub async fn analyze_transcript(
                 req = req.bearer_auth(token);
             }
             match req.send().await {
-                Ok(resp) if resp.status().is_server_error() && attempt < max_retries => {
+                Ok(resp) if resp.status().is_server_error() && attempt < MAX_RETRIES => {
                     last_err = format!("LLM server error {}", resp.status());
                     continue;
                 }
@@ -159,7 +162,7 @@ pub async fn analyze_transcript(
                     resolved = Some(resp);
                     break;
                 }
-                Err(err) if (err.is_timeout() || err.is_connect()) && attempt < max_retries => {
+                Err(err) if (err.is_timeout() || err.is_connect()) && attempt < MAX_RETRIES => {
                     last_err = format!("LLM request failed: {err}");
                     continue;
                 }
@@ -201,16 +204,22 @@ pub async fn analyze_transcript(
     normalize_card(card)
 }
 
-fn build_user_prompt(transcript: &str, context: &str) -> String {
-    let clean_context = if context.trim().is_empty() {
-        "(empty)".to_string()
+fn build_user_prompt(transcript: &str, context: &str, language: &str) -> String {
+    let (clean_context, prompt_template) = if language == "en" {
+        (
+            if context.trim().is_empty() { "(empty)" } else { context },
+            "Context of recent short conversation fragments:\n{clean_context}\n\nCurrent fragment:\n{transcript}\n\nHelp the person quickly understand what to say now and where to move the conversation next."
+        )
     } else {
-        context.to_string()
+        (
+            if context.trim().is_empty() { "(пусто)" } else { context },
+            "Контекст последних коротких фрагментов беседы:\n{clean_context}\n\nТекущий фрагмент:\n{transcript}\n\nНужно помочь человеку быстро понять, что сказать сейчас и куда двинуть разговор дальше."
+        )
     };
 
-    format!(
-        "Контекст последних коротких фрагментов беседы:\n{clean_context}\n\nТекущий фрагмент:\n{transcript}\n\nНужно помочь человеку быстро понять, что сказать сейчас и куда двинуть разговор дальше."
-    )
+    prompt_template
+        .replace("{clean_context}", clean_context)
+        .replace("{transcript}", transcript)
 }
 
 fn parse_card_json(raw_text: &str) -> Result<RawCard, String> {

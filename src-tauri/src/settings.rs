@@ -131,7 +131,9 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
         "ru" | "en" => {}
         _ => return Err(SettingsError::InvalidLanguage),
     }
-    validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
+    if !settings.llm_base_url.trim().is_empty() {
+        validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
+    }
     if settings.notebook_lm_enabled || !settings.notebook_lm_launch_url.trim().is_empty() {
         validate_http_url(
             settings.notebook_lm_launch_url.trim(),
@@ -340,5 +342,39 @@ mod tests {
 
         settings.llm_temperature = 1.0;
         assert!(validate(&settings).is_ok());
+    }
+
+    #[test]
+    fn migration_sets_show_advanced_default_false_when_missing() {
+        let v1 = serde_json::json!({
+            "schemaVersion": 1,
+            "hotkey": "Ctrl+Alt+Space",
+            "llmBaseUrl": "https://openrouter.ai/api/v1",
+            "llmModel": "gpt-4o-mini",
+            "primaryLanguage": "ru",
+            "deepgramModel": "nova-3",
+            "captureMaxSeconds": 30
+        });
+        let migrated = super::migrate_settings(v1);
+        let parsed: AppSettings = serde_json::from_value(migrated).expect("parse migrated");
+        assert!(!parsed.show_advanced);
+    }
+
+    #[test]
+    fn migration_preserves_show_advanced_when_present() {
+        let v2 = serde_json::json!({
+            "schemaVersion": 2,
+            "hotkey": "Ctrl+Alt+Space",
+            "llmBaseUrl": "https://openrouter.ai/api/v1",
+            "llmModel": "gpt-4o-mini",
+            "primaryLanguage": "ru",
+            "deepgramModel": "nova-3",
+            "captureMaxSeconds": 30,
+            "llmTemperature": 0.5,
+            "showAdvanced": true
+        });
+        let migrated = super::migrate_settings(v2);
+        let parsed: AppSettings = serde_json::from_value(migrated).expect("parse migrated");
+        assert!(parsed.show_advanced);
     }
 }

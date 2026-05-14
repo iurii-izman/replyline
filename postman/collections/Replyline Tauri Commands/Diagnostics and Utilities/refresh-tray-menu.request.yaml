@@ -1,0 +1,10 @@
+$kind: http-request
+name: 'refresh_tray_menu'
+method: POST
+url: '{{commandBaseUrl}}/tauri/refresh_tray_menu'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

@@ -1,0 +1,10 @@
+$kind: http-request
+name: 'retry_last_analysis'
+method: POST
+url: '{{commandBaseUrl}}/tauri/retry_last_analysis'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

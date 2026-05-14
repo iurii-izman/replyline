@@ -283,10 +283,16 @@ export function useReplylineController(platform: AppPlatform) {
     }
     setHotkeyFailed(false);
     let captureArmed = false;
+    let captureStarting = false;
+    let captureStopping = false;
 
     await platform.shortcuts.register(hotkey, async (event) => {
       if (event.state === "Pressed") {
+        if (captureStarting || captureStopping || phase() === "capturing" || pipelineActive()) {
+          return;
+        }
         try {
+          captureStarting = true;
           setError(null);
           setLastCommandErrorKind(null);
           setCopyNotice(null);
@@ -308,15 +314,18 @@ export function useReplylineController(platform: AppPlatform) {
         } catch (err) {
           captureArmed = false;
           showRecoverableError(userSafeCaptureStartError(err), err);
+        } finally {
+          captureStarting = false;
         }
       }
 
       if (event.state === "Released") {
-        if (!captureArmed) {
+        if (!captureArmed || captureStarting || captureStopping) {
           return;
         }
         captureArmed = false;
         try {
+          captureStopping = true;
           setPanel("main");
           setPhase("transcribing");
           await showWindow(undefined, false);
@@ -333,6 +342,8 @@ export function useReplylineController(platform: AppPlatform) {
           setPhase("ready");
         } catch (err) {
           showRecoverableError(userSafePipelineError(err), err);
+        } finally {
+          captureStopping = false;
         }
       }
     });
@@ -436,6 +447,7 @@ export function useReplylineController(platform: AppPlatform) {
         llmTemperature: settings.llmTemperature,
         useStreamingStt: settings.useStreamingStt,
         customSystemPrompt: settings.customSystemPrompt,
+        showAdvanced: settings.showAdvanced,
         trayIntroSeen: settings.trayIntroSeen,
       };
 
@@ -683,6 +695,10 @@ export function useReplylineController(platform: AppPlatform) {
     setSettings("useStreamingStt", value);
   }
 
+  function setShowAdvanced(value: boolean) {
+    setSettings("showAdvanced", value);
+  }
+
   onMount(() => {
     let disposed = false;
     const cleanups: Array<() => void> = [];
@@ -778,6 +794,9 @@ export function useReplylineController(platform: AppPlatform) {
   });
 
   createEffect(() => {
+    if (phase() === "booting") {
+      return;
+    }
     const { phase: trayPhase, detail } = traySyncPayload({
       phase: phase(),
       statusDetail: statusDetail(),
@@ -860,6 +879,7 @@ export function useReplylineController(platform: AppPlatform) {
     setNotebookLmLaunchUrl,
     setCustomSystemPrompt,
     setUseStreamingStt,
+    setShowAdvanced,
     setPanel,
     memorySpaces,
     activeSpaceId,

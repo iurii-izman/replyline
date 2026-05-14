@@ -34,15 +34,15 @@ Replyline не является полностью on-device системой п
 
 **Important:** These policies may change. Always verify current terms before production use.
 
-## Local-Only Operation
+## Advanced Mode: Local-Only Operation
 
-Replyline can operate without cloud providers by configuring local alternatives:
+Replyline can operate without cloud providers by configuring local alternatives. This path is intended for advanced users and requires specific local hardware setup:
 
 1. **Local STT:** Use [Whisper.cpp](https://github.com/ggerganov/whisper.cpp) with a Deepgram-compatible HTTP wrapper (e.g., [faster-whisper-server](https://github.com/fedirz/faster-whisper-server)).
 2. **Local LLM:** Use [Ollama](https://ollama.com), [LM Studio](https://lmstudio.ai), or any OpenAI-compatible local server.
-3. **Settings:** Set `llmBaseUrl` to `http://127.0.0.1:<port>/v1` and the STT endpoint accordingly.
+3. **Settings:** Enable **Advanced Mode** in settings, then set `llmBaseUrl` to `http://127.0.0.1:<port>/v1` and the STT endpoint accordingly.
 
-In local-only mode, no audio or text leaves the machine. API keys may still be required for local server auth.
+In local-only mode, no audio or text leaves the machine. API keys may still be required for local server auth (or use dummy tokens).
 
 ## Operator checklist before runtime tests
 

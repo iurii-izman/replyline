@@ -8,13 +8,14 @@ This is the lean handoff gate for Replyline alpha builds.
 2. manual critical path spot-check from `docs/smoke-checks.md`
 3. `pnpm runtime:preflight`
 4. `pnpm rust:deps`
-5. `pnpm probe:runtime`
-6. at least one saved runtime evidence bundle via `pnpm evidence:bundle`
-7. one recent runtime comparison artifact:
+5. `pnpm audit:npm`
+6. `pnpm probe:runtime`
+7. at least one saved runtime evidence bundle via `pnpm evidence:bundle`
+8. one recent runtime comparison artifact:
    - `pnpm probe:bench -- -Repeats 2`
    - or `pnpm probe:durations:avg`
    - or `pnpm probe:live-source`
-8. one benchmark scaffold artifact via `pnpm benchmark:evidence`
+9. one benchmark scaffold artifact via `pnpm benchmark:evidence`
 
 ## Lightweight checklist
 
@@ -27,6 +28,8 @@ This is the lean handoff gate for Replyline alpha builds.
 - Benchmark scaffold exists and lists report sources (`pnpm benchmark:evidence`).
 - Public/runtime claims are label-correct (`target` / `measured` / `pending verification`).
 - Rust supply-chain gate is green with current warnings triaged, not hand-waved (`pnpm rust:deps`).
+- JavaScript supply-chain gate is green (`pnpm audit:npm`).
+- Security regression lane is green (`pnpm test:security-lanes`).
 
 ## What this proves
 
@@ -44,6 +47,13 @@ This is the lean handoff gate for Replyline alpha builds.
 - the product is ready for broad marketing claims
 - `measured` on one workstation is not global readiness
 - `pnpm rust:deps` warnings from Tauri/GTK transitives are triaged, not solved by default
+
+## Security Release Blockers
+
+- Block release if `pnpm audit:npm` reports any high/critical advisory.
+- Block release if `pnpm rust:deps` fails or reports non-allowlisted warnings.
+- Block release if allowlist review date has passed without refresh decision.
+- Block release if logs/diagnostics can include raw credential material.
 
 ## Alpha handoff rule
 
