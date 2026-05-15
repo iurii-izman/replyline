@@ -88,6 +88,45 @@
         },
         "cargo": {
           "targetDir": "src-tauri/target"
+        },
+        "completion": {
+          "snippets": {
+            "custom": {
+              "Tauri command": {
+                "postfix": "tauricmd",
+                "body": [
+                  "#[tauri::command]",
+                  "fn ${1:name}() -> Result<${2:String}, String> {",
+                  "    Ok(${3:todo!()})",
+                  "}"
+                ],
+                "scope": "scope"
+              },
+              "Tauri state command": {
+                "postfix": "tauristate",
+                "body": [
+                  "#[tauri::command]",
+                  "fn ${1:name}(state: tauri::State<'_, ${2:AppState}>) -> Result<${3:String}, String> {",
+                  "    Ok(${4:todo!()})",
+                  "}"
+                ],
+                "scope": "scope"
+              },
+              "Match with catch": {
+                "postfix": "matchall",
+                "body": [
+                  "match ${1:expr} {",
+                  "    ${2:pattern} => ${3:expr},",
+                  "    other => {",
+                  "        tracing::warn!(reason = ?other, \"unexpected ${1:expr}\");",
+                  "        ${4:default}",
+                  "    }",
+                  "}"
+                ],
+                "scope": "expr"
+              }
+            }
+          }
         }
       }
     }

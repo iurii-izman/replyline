@@ -105,3 +105,20 @@ DeepSeek V4 Pro — основная модель в Zed Agent Panel.
 - [ ] `pnpm test:quick` (или `pnpm smoke`) запущен и пройден
 - [ ] Если менялись зависимости — запущены `pnpm audit:npm` и/или `pnpm rust:deps`
 - [ ] Нет утверждений о прохождении проверок без реального исполнения
+
+## Error Recovery — частые сбои и автопочинка
+
+Если `pnpm test:quick` или `pnpm smoke` упали, не гадай — проверь по порядку:
+
+| Симптом | Вероятная причина | Действие |
+|---|---|---|
+| `tsc` / typecheck fails | Несовпадение типов после правки | Проверь сигнатуры в `model.ts`, обнови usage sites |
+| `eslint` fails | Код не по формату | `pnpm lint:fix` |
+| Vitest fails — `st().setup.body` is undefined | Удалил используемый locale-ключ | Проверь grep по `st().` в `.tsx` файлах перед удалением ключа |
+| Vitest fails — render mismatch | Solid.js паттерн нарушен | Проверь: `createSignal` а не `useState`, `<For>` а не `.map()`, `<Show>` а не `&&` |
+| `cargo check` fails | Rust-типы не совпадают с `types.rs` | Проверь `src-tauri/src/types.rs` и usage sites |
+| `cargo clippy` fails | Clippy warning | Прочитай warning, исправь как предлагает clippy |
+| `cargo test` fails | Сломан контракт Tauri-команды | Проверь `commands.rs`, `lib.rs` — совпадают ли сигнатуры |
+| `pnpm smoke` fails на consistency | Copy rules нарушены | Проверь `docs/copy-rules.md` — не использовал ли запрещённые формулировки |
+
+**Правило 2 попыток:** если одна и та же ошибка повторилась после 2 попыток исправления — остановись и запроси ручное вмешательство, не продолжай гадать.
