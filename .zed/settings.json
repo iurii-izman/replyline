@@ -141,7 +141,29 @@
     "notify_when_agent_waiting": true,
     "play_sound_when_agent_done": false,
     "tool_permissions": {
-      "default": "allow"
+      "default": "allow",
+      "tools": {
+        "terminal": {
+          "default": "allow",
+          "always_allow": [
+            { "pattern": "^pnpm " },
+            { "pattern": "^cargo " },
+            { "pattern": "^git " },
+            { "pattern": "^node " },
+            { "pattern": "^pwsh " }
+          ],
+          "always_deny": [
+            { "pattern": "rm\\s+-rf\\s+(/|~)" },
+            { "pattern": "sudo\\s+rm" }
+          ]
+        },
+        "edit_file": {
+          "always_deny": [
+            { "pattern": "\\.env$" },
+            { "pattern": "\\.(pem|key)$" }
+          ]
+        }
+      }
     },
     "profiles": {
       "readonly": {
