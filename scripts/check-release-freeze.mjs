@@ -111,8 +111,13 @@ function processChangedFiles(changedFiles, label) {
   const allowlistPrefixes = baseline.allowlistPrefixes ?? [];
   const guardrailPaths = new Set(baseline.guardrailPaths ?? []);
 
+  // Files explicitly listed in guardrailPaths are exempt from the allowlist
+  // directory-prefix check. This allows root-level config files (AGENTS.md,
+  // CLAUDE.md, CONTRIBUTING.md) and config directories (.zed/) to be
+  // approved without bloating the allowlist.
   const outsideFreeze = changedFiles.filter(
-    (file) => !allowlistPrefixes.some((prefix) => file.startsWith(prefix)),
+    (file) =>
+      !guardrailPaths.has(file) && !allowlistPrefixes.some((prefix) => file.startsWith(prefix)),
   );
   const outsideGuardrails = changedFiles.filter((file) => !guardrailPaths.has(file));
 

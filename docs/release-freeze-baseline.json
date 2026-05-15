@@ -21,10 +21,17 @@
     "docs/smoke-checks.md",
     "docs/copy-rules.md",
     "docs/release-freeze-baseline.json",
+    "docs/ai-tooling-policy-matrix.md",
     "scripts/check-consistency.mjs",
     "scripts/check-prompt-contract.mjs",
     "scripts/check-release-freeze.mjs",
-    ".github/workflows/ci.yml"
+    ".github/workflows/ci.yml",
+    ".github/copilot-instructions.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CONTRIBUTING.md",
+    ".zed/settings.json",
+    ".zed/tasks.json"
   ],
   "allowlistPrefixes": [".github/", "docs/", "scripts/", "tests/", "src/", "src-tauri/"]
 }
