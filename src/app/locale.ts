@@ -34,15 +34,8 @@ export const ui_ru = {
     clearDisabledBusy: "Подождите завершения текущей обработки.",
   },
   setup: {
-    title: "Нужны настройки",
     body: "Заполните обязательные поля и сохраните.",
     openSetup: "Открыть настройки",
-  },
-  startError: {
-    title: "Старт не удался",
-    body: "Проверьте настройки и повторите.",
-    retryLoad: "Повторить",
-    toSetup: "Настройки",
   },
   pipeline: {
     label: "Статус цепочки",
@@ -121,15 +114,8 @@ export const ui_en: UiStrings = {
     clearDisabledBusy: "Wait for the current processing to finish.",
   },
   setup: {
-    title: "Setup required",
     body: "Fill required fields and save.",
     openSetup: "Open Settings",
-  },
-  startError: {
-    title: "Start failed",
-    body: "Check settings and retry.",
-    retryLoad: "Retry",
-    toSetup: "Settings",
   },
   boot: {
     loading: "Loading...",
