@@ -146,22 +146,16 @@
         "terminal": {
           "default": "allow",
           "always_allow": [
-            { "pattern": "^pnpm " },
-            { "pattern": "^cargo " },
-            { "pattern": "^git " },
-            { "pattern": "^node " },
-            { "pattern": "^pwsh " }
+            { "pattern": "^pnpm" },
+            { "pattern": "^cargo" },
+            { "pattern": "^git" },
+            { "pattern": "^node" },
+            { "pattern": "^pwsh" }
           ],
-          "always_deny": [
-            { "pattern": "rm\\s+-rf\\s+(/|~)" },
-            { "pattern": "sudo\\s+rm" }
-          ]
+          "always_deny": [{ "pattern": "rm -rf" }, { "pattern": "sudo rm" }]
         },
         "edit_file": {
-          "always_deny": [
-            { "pattern": "\\.env$" },
-            { "pattern": "\\.(pem|key)$" }
-          ]
+          "always_deny": [{ "pattern": ".env" }, { "pattern": ".pem" }]
         }
       }
     },

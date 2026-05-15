@@ -109,7 +109,7 @@
   },
   {
     "label": "validate zed config",
-    "command": "node -e \"JSON.parse(require('fs').readFileSync('.zed/settings.json','utf8')); JSON.parse(require('fs').readFileSync('.zed/tasks.json','utf8')); JSON.parse(require('fs').readFileSync('.zed/keymap.json','utf8')); console.log('All .zed JSON OK')\"",
+    "command": "node scripts/fix-zed-json.mjs",
     "cwd": "$ZED_WORKTREE_ROOT",
     "tags": ["check", "zed"]
   }
