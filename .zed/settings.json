@@ -102,7 +102,7 @@
     "notify_when_agent_waiting": true,
     "play_sound_when_agent_done": false,
     "tool_permissions": {
-      "default": "confirm"
+      "default": "allow"
     },
     "profiles": {
       "readonly": {
@@ -129,8 +129,22 @@
           "diagnostics": true,
           "fetch": true,
           "edit_file": true,
-          "terminal": false,
+          "terminal": true,
           "delete_path": false
+        }
+      },
+      "write": {
+        "name": "Write (autopilot)",
+        "tools": {
+          "read_file": true,
+          "grep": true,
+          "list_directory": true,
+          "find_path": true,
+          "diagnostics": true,
+          "fetch": true,
+          "edit_file": true,
+          "terminal": true,
+          "delete_path": true
         }
       }
     }
