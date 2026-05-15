@@ -57,8 +57,13 @@ assertIncludes(
 );
 assertIncludes(
   llmRaw,
-  "max_tokens: 260",
-  "LLM max_tokens should be increased to 260.",
+  "const PRIMARY_MAX_TOKENS: u16 = 260;",
+  "Primary LLM max token budget should be 260.",
+);
+assertIncludes(
+  llmRaw,
+  "const RETRY_MAX_TOKENS: u16 = 180;",
+  "Retry LLM max token budget should be 180 for latency control.",
 );
 
 for (const fixture of fixtures) {

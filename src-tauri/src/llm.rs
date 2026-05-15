@@ -6,6 +6,8 @@ const HTTP_TIMEOUT_SECS: u64 = 20;
 const MAX_RETRIES: u32 = 2;
 const RETRY_BASE_MS: u64 = 500;
 const MAX_CARD_RETRY_ATTEMPTS: usize = 1;
+const PRIMARY_MAX_TOKENS: u16 = 260;
+const RETRY_MAX_TOKENS: u16 = 180;
 const SHORT_TRANSCRIPT_MAX: usize = 40;
 const MEDIUM_TRANSCRIPT_MAX: usize = 120;
 
@@ -122,8 +124,16 @@ pub async fn analyze_transcript(
     context: &str,
 ) -> Result<CardGenerationOutcome, String> {
     let language = "ru".to_string();
-    let (raw_text, parse_or_request_err) =
-        request_card_raw_text(settings, api_key, transcript, context, &language, None).await?;
+    let (raw_text, parse_or_request_err) = request_card_raw_text(
+        settings,
+        api_key,
+        transcript,
+        context,
+        &language,
+        None,
+        PRIMARY_MAX_TOKENS,
+    )
+    .await?;
     let card = parse_card_json(&raw_text).map_err(|err| format!("{parse_or_request_err}{err}"))?;
     match normalize_card(card, transcript) {
         Ok(card) => Ok(CardGenerationOutcome {
@@ -139,6 +149,7 @@ pub async fn analyze_transcript(
                 context,
                 &language,
                 Some("RETRY MODE: return stricter actionable JSON. say_now must include concrete action or clear clarifier question. next_move must include specific artifact/owner/deadline."),
+                RETRY_MAX_TOKENS,
             )
             .await?;
             let retry_card = parse_card_json(&retry_raw_text)
@@ -162,6 +173,7 @@ async fn request_card_raw_text(
     context: &str,
     language: &str,
     extra_suffix: Option<&str>,
+    max_tokens: u16,
 ) -> Result<(String, String), String> {
     let prompt = build_user_prompt(transcript, context, language, extra_suffix);
     let system_prompt = system_prompt_for_language(language);
@@ -178,7 +190,7 @@ async fn request_card_raw_text(
             },
         ],
         temperature: 0.25,
-        max_tokens: 260,
+        max_tokens,
     };
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(HTTP_TIMEOUT_SECS))
@@ -603,12 +615,34 @@ fn repair_say_now(value: &str, transcript: &str) -> String {
         return clean.to_string();
     }
     let lower = format!("{clean}\n{transcript}").to_lowercase();
+    let variant = transcript
+        .chars()
+        .fold(0usize, |acc, ch| acc.wrapping_add(ch as usize))
+        % 3;
     if contains_any(&lower, &["когда", "срок", "deadline", "дедлайн", "дата"]) {
-        "Уточню сейчас: какой финальный срок и кто подтверждает его сегодня?".to_string()
+        match variant {
+            0 => "Уточню сейчас: какой финальный срок и кто подтверждает его сегодня?".to_string(),
+            1 => "Давайте сверим прямо сейчас: дедлайн какой и кто фиксирует подтверждение?"
+                .to_string(),
+            _ => "Нужна конкретика: какой срок берем и кто дает финальный апдейт сегодня?"
+                .to_string(),
+        }
     } else if contains_any(&lower, &["кто", "владел", "owner", "ответствен"]) {
-        "Уточню прямо сейчас: кто владелец шага и когда даем статус-апдейт?".to_string()
+        match variant {
+            0 => "Уточню прямо сейчас: кто владелец шага и когда даем статус-апдейт?".to_string(),
+            1 => {
+                "Зафиксируем сейчас: кто ответственный и к какому времени ждем апдейт?".to_string()
+            }
+            _ => "Нужно прояснить: кто владелец и какой срок следующего статуса?".to_string(),
+        }
     } else {
-        format!("{clean}. Давайте зафиксируем конкретный шаг и срок до конца дня.")
+        match variant {
+            0 => format!("{clean}. Давайте зафиксируем конкретный шаг и срок до конца дня."),
+            1 => format!("{clean}. Предлагаю назвать один следующий шаг и время проверки сегодня."),
+            _ => format!(
+                "{clean}. Давайте уточним владельца, следующий шаг и дедлайн в этом обсуждении."
+            ),
+        }
     }
 }
 

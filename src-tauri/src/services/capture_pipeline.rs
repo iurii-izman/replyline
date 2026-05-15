@@ -112,6 +112,13 @@ pub async fn capture_stop_and_analyze(
     );
     if transcript_chars < MIN_TRANSCRIPT_CHARS {
         let err = "SHORT_CAPTURE: Слишком короткий фрагмент, запишите 5-10 секунд.";
+        {
+            let mut context = state
+                .context
+                .lock()
+                .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
+            context.push_transcript(&transcript);
+        }
         let _ = app_log::append_event(
             "analysis_short_capture",
             format!("transcript_chars={transcript_chars} chars_band={chars_band}"),
