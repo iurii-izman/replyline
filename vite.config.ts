@@ -9,6 +9,7 @@ export default defineConfig(async () => ({
   plugins: [solid({ dev: !isVitest, hot: !isVitest })],
   test: {
     environment: "jsdom",
+    css: true,
     globals: true,
     include: ["src/**/*.test.{ts,tsx}"],
     exclude: ["tests/e2e/**", "**/node_modules/**", "**/dist/**"],

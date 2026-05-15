@@ -7,7 +7,7 @@ Replyline Slim Stable Beta architecture.
 - `src/app/model.ts` — app state/types
 - `src/app/platform.ts` — Tauri bridge
 - `src/app/controller.ts` — runtime orchestration
-- `src/app/MainSurface.tsx` — status + card + 3 actions
+- `src/app/MainSurface.tsx` — fixed status top + scrollable card body + fixed 3-action row
 - `src/app/SettingsSurface.tsx` — minimal settings form
 
 ## Backend

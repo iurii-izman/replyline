@@ -61,6 +61,7 @@ Field contract inside detail:
 - `outcome`: `start | ok | fail`
 - `code`: stable `RL_*` diagnostic code
 - `detail`: sanitized short explanation
+- successful `llm` and `retry` details include `next_move_fallback=true|false`
 
 This contract is exported into bundle file `diagnostics/runtime-events.json`.
 

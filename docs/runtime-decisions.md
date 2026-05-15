@@ -8,6 +8,7 @@ Keep this as the main MVP runtime path:
 - Deepgram batch STT
 - one fast LLM route: `openai/gpt-4o-mini`
 - short JSON contract: `gist / say_now / next_move`
+- `next_move` repair fallback stays local in Rust and uses bounded heuristics for email, chat, ticket/task, meeting/checkpoint, owner+deadline, document/summary, and plan/list signals.
 - RAM-only context memo
 
 Claim status for this path must follow `docs/benchmark-policy.md` labels.
