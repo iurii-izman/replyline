@@ -6,14 +6,76 @@ const cwd = process.cwd();
 const baselinePath = join(cwd, "docs", "release-freeze-baseline.json");
 const baseline = JSON.parse(readFileSync(baselinePath, "utf8"));
 
-const diff = spawnSync("git", ["diff", "--name-only", "--", "."], {
+// Argument parsing
+const strictMode = process.argv.includes("--strict");
+const baseArgIndex = process.argv.indexOf("--base");
+const baseRef = baseArgIndex !== -1 ? process.argv[baseArgIndex + 1] : null;
+if (baseArgIndex !== -1 && !baseRef) {
+  console.error("[release-freeze] --base requires a ref argument");
+  process.exit(2);
+}
+
+// Determine diff target and label for traceability
+let diffArgs;
+let diffLabel;
+if (baseRef) {
+  // Compare changes introduced by HEAD since merge-base with baseRef.
+  // Three-dot diff shows what HEAD introduced relative to the common ancestor.
+  // For PR CI: baseRef is the PR base SHA.
+  // For push CI: baseRef is the previous commit (e.g. github.event.before).
+  diffArgs = ["diff", "--name-only", `${baseRef}...HEAD`, "--", "."];
+  diffLabel = `${baseRef}...HEAD`;
+} else {
+  // Local / legacy mode: working tree against HEAD
+  diffArgs = ["diff", "--name-only", "--", "."];
+  diffLabel = "working tree vs HEAD";
+}
+
+const diff = spawnSync("git", diffArgs, {
   cwd,
   encoding: "utf8",
   windowsHide: true,
   shell: false,
 });
+
 if (diff.status !== 0) {
-  console.error("release-freeze-check: git diff failed");
+  const stderr = (diff.stderr || "").trim();
+  if (
+    baseRef &&
+    (stderr.includes("bad revision") ||
+      stderr.includes("unknown revision") ||
+      stderr.includes("Invalid revision"))
+  ) {
+    console.warn(`[release-freeze] base ref "${baseRef}" not available locally.`);
+    console.warn(
+      "[release-freeze] This may happen on shallow clones. Ensure the base ref is fetched.",
+    );
+    // In strict CI mode this is a hard failure – the comparison couldn't run.
+    if (strictMode) {
+      console.error("[release-freeze] strict mode requires a reachable base ref");
+      process.exit(2);
+    }
+    // Non-strict: emit a warning artifact and exit cleanly.
+    mkdirSync(join(cwd, "reports"), { recursive: true });
+    const artifact = {
+      generatedAt: new Date().toISOString(),
+      diffLabel,
+      error: `base ref "${baseRef}" not available`,
+      changedFileCount: 0,
+      changedFiles: [],
+      outsideFreeze: [],
+      outsideGuardrails: [],
+      status: "skipped-base-not-available",
+    };
+    writeFileSync(
+      join(cwd, "reports", "release-freeze-check.json"),
+      JSON.stringify(artifact, null, 2),
+    );
+    process.exit(0);
+  }
+
+  console.error("[release-freeze] git diff failed");
+  if (diff.stderr) console.error(diff.stderr.trim());
   process.exit(diff.status ?? 1);
 }
 
@@ -34,6 +96,7 @@ mkdirSync(join(cwd, "reports"), { recursive: true });
 const artifactPath = join(cwd, "reports", "release-freeze-check.json");
 const artifact = {
   generatedAt: new Date().toISOString(),
+  diffLabel,
   changedFileCount: changedFiles.length,
   changedFiles,
   outsideFreeze,
@@ -47,17 +110,23 @@ const artifact = {
 };
 writeFileSync(artifactPath, JSON.stringify(artifact, null, 2));
 
+// Console report
+console.log(`[release-freeze] comparison: ${diffLabel}`);
 console.log(`[release-freeze] changed files: ${changedFiles.length}`);
+if (changedFiles.length === 0) {
+  console.log("[release-freeze] no changed files detected — guardrails satisfied");
+}
 if (outsideFreeze.length > 0) {
   console.log("[release-freeze] outside allowlist:");
-  for (const file of outsideFreeze) console.log(`- ${file}`);
+  for (const file of outsideFreeze) console.log(`  - ${file}`);
 }
 if (outsideGuardrails.length > 0) {
   console.log("[release-freeze] outside baseline guardrails:");
-  for (const file of outsideGuardrails) console.log(`- ${file}`);
+  for (const file of outsideGuardrails) console.log(`  - ${file}`);
 }
 console.log(`[release-freeze] artifact: ${artifactPath}`);
 
-if (process.argv.includes("--strict") && (outsideFreeze.length > 0 || outsideGuardrails.length > 0)) {
+if (strictMode && (outsideFreeze.length > 0 || outsideGuardrails.length > 0)) {
+  console.error("[release-freeze] strict mode: changes outside guardrails detected");
   process.exit(2);
 }

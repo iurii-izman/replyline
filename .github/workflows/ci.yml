@@ -65,6 +65,56 @@ jobs:
       - name: Local quality and security gate (fail-fast)
         run: pnpm verify
 
+      - name: Fetch base ref for release-freeze check
+        if: success() || failure()
+        shell: pwsh
+        run: |
+          if ('${{ github.event_name }}' -eq 'pull_request') {
+            $baseRef = '${{ github.event.pull_request.base.sha }}'
+            Write-Host "Fetching PR base: $baseRef"
+            git fetch origin "$baseRef" --depth=1 --no-tags
+          } elseif ('${{ github.event_name }}' -eq 'push') {
+            $beforeSha = '${{ github.event.before }}'
+            if ($beforeSha -and $beforeSha -ne '0000000000000000000000000000000000000000') {
+              Write-Host "Fetching previous commit: $beforeSha"
+              git fetch origin "$beforeSha" --depth=1 --no-tags
+            } else {
+              Write-Host "No previous commit available (first push or force-push) — will use HEAD~1"
+              git fetch --depth=2 --no-tags
+            }
+          }
+
+      - name: Release-freeze guardrail check
+        if: success() || failure()
+        id: release_freeze
+        shell: pwsh
+        run: |
+          if ('${{ github.event_name }}' -eq 'pull_request') {
+            $baseRef = '${{ github.event.pull_request.base.sha }}'
+            Write-Host "release-freeze: comparing PR head against base $baseRef"
+            pnpm release:freeze:check:strict -- --base "$baseRef"
+          } elseif ('${{ github.event_name }}' -eq 'push') {
+            $beforeSha = '${{ github.event.before }}'
+            if ($beforeSha -and $beforeSha -ne '0000000000000000000000000000000000000000') {
+              Write-Host "release-freeze: comparing HEAD against previous commit $beforeSha"
+              pnpm release:freeze:check:strict -- --base "$beforeSha"
+            } else {
+              Write-Host "release-freeze: comparing HEAD against HEAD~1"
+              pnpm release:freeze:check:strict -- --base HEAD~1
+            }
+          } else {
+            Write-Host "release-freeze: workflow_dispatch — comparing working tree against HEAD"
+            pnpm release:freeze:check:strict
+          }
+
+      - name: Upload release-freeze artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-freeze-check-${{ github.run_id }}
+          path: reports/release-freeze-check.json
+          if-no-files-found: warn
+
       - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
