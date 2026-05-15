@@ -7,7 +7,8 @@
       "ctrl-shift-b": ["task::Spawn", { "task_name": "build (vite)" }],
       "ctrl-shift-d": ["task::Spawn", { "task_name": "dev (vite)" }],
       "ctrl-shift-l": ["task::Spawn", { "task_name": "lint (eslint)" }],
-      "ctrl-shift-r": ["task::Spawn", { "task_name": "test:rust (cargo test)" }]
+      "ctrl-shift-r": ["task::Spawn", { "task_name": "test:rust (cargo test)" }],
+      "ctrl-shift-j": ["task::Spawn", { "task_name": "validate zed config" }]
     }
   }
 ]

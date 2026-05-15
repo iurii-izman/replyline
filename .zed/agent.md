@@ -96,6 +96,13 @@ DeepSeek V4 Pro — основная модель в Zed Agent Panel.
 4. **CHECK** — запусти релевантную проверку (см. таблицу выше).
 5. **REPORT** — «Изменил X в [file]. Проверил Y — passed.»
 
+### Критическое правило: JSON без trailing commas
+
+- Никогда не оставляй trailing commas в .zed/*.json файлах — Zed падает с "Failed to set local settings".
+- После любого редактирования .zed/settings.json, .zed/tasks.json или .zed/keymap.json — немедленно запусти задачу "validate zed config".
+- Если файл не парсится — пересоздай его через write mode (delete + write), а не через edit mode.
+- Edit mode склонен добавлять trailing commas — избегай его для JSON-файлов в .zed/.
+
 ## Чек-лист перед завершением задачи
 
 - [ ] Diff минимален и не затрагивает нерелевантные файлы
