@@ -21,6 +21,7 @@ Keep Replyline in Slim Stable Beta scope:
 pnpm install --frozen-lockfile
 pnpm smoke
 pnpm verify
+pnpm release:freeze:check
 pnpm rust:deps
 pnpm audit:npm
 ```

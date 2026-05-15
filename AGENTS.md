@@ -13,6 +13,7 @@ These instructions apply to the whole repository.
 
 - If `package.json` or `pnpm-lock.yaml` changed, also run: `pnpm audit:npm`.
 - If `src-tauri/Cargo.toml` or Rust dependencies changed, also run: `pnpm rust:deps`.
+- Before merge, run release-freeze guardrail check: `pnpm release:freeze:check`.
 - Do not claim checks passed unless they were actually executed.
 
 ## Architecture Boundaries
@@ -29,6 +30,15 @@ These instructions apply to the whole repository.
 - Follow `docs/copy-rules.md` for product/trust wording constraints.
 - Respect automated policy scripts in `scripts/check-consistency.mjs` and `scripts/check-prompt-contract.mjs`.
 - For multi-tool governance and precedence, follow `docs/ai-tooling-policy-matrix.md`.
+
+## Language / Язык общения
+
+- Общайся на русском языке.
+- Технические термины, названия файлов, команд, флагов и API оставляй на английском (например: `merge-base`, `guardrail`, `--strict`, `spawnSync`, `allowlist`).
+- Англицизмы допустимы там, где русский аналог громоздок или неупотребим (например: «зачекать», «закоммитить», «пропатчить», «флоу», «бейзлайн», «артефакт»).
+- Комментарии в коде — на английском. Коммит-месседжи — на английском (conventional commits).
+- Вывод в консоль (логи, ошибки, артефакты) — на английском.
+- Объяснения, рассуждения и выводы — на русском.
 
 ## Policy Precedence
 
