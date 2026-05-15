@@ -1,0 +1,71 @@
+{
+  "formatter": "prettier",
+  "format_on_save": "on",
+  "tab_size": 2,
+  "hard_tabs": false,
+  "soft_wrap": "preferred_line_length",
+  "preferred_line_length": 100,
+
+  "languages": {
+    "TypeScript": {
+      "formatter": { "external": { "command": "prettier", "arguments": ["--stdin-filepath", "{buffer_path}"] } },
+      "language_servers": ["typescript-language-server"]
+    },
+    "TSX": {
+      "formatter": { "external": { "command": "prettier", "arguments": ["--stdin-filepath", "{buffer_path}"] } },
+      "language_servers": ["typescript-language-server"]
+    },
+    "Rust": {
+      "language_servers": ["rust-analyzer"]
+    },
+    "JSON": {
+      "formatter": { "external": { "command": "prettier", "arguments": ["--stdin-filepath", "{buffer_path}"] } }
+    },
+    "Markdown": {
+      "soft_wrap": "editor_width"
+    }
+  },
+
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "check": {
+          "command": "clippy"
+        },
+        "cargo": {
+          "targetDir": "src-tauri/target"
+        }
+      }
+    }
+  },
+
+  "terminal": {
+    "shell": {
+      "windows": "pwsh"
+    }
+  },
+
+  "file_finder": {
+    "exclude_patterns": [
+      "node_modules/",
+      "dist/",
+      "target/",
+      "src-tauri/target/",
+      "coverage/",
+      "test-results/",
+      "reports/",
+      "artifacts/",
+      "*.log",
+      "*.tmp",
+      "*.zip",
+      "*.7z",
+      "*.wav",
+      "*.mp3",
+      "*.mp4",
+      "*.webm",
+      ".env",
+      ".env.*",
+      ".env.keys"
+    ]
+  }
+}
