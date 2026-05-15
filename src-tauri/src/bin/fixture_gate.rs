@@ -43,17 +43,17 @@ fn assert_guardrails(id: &str, card: &types::AnalysisCardDto) -> Result<(), Stri
     let gist_len = card.gist.chars().count();
     let say_len = card.say_now.chars().count();
     let next_len = card.next_move.chars().count();
-    if gist_len == 0 || gist_len > 110 {
+    if gist_len == 0 || gist_len > 140 {
         return Err(format!(
             "Fixture {id}: gist length out of range ({gist_len})."
         ));
     }
-    if say_len == 0 || say_len > 220 {
+    if say_len == 0 || say_len > 320 {
         return Err(format!(
             "Fixture {id}: say_now length out of range ({say_len})."
         ));
     }
-    if next_len == 0 || next_len > 110 {
+    if next_len == 0 || next_len > 180 {
         return Err(format!(
             "Fixture {id}: next_move length out of range ({next_len})."
         ));
@@ -119,8 +119,6 @@ async fn main() -> Result<(), String> {
             .unwrap_or_else(|_| "https://openrouter.ai/api/v1".to_string()),
         llm_model: env::var("REPLYLINE_LLM_MODEL")
             .unwrap_or_else(|_| "openai/gpt-4o-mini".to_string()),
-        // Keep fixture gate deterministic; reduces flaky LLM wording drift.
-        llm_temperature: 0.0,
         ..AppSettings::default()
     };
 
@@ -131,7 +129,8 @@ async fn main() -> Result<(), String> {
         for attempt in 1..=3 {
             match llm::analyze_transcript(&settings, Some(&llm_api_key), &fixture.snippet, "").await
             {
-                Ok(card) => {
+                Ok(outcome) => {
+                    let card = outcome.card;
                     if card.gist.trim().is_empty()
                         || card.say_now.trim().is_empty()
                         || card.next_move.trim().is_empty()

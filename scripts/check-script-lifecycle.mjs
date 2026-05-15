@@ -1,0 +1,105 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = join(__dirname, "..");
+const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+const scripts = pkg.scripts ?? {};
+
+const matrix = {
+  required: [
+    "smoke",
+    "verify",
+    "test:security-lanes",
+    "typecheck",
+    "lint",
+    "build",
+    "test:ui",
+    "test:prompt-contract",
+    "copy:check",
+  ],
+  optional: [
+    "start",
+    "dev",
+    "serve",
+    "tauri",
+    "test:rust",
+    "test:consistency",
+    "test:doc-links",
+    "test:fixture-gate",
+    "test:fixtures",
+    "test:ui:coverage",
+    "test:say-now-scenarios",
+    "test:ipc-contract",
+    "probe:runtime",
+    "probe:bench",
+    "probe:durations",
+    "probe:durations:avg",
+    "probe:live-source",
+    "evidence:bundle",
+    "runtime:preflight",
+    "docker:replyline:check",
+    "docker:replyline:check:dry",
+    "docker:replyline:heal",
+    "docker:replyline:heal:dry",
+    "docker:replyline:restore:ai",
+    "docker:replyline:restore:ai:dry",
+    "docker:replyline:down",
+    "docker:replyline:down:dry",
+    "docker:replyline:logs",
+    "docker:replyline:logs:dry",
+    "benchmark:evidence",
+    "smoke:template",
+    "beta:handoff",
+    "rust:deny",
+    "rust:audit",
+    "rust:deps",
+    "audit:npm",
+    "lint:fix",
+    "format",
+    "format:check",
+    "code-review:webhook",
+    "beta:preflight",
+    "verify:extended",
+    "test:api:postman",
+    "test:e2e:web",
+    "test:e2e:web:ui",
+    "test:e2e:desktop",
+    "test:ux:lighthouse",
+    "test:quick",
+    "test:optional:api",
+    "test:optional:e2e:web",
+    "test:optional:e2e:desktop",
+    "test:optional:ux:lighthouse",
+    "scripts:lifecycle",
+  ],
+  experimental: [
+    "test:perf:k6",
+    "test:sec:zap",
+    "test:optional:perf:k6",
+    "test:optional:sec:zap",
+    "test:experimental",
+  ],
+  deprecated: ["alpha:handoff", "alpha:preflight"],
+};
+
+const missing = [];
+for (const list of Object.values(matrix)) {
+  for (const name of list) {
+    if (!scripts[name]) missing.push(name);
+  }
+}
+
+const classified = new Set(Object.values(matrix).flat());
+const unclassified = Object.keys(scripts).filter((name) => !classified.has(name));
+
+if (missing.length > 0 || unclassified.length > 0) {
+  console.error(`[script-lifecycle] missing scripts: ${missing.join(", ")}`);
+  if (unclassified.length > 0) {
+    console.error(`[script-lifecycle] unclassified scripts: ${unclassified.join(", ")}`);
+  }
+  process.exit(1);
+}
+
+console.log("[script-lifecycle] matrix references are consistent.");

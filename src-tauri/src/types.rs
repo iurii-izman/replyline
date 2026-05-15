@@ -8,7 +8,6 @@ pub enum CommandError {
     Credential(String),
     Capture(String),
     Pipeline(String),
-    Memory(String),
     Internal(String),
 }
 
@@ -19,7 +18,6 @@ impl std::fmt::Display for CommandError {
             | Self::Credential(m)
             | Self::Capture(m)
             | Self::Pipeline(m)
-            | Self::Memory(m)
             | Self::Internal(m) => f.write_str(m),
         }
     }
@@ -33,37 +31,7 @@ pub struct AppSettings {
     pub hotkey: String,
     pub llm_base_url: String,
     pub llm_model: String,
-    #[serde(default)]
-    pub notebook_lm_enabled: bool,
-    #[serde(default = "notebook_lm_launch_url_default")]
-    pub notebook_lm_launch_url: String,
-    pub primary_language: String,
-    pub deepgram_model: String,
     pub capture_max_seconds: u16,
-    #[serde(default = "default_llm_temperature")]
-    pub llm_temperature: f32,
-    #[serde(default)]
-    pub use_streaming_stt: bool,
-    #[serde(default)]
-    pub custom_system_prompt: Option<String>,
-    #[serde(default)]
-    pub show_advanced: bool,
-    /// After user acknowledges tray/hide behavior; enables tray-first startup when setup is complete.
-    /// Missing in legacy `settings.json` defaults to true so existing installs are not nagged once.
-    #[serde(default = "tray_intro_seen_legacy_default")]
-    pub tray_intro_seen: bool,
-}
-
-fn default_llm_temperature() -> f32 {
-    0.25
-}
-
-fn tray_intro_seen_legacy_default() -> bool {
-    true
-}
-
-fn notebook_lm_launch_url_default() -> String {
-    "https://notebooklm.google.com/".to_string()
 }
 
 impl Default for AppSettings {
@@ -73,16 +41,7 @@ impl Default for AppSettings {
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
-            notebook_lm_enabled: false,
-            notebook_lm_launch_url: notebook_lm_launch_url_default(),
-            primary_language: "ru".to_string(),
-            deepgram_model: "nova-3".to_string(),
-            capture_max_seconds: 30,
-            llm_temperature: default_llm_temperature(),
-            use_streaming_stt: false,
-            custom_system_prompt: None,
-            show_advanced: false,
-            tray_intro_seen: false,
+            capture_max_seconds: 45,
         }
     }
 }
@@ -130,13 +89,6 @@ pub struct BootstrapDto {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DiagnosticBundleDto {
-    pub bundle_path: String,
-    pub manifest_path: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ContextStatusDto {
     pub context_active: bool,
     pub entry_count: usize,
@@ -145,38 +97,17 @@ pub struct ContextStatusDto {
     pub can_retry_last_transcript: bool,
 }
 
-/// Compact readiness snapshot for UI/support (no raw transcript text).
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RuntimeReadinessDto {
-    pub app_version: String,
-    pub settings_schema_version: u32,
-    pub deepgram_key_present: bool,
-    pub llm_key_present: bool,
-    pub runtime_ready: bool,
-    pub context_active: bool,
-    pub context_entry_count: usize,
-    pub can_retry_last_transcript: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub last_transcript_char_count: Option<usize>,
-    /// Bumps with system prompt changes; for support / regression tracking.
-    pub prompt_contract_version: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HealthCheckResult {
-    pub deepgram_ok: bool,
-    pub llm_ok: bool,
-    pub detail: String,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AnalysisCardDto {
     pub gist: String,
     pub say_now: String,
     pub next_move: String,
+    pub chars_band: String,
+    #[serde(skip)]
+    pub next_move_fallback: bool,
+    #[serde(skip)]
+    pub say_now_repair: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -237,16 +168,6 @@ mod tests {
     fn default_hotkey_is_canonical() {
         let settings = AppSettings::default();
         assert_eq!(settings.hotkey, "Ctrl+Alt+Space");
-    }
-
-    #[test]
-    fn default_notebooklm_launch_url_is_set() {
-        let settings = AppSettings::default();
-        assert_eq!(
-            settings.notebook_lm_launch_url,
-            "https://notebooklm.google.com/"
-        );
-        assert!(!settings.notebook_lm_enabled);
     }
 
     #[test]

@@ -30,8 +30,6 @@ pub mod en {
     pub const MENU_OPEN: &str = "Open";
     pub const MENU_SETTINGS: &str = "Settings";
     pub const MENU_CLEAR_CONTEXT: &str = "Reset context";
-    pub const MENU_COLLECT_DIAGNOSTIC: &str = "Collect diagnostic summary…";
-    pub const MENU_COPY_READINESS: &str = "Copy readiness JSON…";
     pub const MENU_QUIT: &str = "Quit";
 
     // -- Pipeline status --
@@ -62,8 +60,6 @@ pub mod ru {
     pub const MENU_OPEN: &str = "Открыть";
     pub const MENU_SETTINGS: &str = "Настройки";
     pub const MENU_CLEAR_CONTEXT: &str = "Сбросить контекст";
-    pub const MENU_COLLECT_DIAGNOSTIC: &str = "Собрать сводку диагностики…";
-    pub const MENU_COPY_READINESS: &str = "Копировать JSON готовности…";
     pub const MENU_QUIT: &str = "Выход";
 
     // -- Pipeline status --

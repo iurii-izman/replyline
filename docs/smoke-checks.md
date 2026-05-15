@@ -1,6 +1,6 @@
 # Replyline Manual Smoke Checks
 
-Lean pre-alpha checks for Replyline's current tray-first MVP. This matrix is intentionally manual-first for critical runtime paths.
+Lean stable-beta checks for Replyline's current tray-first MVP. This matrix is intentionally manual-first for critical runtime paths.
 
 ## Scope
 

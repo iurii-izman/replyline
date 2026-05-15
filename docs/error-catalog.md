@@ -30,7 +30,6 @@ When a `CommandError` is received:
 | `HOTKEY_REQUIRED`        | Клавиша: задайте сочетание ниже               |
 | `MODEL_REQUIRED`         | Модель ответа: заполните поле                 |
 | `INVALID_URL`            | Адрес шлюза: http:// или https://, полный URL |
-| `INVALID_NOTEBOOKLM_URL` | Адрес NotebookLM: полный http/https URL       |
 | `CAPTURE_RANGE_INVALID`  | Лимит фрагмента: 5–180 секунд                 |
 | `INVALID_LANGUAGE`       | Файл настроек повреждён (язык)                |
 | `INVALID_SCHEMA`         | Версия settings.json не подходит              |
@@ -49,6 +48,22 @@ When a `CommandError` is received:
 | `Card output invalid`   | Карточка слишком расплывчатая                     |
 | `gateway / 401 / fetch` | Нет ответа шлюза: адрес, модель, ключ → Настройки |
 | _(fallback)_            | Цепочка оборвалась: настройки, ключи, сеть        |
+
+## Diagnostic Runtime Event Contract
+
+Runtime observability uses one stable event name in `app.log`:
+
+- `diag_runtime_event`
+
+Field contract inside detail:
+
+- `stage`: `capture | stt | llm | card | retry`
+- `outcome`: `start | ok | fail`
+- `code`: stable `RL_*` diagnostic code
+- `detail`: sanitized short explanation
+- successful `llm` and `retry` details include `next_move_fallback=true|false`
+
+This contract is exported into bundle file `diagnostics/runtime-events.json`.
 
 ## Adding New Error Types
 

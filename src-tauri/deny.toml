@@ -32,7 +32,12 @@ multiple-versions = "warn"
 wildcards = "deny"
 highlight = "all"
 skip = []
-skip-tree = []
+skip-tree = [
+    # REVIEW_DATE=2026-07-01; reason=Windows beta target. Suppress noisy GUI-stack duplicates from tauri/wry transitives; keep warnings focused on actionable crate drift in our direct dependency surface.
+    { name = "tauri" },
+    { name = "tauri-runtime-wry" },
+    { name = "wry" },
+]
 
 [sources]
 unknown-registry = "warn"

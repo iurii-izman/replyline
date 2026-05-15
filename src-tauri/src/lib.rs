@@ -5,10 +5,9 @@ mod commands;
 mod context;
 mod credentials;
 mod deepgram;
-mod diagnostic_bundle;
+mod diag_contract;
 mod fs_atomic;
 mod llm;
-mod memory;
 mod providers;
 mod services;
 mod settings;
@@ -44,46 +43,24 @@ pub(crate) fn build_main_tray_menu<R: Runtime>(
         pick_lang(lang, en::MENU_CLEAR_CONTEXT, ru::MENU_CLEAR_CONTEXT),
     )
     .build(app)?;
-    let bundle_item = MenuItemBuilder::with_id(
-        "collect-diagnostic",
-        pick_lang(
-            lang,
-            en::MENU_COLLECT_DIAGNOSTIC,
-            ru::MENU_COLLECT_DIAGNOSTIC,
-        ),
-    )
-    .build(app)?;
-    let readiness_item = MenuItemBuilder::with_id(
-        "copy-runtime-readiness",
-        pick_lang(lang, en::MENU_COPY_READINESS, ru::MENU_COPY_READINESS),
-    )
-    .build(app)?;
     let quit_item = MenuItemBuilder::with_id("quit", pick_lang(lang, en::MENU_QUIT, ru::MENU_QUIT))
         .build(app)?;
 
     MenuBuilder::new(app)
-        .items(&[
-            &open_item,
-            &settings_item,
-            &clear_item,
-            &bundle_item,
-            &readiness_item,
-            &quit_item,
-        ])
+        .items(&[&open_item, &settings_item, &clear_item, &quit_item])
         .build()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .manage(ReplylineState::default())
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
             let _ = app_log::append_event("app_boot_start", "setup");
             let settings = settings::load().unwrap_or_default();
-            let lang = settings.primary_language.as_str();
+            let lang = "ru";
             let handle = app.handle().clone();
             let menu = build_main_tray_menu(&handle, lang)?;
 
@@ -117,17 +94,6 @@ pub fn run() {
                         }
                         let _ = app.emit("replyline://context-cleared", ());
                     }
-                    "collect-diagnostic" => {
-                        let _ = app_log::append_event("tray_action_received", "collect-diagnostic");
-                        let _ = open_main_window(app);
-                        let _ = app.emit("replyline://collect-diagnostic", ());
-                    }
-                    "copy-runtime-readiness" => {
-                        let _ =
-                            app_log::append_event("tray_action_received", "copy-runtime-readiness");
-                        let _ = open_main_window(app);
-                        let _ = app.emit("replyline://copy-runtime-readiness", ());
-                    }
                     "quit" => {
                         let _ = app_log::append_event("tray_action_received", "quit");
                         app.exit(0);
@@ -146,7 +112,7 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            if !settings.tray_intro_seen || needs_setup {
+            if needs_setup {
                 let _ = open_main_window(app.handle());
                 if needs_setup {
                     let _ = app.emit("replyline://open-settings", ());
@@ -154,33 +120,42 @@ pub fn run() {
             }
 
             Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            commands::load_bootstrap,
-            commands::save_settings,
-            commands::acknowledge_tray_intro,
-            commands::save_secret,
-            commands::clear_context,
-            commands::delete_secret,
-            commands::dev_analyze_fixture_snippet,
-            commands::get_context_status,
-            commands::capture_start,
-            commands::capture_stop_and_analyze,
-            commands::retry_last_analysis,
-            commands::sync_tray_ui_phase,
-            commands::refresh_tray_menu,
-            commands::tray_open_main,
-            commands::memory_list_spaces,
-            commands::memory_get_space_record,
-            commands::memory_save_space_record,
-            commands::collect_diagnostic_bundle,
-            commands::get_log_status,
-            commands::get_runtime_readiness,
-            commands::log_client_event,
-            commands::open_notebooklm,
-            commands::check_provider_health,
-            commands::quit_app
-        ])
+        });
+    #[cfg(any(debug_assertions, test))]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::load_bootstrap,
+        commands::save_settings,
+        commands::save_secret,
+        commands::clear_context,
+        commands::delete_secret,
+        commands::get_context_status,
+        commands::capture_start,
+        commands::capture_stop_and_analyze,
+        commands::retry_last_analysis,
+        commands::sync_tray_ui_phase,
+        commands::refresh_tray_menu,
+        commands::tray_open_main,
+        commands::log_client_event,
+        commands::quit_app
+    ]);
+    #[cfg(not(any(debug_assertions, test)))]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::load_bootstrap,
+        commands::save_settings,
+        commands::save_secret,
+        commands::clear_context,
+        commands::delete_secret,
+        commands::get_context_status,
+        commands::capture_start,
+        commands::capture_stop_and_analyze,
+        commands::retry_last_analysis,
+        commands::sync_tray_ui_phase,
+        commands::refresh_tray_menu,
+        commands::tray_open_main,
+        commands::log_client_event,
+        commands::quit_app
+    ]);
+    builder
         .run(tauri::generate_context!())
         .unwrap_or_else(|err| {
             eprintln!("Fatal: Replyline failed to start: {err}");

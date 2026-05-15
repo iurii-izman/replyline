@@ -1,250 +1,158 @@
-import { Show } from "solid-js";
-
+import { For, Show } from "solid-js";
 import type { ReplylineController } from "./controller";
 
 export function MainSurface(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
   const st = () => controller().strings();
+  const pipelineStages = () => [
+    st().pipeline.capture,
+    st().pipeline.text,
+    st().pipeline.reply,
+    st().pipeline.card,
+  ];
+  const activeStageIndex = () => {
+    switch (controller().phase()) {
+      case "capturing":
+        return 0;
+      case "transcribing":
+        return 1;
+      case "analyzing":
+        return 2;
+      case "ready":
+        return 3;
+      default:
+        return -1;
+    }
+  };
+  const pipelineStageClass = (index: number) => {
+    const active = activeStageIndex();
+    if (active === index) return "pipeline-stage is-active";
+    if (active > index) return "pipeline-stage is-done";
+    return "pipeline-stage";
+  };
+  const statusTone = () => {
+    if (controller().mainUiState() === "error") return "is-error";
+    if (controller().hotkeyFailed()) return "is-hotkey-fail";
+    if (controller().setupRequired()) return "is-setup-needed";
+    if (controller().phase() === "capturing") return "is-capturing";
+    if (controller().phase() === "transcribing") return "is-transcribing";
+    if (controller().phase() === "analyzing") return "is-analyzing";
+    if (controller().phase() === "ready") return "is-ready";
+    return "";
+  };
+  const statusHint = () => {
+    if (controller().mainUiState() === "error") return st().card.errorHint;
+    if (controller().mainUiState() === "ready") return st().card.readyHint;
+    if (controller().pipelineActive())
+      return controller().statusDetail() ?? st().card.processingHint;
+    return st().card.emptyFlow;
+  };
+  const qualityLabel = () => {
+    if (controller().captureQuality() === "short") return "Короткий фрагмент";
+    if (controller().captureQuality() === "long") return "Длинный фрагмент";
+    return "Нормальный фрагмент";
+  };
 
   return (
-    <>
-      <Show when={controller().phase() === "booting"}>
-        <section class="main-card boot-card">
-          <p class="section-copy boot-copy">{st().boot.loading}</p>
-        </section>
-      </Show>
-
-      <Show when={controller().phase() === "error" && controller().panel() !== "settings"}>
-        <section class="main-card boot-card">
-          <h2 class="section-title">{st().startError.title}</h2>
-          <p class="section-copy">{st().startError.body}</p>
-          <div class="settings-actions">
-            <button
-              class="btn-primary"
-              type="button"
-              onClick={() => void controller().reloadBootstrap()}
-            >
-              {st().startError.retryLoad}
-            </button>
-            <button
-              class="btn-ghost"
-              type="button"
-              onClick={() => controller().openSettingsPanel()}
-            >
-              {st().startError.toSetup}
-            </button>
-          </div>
-        </section>
-      </Show>
-
-      <Show
-        when={
-          controller().phase() !== "booting" &&
-          controller().panel() === "main" &&
-          controller().phase() !== "error"
-        }
+    <Show when={controller().panel() === "main"}>
+      <section
+        class={`main-card main-card--${controller().mainUiState()}`}
+        data-testid="main-surface"
       >
-        <section class="main-card">
+        <div class="main-card-top" data-testid="main-card-top">
+          <div class="main-status-row">
+            <div class={`status-pill ${statusTone()}`}>{controller().phaseLabel()}</div>
+          </div>
+          <ol class="pipeline-timeline" aria-label={st().pipeline.label}>
+            <For each={pipelineStages()}>
+              {(label, index) => <li class={pipelineStageClass(index())}>{label}</li>}
+            </For>
+          </ol>
           <Show
-            when={!controller().setupRequired()}
-            fallback={
-              <div class="empty-card setup-needed-card">
-                <h2 class="section-title">{st().setup.title}</h2>
-                <p class="section-copy">{st().setup.body}</p>
-                <ol class="setup-steps">
-                  <li>{st().setup.step1}</li>
-                  <li>{st().setup.step2}</li>
-                  <li>{st().setup.step3}</li>
-                </ol>
-                <button
-                  class="btn-primary"
-                  type="button"
-                  onClick={() => controller().openSettingsPanel()}
-                >
-                  {st().setup.openSetup}
-                </button>
-                <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
-                  <button
-                    class="btn-ghost"
-                    type="button"
-                    onClick={() => void controller().openNotebookLm()}
-                  >
-                    {st().card.openNotebookLm}
-                  </button>
-                </Show>
-              </div>
-            }
+            when={controller().setupRequired()}
+            fallback={<p class="empty-flow-hint">{statusHint()}</p>}
           >
-            <Show when={controller().pipelineActive()}>
-              <div
-                class={`live-phase-block live-phase-block--${controller().phase()}`}
-                aria-live="polite"
+            <p class="empty-flow-hint">
+              {st().setup.body}{" "}
+              <button
+                class="inline-link-btn"
+                type="button"
+                onClick={() => controller().openSettingsPanel()}
               >
-                <div class="live-phase-pulse" aria-hidden="true" />
-                <div class="live-phase-headline">{controller().livePhaseHeadline()}</div>
-                <p class="live-phase-sub">{controller().livePhaseSub()}</p>
-              </div>
-            </Show>
-
-            <Show when={controller().card()}>
-              {(resolvedCard) => (
-                <article
-                  class={`result-card${controller().pipelineActive() ? " is-superseded" : ""}`}
-                  aria-busy={controller().pipelineActive()}
-                >
-                  <Show when={controller().pipelineActive()}>
-                    <p class="result-superseded-hint">{st().card.supersededHint}</p>
-                  </Show>
-
-                  <section class="result-section">
-                    <div class="result-label-row">
-                      <div class="result-label">{st().card.gistLabel}</div>
-                      <button
-                        class="copy-section-btn"
-                        type="button"
-                        title={st().card.copyToClipboardTitle}
-                        aria-label={`${st().card.copyToClipboardTitle}: ${st().card.gistLabel}`}
-                        onClick={() => void controller().copySection("gist")}
-                      >
-                        ⎘
-                      </button>
-                    </div>
-                    <p class="result-text">{resolvedCard().gist}</p>
-                  </section>
-
-                  <section class="result-section result-section--primary">
-                    <div class="result-label-row">
-                      <div class="result-label">{st().card.sayNowLabel}</div>
-                      <button
-                        class="copy-section-btn"
-                        type="button"
-                        title={st().card.copyToClipboardTitle}
-                        aria-label={`${st().card.copyToClipboardTitle}: ${st().card.sayNowLabel}`}
-                        onClick={() => void controller().copySection("sayNow")}
-                      >
-                        ⎘
-                      </button>
-                    </div>
-                    <p class="result-text result-text--speak">{resolvedCard().sayNow}</p>
-                  </section>
-
-                  <section class="result-section">
-                    <div class="result-label-row">
-                      <div class="result-label">{st().card.nextMoveLabel}</div>
-                      <button
-                        class="copy-section-btn"
-                        type="button"
-                        title={st().card.copyToClipboardTitle}
-                        aria-label={`${st().card.copyToClipboardTitle}: ${st().card.nextMoveLabel}`}
-                        onClick={() => void controller().copySection("nextMove")}
-                      >
-                        ⎘
-                      </button>
-                    </div>
-                    <p class="result-text">{resolvedCard().nextMove}</p>
-                  </section>
-
-                  <div class="result-actions">
-                    <button
-                      class="btn-primary"
-                      type="button"
-                      disabled={controller().pipelineActive()}
-                      title={st().card.copyToClipboardTitle}
-                      onClick={() => void controller().copyAnswer()}
-                    >
-                      {st().card.copySayNow}
-                    </button>
-                    <button
-                      class="btn-secondary"
-                      type="button"
-                      disabled={controller().pipelineActive()}
-                      title={st().card.retryCardTitle}
-                      onClick={() => void controller().retryAnalysis()}
-                    >
-                      {st().card.retryCard}
-                    </button>
-                    <button
-                      class="btn-ghost"
-                      type="button"
-                      disabled={controller().pipelineActive()}
-                      title={st().card.clearContextTitle}
-                      onClick={() => void controller().clearContext()}
-                    >
-                      {st().card.clearContext}
-                    </button>
-                    <Show when={controller().settings.showAdvanced && controller().memorySpaces().length > 0}>
-                      <button
-                        class="btn-ghost"
-                        type="button"
-                        disabled={controller().pipelineActive() || !controller().activeSpaceId()}
-                        onClick={() => void controller().saveCardToMemory()}
-                      >
-                        {st().memory.saveToMemory}
-                      </button>
-                    </Show>
-                    <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
-                      <button
-                        class="btn-ghost"
-                        type="button"
-                        disabled={controller().pipelineActive()}
-                        onClick={() => void controller().openNotebookLm()}
-                      >
-                        {st().card.openNotebookLm}
-                      </button>
-                    </Show>
-                  </div>
-                  <Show when={controller().settings.showAdvanced && controller().contextTranscriptPreview()}>
-                    <details class="last-transcript-block">
-                      <summary>{st().card.lastTranscriptLabel}</summary>
-                      <p class="last-transcript-hint">{st().card.lastTranscriptHint}</p>
-                      <p class="last-transcript-text">{controller().contextTranscriptPreview()}</p>
-                    </details>
-                  </Show>
-                </article>
-              )}
-            </Show>
-
-            <Show when={!controller().card() && !controller().pipelineActive()}>
-              <div class="empty-card">
-                <h2 class="section-title">
-                  {st().idle.title}
-                  <Show when={controller().contextActive()}>
-                    <span class="context-badge">{controller().contextBadge()}</span>
-                  </Show>
-                </h2>
-                <p class="section-copy">
-                  <strong>{st().idle.captureHold}</strong>{" "}
-                  <strong>{controller().settings.hotkey}</strong> {st().idle.captureMid}{" "}
-                  <strong>{st().idle.captureRelease}</strong> {st().idle.capturePipeline}{" "}
-                  {st().idle.captureMaxPrefix}{" "}
-                  <strong>
-                    {controller().settings.captureMaxSeconds} {st().copyFmt.secondUnit}
-                  </strong>{" "}
-                  {st().idle.captureMaxSuffix}
-                </p>
-                <Show when={controller().settings.showAdvanced && controller().settings.notebookLmEnabled}>
-                  <div class="result-actions">
-                    <button
-                      class="btn-ghost"
-                      type="button"
-                      onClick={() => void controller().openNotebookLm()}
-                    >
-                      {st().card.openNotebookLm}
-                    </button>
-                  </div>
-                </Show>
-                <Show when={controller().settings.showAdvanced && controller().contextTranscriptPreview()}>
-                  <details class="last-transcript-block last-transcript-block--idle">
-                    <summary>{st().card.lastTranscriptLabel}</summary>
-                    <p class="last-transcript-hint">{st().card.lastTranscriptHint}</p>
-                    <p class="last-transcript-text">{controller().contextTranscriptPreview()}</p>
-                  </details>
-                </Show>
-              </div>
-            </Show>
+                {st().setup.openSetup}
+              </button>
+            </p>
           </Show>
-        </section>
-      </Show>
-    </>
+          <p class="empty-flow-hint">
+            Качество захвата: {qualityLabel()}
+            <Show when={controller().captureQuality() === "short"}>
+              {" "}
+              {st().card.shortCaptureHint}
+            </Show>
+          </p>
+        </div>
+
+        <div class="main-card-body" data-testid="main-card-body">
+          <article class="result-card" data-testid="main-card-shell">
+            <section class="result-section" data-testid="section-gist">
+              <div class="result-label">{st().card.gistLabel}</div>
+              <p
+                class={`result-text ${controller().card()?.gist?.trim() ? "" : "result-text--placeholder"}`}
+              >
+                {controller().card()?.gist?.trim() || st().card.emptyGist}
+              </p>
+            </section>
+
+            <section class="result-section result-section--primary" data-testid="section-say-now">
+              <div class="result-label">{st().card.sayNowLabel}</div>
+              <p
+                class={`result-text result-text--speak ${controller().card()?.sayNow?.trim() ? "" : "result-text--placeholder"}`}
+              >
+                {controller().card()?.sayNow?.trim() || st().card.emptySayNow}
+              </p>
+            </section>
+
+            <section class="result-section" data-testid="section-next-move">
+              <div class="result-label">{st().card.nextMoveLabel}</div>
+              <p
+                class={`result-text ${controller().card()?.nextMove?.trim() ? "" : "result-text--placeholder"}`}
+              >
+                {controller().card()?.nextMove?.trim() || st().card.emptyNextMove}
+              </p>
+            </section>
+          </article>
+        </div>
+
+        <div class="result-actions" data-testid="action-row">
+          <button
+            class="btn-primary"
+            type="button"
+            disabled={!controller().canCopySayNow()}
+            title={controller().copyDisabledReason() ?? ""}
+            onClick={() => void controller().copySection("sayNow")}
+          >
+            {st().card.copySayNow}
+          </button>
+          <button
+            class="btn-secondary"
+            type="button"
+            disabled={!controller().canRetry()}
+            title={controller().retryDisabledReason() ?? ""}
+            onClick={() => void controller().retryAnalysis()}
+          >
+            {st().card.retryCard}
+          </button>
+          <button
+            class="btn-ghost"
+            type="button"
+            disabled={!controller().canClear()}
+            title={controller().clearDisabledReason() ?? ""}
+            onClick={() => void controller().clearContext()}
+          >
+            {st().card.clearContext}
+          </button>
+        </div>
+      </section>
+    </Show>
   );
 }

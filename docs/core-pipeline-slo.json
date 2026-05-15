@@ -1,0 +1,17 @@
+{
+  "version": "2026-05-14",
+  "corePipeline": {
+    "releaseToCardP95Ms": 12000,
+    "pipelineFailPercentMax": 5,
+    "retryPercentMax": 15
+  },
+  "classification": {
+    "blocker": [
+      "releaseToCardP95Ms",
+      "pipelineFailPercentMax"
+    ],
+    "nonBlocker": [
+      "retryPercentMax"
+    ]
+  }
+}

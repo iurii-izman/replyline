@@ -4,6 +4,12 @@ use crate::types::{AnalysisCardDto, AppSettings};
 
 const HTTP_TIMEOUT_SECS: u64 = 20;
 const MAX_RETRIES: u32 = 2;
+const RETRY_BASE_MS: u64 = 500;
+const MAX_CARD_RETRY_ATTEMPTS: usize = 1;
+const PRIMARY_MAX_TOKENS: u16 = 260;
+const RETRY_MAX_TOKENS: u16 = 180;
+const SHORT_TRANSCRIPT_MAX: usize = 40;
+const MEDIUM_TRANSCRIPT_MAX: usize = 120;
 
 #[derive(Debug, Serialize)]
 struct ChatRequest<'a> {
@@ -41,8 +47,19 @@ struct RawCard {
     next_move: String,
 }
 
-/// Prompt contract version. Bump when changing system prompts to track regressions.
-pub const PROMPT_VERSION: &str = "v2";
+#[derive(Debug, Clone, Copy)]
+struct CardLimits {
+    gist: usize,
+    say_now: usize,
+    next_move: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct CardGenerationOutcome {
+    pub card: AnalysisCardDto,
+    pub retry_attempted: bool,
+    pub retry_success: bool,
+}
 
 const SYSTEM_PROMPT_RU: &str = r#"Ты — краткий помощник для сложных рабочих разговоров.
 Твоя задача: по короткому аудиофрагменту помочь человеку не растеряться и быстро ответить.
@@ -65,9 +82,9 @@ const SYSTEM_PROMPT_RU: &str = r#"Ты — краткий помощник дл�
 {"gist":"...","say_now":"...","next_move":"..."}
 
 Ограничения:
-- gist: до 110 символов
-- say_now: до 220 символов
-- next_move: до 110 символов"#;
+- gist: до 140 символов
+- say_now: до 320 символов
+- next_move: до 180 символов"#;
 
 const SYSTEM_PROMPT_EN: &str = r#"You are a concise assistant for difficult work conversations.
 Your task: given a short audio transcript, help the person respond quickly and clearly.
@@ -89,9 +106,9 @@ Return ONLY JSON without markdown:
 {"gist":"...","say_now":"...","next_move":"..."}
 
 Limits:
-- gist: up to 110 characters
-- say_now: up to 220 characters
-- next_move: up to 110 characters"#;
+- gist: up to 140 characters
+- say_now: up to 320 characters
+- next_move: up to 180 characters"#;
 
 fn system_prompt_for_language(language: &str) -> &'static str {
     match language {
@@ -105,14 +122,61 @@ pub async fn analyze_transcript(
     api_key: Option<&str>,
     transcript: &str,
     context: &str,
-) -> Result<AnalysisCardDto, String> {
-    let language = settings.primary_language.trim().to_lowercase();
-    let prompt = build_user_prompt(transcript, context, &language);
-    let system_prompt = settings
-        .custom_system_prompt
-        .as_deref()
-        .filter(|s| !s.trim().is_empty())
-        .unwrap_or_else(|| system_prompt_for_language(&language));
+) -> Result<CardGenerationOutcome, String> {
+    let language = "ru".to_string();
+    let (raw_text, parse_or_request_err) = request_card_raw_text(
+        settings,
+        api_key,
+        transcript,
+        context,
+        &language,
+        None,
+        PRIMARY_MAX_TOKENS,
+    )
+    .await?;
+    let card = parse_card_json(&raw_text).map_err(|err| format!("{parse_or_request_err}{err}"))?;
+    match normalize_card(card, transcript) {
+        Ok(card) => Ok(CardGenerationOutcome {
+            card,
+            retry_attempted: false,
+            retry_success: false,
+        }),
+        Err(err) if err.contains("Card output invalid:") && MAX_CARD_RETRY_ATTEMPTS > 0 => {
+            let (retry_raw_text, parse_or_request_err) = request_card_raw_text(
+                settings,
+                api_key,
+                transcript,
+                context,
+                &language,
+                Some("RETRY MODE: return stricter actionable JSON. say_now must include concrete action or clear clarifier question. next_move must include specific artifact/owner/deadline."),
+                RETRY_MAX_TOKENS,
+            )
+            .await?;
+            let retry_card = parse_card_json(&retry_raw_text)
+                .map_err(|e| format!("{parse_or_request_err}{e}"))?;
+            let normalized = normalize_card(retry_card, transcript)
+                .map_err(|retry_err| format!("{err} | retry_failed: {retry_err}"))?;
+            Ok(CardGenerationOutcome {
+                card: normalized,
+                retry_attempted: true,
+                retry_success: true,
+            })
+        }
+        Err(err) => Err(err),
+    }
+}
+
+async fn request_card_raw_text(
+    settings: &AppSettings,
+    api_key: Option<&str>,
+    transcript: &str,
+    context: &str,
+    language: &str,
+    extra_suffix: Option<&str>,
+    max_tokens: u16,
+) -> Result<(String, String), String> {
+    let prompt = build_user_prompt(transcript, context, language, extra_suffix);
+    let system_prompt = system_prompt_for_language(language);
     let request = ChatRequest {
         model: settings.llm_model.trim(),
         messages: vec![
@@ -125,10 +189,9 @@ pub async fn analyze_transcript(
                 content: &prompt,
             },
         ],
-        temperature: settings.llm_temperature.clamp(0.0, 2.0),
-        max_tokens: 160,
+        temperature: 0.25,
+        max_tokens,
     };
-
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(HTTP_TIMEOUT_SECS))
         .build()
@@ -145,7 +208,7 @@ pub async fn analyze_transcript(
         for attempt in 0..=MAX_RETRIES {
             if attempt > 0 {
                 tokio::time::sleep(std::time::Duration::from_millis(
-                    500 * 2u64.pow(attempt - 1),
+                    RETRY_BASE_MS * 2u64.pow(attempt - 1),
                 ))
                 .await;
             }
@@ -155,7 +218,7 @@ pub async fn analyze_transcript(
             }
             match req.send().await {
                 Ok(resp) if resp.status().is_server_error() && attempt < MAX_RETRIES => {
-                    last_err = format!("LLM server error {}", resp.status());
+                    last_err = format!("LLM_HTTP_5XX: LLM server error {}", resp.status());
                     continue;
                 }
                 Ok(resp) => {
@@ -163,10 +226,10 @@ pub async fn analyze_transcript(
                     break;
                 }
                 Err(err) if (err.is_timeout() || err.is_connect()) && attempt < MAX_RETRIES => {
-                    last_err = format!("LLM request failed: {err}");
+                    last_err = format!("LLM_RETRYABLE: LLM request failed: {err}");
                     continue;
                 }
-                Err(err) => return Err(format!("LLM request failed: {err}")),
+                Err(err) => return Err(format!("LLM_REQUEST_FAILED: LLM request failed: {err}")),
             }
         }
         resolved.ok_or(last_err)?
@@ -175,17 +238,17 @@ pub async fn analyze_transcript(
     if !response.status().is_success() {
         let status = response.status();
         let _ = response.text().await;
-        return Err(format!("LLM error {status}"));
+        return Err(format!("LLM_HTTP_ERROR: LLM error {status}"));
     }
 
     let payload: ChatResponse = response
         .json()
         .await
-        .map_err(|err| format!("LLM response parse failed: {err}"))?;
+        .map_err(|err| format!("LLM_PARSE_FAILED: LLM response parse failed: {err}"))?;
     let content = payload
         .choices
         .first()
-        .ok_or_else(|| "LLM returned no choices.".to_string())?
+        .ok_or_else(|| "LLM_EMPTY: LLM returned no choices.".to_string())?
         .message
         .content
         .clone();
@@ -200,11 +263,15 @@ pub async fn analyze_transcript(
         other => other.to_string(),
     };
 
-    let card = parse_card_json(&raw_text)?;
-    normalize_card(card)
+    Ok((raw_text, "LLM returned invalid JSON: ".to_string()))
 }
 
-fn build_user_prompt(transcript: &str, context: &str, language: &str) -> String {
+fn build_user_prompt(
+    transcript: &str,
+    context: &str,
+    language: &str,
+    extra_suffix: Option<&str>,
+) -> String {
     let (clean_context, prompt_template) = if language == "en" {
         (
             if context.trim().is_empty() { "(empty)" } else { context },
@@ -217,9 +284,14 @@ fn build_user_prompt(transcript: &str, context: &str, language: &str) -> String 
         )
     };
 
-    prompt_template
+    let mut prompt = prompt_template
         .replace("{clean_context}", clean_context)
-        .replace("{transcript}", transcript)
+        .replace("{transcript}", transcript);
+    if let Some(suffix) = extra_suffix.filter(|v| !v.trim().is_empty()) {
+        prompt.push_str("\n\n");
+        prompt.push_str(suffix.trim());
+    }
+    prompt
 }
 
 fn parse_card_json(raw_text: &str) -> Result<RawCard, String> {
@@ -272,10 +344,13 @@ fn try_partial_extract(text: &str) -> Option<RawCard> {
     })
 }
 
-fn normalize_card(card: RawCard) -> Result<AnalysisCardDto, String> {
-    let gist = trim_line(&card.gist, 110);
-    let say_now = trim_line(&card.say_now, 220);
-    let next_move = trim_line(&card.next_move, 110);
+fn normalize_card(card: RawCard, transcript: &str) -> Result<AnalysisCardDto, String> {
+    let limits = limits_for_transcript(transcript);
+    let gist = trim_line(&card.gist, limits.gist);
+    let mut say_now = trim_line(&card.say_now, limits.say_now);
+    let mut next_move = trim_line(&card.next_move, limits.next_move);
+    let mut next_move_fallback = false;
+    let mut say_now_repair = false;
 
     if gist.is_empty() {
         return Err("Card output invalid: gist is empty.".to_string());
@@ -287,13 +362,40 @@ fn normalize_card(card: RawCard) -> Result<AnalysisCardDto, String> {
         return Err("Card output invalid: next_move is empty.".to_string());
     }
 
-    validate_say_now(&say_now)?;
-    validate_next_move(&next_move)?;
+    if let Err(err) = validate_say_now(&say_now) {
+        if err.contains("say_now has no concrete action or clarification.")
+            || err.contains("say_now is too generic.")
+        {
+            say_now = trim_line(&repair_say_now(&say_now, transcript), limits.say_now);
+            validate_say_now(&say_now)?;
+            say_now_repair = true;
+        } else {
+            return Err(err);
+        }
+    }
+    if let Err(err) = validate_next_move(&next_move) {
+        if err.contains("next_move is too vague.")
+            || err.contains("next_move is too short.")
+            || err.contains("next_move has no concrete coordination artifact.")
+        {
+            next_move = trim_line(
+                &build_fallback_next_move(&say_now, transcript),
+                limits.next_move,
+            );
+            validate_next_move(&next_move)?;
+            next_move_fallback = true;
+        } else {
+            return Err(err);
+        }
+    }
 
     Ok(AnalysisCardDto {
         gist,
         say_now,
         next_move,
+        chars_band: chars_band(transcript).to_string(),
+        next_move_fallback,
+        say_now_repair,
     })
 }
 
@@ -369,7 +471,8 @@ fn validate_next_move(value: &str) -> Result<(), String> {
     if word_count < 3 {
         return Err("Card output invalid: next_move is too short.".to_string());
     }
-    if contains_any(&lower, &["потом", "как-нибудь", "посмотрим", "ок", "позже"])
+    if contains_any(&lower, &["потом", "как-нибудь", "посмотрим", "позже"])
+        || contains_standalone_word(&lower, "ок")
     {
         return Err("Card output invalid: next_move is too vague.".to_string());
     }
@@ -403,6 +506,12 @@ fn contains_any(haystack: &str, tokens: &[&str]) -> bool {
     tokens.iter().any(|token| haystack.contains(token))
 }
 
+fn contains_standalone_word(haystack: &str, token: &str) -> bool {
+    haystack
+        .split(|ch: char| !ch.is_alphanumeric())
+        .any(|part| part == token)
+}
+
 fn trim_line(value: &str, max_chars: usize) -> String {
     let clean = value.replace('\n', " ").trim().to_string();
     if clean.chars().count() <= max_chars {
@@ -411,9 +520,149 @@ fn trim_line(value: &str, max_chars: usize) -> String {
     clean.chars().take(max_chars).collect()
 }
 
+fn build_fallback_next_move(say_now: &str, transcript: &str) -> String {
+    let lower = format!("{say_now}\n{transcript}").to_lowercase();
+    if contains_any(&lower, &["email", "e-mail", "mail", "письм", "почт"]) {
+        "Отправлю письмо с итогом, владельцем и дедлайном ответа до конца дня.".to_string()
+    } else if contains_any(&lower, &["чат", "slack", "teams", "канал", "сообщен"]) {
+        "Зафиксирую в чате решение, владельца и время контрольного апдейта.".to_string()
+    } else if contains_any(
+        &lower,
+        &["тикет", "ticket", "jira", "issue", "задач", "таск"],
+    ) {
+        "Обновлю тикет: приоритет, владелец, срок и критерий готовности.".to_string()
+    } else if contains_any(
+        &lower,
+        &[
+            "созвон",
+            "встреч",
+            "meeting",
+            "слот",
+            "календар",
+            "чекпоинт",
+            "checkpoint",
+        ],
+    ) {
+        "Поставлю слот встречи на 15 минут и чекпоинт с решением в календаре.".to_string()
+    } else if contains_any(
+        &lower,
+        &[
+            "владел",
+            "owner",
+            "ответствен",
+            "срок",
+            "дедлайн",
+            "deadline",
+            "до ",
+        ],
+    ) {
+        "Зафиксирую владельца, дедлайн и контрольную дату в чате команды.".to_string()
+    } else if contains_any(
+        &lower,
+        &[
+            "документ",
+            "doc",
+            "summary",
+            "резюме",
+            "протокол",
+            "спек",
+            "правк",
+            "черновик",
+        ],
+    ) {
+        "Обновлю документ: решение, правки и план проверки с владельцем.".to_string()
+    } else if contains_any(&lower, &["план", "список", "приоритет"]) {
+        "Соберу план: шаги, владелец каждого шага и время следующей сверки.".to_string()
+    } else {
+        "Уточню в чате один блокер, назначу владельца и время следующего апдейта.".to_string()
+    }
+}
+
+fn limits_for_transcript(transcript: &str) -> CardLimits {
+    match chars_band(transcript) {
+        "short" => CardLimits {
+            gist: 110,
+            say_now: 220,
+            next_move: 120,
+        },
+        "medium" => CardLimits {
+            gist: 140,
+            say_now: 320,
+            next_move: 180,
+        },
+        _ => CardLimits {
+            gist: 140,
+            say_now: 320,
+            next_move: 180,
+        },
+    }
+}
+
+pub fn chars_band(transcript: &str) -> &'static str {
+    let count = transcript.chars().count();
+    if count <= SHORT_TRANSCRIPT_MAX {
+        "short"
+    } else if count <= MEDIUM_TRANSCRIPT_MAX {
+        "medium"
+    } else {
+        "long"
+    }
+}
+
+fn repair_say_now(value: &str, transcript: &str) -> String {
+    let clean = value.trim().trim_end_matches('.').trim();
+    if clean.ends_with('?') {
+        return clean.to_string();
+    }
+    let lower = format!("{clean}\n{transcript}").to_lowercase();
+    let variant = transcript
+        .chars()
+        .fold(0usize, |acc, ch| acc.wrapping_add(ch as usize))
+        % 3;
+    if contains_any(&lower, &["когда", "срок", "deadline", "дедлайн", "дата"]) {
+        match variant {
+            0 => "Уточню сейчас: какой финальный срок и кто подтверждает его сегодня?".to_string(),
+            1 => "Давайте сверим прямо сейчас: дедлайн какой и кто фиксирует подтверждение?"
+                .to_string(),
+            _ => "Нужна конкретика: какой срок берем и кто дает финальный апдейт сегодня?"
+                .to_string(),
+        }
+    } else if contains_any(&lower, &["кто", "владел", "owner", "ответствен"]) {
+        match variant {
+            0 => "Уточню прямо сейчас: кто владелец шага и когда даем статус-апдейт?".to_string(),
+            1 => {
+                "Зафиксируем сейчас: кто ответственный и к какому времени ждем апдейт?".to_string()
+            }
+            _ => "Нужно прояснить: кто владелец и какой срок следующего статуса?".to_string(),
+        }
+    } else {
+        match variant {
+            0 => format!("{clean}. Давайте зафиксируем конкретный шаг и срок до конца дня."),
+            1 => format!("{clean}. Предлагаю назвать один следующий шаг и время проверки сегодня."),
+            _ => format!(
+                "{clean}. Давайте уточним владельца, следующий шаг и дедлайн в этом обсуждении."
+            ),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{normalize_card, parse_card_json, try_partial_extract, RawCard};
+    use super::{
+        normalize_card, parse_card_json, try_partial_extract, validate_next_move, RawCard,
+    };
+
+    fn fallback_card_for(say_now: &str, transcript: &str) -> crate::types::AnalysisCardDto {
+        normalize_card(
+            RawCard {
+                gist: "Нужно согласовать следующий рабочий шаг.".to_string(),
+                say_now: say_now.to_string(),
+                next_move: "Потом посмотрим.".to_string(),
+            },
+            transcript,
+        )
+        .expect("fallback card must normalize")
+    }
 
     #[test]
     fn parses_json_inside_markdown_wrapper() {
@@ -426,11 +675,14 @@ mod tests {
 
     #[test]
     fn rejects_apology_only_card_output() {
-        let err = normalize_card(RawCard {
-            gist: "Нужно ответить клиенту".to_string(),
-            say_now: "Извините.".to_string(),
-            next_move: "Письмо позже.".to_string(),
-        })
+        let err = normalize_card(
+            RawCard {
+                gist: "Нужно ответить клиенту".to_string(),
+                say_now: "Извините.".to_string(),
+                next_move: "Письмо позже.".to_string(),
+            },
+            "",
+        )
         .expect_err("must reject");
 
         assert!(err.contains("apology-only"));
@@ -444,11 +696,12 @@ mod tests {
                 "Давайте сейчас зафиксируем владельца и срок: я пришлю обновление сегодня до 17:00."
                     .to_string(),
             next_move: "Отправлю письмо с владельцем и чекпоинтом на завтра.".to_string(),
-        })
+        }, "")
         .expect("must accept");
 
         assert!(card.say_now.contains("сегодня"));
         assert!(card.next_move.contains("письмо"));
+        assert!(!card.next_move_fallback);
     }
 
     #[test]
@@ -472,5 +725,131 @@ mod tests {
         let card = parse_card_json(garbled).expect("should fall back to partial");
         assert!(card.gist.starts_with("[partial]"));
         assert_eq!(card.say_now, "Check status");
+    }
+
+    #[test]
+    fn repairs_vague_next_move_instead_of_failing_card() {
+        let card = normalize_card(
+            RawCard {
+                gist: "Есть риск сдвига срока.".to_string(),
+                say_now: "Давайте согласуем приоритеты и срок сегодня до 17:00.".to_string(),
+                next_move: "Потом посмотрим.".to_string(),
+            },
+            "",
+        )
+        .expect("must repair");
+
+        assert!(card.next_move_fallback);
+        validate_next_move(&card.next_move).expect("fallback must pass validator");
+    }
+
+    #[test]
+    fn fallback_uses_email_template() {
+        let card = fallback_card_for(
+            "Давайте я отправлю письмо с решением сегодня.",
+            "Клиент просит email с итогами.",
+        );
+
+        assert!(card.next_move_fallback);
+        assert!(card.next_move.contains("письмо"));
+        validate_next_move(&card.next_move).expect("email fallback must validate");
+    }
+
+    #[test]
+    fn fallback_uses_chat_template() {
+        let card = fallback_card_for(
+            "Давайте зафиксируем решение в чате сейчас.",
+            "Команда просит написать в общий канал.",
+        );
+
+        assert!(card.next_move_fallback);
+        assert!(card.next_move.contains("чате"));
+        validate_next_move(&card.next_move).expect("chat fallback must validate");
+    }
+
+    #[test]
+    fn fallback_uses_ticket_task_template() {
+        let card = fallback_card_for(
+            "Беру задачу и уточню срок сегодня.",
+            "Нужно обновить тикет Jira по дефекту.",
+        );
+
+        assert!(card.next_move_fallback);
+        assert!(card.next_move.contains("тикет"));
+        validate_next_move(&card.next_move).expect("ticket fallback must validate");
+    }
+
+    #[test]
+    fn fallback_uses_meeting_checkpoint_template() {
+        let card = fallback_card_for(
+            "Давайте назначу короткий созвон сегодня.",
+            "Нужен слот встречи для checkpoint.",
+        );
+
+        assert!(card.next_move_fallback);
+        assert!(card.next_move.contains("слот") || card.next_move.contains("встречи"));
+        validate_next_move(&card.next_move).expect("meeting fallback must validate");
+    }
+
+    #[test]
+    fn fallback_uses_owner_deadline_template() {
+        let card = fallback_card_for(
+            "Давайте согласуем владельца и срок сегодня.",
+            "Ответственный пока не назван.",
+        );
+
+        assert!(card.next_move_fallback);
+        assert!(card.next_move.contains("владельца"));
+        assert!(card.next_move.contains("дедлайн"));
+        validate_next_move(&card.next_move).expect("owner fallback must validate");
+    }
+
+    #[test]
+    fn fallback_uses_document_fix_template() {
+        let card = fallback_card_for(
+            "Проверю документ и пришлю правку сегодня.",
+            "Нужно поправить summary и черновик.",
+        );
+
+        assert!(card.next_move_fallback);
+        assert!(card.next_move.contains("документ"));
+        validate_next_move(&card.next_move).expect("document fallback must validate");
+    }
+
+    #[test]
+    fn fallback_uses_plan_list_template() {
+        let card = fallback_card_for(
+            "Давайте согласуем приоритеты и первый шаг сейчас.",
+            "Нужен список рисков и план решения.",
+        );
+
+        assert!(card.next_move_fallback);
+        assert!(card.next_move.contains("список") || card.next_move.contains("план"));
+        validate_next_move(&card.next_move).expect("plan fallback must validate");
+    }
+
+    #[test]
+    fn fallback_does_not_mask_say_now_guardrails() {
+        let err = normalize_card(
+            RawCard {
+                gist: "Есть неопределенность по сроку.".to_string(),
+                say_now: "Потом посмотрим.".to_string(),
+                next_move: "Потом посмотрим.".to_string(),
+            },
+            "Нужен тикет.",
+        )
+        .expect_err("must reject before next_move fallback");
+
+        assert!(err.contains("say_now"));
+    }
+
+    #[test]
+    fn next_move_vague_ok_check_is_word_boundaried() {
+        validate_next_move("Зафиксирую владельца, срок и чекпоинт в чате.")
+            .expect("срок must not be treated as standalone ok");
+
+        let err = validate_next_move("ОК, зафиксирую это в чате.")
+            .expect_err("standalone ok is still vague");
+        assert!(err.contains("too vague"));
     }
 }

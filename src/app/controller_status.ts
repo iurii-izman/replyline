@@ -13,13 +13,7 @@ export function traySyncPayload(input: TrayPayloadInput): { phase: string; detai
   if (input.phase === "booting") return { phase: "booting", detail: null };
   if (input.phase === "capturing") return { phase: "capturing", detail: null };
   if (input.phase === "transcribing") return { phase: "transcribing", detail: null };
-  if (input.phase === "analyzing") {
-    const detail = input.statusDetail;
-    return {
-      phase: "analyzing",
-      detail: detail && detail.length <= 48 ? detail : null,
-    };
-  }
+  if (input.phase === "analyzing") return { phase: "analyzing", detail: null };
   if (input.phase === "ready") return { phase: "ready_card", detail: null };
   if (input.hotkeyFailed) return { phase: "hotkey_failed", detail: null };
   if (input.phase === "error" || input.hasError) return { phase: "error", detail: null };
@@ -27,12 +21,7 @@ export function traySyncPayload(input: TrayPayloadInput): { phase: string; detai
   return { phase: "idle_ready", detail: null };
 }
 
-export function phaseLabelFor(
-  phase: Phase,
-  setupRequired: boolean,
-  hotkeyFailed: boolean,
-  s: UiStrings,
-): string {
+export function phaseLabelFor(phase: Phase, setupRequired: boolean, hotkeyFailed: boolean, s: UiStrings): string {
   switch (phase) {
     case "booting":
       return s.phase.booting;
@@ -50,31 +39,5 @@ export function phaseLabelFor(
       if (hotkeyFailed) return s.phase.hotkeyFail;
       if (setupRequired) return s.phase.setupNeeded;
       return s.phase.idleReady;
-  }
-}
-
-export function livePhaseHeadlineFor(phase: Phase, s: UiStrings): string {
-  switch (phase) {
-    case "capturing":
-      return s.livePhase.capturingHeadline;
-    case "transcribing":
-      return s.livePhase.transcribingHeadline;
-    case "analyzing":
-      return s.livePhase.analyzingHeadline;
-    default:
-      return "";
-  }
-}
-
-export function livePhaseSubFor(phase: Phase, s: UiStrings): string {
-  switch (phase) {
-    case "capturing":
-      return s.livePhase.capturingSub;
-    case "transcribing":
-      return s.livePhase.transcribingSub;
-    case "analyzing":
-      return s.livePhase.analyzingSub;
-    default:
-      return "";
   }
 }

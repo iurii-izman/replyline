@@ -1,54 +1,22 @@
 import { describe, expect, it } from "vitest";
+import { phaseLabelFor, traySyncPayload } from "./controller_status";
+import { ui_ru } from "./locale";
 
-import {
-  livePhaseHeadlineFor,
-  livePhaseSubFor,
-  phaseLabelFor,
-  traySyncPayload,
-} from "./controller_status";
-import { ui_ru as uiRu } from "./locale";
-
-describe("controller_status helpers", () => {
-  it("builds tray payload for analyzing with short detail", () => {
-    const payload = traySyncPayload({
-      phase: "analyzing",
-      statusDetail: "short",
-      setupRequired: false,
-      hotkeyFailed: false,
-      hasError: false,
-    });
-    expect(payload).toEqual({ phase: "analyzing", detail: "short" });
+describe("controller_status", () => {
+  it("maps idle with setup required to setup_needed tray phase", () => {
+    expect(
+      traySyncPayload({
+        phase: "idle",
+        statusDetail: null,
+        setupRequired: true,
+        hotkeyFailed: false,
+        hasError: false,
+      }),
+    ).toEqual({ phase: "setup_needed", detail: null });
   });
 
-  it("drops tray detail when too long", () => {
-    const payload = traySyncPayload({
-      phase: "analyzing",
-      statusDetail: "x".repeat(60),
-      setupRequired: false,
-      hotkeyFailed: false,
-      hasError: false,
-    });
-    expect(payload).toEqual({ phase: "analyzing", detail: null });
-  });
-
-  it("prefers setup-needed payload in idle", () => {
-    const payload = traySyncPayload({
-      phase: "idle",
-      statusDetail: null,
-      setupRequired: true,
-      hotkeyFailed: false,
-      hasError: false,
-    });
-    expect(payload.phase).toBe("setup_needed");
-  });
-
-  it("returns localized labels for capture and ready", () => {
-    expect(phaseLabelFor("capturing", false, false, uiRu)).toBe(uiRu.phase.capturing);
-    expect(phaseLabelFor("ready", false, false, uiRu)).toBe(uiRu.phase.ready);
-  });
-
-  it("returns live phase headlines and subtitles", () => {
-    expect(livePhaseHeadlineFor("transcribing", uiRu)).toBe(uiRu.livePhase.transcribingHeadline);
-    expect(livePhaseSubFor("analyzing", uiRu)).toBe(uiRu.livePhase.analyzingSub);
+  it("returns translated phase labels", () => {
+    expect(phaseLabelFor("capturing", false, false, ui_ru)).toBe("Запись");
+    expect(phaseLabelFor("idle", false, false, ui_ru)).toBe("Готово");
   });
 });

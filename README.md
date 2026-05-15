@@ -1,227 +1,28 @@
 # Replyline
 
-## Hero
+Slim Stable Beta: minimal path only.
 
-Когда ответить трудно, Replyline даёт следующий ход.
+## Product flow
 
-Windows-first tray app для сложных рабочих разговоров: hotkey -> короткий system-audio snippet -> одна карточка `gist / say_now / next_move`.
+`capture -> stt -> llm -> card`
 
-## What it is
+Canonical hotkey: `Ctrl+Alt+Space`.
+Card schema: `gist / say_now / next_move`.
+If the LLM returns a vague `next_move`, Rust repairs it with bounded context heuristics before rendering.
+Replyline is not a meeting assistant, not a transcript tool, and not a speaking coach.
 
-Удерживайте горячую клавишу в сложный момент разговора, отпустите — и получите компактную карточку ответа:
+## UI scope
 
-- `Суть`
-- `Скажи сейчас`
-- `Дальше`
+- Main: fixed status top, scrollable card body (`gist/say_now/next_move`), fixed action row: `Скопировать ответ`, `Пересобрать`, `Очистить`.
+- Settings: hotkey, capture max seconds, Deepgram API key, LLM base URL, LLM model, optional LLM API key, Save, Back.
+- No Advanced Mode. No memory/diagnostics user surface.
 
-Текущий фокус продукта намеренно узкий:
-
-- сложные рабочие разговоры
-- помощь в моменте, а не пост-разбор звонка
-- короткий фрагмент, а не запись всего звонка
-
-## What it is not
-
-- не meeting assistant
-- не transcript tool
-- не speaking coach
-
-## Trust block
-
-- захват идёт только пока удерживается hotkey
-- live-фрагменты обрабатываются в RAM и по умолчанию не сохраняются на диск
-- после отпускания hotkey фрагмент отправляется во внешние STT / LLM провайдеры, которые вы настраиваете сами
-- пользователь сам отвечает за правила платформ, политику работодателя и законы о записи
-
-## Alpha disclaimer
-
-- текущая стадия: внутренняя русскоязычная alpha
-- source-only: без обещаний публичного binary availability на этом этапе
-- cross-machine и cross-call-app поведение остаются `pending verification`
-
-## CTA
-
-- исходники и запуск: [README sections below](#getting-started)
-- минимальная внешняя страница: [landing/index.html](landing/index.html)
-- доступ для точечных тестеров: [docs/tester-brief.md](docs/tester-brief.md)
-
-## Current state
-
-Этот репозиторий — ранняя внутренняя инженерная alpha-сборка.
-
-Текущая модель публикации:
-
-- только исходный код
-- без закоммиченных бинарных артефактов
-- без публичного installer-релиза, пока не укреплены упаковка, подпись и live-call валидация
-
-Что уже есть:
-
-- tray-first Tauri приложение
-- компактное always-on-top окно
-- один global hotkey, по умолчанию `Ctrl+Alt+Space`
-- захват system-audio фрагмента через WASAPI loopback
-- путь STT через Deepgram
-- один OpenAI-compatible путь LLM
-- компактная карточка `gist / say_now / next_move`
-- только in-memory контекст
-- локальные настройки + Windows Credential Manager для секретов
-- runtime evidence, smoke артефакты и alpha handoff bundle tooling
-
-Что явно не входит в текущий MVP:
-
-- transcript UI
-- history UI
-- speaker detection
-- full-call recording
-- microphone capture in the default MVP path
-- coaching scores
-- tone / emotion analysis
-- automatic memory persistence from live snippets
-
-## Trust model
-
-- аудио захватывается только пока удерживается hotkey
-- фрагменты обрабатываются в RAM и по умолчанию не сохраняются
-- после отпускания клавиши фрагмент отправляется во внешние STT / LLM провайдеры, которые вы настроили
-- приложение не позиционируется как скрытый софт, терапевтический продукт или автономная система ответов
-- пользователь сам отвечает за соблюдение правил платформ, политики работодателя и законов о записи
-
-Подробно:
-
-- [docs/privacy-and-trust.md](docs/privacy-and-trust.md)
-- [docs/third-party-providers.md](docs/third-party-providers.md)
-- [docs/known-limitations.md](docs/known-limitations.md)
-
-## Язык alpha и честность запуска
-
-- текущая alpha — русскоязычная в product-facing UX
-- в коде есть технический `primaryLanguage` hook (`ru`/`en`) для будущей multilingual beta
-- это не означает готовый English-ready UX на текущем этапе
-
-## What is proven vs not yet proven
-
-Что уже подтверждено локально:
-
-- the app builds
-- the Rust backend compiles and tests pass
-- the prompt contract is guarded
-- the runtime probe path can produce real machine-local evidence artifacts
-- alpha handoff bundles can be generated from local runtime artifacts
-
-Что всё ещё pending verification:
-
-- повторяемое поведение в живых звонках Zoom / Teams / Meet / Telemost
-- консистентность между разными машинами
-- реальная полезность за пределами локальных инженерных прогонов
-
-Для честной модели верификации начните с [docs/verification-lanes.md](docs/verification-lanes.md).
-
-## Getting started
-
-### Requirements
-
-- Windows
-- Node / pnpm
-- Rust toolchain
-- WebView2 / Tauri runtime requirements
-- ключи провайдеров для реального runtime пути
-
-### Install
+## Run
 
 ```bash
-pnpm install
-```
-
-### Запуск приложения
-
-```bash
-pnpm tauri dev
-```
-
-### Быстрый инженерный gate
-
-```bash
+pnpm install --frozen-lockfile
 pnpm smoke
-```
-
-Эта команда запускает:
-
-- TypeScript typecheck (`pnpm typecheck`)
-- ESLint (`pnpm lint`)
-- Vite production build
-- `cargo check`
-- `cargo clippy` (warnings as errors)
-- `cargo fmt --check`
-- `cargo test`
-- `vitest` coverage lane (`pnpm test:ui:coverage`)
-- fixture validation
-- prompt-contract checks
-- сценарные проверки `say_now` (локальный quality gate)
-- deterministic consistency gate for canonical hotkey + scope wording
-- IPC contract gate
-- copy / claim guard
-
-Полный локальный quality + security вход:
-
-```bash
 pnpm verify
-```
-
-`pnpm verify` = `pnpm smoke` + `pnpm rust:deps` + `pnpm audit:npm`.
-
-## Runtime commands
-
-Базовые runtime / evidence команды:
-
-```bash
-pnpm probe:runtime
-pnpm probe:bench
-pnpm probe:durations
-pnpm evidence:bundle
-pnpm smoke:template
-pnpm alpha:handoff
-```
-
-Полезные вспомогательные команды:
-
-```bash
-pnpm runtime:preflight
-pnpm benchmark:evidence
 pnpm rust:deps
+pnpm audit:npm
 ```
-
-## Repository map
-
-- [src](src): Solid frontend
-- [src-tauri](src-tauri): Rust backend and Tauri app
-- [scripts](scripts): runtime, evidence, smoke, and release-support scripts
-- [fixtures](fixtures): deterministic prompt-contract inputs
-- [docs](docs): engineering docs for runtime proof, release readiness, memory, and verification
-
-Start here:
-
-- [docs/README.md](docs/README.md)
-
-## Core docs
-
-- [verification-lanes.md](docs/verification-lanes.md): что доказывает каждая verification lane
-- [runtime-bringup.md](docs/runtime-bringup.md): реальный runtime path и probe workflow
-- [runtime-evidence.md](docs/runtime-evidence.md): evidence артефакты и honesty rules
-- [smoke-checks.md](docs/smoke-checks.md): ручные critical-path проверки
-- [release-readiness.md](docs/release-readiness.md): lean alpha handoff gate
-- [benchmark-policy.md](docs/benchmark-policy.md): `target / measured / pending verification`
-- [privacy-and-trust.md](docs/privacy-and-trust.md): короткая trust-модель и storage truth
-- [known-limitations.md](docs/known-limitations.md): честные ограничения текущей alpha
-- [third-party-providers.md](docs/third-party-providers.md): границы ответственности внешних STT/LLM
-- [memory-layer.md](docs/memory-layer.md): future track (internal planning), отдельно от текущего live-card MVP
-
-## Internal alpha ops
-
-- [internal-alpha-checklist.md](docs/internal-alpha-checklist.md): порядок self-test и blocker gate
-- [tester-brief.md](docs/tester-brief.md): короткий бриф для точечных ранних тестеров
-- [test-feedback-template.md](docs/test-feedback-template.md): единый шаблон useful feedback
-
-## License
-
-[MIT](LICENSE)

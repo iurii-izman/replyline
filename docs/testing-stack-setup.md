@@ -1,43 +1,39 @@
 # Testing Stack Setup
 
-## Install From Scratch
+## Required Gates
 
-```powershell
-pwsh -File scripts/setup-testing-stack.ps1
+- Install deps: `pnpm install --frozen-lockfile`
+- Required quality/security gate: `pnpm verify`
+- Rust supply chain lane: `pnpm rust:deps`
+- npm advisories: `pnpm audit:npm`
+
+`pnpm smoke` is required and includes:
+- `cargo test --manifest-path src-tauri/Cargo.toml`
+- `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings`
+- `cargo fmt --manifest-path src-tauri/Cargo.toml --check`
+- required policy checks: `pnpm test:prompt-contract`, `pnpm copy:check`
+
+## API Test Stack (single source of truth)
+
+Replyline keeps one API stack: **Postman/Newman**.
+
+- API smoke: `pnpm test:api:postman`
+- Collection path: `tests/api/postman/Replyline.postman_collection.json`
+- Environment path: `tests/api/postman/Replyline.local.postman_environment.json`
+
+Bruno assets and scripts were removed to avoid duplicate maintenance.
+
+## Optional Lanes
+
+Optional tooling is excluded from the default install profile (`optional=false` in `.npmrc`).
+Before running optional lanes, install optional packages explicitly:
+
+```bash
+pnpm install --include=optional
 ```
 
-## Verify Installed Toolchain
-
-```powershell
-pwsh -File scripts/verify-testing-stack.ps1
-```
-
-## Run Layers
-
-- API Bruno: `pnpm test:api:bruno`
-- API Postman/Newman: `pnpm test:api:postman`
-- Web E2E: `pnpm test:e2e:web`
-- Desktop E2E: `pnpm test:e2e:desktop` (requires `TAURI_APP_PATH` and `tauri-driver`)
-- k6 smoke: `pnpm test:perf:k6`
-- Lighthouse: `pnpm test:ux:lighthouse`
-- ZAP baseline: `pnpm test:sec:zap`
-
-## PR vs Weekly
-
-- Baseline install gate: `pnpm install --frozen-lockfile`
-- PR fast lane: `pnpm verify`
-- Full local lane (manual): `pnpm verify:full`
-- Weekly extended lane: `pnpm verify:full` + API/E2E/perf/UX/sec scripts
-
-## Secrets And Env
-
-- Never put tokens in git-tracked files.
-- Postman CLI login/token should be provided by local env/session.
-- Use local env vars like `ZAP_TARGET_URL`, `K6_BASE_URL`, `E2E_BASE_URL`, `TAURI_APP_PATH`.
-
-## Troubleshooting
-
-- Installed but not in `PATH`: use absolute path or restart shell.
-- Postman CLI auth missing: run `postman-cli login`.
-- Edge version changed: rerun `msedgedriver-tool.exe`.
-- Desktop smoke exit code `2`: set `TAURI_APP_PATH`.
+- `pnpm verify:extended`
+- `pnpm test:optional:api`
+- `pnpm test:optional:e2e:web`
+- `pnpm test:optional:e2e:desktop`
+- `pnpm test:optional:ux:lighthouse`

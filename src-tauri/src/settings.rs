@@ -22,12 +22,8 @@ pub enum SettingsError {
     Json(#[from] serde_json::Error),
     #[error("URL: {0}")]
     Url(#[from] url::ParseError),
-    #[error("INVALID_LANGUAGE")]
-    InvalidLanguage,
     #[error("INVALID_URL")]
     InvalidUrl,
-    #[error("INVALID_NOTEBOOKLM_URL")]
-    InvalidNotebookLmUrl,
     #[error("INVALID_SCHEMA")]
     InvalidSchema,
     #[error("MODEL_REQUIRED")]
@@ -36,6 +32,8 @@ pub enum SettingsError {
     HotkeyRequired,
     #[error("CAPTURE_RANGE_INVALID")]
     CaptureRangeInvalid,
+    #[error("PARTIAL_CONFIG_INVALID")]
+    PartialConfigInvalid,
 }
 
 pub fn settings_path() -> Result<PathBuf, SettingsError> {
@@ -60,6 +58,11 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     };
 
     let migrated = migrate_settings(value);
+
+    if let Err(err) = ensure_required_fields(&migrated) {
+        quarantine_corrupt(&path, &format!("required_fields_error={err}"));
+        return Ok(AppSettings::default());
+    }
 
     let settings: AppSettings = match serde_json::from_value(migrated) {
         Ok(s) => s,
@@ -124,21 +127,44 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     if !(5..=180).contains(&settings.capture_max_seconds) {
         return Err(SettingsError::CaptureRangeInvalid);
     }
-    if !(0.0..=2.0).contains(&settings.llm_temperature) {
-        return Err(SettingsError::CaptureRangeInvalid);
-    }
-    match settings.primary_language.trim() {
-        "ru" | "en" => {}
-        _ => return Err(SettingsError::InvalidLanguage),
-    }
     if !settings.llm_base_url.trim().is_empty() {
         validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
     }
-    if settings.notebook_lm_enabled || !settings.notebook_lm_launch_url.trim().is_empty() {
-        validate_http_url(
-            settings.notebook_lm_launch_url.trim(),
-            SettingsError::InvalidNotebookLmUrl,
-        )?;
+    Ok(())
+}
+
+fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError> {
+    let obj = value
+        .as_object()
+        .ok_or(SettingsError::PartialConfigInvalid)?;
+    for key in [
+        "schemaVersion",
+        "hotkey",
+        "llmBaseUrl",
+        "llmModel",
+        "captureMaxSeconds",
+    ] {
+        if !obj.contains_key(key) {
+            return Err(SettingsError::PartialConfigInvalid);
+        }
+    }
+
+    if obj
+        .get("hotkey")
+        .and_then(|v| v.as_str())
+        .map(|v| v.trim().is_empty())
+        .unwrap_or(true)
+    {
+        return Err(SettingsError::PartialConfigInvalid);
+    }
+
+    if obj
+        .get("llmModel")
+        .and_then(|v| v.as_str())
+        .map(|v| v.trim().is_empty())
+        .unwrap_or(true)
+    {
+        return Err(SettingsError::PartialConfigInvalid);
     }
     Ok(())
 }
@@ -244,33 +270,12 @@ mod tests {
     }
 
     #[test]
-    fn rejects_unknown_language() {
-        let mut settings = AppSettings::default();
-        settings.primary_language = "de".to_string();
-        assert!(matches!(
-            validate(&settings),
-            Err(SettingsError::InvalidLanguage)
-        ));
-    }
-
-    #[test]
     fn rejects_capture_range_outside_bounds() {
         let mut settings = AppSettings::default();
         settings.capture_max_seconds = 4;
         assert!(matches!(
             validate(&settings),
             Err(SettingsError::CaptureRangeInvalid)
-        ));
-    }
-
-    #[test]
-    fn rejects_invalid_notebooklm_url_when_enabled() {
-        let mut settings = AppSettings::default();
-        settings.notebook_lm_enabled = true;
-        settings.notebook_lm_launch_url = "not-a-url".to_string();
-        assert!(matches!(
-            validate(&settings),
-            Err(SettingsError::InvalidNotebookLmUrl)
         ));
     }
 
@@ -305,8 +310,6 @@ mod tests {
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
-            "primaryLanguage": "ru",
-            "deepgramModel": "nova-3",
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
@@ -321,8 +324,6 @@ mod tests {
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
-            "primaryLanguage": "ru",
-            "deepgramModel": "nova-3",
             "captureMaxSeconds": 30,
             "llmTemperature": 0.5
         });
@@ -332,49 +333,16 @@ mod tests {
     }
 
     #[test]
-    fn rejects_temperature_out_of_range() {
-        let mut settings = AppSettings::default();
-        settings.llm_temperature = 3.0;
-        assert!(validate(&settings).is_err());
-
-        settings.llm_temperature = -0.5;
-        assert!(validate(&settings).is_err());
-
-        settings.llm_temperature = 1.0;
-        assert!(validate(&settings).is_ok());
-    }
-
-    #[test]
-    fn migration_sets_show_advanced_default_false_when_missing() {
-        let v1 = serde_json::json!({
-            "schemaVersion": 1,
-            "hotkey": "Ctrl+Alt+Space",
+    fn required_fields_reject_missing_hotkey() {
+        let value = serde_json::json!({
+            "schemaVersion": 2,
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
-            "primaryLanguage": "ru",
-            "deepgramModel": "nova-3",
             "captureMaxSeconds": 30
         });
-        let migrated = super::migrate_settings(v1);
-        let parsed: AppSettings = serde_json::from_value(migrated).expect("parse migrated");
-        assert!(!parsed.show_advanced);
-    }
-
-    #[test]
-    fn migration_preserves_show_advanced_when_present() {
-        let v2 = serde_json::json!({
-            "schemaVersion": 2,
-            "hotkey": "Ctrl+Alt+Space",
-            "llmBaseUrl": "https://openrouter.ai/api/v1",
-            "llmModel": "gpt-4o-mini",
-            "primaryLanguage": "ru",
-            "deepgramModel": "nova-3",
-            "captureMaxSeconds": 30,
-            "llmTemperature": 0.5,
-            "showAdvanced": true
-        });
-        let migrated = super::migrate_settings(v2);
-        let parsed: AppSettings = serde_json::from_value(migrated).expect("parse migrated");
-        assert!(parsed.show_advanced);
+        assert!(matches!(
+            ensure_required_fields(&value),
+            Err(SettingsError::PartialConfigInvalid)
+        ));
     }
 }

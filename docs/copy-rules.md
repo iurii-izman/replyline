@@ -2,11 +2,11 @@
 
 Replyline должен звучать как спокойный рабочий инструмент: конкретно, честно, без магии.
 
-## Current alpha truth
+## Current stable-beta truth
 
-- текущая стадия: внутренняя русскоязычная alpha
+- текущая стадия: внутренняя русскоязычная stable beta
 - core flow: hotkey -> короткий system-audio snippet -> `gist / say_now / next_move`
-- multilingual beta может готовиться архитектурно, но не продаётся как готовая сейчас
+- multilingual expansion может готовиться архитектурно, но не продаётся как готовая сейчас
 
 ## Разрешённые формулировки
 

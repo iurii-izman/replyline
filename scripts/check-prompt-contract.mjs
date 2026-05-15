@@ -57,8 +57,13 @@ assertIncludes(
 );
 assertIncludes(
   llmRaw,
-  "trim_line(&card.say_now, 220)",
-  "say_now clamp to 220 chars must stay in place.",
+  "const PRIMARY_MAX_TOKENS: u16 = 260;",
+  "Primary LLM max token budget should be 260.",
+);
+assertIncludes(
+  llmRaw,
+  "const RETRY_MAX_TOKENS: u16 = 180;",
+  "Retry LLM max token budget should be 180 for latency control.",
 );
 
 for (const fixture of fixtures) {

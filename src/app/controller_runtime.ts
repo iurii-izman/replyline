@@ -4,7 +4,6 @@ import { fmtBundleCollected, fmtLogPath, fmtSayNowFallback, type UiStrings } fro
 import {
   userSafeClearContextError,
   userSafeDiagnosticError,
-  userSafeNotebookLmOpenError,
   userSafePipelineError,
   type AnalysisCard,
   type ContextStatusDto,
@@ -125,22 +124,6 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
     deps.setCopyNotice(copied ? sectionNotice : value);
   }
 
-  async function openNotebookLm(notebookLmEnabled: boolean, notebookLmLaunchUrl: string) {
-    deps.setError(null);
-    deps.setSettingsFormHint(null);
-    try {
-      if (!notebookLmEnabled) {
-        throw new Error("NOTEBOOKLM_DISABLED");
-      }
-      await deps.platform.invoke("open_notebooklm", { url: notebookLmLaunchUrl.trim() });
-      deps.setCopyNotice(deps.strings().notices.notebookLmOpened);
-    } catch (err) {
-      const message = userSafeNotebookLmOpenError(err);
-      if (deps.panel() === "settings") deps.setSettingsFormHint(message);
-      else deps.setError(message);
-    }
-  }
-
   async function runHealthCheck() {
     deps.setHealthCheckBusy(true);
     deps.setHealthCheck(null);
@@ -167,7 +150,6 @@ export function createRuntimeSlice(deps: RuntimeSliceDeps) {
     copyLogPath,
     copyAnswer,
     copySection,
-    openNotebookLm,
     runHealthCheck,
     onCollectDiagnosticEvent,
   };

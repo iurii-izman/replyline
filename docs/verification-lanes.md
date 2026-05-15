@@ -4,7 +4,7 @@ Replyline uses four separate verification lanes. Green in one lane does not impl
 
 | Lane              | Main command                                                                                                       | What it proves                                                                                                                                   | What it does not prove                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| Compile + unit    | `pnpm smoke`                                                                                                       | Vite build, Rust compile, unit tests, fixture checks, consistency gate                                                                           | Real Tauri runtime, loopback capture, provider latency                |
+| Compile + unit    | `pnpm smoke`                                                                                                       | Vite build, Rust compile, Rust clippy/fmt/test, unit tests, consistency gate, prompt contract, copy gate                                        | Real Tauri runtime, loopback capture, provider latency                |
 | Mock / UI         | `pnpm test:ui`                                                                                                     | UI state machine on a mocked platform bridge: bootstrap, settings flow, hotkey fallback, result card surface, copy flow, diagnostic states       | Real Windows audio, real STT, real LLM, packaged Tauri shell behavior |
 | Prompt / contract | `pnpm test:prompt-contract`, `pnpm test:say-now-scenarios`                                                         | Output shape stays `gist / say_now / next_move`; deterministic trust/copy policy checks stay enforced; thin scenario heuristics on example cards | Real usefulness in live calls, provider quality in real runtime       |
 | Runtime proof     | `pnpm probe:runtime`, `pnpm probe:bench`, `pnpm probe:durations`, `pnpm probe:live-source`, `pnpm evidence:bundle` | Real local provider path, real Windows capture path, runtime artifacts from this workstation                                                     | Same behavior on every workstation or call app                        |
@@ -12,12 +12,20 @@ Replyline uses four separate verification lanes. Green in one lane does not impl
 ## Current truth
 
 - `pnpm smoke` is the fast default gate.
-- `pnpm smoke` now includes `pnpm test:ui` and `pnpm test:consistency`.
+- `pnpm smoke` now includes `pnpm test:ui`, `pnpm test:consistency`, `pnpm test:prompt-contract`, and `pnpm copy:check`.
 - `pnpm test:ui` is the current truth for frontend state-machine verification; it is mock-based, not runtime proof.
 - `pnpm test:prompt-contract` is deterministic and provider-free.
 - `pnpm probe:runtime` is the minimum real-provider proof.
 - `pnpm probe:bench` compares runtime variants.
 - `pnpm evidence:bundle` collects local JSON/Markdown artifacts for a specific run.
+
+## Lifecycle matrix (required vs optional)
+
+- `required`: `pnpm smoke` (includes `pnpm test:prompt-contract` and `pnpm copy:check`), `pnpm verify`, `pnpm test:security-lanes`, `pnpm rust:deps`, `pnpm audit:npm`
+- `required`: `pnpm release:freeze:check` (change visibility against stable-beta guardrails)
+- `optional`: `pnpm test:ui:coverage`, `pnpm test:fixtures`, `pnpm test:say-now-scenarios`, `pnpm test:optional:*`
+- `optional`: `pnpm probe:soak`, `pnpm check:slo`
+- `experimental`: `pnpm test:optional:perf:k6`, `pnpm test:optional:sec:zap`, `pnpm test:experimental`
 
 ## Label discipline across lanes
 

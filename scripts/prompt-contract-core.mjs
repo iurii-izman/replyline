@@ -22,11 +22,11 @@ export function validateCard(card, snippet) {
   }
 
   const sayNow = card.say_now.trim();
-  if (sayNow.length > 220) {
-    return "say_now must be <= 220 chars";
+  if (sayNow.length > 320) {
+    return "say_now must be <= 320 chars";
   }
-  if (sayNow.split(/\s+/u).length > 32) {
-    return "say_now should stay short and speakable (<= 32 words)";
+  if (sayNow.split(/\s+/u).length > 45) {
+    return "say_now should stay short and speakable (<= 45 words)";
   }
 
   const banned = [
