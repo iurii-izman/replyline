@@ -1,5 +1,189 @@
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { resolve, relative, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(__dirname, "..");
+
+// ============================================================================
+// Privacy lane: check Rust source for dangerous logging patterns.
+// This is a static best-effort check; redaction helpers provide runtime defense.
+// ============================================================================
+
+const DANGEROUS_LOG_PATTERNS = [
+  {
+    label: "logging raw api_key/secrets",
+    patterns: [
+      /append_event\s*\([^,]+,\s*(?!["`-])[^)]*api[_-]?key[^s)]/i,
+      /append_event\s*\([^,]+,\s*(?!["`-])[^)]*secret[^s)]/i,
+      /append_event\s*\([^,]+,\s*(?!["`-])[^)]*bearer[^)]*/i,
+      /append_event\s*\([^,]+,\s*(?!["`-])[^)]*authorization[^)]*/i,
+    ],
+    excludeFiles: ["src-tauri/src/privacy.rs", "src-tauri/src/app_log.rs"],
+  },
+  {
+    label: "logging full transcript content",
+    patterns: [
+      // Detects append_event("...", transcript) or append_event("...", &transcript)
+      /append_event\s*\([^,]+,\s*&?transcript\b/i,
+    ],
+    excludeFiles: ["src-tauri/src/privacy.rs"],
+  },
+  {
+    label: "logging LLM prompt variable directly",
+    patterns: [/append_event\s*\([^,]+,\s*&?prompt\b/i],
+    excludeFiles: ["src-tauri/src/privacy.rs"],
+  },
+  {
+    label: "response.text() result logged instead of discarded",
+    patterns: [
+      /append_event\s*\([^)]*response\.text\(\)/i,
+      /log_diag\s*\([^)]*response\.text\(\)/i,
+    ],
+    excludeFiles: [],
+  },
+];
+
+function walkRustFiles() {
+  const basePath = resolve(repoRoot, "src-tauri", "src");
+  const results = [];
+  function walk(dir) {
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = resolve(dir, entry);
+      let st;
+      try {
+        st = statSync(full);
+      } catch {
+        continue;
+      }
+      if (st.isDirectory()) {
+        walk(full);
+      } else if (entry.endsWith(".rs")) {
+        results.push(relative(repoRoot, full));
+      }
+    }
+  }
+  walk(basePath);
+  return results.sort();
+}
+
+function checkDangerousLogPatterns() {
+  const rustFiles = walkRustFiles();
+  let failed = false;
+
+  for (const rule of DANGEROUS_LOG_PATTERNS) {
+    for (const fileRel of rustFiles) {
+      // Skip excluded files
+      if (rule.excludeFiles.some((ex) => fileRel.replace(/\\/g, "/").includes(ex))) {
+        continue;
+      }
+      const filePath = resolve(repoRoot, fileRel);
+      let content;
+      try {
+        content = readFileSync(filePath, "utf8");
+      } catch {
+        continue;
+      }
+      const lines = content.split(/\r?\n/u);
+      for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+        const line = lines[lineIdx];
+        // Skip comment-only lines
+        const codeOnly = line.replace(/\/\/.*$/, "").trim();
+        if (!codeOnly) continue;
+
+        for (const pattern of rule.patterns) {
+          if (pattern.test(codeOnly)) {
+            const relPath = relative(repoRoot, filePath);
+            console.error(`[privacy-lane] ${rule.label}: ${relPath}:${lineIdx + 1}`);
+            console.error(`  → ${line.trim()}`);
+            failed = true;
+          }
+        }
+      }
+    }
+  }
+
+  if (failed) {
+    console.error(
+      "\n[privacy-lane] Dangerous log patterns found. " +
+        "Use privacy::safe_preview or privacy::redact_secrets before logging.\n" +
+        "If this is a false positive (e.g. the line is already protected by redaction), " +
+        "add the file to excludeFiles in check-security-lanes.mjs.",
+    );
+  }
+  return !failed;
+}
+
+// ============================================================================
+// CSP documentation check
+// ============================================================================
+
+function checkCspDecision() {
+  const tauriConfPath = resolve(repoRoot, "src-tauri", "tauri.conf.json");
+  const content = readFileSync(tauriConfPath, "utf8");
+  const hasWideCsp = content.includes("https://*");
+
+  if (!hasWideCsp) {
+    console.error(
+      "[privacy-lane] CSP connect-src is missing 'https://*'. " +
+        "This may break user-configured remote LLM endpoints. " +
+        "If intentionally removed, update this check.",
+    );
+    return false;
+  }
+
+  // Verify the CSP comment exists in relevant docs
+  const docsToCheck = ["docs/privacy-and-trust.md", "README.md"];
+  const cspKeywords = ["https://*", "connect-src", "CSP"];
+  let documented = false;
+  for (const docPath of docsToCheck) {
+    try {
+      const docContent = readFileSync(resolve(repoRoot, docPath), "utf8");
+      if (cspKeywords.some((kw) => docContent.includes(kw))) {
+        documented = true;
+        break;
+      }
+    } catch {
+      // Doc may not exist yet
+    }
+  }
+
+  if (!documented) {
+    console.log(
+      "[privacy-lane] CSP 'https://*' is present but not yet documented in README or docs/privacy-and-trust.md. " +
+        "This is expected during v1 rollout.",
+    );
+    // Non-blocking in v1
+  }
+
+  return true;
+}
+
+// ============================================================================
+// Main
+// ============================================================================
+
+// 1. Privacy lane (non-blocking warnings in v1)
+console.log("\n[privacy-lane] checking for dangerous log patterns...");
+const privacyOk = checkDangerousLogPatterns();
+if (!privacyOk) {
+  console.error("[privacy-lane] warnings found (non-blocking in v1, will escalate in v2)\n");
+}
+
+const cspOk = checkCspDecision();
+if (!cspOk) {
+  console.error("[privacy-lane] CSP issue found\n");
+  process.exit(1);
+}
+
+// 2. Standard security lanes
 const checks = [
   ["pnpm", ["audit:npm"]],
   ["pnpm", ["rust:deps"]],
@@ -9,7 +193,8 @@ for (const [cmd, args] of checks) {
   const pretty = [cmd, ...args].join(" ");
   console.log(`\n[security-lane] ${pretty}`);
   const command = cmd === "pnpm" && process.env.npm_execpath ? process.execPath : cmd;
-  const commandArgs = cmd === "pnpm" && process.env.npm_execpath ? [process.env.npm_execpath, ...args] : args;
+  const commandArgs =
+    cmd === "pnpm" && process.env.npm_execpath ? [process.env.npm_execpath, ...args] : args;
   const run = spawnSync(command, commandArgs, {
     stdio: "inherit",
     shell: false,

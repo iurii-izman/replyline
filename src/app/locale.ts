@@ -70,6 +70,12 @@ export const ui_ru = {
     llmKeyLabel: "LLM API key (optional)",
     savedBadge: "сохранено",
   },
+  captureQuality: {
+    short: "Короткий фрагмент",
+    normal: "Нормальный фрагмент",
+    long: "Длинный фрагмент",
+    label: "Качество захвата",
+  },
 } as const;
 
 export type UiStrings = typeof ui_ru;
@@ -145,6 +151,12 @@ export const ui_en: UiStrings = {
     llmModelLabel: "LLM model",
     llmKeyLabel: "LLM API key (optional)",
     savedBadge: "saved",
+  },
+  captureQuality: {
+    short: "Short fragment",
+    normal: "Normal fragment",
+    long: "Long fragment",
+    label: "Capture quality",
   },
 } as const;
 

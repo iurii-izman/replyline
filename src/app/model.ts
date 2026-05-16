@@ -132,6 +132,7 @@ export type AnalysisCard = {
 };
 
 export type StatusEvent = {
+  runId?: string;
   phase: string;
   detail?: string | null;
 };

@@ -48,9 +48,9 @@ export function MainSurface(props: { controller: ReplylineController }) {
     return st().card.emptyFlow;
   };
   const qualityLabel = () => {
-    if (controller().captureQuality() === "short") return "Короткий фрагмент";
-    if (controller().captureQuality() === "long") return "Длинный фрагмент";
-    return "Нормальный фрагмент";
+    if (controller().captureQuality() === "short") return st().captureQuality.short;
+    if (controller().captureQuality() === "long") return st().captureQuality.long;
+    return st().captureQuality.normal;
   };
 
   return (
@@ -85,7 +85,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
           </Show>
           <Show when={controller().card() !== null}>
             <p class="empty-flow-hint">
-              Качество захвата: {qualityLabel()}
+              {st().captureQuality.label}: {qualityLabel()}
               <Show when={controller().captureQuality() === "short"}>
                 {" "}
                 {st().card.shortCaptureHint}

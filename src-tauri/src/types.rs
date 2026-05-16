@@ -115,6 +115,8 @@ pub struct AnalysisCardDto {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StatusEventDto {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub run_id: Option<String>,
     pub phase: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub detail: Option<String>,
@@ -138,7 +140,7 @@ impl SecretSlot {
 
 #[cfg(test)]
 mod tests {
-    use super::{AppSettings, LogStatusDto};
+    use super::{AppSettings, LogStatusDto, StatusEventDto};
 
     #[test]
     fn runtime_path_is_not_ready_for_placeholder_route() {
@@ -188,5 +190,28 @@ mod tests {
 
         assert_eq!(parsed.log_path, dto.log_path);
         assert_eq!(parsed.last_line, dto.last_line);
+    }
+
+    #[test]
+    fn status_event_includes_run_id_when_present() {
+        let dto = StatusEventDto {
+            run_id: Some("1712345678901-0".to_string()),
+            phase: "capturing".to_string(),
+            detail: None,
+        };
+        let raw = serde_json::to_string(&dto).expect("serialize");
+        assert!(raw.contains("runId"));
+        assert!(raw.contains("1712345678901-0"));
+    }
+
+    #[test]
+    fn status_event_omits_run_id_when_none() {
+        let dto = StatusEventDto {
+            run_id: None,
+            phase: "ready".to_string(),
+            detail: None,
+        };
+        let raw = serde_json::to_string(&dto).expect("serialize");
+        assert!(!raw.contains("runId"));
     }
 }
