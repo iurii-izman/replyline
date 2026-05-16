@@ -10,8 +10,14 @@ use serde::Deserialize;
 mod card_v3;
 #[path = "../fs_atomic.rs"]
 mod fs_atomic;
+#[path = "../language_profile.rs"]
+mod language_profile;
 #[path = "../llm.rs"]
 mod llm;
+#[path = "../providers/llm_provider.rs"]
+mod llm_provider;
+#[path = "../providers/openai_compatible.rs"]
+mod openai_compatible;
 #[path = "../settings.rs"]
 mod settings;
 #[path = "../types.rs"]
@@ -129,7 +135,13 @@ async fn main() -> Result<(), String> {
         let mut last_err: Option<String> = None;
         let mut passed = false;
         for attempt in 1..=3 {
-            match llm::analyze_transcript(&settings, Some(&llm_api_key), &fixture.snippet, "").await
+            match llm_provider::analyze_transcript(
+                &settings,
+                Some(&llm_api_key),
+                &fixture.snippet,
+                "",
+            )
+            .await
             {
                 Ok(outcome) => {
                     let card = outcome.card;

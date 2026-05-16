@@ -31,7 +31,7 @@ pub async fn transcribe_wav(
     api_key: &str,
     wav_bytes: &[u8],
 ) -> Result<String, String> {
-    let language = "ru";
+    let language = crate::language_profile::stt_language();
     let model = "nova-3";
     let endpoint = format!(
         "https://api.deepgram.com/v1/listen?model={model}&language={language}&smart_format=true&punctuate=true"
@@ -85,6 +85,8 @@ pub async fn transcribe_wav(
 
     if !response.status().is_success() {
         let status = response.status();
+        // Privacy: intentionally discard response body to avoid logging
+        // potentially sensitive error payloads from Deepgram.
         let _ = response.text().await;
         return Err(format!("STT_HTTP_ERROR: Deepgram error {status}"));
     }

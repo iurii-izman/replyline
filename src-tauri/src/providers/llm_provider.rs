@@ -1,0 +1,98 @@
+use crate::card_v3::CardQualityFlags;
+use crate::llm;
+use crate::types::{AnalysisCardDto, AppSettings};
+
+use super::openai_compatible;
+
+const MAX_CARD_RETRY_ATTEMPTS: usize = 1;
+
+#[derive(Debug, Clone)]
+pub struct CardGenerationOutcome {
+    pub card: AnalysisCardDto,
+    pub retry_attempted: bool,
+    pub retry_success: bool,
+    #[allow(dead_code)]
+    pub quality: CardQualityFlags,
+}
+
+/// Analyze a transcript using the configured LLM provider and return a
+/// card generation outcome.
+///
+/// This is the LLM provider boundary — the pipeline calls this function
+/// without knowing which concrete LLM implementation is behind it.
+pub async fn analyze_transcript(
+    settings: &AppSettings,
+    api_key: Option<&str>,
+    transcript: &str,
+    context: &str,
+) -> Result<CardGenerationOutcome, String> {
+    let language = crate::language_profile::llm_language().to_string();
+    let (raw_text, parse_or_request_err) = request_card_with_prompt(
+        settings,
+        api_key,
+        transcript,
+        context,
+        &language,
+        None,
+        llm::PRIMARY_MAX_TOKENS,
+    )
+    .await?;
+    match llm::normalize_from_raw(&raw_text, transcript) {
+        Ok((card, quality)) => Ok(CardGenerationOutcome {
+            card,
+            retry_attempted: false,
+            retry_success: false,
+            quality,
+        }),
+        Err(err) if err.contains("Card output invalid:") && MAX_CARD_RETRY_ATTEMPTS > 0 => {
+            let (retry_raw_text, _parse_or_request_err) = request_card_with_prompt(
+                settings,
+                api_key,
+                transcript,
+                context,
+                &language,
+                Some(
+                    "RETRY MODE: stricter CardSchemaV3. answer_now must be a 2-sentence paragraph with owner/deadline or clarifier. next_step must name artifact+owner+deadline.",
+                ),
+                llm::RETRY_MAX_TOKENS,
+            )
+            .await?;
+            let (card, quality) = llm::normalize_from_raw(&retry_raw_text, transcript)
+                .map_err(|retry_err| format!("{err} | retry_failed: {retry_err}"))?;
+            Ok(CardGenerationOutcome {
+                card,
+                retry_attempted: true,
+                retry_success: true,
+                quality,
+            })
+        }
+        Err(err) if err.contains("LLM returned invalid JSON") => {
+            Err(format!("{parse_or_request_err}{err}"))
+        }
+        Err(err) => Err(err),
+    }
+}
+
+/// Build the full prompt and call the OpenAI-compatible provider.
+async fn request_card_with_prompt(
+    settings: &AppSettings,
+    api_key: Option<&str>,
+    transcript: &str,
+    context: &str,
+    language: &str,
+    extra_suffix: Option<&str>,
+    max_tokens: u16,
+) -> Result<(String, String), String> {
+    let user_prompt = llm::build_user_prompt(transcript, context, language, extra_suffix);
+    let system_prompt = llm::system_prompt_for_language(language);
+
+    openai_compatible::request_card_raw_text(
+        &settings.llm_base_url,
+        &settings.llm_model,
+        api_key,
+        system_prompt,
+        &user_prompt,
+        max_tokens,
+    )
+    .await
+}

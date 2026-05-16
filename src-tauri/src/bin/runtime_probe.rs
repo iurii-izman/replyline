@@ -14,12 +14,18 @@ use serde::Serialize;
 mod audio;
 #[path = "../card_v3.rs"]
 mod card_v3;
-#[path = "../deepgram.rs"]
+#[path = "../providers/deepgram.rs"]
 mod deepgram;
 #[path = "../fs_atomic.rs"]
 mod fs_atomic;
+#[path = "../language_profile.rs"]
+mod language_profile;
 #[path = "../llm.rs"]
 mod llm;
+#[path = "../providers/llm_provider.rs"]
+mod llm_provider;
+#[path = "../providers/openai_compatible.rs"]
+mod openai_compatible;
 #[path = "../settings.rs"]
 mod settings;
 #[path = "../types.rs"]
@@ -141,7 +147,8 @@ async fn main() -> Result<(), String> {
     let stt_ms = stt_started_at.elapsed().as_millis();
 
     let llm_started_at = Instant::now();
-    let outcome = llm::analyze_transcript(&settings, Some(&llm_api_key), &transcript, "").await?;
+    let outcome =
+        llm_provider::analyze_transcript(&settings, Some(&llm_api_key), &transcript, "").await?;
     let card = outcome.card;
     let llm_ms = llm_started_at.elapsed().as_millis();
     let release_to_card_ms = release_started_at.elapsed().as_millis();

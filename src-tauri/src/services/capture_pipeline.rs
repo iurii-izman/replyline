@@ -1,20 +1,33 @@
-use tauri::{AppHandle, Emitter};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+use tauri::AppHandle;
 
 use crate::app_log;
 use crate::credentials;
 use crate::diag_contract::{
-    DIAG_RUNTIME_EVENT_NAME, RL_ANALYSIS_OK, RL_CAPTURE_JOIN_FAILED, RL_CAPTURE_NOT_ACTIVE,
-    RL_CAPTURE_READY, RL_CAPTURE_START, RL_CAPTURE_STOP_FAILED, RL_CARD_INVALID, RL_LLM_FAILED,
-    RL_LLM_OK, RL_RETRY_EMPTY, RL_RETRY_OK, RL_STT_FAILED, RL_STT_KEY_MISSING, RL_STT_OK,
-    RL_STT_TOO_SHORT,
+    RL_ANALYSIS_OK, RL_CAPTURE_JOIN_FAILED, RL_CAPTURE_NOT_ACTIVE, RL_CAPTURE_READY,
+    RL_CAPTURE_START, RL_CAPTURE_STOP_FAILED, RL_LLM_OK, RL_RETRY_EMPTY, RL_RETRY_OK,
+    RL_STT_FAILED, RL_STT_KEY_MISSING, RL_STT_OK, RL_STT_TOO_SHORT,
 };
 use crate::llm;
+use crate::providers::llm_provider;
 use crate::providers::stt_provider;
+use crate::services::pipeline_errors;
+use crate::services::pipeline_events::{emit_status, log_diag, update_tray_title};
 use crate::settings;
 use crate::state::ReplylineState;
-use crate::types::{AnalysisCardDto, CommandError, SecretSlot, StatusEventDto};
+use crate::types::{AnalysisCardDto, CommandError, SecretSlot};
 use crate::ui_strings::{en, pick_lang, ru};
+
 const MIN_TRANSCRIPT_CHARS: usize = 25;
+
+static RETRY_RUN_SEQ: AtomicU64 = AtomicU64::new(0);
+
+fn next_retry_run_id() -> String {
+    let ts = chrono::Utc::now().timestamp_millis() as u64;
+    let seq = RETRY_RUN_SEQ.fetch_add(1, Ordering::Relaxed);
+    format!("retry-{}-{}", ts, seq)
+}
 
 pub async fn capture_stop_and_analyze(
     state: &ReplylineState,
@@ -28,14 +41,15 @@ pub async fn capture_stop_and_analyze(
         "capture_stop_and_analyze",
     );
     let settings = settings::load()?;
-    let lang = "ru";
+    let lang = crate::language_profile::default_language();
 
-    let capture_run = {
+    let (capture_run, run_id) = {
         let mut capture = state
             .capture
             .lock()
             .map_err(|_| CommandError::Internal("Capture lock poisoned".to_string()))?;
-        capture.active.take().ok_or_else(|| {
+        let run_id = capture.active_run_id.clone();
+        let run = capture.active.take().ok_or_else(|| {
             let _ = log_diag(
                 "capture",
                 "fail",
@@ -45,11 +59,13 @@ pub async fn capture_stop_and_analyze(
             CommandError::Capture(
                 pick_lang(lang, en::ERR_NO_ACTIVE_CAPTURE, ru::ERR_NO_ACTIVE_CAPTURE).to_string(),
             )
-        })?
+        })?;
+        (run, run_id)
     };
 
     emit_status(
         app,
+        run_id.as_deref(),
         "transcribing",
         Some(pick_lang(lang, en::STATUS_WAITING_TEXT, ru::STATUS_WAITING_TEXT).to_string()),
     );
@@ -111,7 +127,7 @@ pub async fn capture_stop_and_analyze(
         format!("transcript_chars={transcript_chars} chars_band={chars_band}"),
     );
     if transcript_chars < MIN_TRANSCRIPT_CHARS {
-        let err = "SHORT_CAPTURE: Слишком короткий фрагмент, запишите 5-10 секунд.";
+        let err = pick_lang(lang, en::ERR_SHORT_CAPTURE, ru::ERR_SHORT_CAPTURE);
         {
             let mut context = state
                 .context
@@ -134,6 +150,7 @@ pub async fn capture_stop_and_analyze(
 
     emit_status(
         app,
+        run_id.as_deref(),
         "analyzing",
         Some(pick_lang(lang, en::STATUS_WAITING_CARD, ru::STATUS_WAITING_CARD).to_string()),
     );
@@ -150,37 +167,24 @@ pub async fn capture_stop_and_analyze(
         context.formatted_context()
     };
 
-    let outcome =
-        match llm::analyze_transcript(&settings, llm_key.as_deref(), &transcript, &context_text)
-            .await
-        {
-            Ok(outcome) => outcome,
-            Err(err) => {
-                let event = if err.contains("Card output invalid:") {
-                    "analysis_card_invalid"
-                } else {
-                    "analysis_llm_failed"
-                };
-                let _ = app_log::append_event(event, format!("llm: {err}"));
-                let code = if err.contains("Card output invalid:") {
-                    RL_CARD_INVALID
-                } else {
-                    RL_LLM_FAILED
-                };
-                let invalid_reason = err
-                    .split("Card output invalid:")
-                    .nth(1)
-                    .map(str::trim)
-                    .unwrap_or("-");
-                let _ = log_diag(
-                    "llm",
-                    "fail",
-                    code,
-                    format!("invalid_reason={invalid_reason} chars_band={chars_band}"),
-                );
-                return Err(CommandError::Pipeline(err));
-            }
-        };
+    let outcome = match llm_provider::analyze_transcript(
+        &settings,
+        llm_key.as_deref(),
+        &transcript,
+        &context_text,
+    )
+    .await
+    {
+        Ok(outcome) => outcome,
+        Err(err) => {
+            return Err(pipeline_errors::log_llm_failure(
+                "llm",
+                err,
+                "llm",
+                &format!(" chars_band={chars_band}"),
+            ));
+        }
+    };
     let card = outcome.card;
     if outcome.retry_attempted {
         let _ = app_log::append_event(
@@ -219,7 +223,7 @@ pub async fn capture_stop_and_analyze(
         context.remember_card(card.clone());
     }
 
-    emit_status(app, "ready", None);
+    emit_status(app, run_id.as_deref(), "ready", None);
     update_tray_title(
         app,
         &crate::tray_status::tooltip_for_phase(lang, "ready_card", None),
@@ -232,10 +236,13 @@ pub async fn capture_stop_and_analyze(
 pub async fn retry_last_analysis(
     state: &ReplylineState,
     app: &AppHandle,
+    run_id_param: Option<String>,
 ) -> Result<AnalysisCardDto, CommandError> {
     let settings = settings::load()?;
-    let lang = "ru";
+    let lang = crate::language_profile::default_language();
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
+
+    let run_id = run_id_param.unwrap_or_else(next_retry_run_id);
 
     let (transcript, context_text) = {
         let mut context = state
@@ -252,9 +259,10 @@ pub async fn retry_last_analysis(
         (transcript, context_text)
     };
 
-    let retry_detail = pick_lang(lang, "retry", "повтор");
+    let retry_detail = pick_lang(lang, en::RETRY_DETAIL, ru::RETRY_DETAIL);
     emit_status(
         app,
+        Some(&run_id),
         "analyzing",
         Some(pick_lang(lang, en::STATUS_RETRYING_CARD, ru::STATUS_RETRYING_CARD).to_string()),
     );
@@ -263,37 +271,24 @@ pub async fn retry_last_analysis(
         &crate::tray_status::tooltip_for_phase(lang, "analyzing", Some(retry_detail)),
     );
 
-    let card =
-        match llm::analyze_transcript(&settings, llm_key.as_deref(), &transcript, &context_text)
-            .await
-        {
-            Ok(outcome) => outcome.card,
-            Err(err) => {
-                let event = if err.contains("Card output invalid:") {
-                    "analysis_card_invalid"
-                } else {
-                    "analysis_llm_failed"
-                };
-                let _ = app_log::append_event(event, format!("retry_llm: {err}"));
-                let code = if err.contains("Card output invalid:") {
-                    RL_CARD_INVALID
-                } else {
-                    RL_LLM_FAILED
-                };
-                let invalid_reason = err
-                    .split("Card output invalid:")
-                    .nth(1)
-                    .map(str::trim)
-                    .unwrap_or("-");
-                let _ = log_diag(
-                    "retry",
-                    "fail",
-                    code,
-                    format!("invalid_reason={invalid_reason}"),
-                );
-                return Err(CommandError::Pipeline(err));
-            }
-        };
+    let card = match llm_provider::analyze_transcript(
+        &settings,
+        llm_key.as_deref(),
+        &transcript,
+        &context_text,
+    )
+    .await
+    {
+        Ok(outcome) => outcome.card,
+        Err(err) => {
+            return Err(pipeline_errors::log_llm_failure(
+                "retry",
+                err,
+                "retry_llm",
+                "",
+            ));
+        }
+    };
     {
         let mut context = state
             .context
@@ -301,7 +296,7 @@ pub async fn retry_last_analysis(
             .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
         context.remember_card(card.clone());
     }
-    emit_status(app, "ready", None);
+    emit_status(app, Some(&run_id), "ready", None);
     update_tray_title(
         app,
         &crate::tray_status::tooltip_for_phase(lang, "ready_card", None),
@@ -316,30 +311,4 @@ pub async fn retry_last_analysis(
         ),
     );
     Ok(card)
-}
-
-fn log_diag(stage: &str, outcome: &str, code: &str, detail: impl AsRef<str>) -> Result<(), String> {
-    app_log::append_event(
-        DIAG_RUNTIME_EVENT_NAME,
-        format!(
-            "stage={stage} outcome={outcome} code={code} detail={}",
-            detail.as_ref()
-        ),
-    )
-}
-
-fn emit_status(app: &AppHandle, phase: &str, detail: Option<String>) {
-    let _ = app.emit(
-        "replyline://status",
-        StatusEventDto {
-            phase: phase.to_string(),
-            detail,
-        },
-    );
-}
-
-fn update_tray_title(app: &AppHandle, title: &str) {
-    if let Some(tray) = app.tray_by_id("main-tray") {
-        let _ = tray.set_tooltip(Some(title.to_string()));
-    }
 }

@@ -5,10 +5,11 @@ mod card_v3;
 mod commands;
 mod context;
 mod credentials;
-mod deepgram;
 mod diag_contract;
 mod fs_atomic;
+mod language_profile;
 mod llm;
+mod privacy;
 mod providers;
 mod services;
 mod settings;
@@ -61,7 +62,7 @@ pub fn run() {
         .setup(|app| {
             let _ = app_log::append_event("app_boot_start", "setup");
             let settings = settings::load().unwrap_or_default();
-            let lang = "ru";
+            let lang = language_profile::default_language();
             let handle = app.handle().clone();
             let menu = build_main_tray_menu(&handle, lang)?;
 
