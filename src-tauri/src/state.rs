@@ -6,6 +6,7 @@ use crate::context::ConversationContext;
 #[derive(Default)]
 pub struct CaptureController {
     pub active: Option<CaptureRun>,
+    pub active_run_id: Option<String>,
 }
 
 pub struct ReplylineState {

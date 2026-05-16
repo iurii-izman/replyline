@@ -1,15 +1,25 @@
-use tauri::{AppHandle, Emitter, Manager, State};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+use tauri::{AppHandle, Manager, State};
 
 use crate::app_log;
 use crate::audio::CaptureRun;
 use crate::credentials;
 use crate::services::capture_pipeline;
+use crate::services::pipeline_events::{emit_status, update_tray_title};
 use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
     AnalysisCardDto, AppSettings, BootstrapDto, CommandError, ContextStatusDto, SecretSlot,
-    StatusEventDto,
 };
+
+static RUN_SEQ: AtomicU64 = AtomicU64::new(0);
+
+fn next_run_id() -> String {
+    let ts = chrono::Utc::now().timestamp_millis() as u64;
+    let seq = RUN_SEQ.fetch_add(1, Ordering::Relaxed);
+    format!("{}-{}", ts, seq)
+}
 
 impl From<crate::settings::SettingsError> for CommandError {
     fn from(err: crate::settings::SettingsError) -> Self {
@@ -82,14 +92,16 @@ pub fn sync_tray_ui_phase(
     phase: String,
     detail: Option<String>,
 ) -> Result<(), CommandError> {
-    let text = crate::tray_status::tooltip_for_phase("ru", &phase, detail.as_deref());
+    let lang = crate::language_profile::default_language();
+    let text = crate::tray_status::tooltip_for_phase(lang, &phase, detail.as_deref());
     update_tray_title(&app, &text);
     Ok(())
 }
 
 #[tauri::command]
 pub fn refresh_tray_menu(app: AppHandle) -> Result<(), CommandError> {
-    let menu = crate::build_main_tray_menu(&app, "ru")
+    let lang = crate::language_profile::default_language();
+    let menu = crate::build_main_tray_menu(&app, lang)
         .map_err(|e| CommandError::Internal(format!("tray menu build failed: {e}")))?;
     let tray = app
         .tray_by_id("main-tray")
@@ -164,7 +176,10 @@ pub fn get_context_status(
 }
 
 #[tauri::command]
-pub fn capture_start(state: State<'_, ReplylineState>, app: AppHandle) -> Result<(), CommandError> {
+pub fn capture_start(
+    state: State<'_, ReplylineState>,
+    app: AppHandle,
+) -> Result<String, CommandError> {
     let _ = app_log::append_event("capture_start_attempt", "-");
     let settings = settings::load()?;
     let mut capture = state
@@ -172,17 +187,27 @@ pub fn capture_start(state: State<'_, ReplylineState>, app: AppHandle) -> Result
         .lock()
         .map_err(|_| CommandError::Internal("Capture lock poisoned".to_string()))?;
     if capture.active.is_some() {
-        return Ok(());
+        // Return current run_id if already capturing (idempotent guard).
+        if let Some(ref existing_id) = capture.active_run_id {
+            return Ok(existing_id.clone());
+        }
+        return Ok(String::new());
     }
     let run = CaptureRun::start(settings.capture_max_seconds).map_err(CommandError::Capture)?;
+    let run_id = next_run_id();
     capture.active = Some(run);
-    emit_status(&app, "capturing", None);
+    capture.active_run_id = Some(run_id.clone());
+    emit_status(&app, Some(&run_id), "capturing", None);
     update_tray_title(
         &app,
-        &crate::tray_status::tooltip_for_phase("ru", "capturing", None),
+        &crate::tray_status::tooltip_for_phase(
+            crate::language_profile::default_language(),
+            "capturing",
+            None,
+        ),
     );
-    let _ = app_log::append_event("capture_start_ok", "-");
-    Ok(())
+    let _ = app_log::append_event("capture_start_ok", format!("run_id={run_id}"));
+    Ok(run_id)
 }
 
 #[tauri::command]
@@ -197,8 +222,9 @@ pub async fn capture_stop_and_analyze(
 pub async fn retry_last_analysis(
     state: State<'_, ReplylineState>,
     app: AppHandle,
+    run_id: Option<String>,
 ) -> Result<AnalysisCardDto, CommandError> {
-    capture_pipeline::retry_last_analysis(&state, &app).await
+    capture_pipeline::retry_last_analysis(&state, &app, run_id).await
 }
 
 #[tauri::command]
@@ -213,20 +239,4 @@ pub fn tray_open_main(app: AppHandle) -> Result<(), CommandError> {
         .set_focus()
         .map_err(|err| CommandError::Internal(err.to_string()))?;
     Ok(())
-}
-
-fn emit_status(app: &AppHandle, phase: &str, detail: Option<&str>) {
-    let _ = app.emit(
-        "replyline://status",
-        StatusEventDto {
-            phase: phase.to_string(),
-            detail: detail.map(|value| value.to_string()),
-        },
-    );
-}
-
-fn update_tray_title(app: &AppHandle, title: &str) {
-    if let Some(tray) = app.tray_by_id("main-tray") {
-        let _ = tray.set_tooltip(Some(title.to_string()));
-    }
 }
