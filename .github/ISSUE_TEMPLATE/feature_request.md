@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an improvement within current alpha scope
+about: Suggest an improvement within current stable beta scope
 title: "[feature] "
 labels: ["enhancement"]
 assignees: []
@@ -25,7 +25,7 @@ What failed in real usage without this?
 
 Mark this as:
 
-- [ ] out-of-scope for current internal alpha
+- [ ] out-of-scope for current internal stable beta
 
 ## Minimal acceptable shape
 

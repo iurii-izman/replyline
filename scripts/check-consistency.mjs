@@ -28,7 +28,7 @@ const requiredIncludes = [
   },
   {
     path: "docs/privacy-and-trust.md",
-    includes: ["Internal Alpha", "STT -> LLM -> карточка", "санитизацию/редакцию"],
+    includes: ["Internal Stable Beta", "STT -> LLM -> карточка", "санитизацию/редакцию"],
     excludes: ["Pre-Alpha"],
   },
   {

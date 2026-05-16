@@ -71,7 +71,7 @@
 | 12  | i18n / Localization                                          |   78 |      50 |    −28 | Структурно готово (RU+EN strings, prompts, settings). **Нет UI селектора, нет dynamic switch.** |
 | 13  | Accessibility (a11y) ⭐                                       |   85 |      45 |    −40 | Семантичный HTML, `title` на icon buttons. Не было ARIA-аудита, контрастных проверок, screen reader. |
 | 14  | Backend Architecture & Reliability (Rust)                    |   95 |      80 |    −15 | **0 `unwrap()` в shipped коде**, atomic writes, retry/backoff, mutex poisoning mapped to CommandError. |
-| 15  | Frontend Architecture & Reactivity (Solid.js)                |   92 |      78 |    −14 | Чистые границы model/controller/platform. Strict TS без `any`. `controller_runtime.ts` без unit-тестов. |
+| 15  | Frontend Architecture & Reactivity (Solid.js)                |   92 |      80 |    −12 | Чистые границы model/controller/platform. Strict TS без `any`. `controller_runtime.ts` удалён (2025-07 — dead code, ghost imports). |
 | 16  | Extensibility (Provider abstraction, plugins, hooks)         |   80 |      48 |    −32 | Schema migration, custom system prompt в settings. **Нет formal LLM provider trait.** |
 | 17  | Error Handling & Recovery                                    |   90 |      78 |    −12 | `CommandError` tagged union, settings-anchor routing, user-safe RU mappers, settings corruption quarantine. |
 | 18  | Trust & Privacy Posture                                      |   95 |      84 |    −11 | RAM-only, Credential Manager, copy-rules с банами `stealth/therapy/emotion`, third-party-providers doc. |
@@ -237,8 +237,8 @@
 
 - **Scope**: реактивность, type safety, чистые границы, тесты.
 - **Покрыто**: чистые границы model/controller/platform, Solid-идиомы (нет React-измов), strict TypeScript без `any`, ~33 vitest test, controller_memory + controller_status покрыты юнит-тестами.
-- **Не покрыто / риски**: **`controller_runtime.ts` ~150 строк критичной async-логики без direct unit tests** (clearContext, retryAnalysis, healthCheck, diagnostics, copy operations); fixture path захардкожен в SettingsSurface; нет language selector в UI.
-- **Следующий шаг**: написать unit tests для `controller_runtime.ts` (5-7 тестов покрывают все async functions). Закрывает самый большой test gap фронта.
+- **Не покрыто / риски**: ~~`controller_runtime.ts`~~ (удалён 2025-07: dead code, ghost imports, не вызывался ни из одного production/test файла, backend-хендлеры diagnostic команд не зарегистрированы); fixture path захардкожен в SettingsSurface; нет language selector в UI.
+- **Следующий шаг**: ~~написать unit tests для `controller_runtime.ts`~~ (мoot — файл удалён). Актуальный ближайший шаг: вынести fixture path в конфиг или env.
 
 ### 5.16 Extensibility (Provider abstraction, plugins, hooks) — 48 / 80
 
@@ -279,7 +279,7 @@
 
 - **Scope**: автоматическая верификация через mock + unit + lane дисциплину.
 - **Покрыто**: 4 verification lane, ~33 vitest теста, 9+ Rust test files, prompt-contract checks, say-now scenario gates, fixture-gate (опциональный с реальным API), IPC-contract gate, consistency gate, copy-discipline check.
-- **Не покрыто / риски**: capture pipeline e2e не покрыт, `controller_runtime.ts` (см. #5.15), audio downmix логика, memory validators не покрыты direct unit tests.
+- **Не покрыто / риски**: capture pipeline e2e не покрыт, audio downmix логика, memory validators не покрыты direct unit tests.
 - **Следующий шаг**: integration test на full pipeline (см. #5.14) — этот один тест поднимает несколько направлений сразу.
 
 ### 5.22 Verification Discipline & Evidence Honesty ⭐ — 88 / 95
@@ -357,7 +357,7 @@
 | 2   | **Включить streaming STT по умолчанию** + измерить latency через `pnpm probe:bench -Repeats 3` | #2 (60→78), #4 (50→65) | 1 день | **+0.7** к aggregate |
 | 3   | **Подключить Memory facts к LLM context injection** в `services/capture_pipeline.rs` за feature flag | #3 (80→84), #8 (45→62) | 2-3 дня | **+0.7** к aggregate |
 | 4   | **Добавить language dropdown в SettingsSurface** | #9 (68→75), #12 (50→62) | 1 день | **+0.6** к aggregate |
-| 5   | **Покрыть `controller_runtime.ts` юнит-тестами** (5-7 тестов) | #15 (78→83), #21 (76→80) | 1 день | **+0.3** к aggregate |
+| 5   | ~~**Покрыть `controller_runtime.ts` юнит-тестами**~~ — файл удалён (2025-07), gap закрыт удалением dead code | #15 (78→80), #21 (76→78) | выполнено | **+0.2** к aggregate |
 | 6   | **16x16 monochrome tray icon variant** | #10 (75→80), #28 (76→80) | 1-2 часа | **+0.3** к aggregate |
 
 **Суммарно**: ~ 4.6 пункта к aggregate score (с 66 до ~71). Это эквивалент Iteration 2 territory без расширения scope.

@@ -61,7 +61,8 @@ Field contract inside detail:
 - `outcome`: `start | ok | fail`
 - `code`: stable `RL_*` diagnostic code
 - `detail`: sanitized short explanation
-- successful `llm` and `retry` details include `next_move_fallback=true|false`
+- successful `llm` and `retry` details include `repair_used=true|false`, `fallback_used=true|false`, and `chars_band=short|medium|long`
+- failed `RL_CARD_INVALID` details include `invalid_reason=...` and `chars_band=...` on the analyze path
 
 This contract is exported into bundle file `diagnostics/runtime-events.json`.
 

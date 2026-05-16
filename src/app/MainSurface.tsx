@@ -83,13 +83,15 @@ export function MainSurface(props: { controller: ReplylineController }) {
               </button>
             </p>
           </Show>
-          <p class="empty-flow-hint">
-            Качество захвата: {qualityLabel()}
-            <Show when={controller().captureQuality() === "short"}>
-              {" "}
-              {st().card.shortCaptureHint}
-            </Show>
-          </p>
+          <Show when={controller().card() !== null}>
+            <p class="empty-flow-hint">
+              Качество захвата: {qualityLabel()}
+              <Show when={controller().captureQuality() === "short"}>
+                {" "}
+                {st().card.shortCaptureHint}
+              </Show>
+            </p>
+          </Show>
         </div>
 
         <div class="main-card-body" data-testid="main-card-body">

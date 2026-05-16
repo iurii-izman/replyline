@@ -1,0 +1,32 @@
+# Secrets and env files
+.env
+.env.*
+.env.keys
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+target/
+src-tauri/target/
+
+# Coverage, test results, reports, artifacts
+coverage/
+test-results/
+reports/
+artifacts/
+
+# Temporary files
+*.log
+*.tmp
+
+# Archives
+*.zip
+*.7z
+
+# Audio / Video
+*.wav
+*.mp3
+*.mp4
+*.webm

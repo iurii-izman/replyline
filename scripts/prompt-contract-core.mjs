@@ -4,29 +4,116 @@ export function normalize(text) {
   return text.toLowerCase().replace(/\s+/gu, " ").trim();
 }
 
+export const LEGACY_CARD_KEYS = ["gist", "next_move", "say_now"];
+
+export const V3_CARD_KEYS = [
+  "answer_now",
+  "next_step",
+  "question_brief",
+  "star_evidence",
+];
+
+/** Map CardSchemaV3 object to legacy gist/say_now/next_move for IPC/UI regression. */
+export function mapV3ToLegacy(cardV3) {
+  const question = String(cardV3.question_brief ?? "").trim();
+  const answer = String(cardV3.answer_now ?? "").trim();
+  const star = String(cardV3.star_evidence ?? "").trim();
+  const next = String(cardV3.next_step ?? "").trim();
+  const risk = String(cardV3.risk_or_clarifier ?? "").trim();
+
+  let sayNow = answer;
+  if (star && !normalize(sayNow).includes(normalize(star))) {
+    sayNow = sayNow.endsWith(".") || sayNow.endsWith("?") ? `${sayNow} Опора: ${star}` : `${sayNow}. Опора: ${star}`;
+  }
+  if (risk && !normalize(sayNow).includes(normalize(risk))) {
+    sayNow = `${sayNow} Риск/уточнение: ${risk}`;
+  }
+
+  return {
+    gist: question,
+    say_now: sayNow,
+    next_move: next,
+  };
+}
+
+export function isV3Card(card) {
+  return (
+    typeof card === "object" &&
+    card != null &&
+    !Array.isArray(card) &&
+    ("question_brief" in card || "answer_now" in card)
+  );
+}
+
+export function validateCardV3(card, snippet) {
+  if (typeof card !== "object" || card == null || Array.isArray(card)) {
+    return "card must be an object";
+  }
+
+  const keys = Object.keys(card).sort();
+  const allowedOptional = ["risk_or_clarifier"];
+  const required = [...V3_CARD_KEYS];
+  for (const key of required) {
+    if (!(key in card)) {
+      return `missing required v3 field: ${key}`;
+    }
+  }
+  for (const key of keys) {
+    if (!required.includes(key) && !allowedOptional.includes(key)) {
+      return `unexpected v3 field: ${key}`;
+    }
+  }
+
+  for (const key of required) {
+    if (typeof card[key] !== "string" || !card[key].trim()) {
+      return `${key} must be a non-empty string`;
+    }
+  }
+  if ("risk_or_clarifier" in card && card.risk_or_clarifier != null) {
+    if (typeof card.risk_or_clarifier !== "string") {
+      return "risk_or_clarifier must be a string when present";
+    }
+  }
+
+  const answer = card.answer_now.trim();
+  if (answer.length > 560) {
+    return "answer_now must be <= 560 chars";
+  }
+  const words = answer.split(/\s+/u).filter(Boolean);
+  if (words.length < 10) {
+    return "answer_now should be paragraph-shaped (>= 10 words)";
+  }
+  const sentences = answer.split(/[.!?]/u).filter((part) => part.trim()).length;
+  if (sentences < 2 && words.length < 18) {
+    return "answer_now should read as a paragraph (2+ sentences or >= 18 words)";
+  }
+
+  return validateCard(mapV3ToLegacy(card), snippet);
+}
+
 export function validateCard(card, snippet) {
   if (typeof card !== "object" || card == null || Array.isArray(card)) {
     return "card must be an object";
   }
 
   const keys = Object.keys(card).sort();
-  const expected = ["gist", "next_move", "say_now"];
+  const expected = [...LEGACY_CARD_KEYS].sort();
   if (JSON.stringify(keys) !== JSON.stringify(expected)) {
     return `keys must be exactly gist/say_now/next_move, got: ${keys.join(", ")}`;
   }
 
-  for (const key of expected) {
+  for (const key of LEGACY_CARD_KEYS) {
     if (typeof card[key] !== "string" || !card[key].trim()) {
       return `${key} must be a non-empty string`;
     }
   }
 
   const sayNow = card.say_now.trim();
-  if (sayNow.length > 320) {
-    return "say_now must be <= 320 chars";
+  if (sayNow.length > 560) {
+    return "say_now must be <= 560 chars";
   }
-  if (sayNow.split(/\s+/u).length > 45) {
-    return "say_now should stay short and speakable (<= 45 words)";
+  if (sayNow.split(/\s+/u).length > 80) {
+    return "say_now should stay speakable (<= 80 words)";
   }
 
   const banned = [
@@ -68,7 +155,18 @@ export function deterministicCardFromSnippet(snippet) {
   const gist = compact.length <= 100 ? compact : `${compact.slice(0, 97)}...`;
   return {
     gist,
-    say_now: "Давайте зафиксируем решение и срок: сегодня подтверждаю следующий шаг письменно.",
-    next_move: "Уточните владельца действия и время контрольной проверки.",
+    say_now:
+      "Давайте зафиксируем решение и срок: сегодня подтверждаю следующий шаг письменно. После согласования отправлю короткий итог с владельцем и контрольной датой.",
+    next_move: "Уточню владельца действия и время контрольной проверки в чате.",
+  };
+}
+
+export function deterministicCardV3FromSnippet(snippet) {
+  const legacy = deterministicCardFromSnippet(snippet);
+  return {
+    question_brief: legacy.gist,
+    answer_now: legacy.say_now,
+    star_evidence: "В фрагменте звучит рабочий запрос на согласование шага.",
+    next_step: legacy.next_move,
   };
 }

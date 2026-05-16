@@ -7,8 +7,10 @@ Keep this as the main MVP runtime path:
 - system audio only via WASAPI loopback
 - Deepgram batch STT
 - one fast LLM route: `openai/gpt-4o-mini`
-- short JSON contract: `gist / say_now / next_move`
-- `next_move` repair fallback stays local in Rust and uses bounded heuristics for email, chat, ticket/task, meeting/checkpoint, owner+deadline, document/summary, and plan/list signals.
+- LLM JSON contract: **CardSchemaV3** (`question_brief`, `answer_now`, `star_evidence`, `next_step`, optional `risk_or_clarifier`)
+- IPC/UI legacy mapping: `gist / say_now / next_move` (unchanged for clients)
+- repair-first normalization in `card_v3.rs`; `next_step` fallback uses 10 intent-aware templates (email, chat, ticket, meeting, owner/deadline, document, plan, blocker/risk, approval, default)
+- paragraph-style `answer_now` with dynamic char/word limits by `chars_band`
 - RAM-only context memo
 
 Claim status for this path must follow `docs/benchmark-policy.md` labels.
@@ -43,7 +45,7 @@ If the user needs minutes of context every time, the right solution is not to ke
 Scope note:
 
 - this memory direction is a future track;
-- it is not part of the current user-facing MVP alpha flow.
+- it is not part of the current user-facing MVP stable-beta flow.
 
 That future layer should:
 

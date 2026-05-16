@@ -191,12 +191,12 @@ pub async fn capture_stop_and_analyze(
     let _ = app_log::append_event(
         "analysis_llm_ok",
         format!(
-            "gist_chars={} say_now_chars={} next_move_chars={} next_move_fallback={} say_now_repair={} chars_band={}",
+            "gist_chars={} say_now_chars={} next_move_chars={} repair_used={} fallback_used={} chars_band={}",
             card.gist.chars().count(),
             card.say_now.chars().count(),
             card.next_move.chars().count(),
-            card.next_move_fallback,
-            card.say_now_repair,
+            card.repair_used,
+            card.fallback_used,
             card.chars_band
         ),
     );
@@ -205,8 +205,8 @@ pub async fn capture_stop_and_analyze(
         "ok",
         RL_LLM_OK,
         format!(
-            "card generated next_move_fallback={} say_now_repair={} chars_band={}",
-            card.next_move_fallback, card.say_now_repair, card.chars_band
+            "card generated repair_used={} fallback_used={} chars_band={}",
+            card.repair_used, card.fallback_used, card.chars_band
         ),
     );
 
@@ -311,8 +311,8 @@ pub async fn retry_last_analysis(
         "ok",
         RL_RETRY_OK,
         format!(
-            "card regenerated next_move_fallback={} say_now_repair={} chars_band={}",
-            card.next_move_fallback, card.say_now_repair, card.chars_band
+            "card regenerated repair_used={} fallback_used={} chars_band={}",
+            card.repair_used, card.fallback_used, card.chars_band
         ),
     );
     Ok(card)

@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a reproducible issue in Replyline alpha
+about: Report a reproducible issue in Replyline stable beta
 title: "[bug] "
 labels: ["bug"]
 assignees: []
@@ -42,5 +42,5 @@ assignees: []
 
 ## Scope check
 
-- Does this block internal alpha testing? (yes/no):
+- Does this block internal stable beta testing? (yes/no):
 - Does this issue push toward transcript/history/team workflow? (yes/no + short note):

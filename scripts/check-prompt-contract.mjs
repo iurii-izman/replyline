@@ -1,9 +1,16 @@
 import { readFile } from "node:fs/promises";
 
-import { deterministicCardFromSnippet, validateCard } from "./prompt-contract-core.mjs";
+import {
+  deterministicCardFromSnippet,
+  deterministicCardV3FromSnippet,
+  mapV3ToLegacy,
+  validateCard,
+  validateCardV3,
+} from "./prompt-contract-core.mjs";
 
 const fixturePath = new URL("../fixtures/ru-work-snippets.json", import.meta.url);
 const llmPath = new URL("../src-tauri/src/llm.rs", import.meta.url);
+const cardV3Path = new URL("../src-tauri/src/card_v3.rs", import.meta.url);
 
 function fail(message) {
   throw new Error(message);
@@ -15,9 +22,10 @@ function assertIncludes(haystack, needle, message) {
   }
 }
 
-const [fixtureRaw, llmRaw] = await Promise.all([
+const [fixtureRaw, llmRaw, cardV3Raw] = await Promise.all([
   readFile(fixturePath, "utf8"),
   readFile(llmPath, "utf8"),
+  readFile(cardV3Path, "utf8"),
 ]);
 
 const fixtures = JSON.parse(fixtureRaw);
@@ -27,13 +35,18 @@ if (!Array.isArray(fixtures) || fixtures.length < 20) {
 
 assertIncludes(
   llmRaw,
-  '{"gist":"...","say_now":"...","next_move":"..."}',
-  "llm.rs must require exact JSON contract gist/say_now/next_move.",
+  "CardSchemaV3",
+  "llm.rs must document CardSchemaV3 in system prompt.",
 );
-assertIncludes(llmRaw, "struct RawCard", "llm.rs must define RawCard contract.");
-assertIncludes(llmRaw, "gist: String", "RawCard must include gist.");
-assertIncludes(llmRaw, "say_now: String", "RawCard must include say_now.");
-assertIncludes(llmRaw, "next_move: String", "RawCard must include next_move.");
+assertIncludes(
+  llmRaw,
+  '"question_brief":"...","answer_now":"...","star_evidence":"...","next_step":"..."',
+  "llm.rs must require CardSchemaV3 JSON fields.",
+);
+assertIncludes(cardV3Raw, "struct RawCardV3", "card_v3.rs must define RawCardV3.");
+assertIncludes(cardV3Raw, "struct RawCardLegacy", "card_v3.rs must keep legacy RawCard parser.");
+assertIncludes(cardV3Raw, "map_v3_fields", "card_v3.rs must map v3 to legacy fields.");
+assertIncludes(cardV3Raw, "repair_section", "card_v3.rs must implement repair-first normalization.");
 assertIncludes(
   llmRaw,
   "не давай терапевтические советы",
@@ -57,20 +70,32 @@ assertIncludes(
 );
 assertIncludes(
   llmRaw,
-  "const PRIMARY_MAX_TOKENS: u16 = 260;",
-  "Primary LLM max token budget should be 260.",
+  "const PRIMARY_MAX_TOKENS: u16 = 420;",
+  "Primary LLM max token budget should be 420 for paragraph cards.",
 );
 assertIncludes(
   llmRaw,
-  "const RETRY_MAX_TOKENS: u16 = 180;",
-  "Retry LLM max token budget should be 180 for latency control.",
+  "const RETRY_MAX_TOKENS: u16 = 300;",
+  "Retry LLM max token budget should be 300.",
 );
 
 for (const fixture of fixtures) {
-  const card = deterministicCardFromSnippet(fixture.snippet);
-  const error = validateCard(card, fixture.snippet);
-  if (error) {
-    fail(`Fixture "${fixture.id}" generated contract violation: ${error}`);
+  const legacy = deterministicCardFromSnippet(fixture.snippet);
+  const legacyError = validateCard(legacy, fixture.snippet);
+  if (legacyError) {
+    fail(`Fixture "${fixture.id}" legacy contract violation: ${legacyError}`);
+  }
+
+  const v3 = deterministicCardV3FromSnippet(fixture.snippet);
+  const v3Error = validateCardV3(v3, fixture.snippet);
+  if (v3Error) {
+    fail(`Fixture "${fixture.id}" v3 contract violation: ${v3Error}`);
+  }
+
+  const mapped = mapV3ToLegacy(v3);
+  const mappedError = validateCard(mapped, fixture.snippet);
+  if (mappedError) {
+    fail(`Fixture "${fixture.id}" v3->legacy mapping violation: ${mappedError}`);
   }
 }
 
@@ -95,13 +120,36 @@ const negativeCases = [
     snippet: fixtures[0].snippet,
     card: { gist: "a", say_now: "Этот режим stealth и undetectable.", next_move: "c" },
   },
+  {
+    name: "v3-missing-star",
+    snippet: fixtures[0].snippet,
+    card: {
+      question_brief: "q",
+      answer_now: "Давайте зафиксируем шаг и срок сегодня до 17:00. Отправлю итог в чат.",
+      next_step: "Письмо с владельцем и дедлайном.",
+    },
+  },
+  {
+    name: "v3-short-answer",
+    snippet: fixtures[0].snippet,
+    card: {
+      question_brief: "q",
+      answer_now: "Ок.",
+      star_evidence: "s",
+      next_step: "Письмо с владельцем и дедлайном.",
+    },
+  },
 ];
 
 for (const sample of negativeCases) {
-  const error = validateCard(sample.card, sample.snippet);
+  const error = sample.card.question_brief
+    ? validateCardV3(sample.card, sample.snippet)
+    : validateCard(sample.card, sample.snippet);
   if (!error) {
     fail(`Negative case "${sample.name}" unexpectedly passed.`);
   }
 }
 
-console.log(`Prompt contract OK: ${fixtures.length} fixtures validated (deterministic mode).`);
+console.log(
+  `Prompt contract OK: ${fixtures.length} fixtures validated (legacy + v3 + mapping).`,
+);

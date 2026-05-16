@@ -39,11 +39,4 @@
 
 ## Advanced Mode
 
-Advanced Mode is for controlled diagnostics only, not for regular beta user flow.
-
-| Role | Local Alternative                                                                                                                    | Setup                                                                                                                     |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| STT  | [Whisper.cpp](https://github.com/ggerganov/whisper.cpp) via [faster-whisper-server](https://github.com/fedirz/faster-whisper-server) | Run the server, point Replyline's STT to `http://127.0.0.1:<port>`                                                        |
-| LLM  | [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai)                                                                     | Install, pull a model, set `llmBaseUrl` to `http://127.0.0.1:11434/v1` (Ollama) or `http://127.0.0.1:1234/v1` (LM Studio) |
-
-This mode can increase instability, latency, and card drift. Keep it off by default for stable beta usage.
+Advanced Mode is an ops-only diagnostics track, not part of the normal stable-beta user flow. There is no Advanced Mode toggle in the current Settings UI. The stable-beta Settings surface is: hotkey, capture max seconds, Deepgram API key, LLM base URL, LLM model, and optional LLM API key.

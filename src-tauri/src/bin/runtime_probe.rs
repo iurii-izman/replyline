@@ -12,6 +12,8 @@ use serde::Serialize;
 
 #[path = "../audio.rs"]
 mod audio;
+#[path = "../card_v3.rs"]
+mod card_v3;
 #[path = "../deepgram.rs"]
 mod deepgram;
 #[path = "../fs_atomic.rs"]

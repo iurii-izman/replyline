@@ -102,12 +102,14 @@ pub struct ContextStatusDto {
 pub struct AnalysisCardDto {
     pub gist: String,
     pub say_now: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub star_evidence: Option<String>,
     pub next_move: String,
     pub chars_band: String,
     #[serde(skip)]
-    pub next_move_fallback: bool,
+    pub repair_used: bool,
     #[serde(skip)]
-    pub say_now_repair: bool,
+    pub fallback_used: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

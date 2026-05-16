@@ -14,8 +14,8 @@ const stats = {
   analysis_start: 0,
   analysis_ok: 0,
   analysis_card_invalid: 0,
-  next_move_fallback_true: 0,
-  say_now_repair_true: 0,
+  repair_used_true: 0,
+  fallback_used_true: 0,
   transcript_chars: [],
 };
 
@@ -29,8 +29,11 @@ for (const line of raw.split(/\r?\n/u)) {
   if (event in stats) stats[event] += 1;
   const chars = detail.match(/transcript_chars=(\d+)/u);
   if (chars) stats.transcript_chars.push(Number(chars[1]));
-  if (detail.includes("next_move_fallback=true")) stats.next_move_fallback_true += 1;
-  if (detail.includes("say_now_repair=true")) stats.say_now_repair_true += 1;
+  if (detail.includes("repair_used=true")) stats.repair_used_true += 1;
+  if (detail.includes("fallback_used=true")) stats.fallback_used_true += 1;
+  // Legacy log lines (pre-v3) for before/after comparison on old bundles
+  if (detail.includes("say_now_repair=true")) stats.repair_used_true += 1;
+  if (detail.includes("next_move_fallback=true")) stats.fallback_used_true += 1;
 }
 
 const sorted = [...stats.transcript_chars].sort((a, b) => a - b);
@@ -39,14 +42,16 @@ const avg = sorted.length ? sorted.reduce((a, b) => a + b, 0) / sorted.length : 
 const min = sorted.length ? sorted[0] : 0;
 const max = sorted.length ? sorted[sorted.length - 1] : 0;
 const invalidRate = stats.analysis_start ? stats.analysis_card_invalid / stats.analysis_start : 0;
-const fallbackRate = stats.analysis_ok ? stats.next_move_fallback_true / stats.analysis_ok : 0;
+const fallbackRate = stats.analysis_ok ? stats.fallback_used_true / stats.analysis_ok : 0;
+const repairRate = stats.analysis_ok ? stats.repair_used_true / stats.analysis_ok : 0;
 
 console.log(`window=${windowName}`);
 console.log(`analysis_start=${stats.analysis_start}`);
 console.log(`analysis_ok=${stats.analysis_ok}`);
 console.log(`analysis_card_invalid=${stats.analysis_card_invalid}`);
 console.log(`invalid_rate=${invalidRate.toFixed(3)}`);
-console.log(`next_move_fallback_true=${stats.next_move_fallback_true}`);
+console.log(`repair_used_true=${stats.repair_used_true}`);
+console.log(`repair_rate=${repairRate.toFixed(3)}`);
+console.log(`fallback_used_true=${stats.fallback_used_true}`);
 console.log(`fallback_rate=${fallbackRate.toFixed(3)}`);
-console.log(`say_now_repair_true=${stats.say_now_repair_true}`);
 console.log(`transcript_chars min=${min} median=${median} avg=${avg.toFixed(1)} max=${max}`);

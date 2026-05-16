@@ -14,15 +14,15 @@ Detail fields:
 - `outcome`: `start | ok | fail`
 - `code`: stable code (for example `RL_STT_FAILED`)
 - `detail`: sanitized short detail (no raw tokens, no raw PII)
-- `next_move_fallback=true|false`, `say_now_repair=true|false`, and `chars_band=short|medium|long` appear in `detail` for successful `llm` and `retry` card generation events.
-- failed `RL_CARD_INVALID` details now include `invalid_reason=...`.
+- `repair_used=true|false`, `fallback_used=true|false`, and `chars_band=short|medium|long` appear in `detail` for successful `llm` and `retry` card generation events.
+- failed `RL_CARD_INVALID` details include `invalid_reason=...` and `chars_band=...` on analyze.
 - short transcript gate is logged as `code=RL_STT_TOO_SHORT`.
 
 Example line:
 
 ```text
 2026-05-14T12:01:02 [diag_runtime_event] stage=stt outcome=fail code=RL_STT_FAILED detail=empty transcript
-2026-05-14T12:01:05 [diag_runtime_event] stage=llm outcome=ok code=RL_LLM_OK detail=card generated next_move_fallback=true
+2026-05-14T12:01:05 [diag_runtime_event] stage=llm outcome=ok code=RL_LLM_OK detail=card generated repair_used=true fallback_used=true chars_band=medium
 ```
 
 ## 2) Stable error codes (current)
@@ -69,14 +69,11 @@ Bundle is valid even if runtime reports are absent. App log + manifest are suffi
 
 ## 5) How to collect diagnostics
 
-From UI:
-1. Open Settings.
-2. Use `Collect summary` or `Ticket package`.
-3. Share generated bundle path.
-
 From command:
 1. `pnpm evidence:bundle`.
 2. Attach generated `reports/runtime-evidence-*` folder.
+
+The diagnostic bundle collection UI is not exposed in the current stable-beta Settings surface. Use the command-line path above.
 
 ## 6) How to read signals quickly
 

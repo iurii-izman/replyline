@@ -143,36 +143,15 @@ For current internal stable-beta messaging:
 - core MVP story = live card (`gist / say_now / next_move`)
 - memory = future explicit user-confirmed layer, not current default path
 
-## Current scaffold (implemented)
+## Implementation status
 
-Replyline now has a minimal typed memory scaffold in `src-tauri/src/memory.rs`:
+Memory layer is not implemented in the current Slim Stable Beta.
 
-- typed models:
-  - `MemorySpace`
-  - `MemoryFact`
-  - `MemoryCommitment`
-  - `MemoryTerm`
-  - `MemorySpaceRecord`
-- local JSON-file-backed store: `JsonMemoryStore`
-- local-only storage root: `%APPDATA%/com.replyline.app/memory`
-- one index file (`spaces.json`) plus one JSON file per space (`<space_id>.json`)
-- validation for IDs, text limits, confidence bounds, and duplicate IDs
-- unit tests for:
-  - serialization roundtrip
-  - validation guardrails
-  - file-backed save/load behavior
+The typed model design in this document is a future-track reference.
+No memory module is compiled into the shipped Rust binary.
+No memory commands are exposed in the IPC contract.
 
-Replyline backend now exposes manual memory commands (no UI coupling):
-
-- `memory_list_spaces`
-- `memory_get_space_record`
-- `memory_save_space_record`
-
-These commands only use the local JSON store and require explicit caller action.
-
-Command-level backend tests now cover list/get/save behavior and user-safe error mapping with isolated temp storage.
-
-## Explicitly not implemented yet
+When memory is implemented, it will follow the design constraints above:
 
 - no UI for memory management
 - no automatic extraction from live snippets

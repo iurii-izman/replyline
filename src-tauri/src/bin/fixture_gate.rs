@@ -6,6 +6,8 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 
+#[path = "../card_v3.rs"]
+mod card_v3;
 #[path = "../fs_atomic.rs"]
 mod fs_atomic;
 #[path = "../llm.rs"]
@@ -48,7 +50,7 @@ fn assert_guardrails(id: &str, card: &types::AnalysisCardDto) -> Result<(), Stri
             "Fixture {id}: gist length out of range ({gist_len})."
         ));
     }
-    if say_len == 0 || say_len > 320 {
+    if say_len == 0 || say_len > 560 {
         return Err(format!(
             "Fixture {id}: say_now length out of range ({say_len})."
         ));

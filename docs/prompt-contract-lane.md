@@ -13,8 +13,9 @@ Default mode is deterministic and local-only. Scenario checks add a small produc
 
 ## What it checks
 
-- contract shape is exactly `gist / say_now / next_move`
-- `say_now` stays short and speakable
+- LLM contract is CardSchemaV3 (`question_brief`, `answer_now`, `star_evidence`, `next_step`, optional `risk_or_clarifier`)
+- legacy IPC shape remains `gist / say_now / next_move` via deterministic V3→legacy mapping checks
+- `answer_now` / `say_now` stay speakable (paragraph allowed, dynamic max length)
 - banned drift is rejected:
   - transcript-dump style copy
   - therapy wording

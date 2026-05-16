@@ -1,4 +1,4 @@
-# Replyline Third-Party Providers (Pre-Alpha)
+# Replyline Third-Party Providers (Internal Stable Beta)
 
 Replyline не является полностью on-device системой при включённых провайдерах.
 
@@ -30,15 +30,16 @@ Replyline не является полностью on-device системой п
 
 **Important:** These policies may change. Always verify current terms before production use.
 
-## Advanced Mode: Local-Only Operation
+## Advanced Mode: Local LLM
 
-Replyline can operate without cloud providers by configuring local alternatives. This path is intended for advanced users and requires specific local hardware setup:
+Replyline's LLM path can be pointed to a local server via `llmBaseUrl`. This path is intended for advanced users and requires specific local hardware setup:
 
-1. **Local STT:** Use [Whisper.cpp](https://github.com/ggerganov/whisper.cpp) with a Deepgram-compatible HTTP wrapper (e.g., [faster-whisper-server](https://github.com/fedirz/faster-whisper-server)).
-2. **Local LLM:** Use [Ollama](https://ollama.com), [LM Studio](https://lmstudio.ai), or any OpenAI-compatible local server.
-3. **Settings:** Enable **Advanced Mode** only for controlled debugging, then set `llmBaseUrl` to `http://127.0.0.1:<port>/v1` and the STT endpoint accordingly.
+1. **Local LLM:** Use [Ollama](https://ollama.com), [LM Studio](https://lmstudio.ai), or any OpenAI-compatible local server.
+2. **Settings:** Set `llmBaseUrl` to `http://127.0.0.1:<port>/v1` (e.g. `http://127.0.0.1:11434/v1` for Ollama, `http://127.0.0.1:1234/v1` for LM Studio).
 
-In local-only mode, no audio or text leaves the machine. API keys may still be required for local server auth (or use dummy tokens).
+> **Note:** Local STT (e.g. Whisper.cpp / faster-whisper-server) is not available in the current stable beta. The only shipped STT path is Deepgram. There is no STT endpoint setting in the current AppSettings. Local STT is a future consideration.
+
+With a local LLM and Deepgram STT, audio still leaves the machine via the Deepgram API. Full local-only operation (no audio leaving the machine) is not currently supported.
 
 ## Operator checklist before runtime tests
 

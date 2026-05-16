@@ -1,6 +1,6 @@
-# Replyline Privacy Policy (Alpha)
+# Replyline Privacy Policy (Internal Stable Beta)
 
-This document describes what Replyline captures, where data goes, what is stored, and what the user controls. It applies to the current internal alpha build.
+This document describes what Replyline captures, where data goes, what is stored, and what the user controls. It applies to the current internal stable beta build.
 
 ## What Replyline captures
 

@@ -33,7 +33,7 @@ At least one runtime JSON report should contain:
 - transcript
 - final card with `gist / say_now / next_move`
 
-## Latency budgets (alpha operating targets)
+## Latency budgets (stable-beta operating targets)
 
 These are engineering targets used for trend tracking, not universal guarantees:
 

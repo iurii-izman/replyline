@@ -102,8 +102,6 @@ fn migrate_v1_to_v2(value: &mut serde_json::Value) {
         if let Some(v) = obj.get_mut("schemaVersion") {
             *v = serde_json::json!(2);
         }
-        obj.entry("llmTemperature")
-            .or_insert(serde_json::json!(0.25));
     }
 }
 
@@ -314,7 +312,8 @@ mod tests {
         });
         let migrated = super::migrate_settings(v1);
         assert_eq!(migrated["schemaVersion"], 2);
-        assert_eq!(migrated["llmTemperature"], 0.25);
+        // llmTemperature must NOT be injected — the field is not part of the current schema.
+        assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
@@ -324,12 +323,16 @@ mod tests {
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
-            "captureMaxSeconds": 30,
-            "llmTemperature": 0.5
+            "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v2);
         assert_eq!(migrated["schemaVersion"], 2);
-        assert_eq!(migrated["llmTemperature"], 0.5);
+        assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
+        assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
+        assert_eq!(migrated["llmModel"], "gpt-4o-mini");
+        assert_eq!(migrated["captureMaxSeconds"], 30);
+        // Schema-defined fields must remain; no phantom fields should appear.
+        assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]

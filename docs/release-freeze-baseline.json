@@ -16,22 +16,37 @@
     "src-tauri/src/settings.rs",
     "src-tauri/src/services/capture_pipeline.rs",
     "src-tauri/src/llm.rs",
+    "src-tauri/src/card_v3.rs",
     "docs/release-readiness.md",
     "docs/verification-lanes.md",
     "docs/smoke-checks.md",
     "docs/copy-rules.md",
     "docs/release-freeze-baseline.json",
     "docs/ai-tooling-policy-matrix.md",
+    "docs/card-schema-v3-migration.md",
+    "docs/local-roo-workflow.md",
     "scripts/check-consistency.mjs",
     "scripts/check-prompt-contract.mjs",
     "scripts/check-release-freeze.mjs",
     ".github/workflows/ci.yml",
     ".github/copilot-instructions.md",
+    ".roo/rules/01-replyline.md",
+    ".zed/settings.json",
+    ".zed/tasks.json",
     "AGENTS.md",
+    "CHANGELOG.md",
     "CLAUDE.md",
     "CONTRIBUTING.md",
-    ".zed/settings.json",
-    ".zed/tasks.json"
+    ".rooignore"
   ],
-  "allowlistPrefixes": [".github/", "docs/", "scripts/", "tests/", "src/", "src-tauri/"]
+  "allowlistPrefixes": [
+    ".github/",
+    ".roo/",
+    ".zed/",
+    "docs/",
+    "scripts/",
+    "tests/",
+    "src/",
+    "src-tauri/"
+  ]
 }

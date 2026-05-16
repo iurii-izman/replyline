@@ -77,8 +77,11 @@ Any extension must pass:
 
 ## Memory Layer
 
+> Memory layer is future track. No implementation exists in Slim Stable Beta.
+> When implemented, extension points below apply.
+
 ### Adding a New Memory Fact Category
 
-1. Add variant to `MemoryFact.category` in both Rust `types.rs` and TS `model.ts`
-2. Update memory persistence in `memory.rs`
-3. Add UI for the new category in `SettingsSurface.tsx` memory section
+1. Add variant to `MemoryFact.category` in both Rust types and TS `model.ts`
+2. Update memory persistence in the memory module (future)
+3. Add UI for the new category in the memory section (future)

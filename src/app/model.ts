@@ -17,6 +17,16 @@ export type AppSettings = {
   captureMaxSeconds: number;
 };
 
+/**
+ * Mirrors Rust LogStatusDto for IPC deserialization.
+ * Not surfaced in Slim Stable Beta UI — available for diagnostics via IPC only.
+ */
+export type LogStatusDto = {
+  logPath: string;
+  lastLine?: string | null;
+  lastDebugWavPath?: string | null;
+};
+
 export type BootstrapDto = {
   settings: AppSettings;
   deepgramKeyPresent: boolean;
@@ -24,6 +34,11 @@ export type BootstrapDto = {
   contextActive: boolean;
   contextEntryCount: number;
   runtimeReady: boolean;
+  /// Log diagnostics. Not surfaced in Slim Stable Beta UI.
+  logStatus: LogStatusDto;
+  /// Truncated text from the last successful STT pass. Not surfaced in Slim Stable Beta UI.
+  lastTranscriptPreview?: string | null;
+  canRetryLastTranscript: boolean;
 };
 
 export type ContextStatusDto = {
@@ -50,7 +65,13 @@ export function settingsAnchorForCommandErrorKind(kind: CommandErrorKind): Error
   }
 }
 
-const COMMAND_ERROR_KINDS: CommandErrorKind[] = ["Settings", "Credential", "Capture", "Pipeline", "Internal"];
+const COMMAND_ERROR_KINDS: CommandErrorKind[] = [
+  "Settings",
+  "Credential",
+  "Capture",
+  "Pipeline",
+  "Internal",
+];
 
 export type ParsedCommandError = {
   kind: CommandErrorKind;
@@ -105,6 +126,8 @@ export type AnalysisCard = {
   sayNow: string;
   nextMove: string;
   charsBand?: "short" | "medium" | "long";
+  /// Supporting evidence snippet from the LLM response. Not surfaced in Slim Stable Beta UI.
+  starEvidence?: string | null;
 };
 
 export type StatusEvent = {
@@ -133,7 +156,8 @@ function normalizeHotkeyKey(key: string): string | null {
   if (/^[a-zA-Z]$/.test(key)) return key.toUpperCase();
   if (/^[0-9]$/.test(key)) return key;
   if (key.startsWith("Arrow")) return key.replace("Arrow", "");
-  if (["Tab", "Enter", "Backspace", "Delete", "Home", "End", "PageUp", "PageDown"].includes(key)) return key;
+  if (["Tab", "Enter", "Backspace", "Delete", "Home", "End", "PageUp", "PageDown"].includes(key))
+    return key;
   return null;
 }
 

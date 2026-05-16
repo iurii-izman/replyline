@@ -14,8 +14,24 @@ Replyline Slim Stable Beta architecture.
 
 - capture start/stop
 - STT (Deepgram)
-- LLM card build
+- LLM card build (`CardSchemaV3` in `src-tauri/src/card_v3.rs`, mapped to legacy DTO)
 - context clear + retry
+
+## Analysis card pipeline
+
+```mermaid
+flowchart LR
+  LLM[LLM JSON CardSchemaV3] --> Parse[card_v3 parse]
+  Parse --> Map[map to gist/say_now/next_move]
+  Map --> Repair[per-section repair + fallback]
+  Repair --> DTO[AnalysisCardDto IPC]
+  DTO --> UI[MainSurface legacy fields]
+```
+
+- V3 contract: `question_brief`, `answer_now`, `star_evidence`, `next_step`, optional `risk_or_clarifier`.
+- Legacy IPC/UI unchanged: `gist`, `sayNow`, `nextMove`.
+- Quality flags (logs only): `repair_used`, `fallback_used`, `chars_band`.
+- Migration: `docs/card-schema-v3-migration.md`.
 
 ## IPC contract (public path)
 

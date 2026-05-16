@@ -1,6 +1,7 @@
 mod app_log;
 mod audio;
 mod capture_debug;
+mod card_v3;
 mod commands;
 mod context;
 mod credentials;

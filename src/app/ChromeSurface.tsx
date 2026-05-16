@@ -17,7 +17,7 @@ export function ShellChrome(props: { controller: ReplylineController }) {
           <button
             class="icon-btn"
             type="button"
-            title={st().startError.toSetup}
+            title={st().settings.title}
             onClick={() => controller().toggleSettingsPanel()}
           >
             ⚙

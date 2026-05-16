@@ -7,7 +7,7 @@
 Replyline — Windows-first tray app для сложных рабочих разговоров:
 
 - hotkey -> короткий system-audio snippet -> карточка `gist / say_now / next_move`
-- текущая стадия: внутренняя русскоязычная alpha
+- текущая стадия: внутренняя русскоязычная stable beta
 
 Это не transcript tool, не meeting assistant и не speaking coach.
 
@@ -25,7 +25,7 @@ Replyline — Windows-first tray app для сложных рабочих раз
    - ясно, что отправляется внешним провайдерам;
    - нет misleading ощущений "скрытого режима".
 
-## Что НЕ тестируем как цель alpha
+## Что НЕ тестируем как цель stable beta
 
 - transcript/history/team workflows
 - speaking-coach сценарии
@@ -53,4 +53,4 @@ Replyline — Windows-first tray app для сложных рабочих раз
 ## Формат репорта
 
 - Для багов: GitHub bug report template.
-- Для запросов/идей: GitHub feature request template (с проверкой на alpha-scope fit).
+- Для запросов/идей: GitHub feature request template (с проверкой на stable-beta-scope fit).

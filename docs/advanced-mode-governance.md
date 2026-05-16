@@ -1,30 +1,21 @@
 # Advanced Mode Governance
 
-This document defines lightweight governance for `showAdvanced` mode in Replyline internal stable beta.
+This document defines lightweight governance for Advanced Mode as an ops-only diagnostics and policy draft track. Advanced Mode is not exposed in the current stable-beta Settings UI and is not part of the normal user flow.
 
 ## Purpose
 
-Advanced Mode exists for controlled beta-ops diagnostics and targeted experiments:
-- custom system prompt
-- streaming STT toggle
+Advanced Mode exists as a controlled diagnostics track for beta-ops experimentation:
+- custom system prompt (ops experimentation only)
+- streaming STT toggle (ops experimentation only)
 - dev fixture run (debug builds only)
 
-It is not a hidden automation mode and does not bypass explicit user capture actions.
+There is no user-visible Advanced Mode toggle, no advanced sections in Settings UI, and no user-facing risk copy in the current stable beta.
 
-## User-visible behavior
-
-When enabled:
-- advanced sections are shown in Settings UI
-- user sees explicit risk copy and control intent
-- changes still require manual `Save on this machine`
-
-When disabled:
-- advanced sections are hidden from normal stable-beta setup flow
-- core capture pipeline behavior remains unchanged
+Advanced Mode is not a hidden automation mode and does not bypass explicit user capture actions.
 
 ## Risks and constraints
 
-Potential risks:
+When exercised in ops diagnostics:
 - higher latency
 - lower stability or fallback churn
 - card format drift under custom prompts
@@ -52,6 +43,6 @@ Disable when any is true:
 
 ## Governance checks
 
-- UI copy for Advanced Mode must stay RU/EN parity (`src/app/locale.parity.test.ts`).
-- Release notes/docs must not describe Advanced Mode as default safe path.
 - Any temporary policy allowlist/exception must include reason + review date in docs.
+- Release notes/docs must not describe Advanced Mode as default safe path.
+- Advanced Mode is an ops-only track; it must not be described as current stable-beta user surface.

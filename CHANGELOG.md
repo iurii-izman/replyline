@@ -29,9 +29,7 @@ Initial alpha baseline.
 - Retry/backoff for external API calls (Deepgram STT, LLM).
 - App event log with 5 MB rotation (`app_log.rs`).
 - Debug WAV persistence on STT failure for diagnostics.
-- Diagnostic bundle collection (tray menu action).
-- Memory layer backend: spaces, facts, commitments, terms (`memory.rs`).
-- Atomic file writes for settings and memory store (`fs_atomic.rs`).
+- Atomic file writes for settings (`fs_atomic.rs`).
 - Runtime evidence artifacts: probe, bench, duration bench, live-source bench, evidence bundle.
 - Four verification lanes: build/test (`pnpm smoke`), mock/UI (`pnpm test:ui`), runtime (`pnpm probe:*`), manual smoke matrix.
 - Prompt contract checks, say-now scenario fixtures, consistency gate, copy-check gate.

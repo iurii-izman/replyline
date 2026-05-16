@@ -218,7 +218,7 @@
 
   "terminal": {
     "shell": {
-      "windows": "pwsh",
+      "program": "pwsh",
     },
     "working_directory": "current_project_directory",
     "dock": "bottom",

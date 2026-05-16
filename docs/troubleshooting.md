@@ -96,7 +96,7 @@
 
 - Try a more capable model (e.g. `gpt-4o-mini` or larger).
 - Ensure capture duration is at least 5-10 seconds of audible speech.
-- Check `llmTemperature` — values near 0 are more deterministic, values near 2 may produce erratic output.
+- Temperature is internally fixed at 0.25 (deterministic). Not exposed as a user setting in the current stable beta.
 - If using a custom system prompt, try clearing it to use the built-in prompt.
 
 ## 7. Streaming STT produces no transcript
@@ -130,7 +130,7 @@
 - Reduce `captureMaxSeconds` in settings (shorter captures = faster processing).
 - Enable `useStreamingStt` for parallel transcription during capture.
 - Use a faster/smaller LLM model.
-- For lowest latency, use local providers (Whisper.cpp + Ollama with GPU).
+- For lowest latency on the LLM side, use a local LLM provider (Ollama with GPU). Local STT (e.g. Whisper.cpp) is not available in the current stable beta.
 
 ## 9. "Cannot find module" or build errors after update
 
