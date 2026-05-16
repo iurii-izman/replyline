@@ -44,9 +44,6 @@ export const ui_ru = {
     reply: "Ответ",
     card: "Карточка",
   },
-  boot: {
-    loading: "Загрузка...",
-  },
   chrome: {
     hideToTray: "Скрыть",
     closeApp: "Выход",
@@ -65,7 +62,6 @@ export const ui_ru = {
     save: "Сохранить",
     saving: "Сохраняем...",
     back: "Назад",
-    retryLoad: "Повторить",
     hotkeyLabel: "Hotkey",
     captureMaxLabel: "Capture max seconds",
     deepgramKeyLabel: "Deepgram API key",
@@ -117,9 +113,6 @@ export const ui_en: UiStrings = {
     body: "Fill required fields and save.",
     openSetup: "Open Settings",
   },
-  boot: {
-    loading: "Loading...",
-  },
   pipeline: {
     label: "Pipeline status",
     capture: "Capture",
@@ -145,7 +138,6 @@ export const ui_en: UiStrings = {
     save: "Save",
     saving: "Saving...",
     back: "Back",
-    retryLoad: "Retry",
     hotkeyLabel: "Hotkey",
     captureMaxLabel: "Capture max seconds",
     deepgramKeyLabel: "Deepgram API key",

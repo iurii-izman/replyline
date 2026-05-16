@@ -125,9 +125,10 @@ export type AnalysisCard = {
   gist: string;
   sayNow: string;
   nextMove: string;
-  charsBand?: "short" | "medium" | "long";
+  /// Always present in Rust AnalysisCardDto (chars_band: String, not Option).
+  charsBand: string;
   /// Supporting evidence snippet from the LLM response. Not surfaced in Slim Stable Beta UI.
-  starEvidence?: string | null;
+  starEvidence?: string;
 };
 
 export type StatusEvent = {

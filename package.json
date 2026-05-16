@@ -37,6 +37,7 @@
     "test:prompt-contract": "node scripts/check-prompt-contract.mjs",
     "test:say-now-scenarios": "node scripts/check-say-now-scenarios.mjs",
     "test:ipc-contract": "node scripts/check-ipc-handler-contract.mjs",
+    "test:locale-keys": "node scripts/check-locale-keys.mjs",
     "copy:check": "node scripts/copy-check.mjs",
     "probe:runtime": "cargo run --manifest-path src-tauri/Cargo.toml --bin runtime_probe",
     "probe:bench": "pwsh -File scripts/runtime-bench.ps1",
@@ -72,7 +73,7 @@
     "code-review:webhook": "node scripts/send-code-review-webhook.mjs",
     "beta:preflight": "pnpm smoke && pnpm runtime:preflight && pnpm probe:runtime && pnpm evidence:bundle",
     "alpha:preflight": "pnpm beta:preflight",
-    "smoke": "pnpm typecheck && pnpm lint && pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo test --manifest-path src-tauri/Cargo.toml && pnpm test:ui && pnpm test:consistency && pnpm test:ipc-contract && pnpm test:prompt-contract && pnpm copy:check",
+    "smoke": "pnpm typecheck && pnpm lint && pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo test --manifest-path src-tauri/Cargo.toml && pnpm test:ui && pnpm test:consistency && pnpm test:ipc-contract && pnpm test:locale-keys && pnpm test:prompt-contract && pnpm copy:check",
     "verify": "pnpm smoke && pnpm test:security-lanes",
     "verify:extended": "pnpm verify && pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:say-now-scenarios",
     "test:api:postman": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage newman --exec pnpm -- exec newman run tests/api/postman/Replyline.postman_collection.json -e tests/api/postman/Replyline.local.postman_environment.json",
@@ -94,8 +95,7 @@
     "release:freeze:check": "node scripts/check-release-freeze.mjs",
     "release:freeze:check:strict": "node scripts/check-release-freeze.mjs --strict",
     "probe:soak": "pwsh -File scripts/runtime-soak.ps1",
-    "check:slo": "node scripts/check-slo-budget.mjs"
-    ,
+    "check:slo": "node scripts/check-slo-budget.mjs",
     "report:card-quality": "node scripts/runtime-card-quality-report.mjs"
   },
   "license": "MIT",
