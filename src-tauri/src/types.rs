@@ -122,6 +122,27 @@ pub struct StatusEventDto {
     pub detail: Option<String>,
 }
 
+/// Single check result for preflight diagnostics.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckItemDto {
+    pub ok: bool,
+    pub code: String,
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub action: Option<String>,
+}
+
+/// Aggregated runtime preflight check result for the setup wizard.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeCheckDto {
+    pub stt: CheckItemDto,
+    pub llm: CheckItemDto,
+    pub settings: CheckItemDto,
+    pub runtime_ready: bool,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum SecretSlot {
     DeepgramApiKey,
@@ -140,7 +161,7 @@ impl SecretSlot {
 
 #[cfg(test)]
 mod tests {
-    use super::{AppSettings, LogStatusDto, StatusEventDto};
+    use super::{AppSettings, CheckItemDto, LogStatusDto, RuntimeCheckDto, StatusEventDto};
 
     #[test]
     fn runtime_path_is_not_ready_for_placeholder_route() {
@@ -213,5 +234,104 @@ mod tests {
         };
         let raw = serde_json::to_string(&dto).expect("serialize");
         assert!(!raw.contains("runId"));
+    }
+
+    // ── CheckItemDto / RuntimeCheckDto ───────────────────────────
+
+    #[test]
+    fn check_item_dto_round_trips() {
+        let dto = CheckItemDto {
+            ok: true,
+            code: "ok".to_string(),
+            message: "Deepgram key found".to_string(),
+            action: None,
+        };
+        let raw = serde_json::to_string(&dto).expect("serialize");
+        let parsed: CheckItemDto = serde_json::from_str(&raw).expect("deserialize");
+        assert!(parsed.ok);
+        assert_eq!(parsed.code, "ok");
+        assert_eq!(parsed.message, "Deepgram key found");
+        assert!(parsed.action.is_none());
+        // CheckItemDto without action must not serialize "action" field.
+        assert!(!raw.contains("action"));
+    }
+
+    #[test]
+    fn check_item_dto_with_action_round_trips() {
+        let dto = CheckItemDto {
+            ok: false,
+            code: "config_error".to_string(),
+            message: "LLM base URL is empty".to_string(),
+            action: Some("Set the LLM gateway URL in settings".to_string()),
+        };
+        let raw = serde_json::to_string(&dto).expect("serialize");
+        let parsed: CheckItemDto = serde_json::from_str(&raw).expect("deserialize");
+        assert!(!parsed.ok);
+        assert_eq!(parsed.code, "config_error");
+        assert!(parsed.action.is_some());
+        assert!(raw.contains("action"));
+    }
+
+    #[test]
+    fn runtime_check_dto_round_trips() {
+        let dto = RuntimeCheckDto {
+            stt: CheckItemDto {
+                ok: true,
+                code: "ok".to_string(),
+                message: "Deepgram key configured".to_string(),
+                action: None,
+            },
+            llm: CheckItemDto {
+                ok: true,
+                code: "ok".to_string(),
+                message: "LLM endpoint reachable".to_string(),
+                action: None,
+            },
+            settings: CheckItemDto {
+                ok: true,
+                code: "ok".to_string(),
+                message: "Settings valid".to_string(),
+                action: None,
+            },
+            runtime_ready: true,
+        };
+        let raw = serde_json::to_string(&dto).expect("serialize");
+        let parsed: RuntimeCheckDto = serde_json::from_str(&raw).expect("deserialize");
+        assert!(parsed.runtime_ready);
+        assert!(parsed.stt.ok);
+        assert!(parsed.llm.ok);
+        assert!(parsed.settings.ok);
+        assert!(!raw.contains("action"));
+    }
+
+    #[test]
+    fn runtime_check_dto_not_ready_when_stt_missing() {
+        let dto = RuntimeCheckDto {
+            stt: CheckItemDto {
+                ok: false,
+                code: "missing_key".to_string(),
+                message: "Deepgram API key not configured".to_string(),
+                action: Some("Add Deepgram API key in settings".to_string()),
+            },
+            llm: CheckItemDto {
+                ok: false,
+                code: "skipped".to_string(),
+                message: "Skipped: STT not ready".to_string(),
+                action: None,
+            },
+            settings: CheckItemDto {
+                ok: true,
+                code: "ok".to_string(),
+                message: "Settings valid".to_string(),
+                action: None,
+            },
+            runtime_ready: false,
+        };
+        let raw = serde_json::to_string(&dto).expect("serialize");
+        let parsed: RuntimeCheckDto = serde_json::from_str(&raw).expect("deserialize");
+        assert!(!parsed.runtime_ready);
+        assert!(!parsed.stt.ok);
+        assert!(parsed.stt.action.is_some());
+        assert!(!parsed.llm.ok);
     }
 }

@@ -138,7 +138,10 @@ pub fn run() {
         commands::refresh_tray_menu,
         commands::tray_open_main,
         commands::log_client_event,
-        commands::quit_app
+        commands::quit_app,
+        commands::check_stt_config,
+        commands::check_llm_config,
+        commands::check_runtime_config
     ]);
     #[cfg(not(any(debug_assertions, test)))]
     let builder = builder.invoke_handler(tauri::generate_handler![
@@ -155,7 +158,10 @@ pub fn run() {
         commands::refresh_tray_menu,
         commands::tray_open_main,
         commands::log_client_event,
-        commands::quit_app
+        commands::quit_app,
+        commands::check_stt_config,
+        commands::check_llm_config,
+        commands::check_runtime_config
     ]);
     builder
         .run(tauri::generate_context!())

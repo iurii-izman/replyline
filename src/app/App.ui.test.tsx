@@ -192,3 +192,212 @@ describe("App UX stabilization", () => {
     expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
   });
 });
+
+describe("Setup wizard (first-run guidance)", () => {
+  /**
+   * Create a mock platform with a custom bootstrap response.
+   * Patches platform.invoke so the controller sees the override.
+   */
+  function createSetupMockPlatform(
+    overrides: {
+      deepgramKeyPresent?: boolean;
+      llmKeyPresent?: boolean;
+      llmBaseUrl?: string;
+      llmModel?: string;
+      runtimeReady?: boolean;
+    } = {},
+  ): MockPlatform {
+    const base = createMockPlatform({
+      analysisCard: { gist: "g", sayNow: "say", nextMove: "next" },
+    });
+
+    const origInvoke = base.platform.invoke;
+    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "load_bootstrap") {
+        return {
+          settings: {
+            schemaVersion: 2,
+            hotkey: "Ctrl+Alt+Space",
+            llmBaseUrl: overrides.llmBaseUrl ?? "",
+            llmModel: overrides.llmModel ?? "gpt-4o-mini",
+            captureMaxSeconds: 45,
+          },
+          deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
+          llmKeyPresent: overrides.llmKeyPresent ?? false,
+          contextActive: false,
+          contextEntryCount: 0,
+          runtimeReady: overrides.runtimeReady ?? false,
+          logStatus: { logPath: "", lastLine: null },
+          canRetryLastTranscript: false,
+        };
+      }
+      if (command === "save_settings") {
+        const input = (args as Record<string, unknown> | undefined)?.input as
+          | Record<string, unknown>
+          | undefined;
+        return { ...input, schemaVersion: 2 };
+      }
+      if (command === "save_secret") {
+        return null;
+      }
+      if (command === "get_context_status") {
+        return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
+      }
+      return origInvoke(command, args);
+    });
+    // Patch both references so the controller sees the override
+    base.platform.invoke = patchedInvoke;
+    base.invoke = patchedInvoke;
+    return base;
+  }
+
+  it("shows settings on first launch when not ready", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmBaseUrl: "",
+      runtimeReady: false,
+    });
+
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Настройки")).toBeTruthy();
+    });
+
+    // Setup progress section is visible (text appears in both progress and legend)
+    expect(screen.getAllByText("1. Речь").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("2. Ответ").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("3. Горячая клавиша").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("explains missing Deepgram key", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmBaseUrl: "",
+      runtimeReady: false,
+    });
+
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Добавьте ключ Deepgram API.")).toBeTruthy();
+    });
+
+    // Overall hint indicates not ready
+    expect(screen.getByTestId("setup-overall-hint").textContent).toContain(
+      "Заполните недостающие поля",
+    );
+  });
+
+  it("explains missing LLM route", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmBaseUrl: "",
+      runtimeReady: false,
+    });
+
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Укажите URL и модель LLM-шлюза.")).toBeTruthy();
+    });
+  });
+
+  it("shows saved badge when Deepgram key is present", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmBaseUrl: "",
+      runtimeReady: false,
+    });
+
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => {
+      const badges = screen.getAllByText("сохранено");
+      expect(badges.length).toBeGreaterThanOrEqual(1);
+    });
+
+    // Speech step shows ready status
+    expect(screen.getByText("Ключ Deepgram сохранён.")).toBeTruthy();
+  });
+
+  it("shows ready hint when all setup steps are complete", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmBaseUrl: "https://api.example.com/v1",
+      llmModel: "gpt-4o-mini",
+      runtimeReady: true,
+    });
+
+    render(() => <App platform={mock.platform} />);
+
+    // With runtimeReady=true, we should be on main panel, not settings
+    await waitFor(() => {
+      expect(screen.getByTestId("main-surface")).toBeTruthy();
+    });
+
+    // Navigate to settings to check the wizard
+    const gearBtn = screen.getByTitle("Настройки");
+    fireEvent.click(gearBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("1. Речь").length).toBeGreaterThanOrEqual(1);
+    });
+
+    // All steps show done hints
+    expect(screen.getByText("Ключ Deepgram сохранён.")).toBeTruthy();
+    expect(screen.getByText("Маршрут LLM настроен.")).toBeTruthy();
+    expect(screen.getByText("Горячая клавиша задана.")).toBeTruthy();
+
+    // Overall hint shows ready
+    expect(screen.getByTestId("setup-overall-hint").textContent).toContain(
+      "Приложение готово к работе",
+    );
+  });
+
+  it("renders three fieldset sections in settings", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmBaseUrl: "",
+      runtimeReady: false,
+    });
+
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("setup-section-speech")).toBeTruthy();
+      expect(screen.getByTestId("setup-section-reply")).toBeTruthy();
+      expect(screen.getByTestId("setup-section-hotkey")).toBeTruthy();
+    });
+  });
+
+  it("returns to main after successful save when all fields are ready", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmBaseUrl: "",
+      runtimeReady: false,
+    });
+
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Настройки")).toBeTruthy();
+    });
+
+    // Fill in the missing fields
+    const deepgramInput = screen.getByPlaceholderText("Добавьте ключ Deepgram API.");
+    fireEvent.input(deepgramInput, { target: { value: "dg-key-123" } });
+
+    const urlInput = screen.getByPlaceholderText("https://api.example.com/v1");
+    fireEvent.input(urlInput, { target: { value: "https://api.example.com/v1" } });
+
+    // Save
+    const saveBtn = screen.getByRole("button", { name: "Сохранить" });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      // Should transition to main surface
+      expect(screen.getByTestId("main-surface")).toBeTruthy();
+    });
+  });
+});

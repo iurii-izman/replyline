@@ -16,8 +16,17 @@ export interface SelectorDeps {
   strings: Accessor<UiStrings>;
 }
 
+export interface SetupStepState {
+  label: string;
+  readyLabel: string;
+  missingLabel: string;
+  ready: boolean;
+}
+
 export interface Selectors {
   setupRequired: Accessor<boolean>;
+  setupSteps: Accessor<SetupStepState[]>;
+  allSetupReady: Accessor<boolean>;
   phaseLabel: Accessor<string>;
   pipelineActive: Accessor<boolean>;
   mainUiState: Accessor<MainUiState>;
@@ -35,6 +44,38 @@ export function createSelectors(deps: SelectorDeps): Selectors {
       !deps.deepgramSaved() ||
       !isConfiguredLlmRoute(deps.settingsLlmBaseUrl(), deps.settingsLlmModel()),
   );
+
+  const sttReady = createMemo(() => deps.deepgramSaved());
+  const llmRouteReady = createMemo(() =>
+    isConfiguredLlmRoute(deps.settingsLlmBaseUrl(), deps.settingsLlmModel()),
+  );
+  const hotkeyReady = createMemo(() => true);
+
+  const setupSteps = createMemo<SetupStepState[]>(() => {
+    const s = deps.strings();
+    return [
+      {
+        label: s.setup.stepSpeech,
+        readyLabel: s.setup.sttReady,
+        missingLabel: s.setup.sttMissing,
+        ready: sttReady(),
+      },
+      {
+        label: s.setup.stepReply,
+        readyLabel: s.setup.llmReady,
+        missingLabel: s.setup.llmMissing,
+        ready: llmRouteReady(),
+      },
+      {
+        label: s.setup.stepHotkey,
+        readyLabel: s.setup.hotkeyReady,
+        missingLabel: s.setup.hotkeyMissing,
+        ready: hotkeyReady(),
+      },
+    ];
+  });
+
+  const allSetupReady = createMemo(() => setupSteps().every((step) => step.ready));
 
   const phaseLabel = createMemo(() =>
     phaseLabelFor(deps.phase(), setupRequired(), deps.hotkeyFailed(), deps.strings()),
@@ -83,6 +124,8 @@ export function createSelectors(deps: SelectorDeps): Selectors {
 
   return {
     setupRequired,
+    setupSteps,
+    allSetupReady,
     phaseLabel,
     pipelineActive,
     mainUiState,

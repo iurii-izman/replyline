@@ -8,6 +8,8 @@ import {
   type ContextStatusDto,
   type Panel,
   type Phase,
+  type RuntimeCheckDto,
+  invokeErrorMessage,
 } from "../model";
 import { getUi, type UiStrings } from "../locale";
 import { currentLanguage } from "../language_profile";
@@ -45,6 +47,8 @@ export function useReplylineController(platform: AppPlatform) {
   const [lastCommandErrorKind, setLastCommandErrorKind] = createSignal<CommandErrorKind | null>(
     null,
   );
+  const [runtimeCheckResult, setRuntimeCheckResult] = createSignal<RuntimeCheckDto | null>(null);
+  const [runtimeCheckRunning, setRuntimeCheckRunning] = createSignal(false);
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -205,6 +209,25 @@ export function useReplylineController(platform: AppPlatform) {
     draftSecrets,
     ...selectors,
     lastCommandErrorKind,
+    runtimeCheckResult,
+    runtimeCheckRunning,
+    checkRuntimeConfig: async () => {
+      setRuntimeCheckRunning(true);
+      setRuntimeCheckResult(null);
+      try {
+        const result = await platform.invoke<RuntimeCheckDto>("check_runtime_config");
+        setRuntimeCheckResult(result);
+      } catch (err) {
+        setRuntimeCheckResult({
+          stt: { ok: false, code: "error", message: invokeErrorMessage(err) },
+          llm: { ok: false, code: "error", message: invokeErrorMessage(err) },
+          settings: { ok: false, code: "error", message: invokeErrorMessage(err) },
+          runtimeReady: false,
+        });
+      } finally {
+        setRuntimeCheckRunning(false);
+      }
+    },
     reloadBootstrap: settingsActions.reloadBootstrap,
     persistSettings: settingsActions.persistSettings,
     clearContext: pipelineActions.clearContext,

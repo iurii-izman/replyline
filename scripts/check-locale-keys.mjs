@@ -127,7 +127,8 @@ const sourceFiles = collectTsFiles(srcDir);
 
 // Pattern: st().KEY, st().a.b.c, strings().KEY, strings().a.b.c
 const usagePatterns = [/st\(\)\.([\w.]+)/g, /strings\(\)\.([\w.]+)/g];
-// In controller_status.ts, s is a UiStrings parameter: s.phase.booting, etc.
+// s is a UiStrings parameter in controller_status.ts and selectors.ts:
+// s.phase.booting, s.setup.sttReady, etc.
 // We only capture multi-level keys (containing a dot) to avoid false positives
 // on method calls like s.push, s.length, etc.
 const sPattern = /s\.([\w.]+)/g;
@@ -141,11 +142,11 @@ for (const file of sourceFiles) {
       usedKeys.add(match[1]);
     }
   }
-  // controller_status.ts uses s.phase.* pattern (s is a UiStrings parameter)
-  if (file.endsWith("controller_status.ts")) {
+  // controller_status.ts and selectors.ts use s.setup.* / s.phase.* pattern
+  if (file.endsWith("controller_status.ts") || file.endsWith("selectors.ts")) {
     for (const match of content.matchAll(sPattern)) {
       const key = match[1];
-      // Only multi-level keys (e.g. phase.booting), skip single-level method calls
+      // Only multi-level keys (e.g. phase.booting, setup.sttReady), skip single-level method calls
       if (key.includes(".")) {
         usedKeys.add(key);
       }

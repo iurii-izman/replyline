@@ -137,6 +137,22 @@ export type StatusEvent = {
   detail?: string | null;
 };
 
+/** Mirrors Rust CheckItemDto for runtime preflight checks. */
+export type CheckItemDto = {
+  ok: boolean;
+  code: string;
+  message: string;
+  action?: string | null;
+};
+
+/** Mirrors Rust RuntimeCheckDto for setup wizard diagnostics. */
+export type RuntimeCheckDto = {
+  stt: CheckItemDto;
+  llm: CheckItemDto;
+  settings: CheckItemDto;
+  runtimeReady: boolean;
+};
+
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {

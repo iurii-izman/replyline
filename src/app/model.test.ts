@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_SETTINGS,
   formatHotkeyFromEvent,
   isConfiguredLlmRoute,
   parseCommandInvokeError,
   settingsAnchorForCommandErrorKind,
+  type CheckItemDto,
+  type RuntimeCheckDto,
 } from "./model";
 
 describe("model", () => {
@@ -23,9 +26,7 @@ describe("model", () => {
     });
 
     it("strips prefix text before JSON via brace extraction", () => {
-      const parsed = parseCommandInvokeError(
-        'Error: {"kind":"Internal","message":"oops"}',
-      );
+      const parsed = parseCommandInvokeError('Error: {"kind":"Internal","message":"oops"}');
       expect(parsed?.kind).toBe("Internal");
       expect(parsed?.message).toBe("oops");
     });
@@ -35,9 +36,7 @@ describe("model", () => {
     });
 
     it("returns null for an unknown error kind", () => {
-      expect(
-        parseCommandInvokeError('{"kind":"UnknownKind","message":"test"}'),
-      ).toBeNull();
+      expect(parseCommandInvokeError('{"kind":"UnknownKind","message":"test"}')).toBeNull();
     });
 
     it("returns null for a non-JSON string", () => {
@@ -73,6 +72,128 @@ describe("model", () => {
         metaKey: false,
       } as KeyboardEvent;
       expect(formatHotkeyFromEvent(event)).toBe("Ctrl+Alt+K");
+    });
+  });
+
+  describe("setup readiness helpers", () => {
+    it("DEFAULT_SETTINGS has empty llmBaseUrl", () => {
+      expect(DEFAULT_SETTINGS.llmBaseUrl).toBe("");
+      expect(isConfiguredLlmRoute(DEFAULT_SETTINGS.llmBaseUrl, DEFAULT_SETTINGS.llmModel)).toBe(
+        false,
+      );
+    });
+
+    it("detects configured LLM route with both fields filled", () => {
+      expect(isConfiguredLlmRoute("https://api.example.com/v1", "gpt-4o-mini")).toBe(true);
+      expect(isConfiguredLlmRoute("http://localhost:11434/v1", "llama3")).toBe(true);
+      expect(isConfiguredLlmRoute("https://api.example.com/v1", "")).toBe(false);
+      expect(isConfiguredLlmRoute("", "gpt-4o-mini")).toBe(false);
+    });
+  });
+
+  describe("CheckItemDto", () => {
+    it("accepts ok response without action", () => {
+      const item: CheckItemDto = {
+        ok: true,
+        code: "ok",
+        message: "Deepgram API key configured",
+      };
+      expect(item.ok).toBe(true);
+      expect(item.code).toBe("ok");
+      expect(item.action).toBeUndefined();
+    });
+
+    it("accepts error response with action", () => {
+      const item: CheckItemDto = {
+        ok: false,
+        code: "missing_key",
+        message: "Deepgram API key is not set",
+        action: "Add your Deepgram API key in the Speech section",
+      };
+      expect(item.ok).toBe(false);
+      expect(item.code).toBe("missing_key");
+      expect(item.action).toBe("Add your Deepgram API key in the Speech section");
+    });
+
+    it("accepts action as null (JSON wire format)", () => {
+      const item: CheckItemDto = {
+        ok: false,
+        code: "config_error",
+        message: "Cannot read key",
+        action: null,
+      };
+      expect(item.action).toBeNull();
+    });
+  });
+
+  describe("RuntimeCheckDto", () => {
+    it("constructs fully ready result", () => {
+      const okItem: CheckItemDto = { ok: true, code: "ok", message: "Ready" };
+      const result: RuntimeCheckDto = {
+        stt: okItem,
+        llm: okItem,
+        settings: okItem,
+        runtimeReady: true,
+      };
+      expect(result.runtimeReady).toBe(true);
+      expect(result.stt.ok).toBe(true);
+      expect(result.llm.ok).toBe(true);
+      expect(result.settings.ok).toBe(true);
+    });
+
+    it("constructs not-ready result when STT missing", () => {
+      const failItem: CheckItemDto = {
+        ok: false,
+        code: "missing_key",
+        message: "Key not set",
+        action: "Add key",
+      };
+      const okItem: CheckItemDto = { ok: true, code: "ok", message: "Ready" };
+      const result: RuntimeCheckDto = {
+        stt: failItem,
+        llm: okItem,
+        settings: okItem,
+        runtimeReady: false,
+      };
+      expect(result.runtimeReady).toBe(false);
+      expect(result.stt.ok).toBe(false);
+      expect(result.llm.ok).toBe(true);
+    });
+
+    it("detects runtimeReady consistency with all items", () => {
+      const okItem: CheckItemDto = { ok: true, code: "ok", message: "Ready" };
+      const failItem: CheckItemDto = { ok: false, code: "config_error", message: "Bad" };
+
+      // All ok => ready
+      expect({
+        stt: okItem,
+        llm: okItem,
+        settings: okItem,
+      } as RuntimeCheckDto).toBeDefined();
+
+      // One fail => not ready
+      const partial: RuntimeCheckDto = {
+        stt: okItem,
+        llm: failItem,
+        settings: okItem,
+        runtimeReady: false,
+      };
+      expect(partial.runtimeReady).toBe(false);
+    });
+  });
+
+  describe("settings validation preflight rules", () => {
+    it("DEFAULT_SETTINGS hotkey is non-empty", () => {
+      expect(DEFAULT_SETTINGS.hotkey.trim().length).toBeGreaterThan(0);
+    });
+
+    it("DEFAULT_SETTINGS captureMaxSeconds is within valid range", () => {
+      expect(DEFAULT_SETTINGS.captureMaxSeconds).toBeGreaterThanOrEqual(5);
+      expect(DEFAULT_SETTINGS.captureMaxSeconds).toBeLessThanOrEqual(180);
+    });
+
+    it("DEFAULT_SETTINGS llmModel is not empty", () => {
+      expect(DEFAULT_SETTINGS.llmModel.trim().length).toBeGreaterThan(0);
     });
   });
 });

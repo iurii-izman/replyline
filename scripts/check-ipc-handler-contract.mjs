@@ -13,6 +13,9 @@ const libPath = join(root, "src-tauri", "src", "lib.rs");
 const REQUIRED = [
   "capture_start",
   "capture_stop_and_analyze",
+  "check_llm_config",
+  "check_runtime_config",
+  "check_stt_config",
   "clear_context",
   "delete_secret",
   "get_context_status",
