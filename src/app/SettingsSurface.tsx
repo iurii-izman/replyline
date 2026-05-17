@@ -1,6 +1,7 @@
 import { For, Show } from "solid-js";
 import { ANSWER_PROFILE_OPTIONS, resolveAnswerProfileOption } from "./answerProfiles";
 import type { ReplylineController } from "./controller";
+import { MODEL_PRESETS, resolveModelPreset } from "./modelPresets";
 import type { CheckItemDto } from "./model";
 import type { UiStrings } from "./locale";
 
@@ -55,6 +56,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
     if (controller().setupRequired()) return st().setup.notReady;
     return st().setup.body;
   };
+  const selectedPreset = () => resolveModelPreset(controller().settings.selectedModelPreset);
 
   return (
     <Show when={controller().panel() === "settings"}>
@@ -112,6 +114,41 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
           {/* ── 2. Ответ / Reply ─────────────────────────────────── */}
           <fieldset class="setup-fieldset" data-testid="setup-section-reply">
             <legend class="setup-legend">{st().setup.stepReply}</legend>
+            <label class="field">
+              <span class="field-label">{st().settings.modelPresetLabel}</span>
+              <select
+                class="field-input"
+                value={controller().settings.selectedModelPreset}
+                onInput={(event) => controller().setSelectedModelPreset(event.currentTarget.value)}
+              >
+                <For each={MODEL_PRESETS}>
+                  {(preset) => <option value={preset.id}>{preset.title}</option>}
+                </For>
+              </select>
+            </label>
+            <div class="field-help">
+              {st().settings.modelPresetProvider}: {selectedPreset().providerKind}
+              {" · "}
+              {st().settings.modelPresetCost}: {selectedPreset().costTier}
+              {" · "}
+              {st().settings.modelPresetLatency}: {selectedPreset().latencyTier}
+            </div>
+            <div class="field-help">
+              {st().settings.modelPresetBaseUrl}: {selectedPreset().baseUrl || "manual"}
+            </div>
+            <div class="field-help">
+              {st().settings.modelPresetPrimary}: {selectedPreset().primaryModel || "manual"}
+            </div>
+            <div class="field-help">
+              {st().settings.modelPresetFallback}:{" "}
+              {selectedPreset().fallbackModels.length
+                ? selectedPreset().fallbackModels.join(" → ")
+                : st().settings.modelPresetNoFallback}
+            </div>
+            <Show when={selectedPreset().freeTierCaveats}>
+              <div class="field-help">{selectedPreset().freeTierCaveats}</div>
+            </Show>
+
             <label class="field">
               <span class="field-label">{st().settings.llmBaseUrlLabel}</span>
               <input

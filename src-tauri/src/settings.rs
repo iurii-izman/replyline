@@ -81,7 +81,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     }
 }
 
-const CURRENT_SCHEMA_VERSION: u32 = 3;
+const CURRENT_SCHEMA_VERSION: u32 = 4;
 
 fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     let version = value
@@ -94,6 +94,9 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     }
     if version < 3 {
         migrate_v2_to_v3(&mut value);
+    }
+    if version < 4 {
+        migrate_v3_to_v4(&mut value);
     }
 
     value
@@ -115,6 +118,14 @@ fn migrate_v2_to_v3(value: &mut serde_json::Value) {
             .or_insert(serde_json::json!(
                 crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
             ));
+    }
+}
+
+fn migrate_v3_to_v4(value: &mut serde_json::Value) {
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("schemaVersion".to_string(), serde_json::json!(4));
+        obj.entry("selectedModelPreset")
+            .or_insert(serde_json::json!("custom_openai_compatible"));
     }
 }
 
@@ -144,6 +155,9 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     if settings.active_answer_profile.trim().is_empty() {
         return Err(SettingsError::PartialConfigInvalid);
     }
+    if settings.selected_model_preset.trim().is_empty() {
+        return Err(SettingsError::PartialConfigInvalid);
+    }
     Ok(())
 }
 
@@ -156,6 +170,7 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "hotkey",
         "llmBaseUrl",
         "llmModel",
+        "selectedModelPreset",
         "captureMaxSeconds",
         "activeAnswerProfile",
     ] {
@@ -319,7 +334,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v1_settings_to_v3_with_default_profile() {
+    fn migrates_v1_settings_to_v4_with_default_profile_and_preset() {
         let v1 = serde_json::json!({
             "schemaVersion": 1,
             "hotkey": "Ctrl+Alt+Space",
@@ -328,30 +343,33 @@ mod tests {
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
-        assert_eq!(migrated["schemaVersion"], 3);
+        assert_eq!(migrated["schemaVersion"], 4);
         assert_eq!(
             migrated["activeAnswerProfile"],
             crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
         );
+        assert_eq!(migrated["selectedModelPreset"], "custom_openai_compatible");
         // llmTemperature must NOT be injected — the field is not part of the current schema.
         assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
-    fn v3_settings_pass_through_unchanged() {
-        let v3 = serde_json::json!({
-            "schemaVersion": 3,
+    fn v4_settings_pass_through_unchanged() {
+        let v4 = serde_json::json!({
+            "schemaVersion": 4,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
+            "selectedModelPreset": "openrouter_free_dev",
             "captureMaxSeconds": 30,
             "activeAnswerProfile": "interview_concise"
         });
-        let migrated = super::migrate_settings(v3);
-        assert_eq!(migrated["schemaVersion"], 3);
+        let migrated = super::migrate_settings(v4);
+        assert_eq!(migrated["schemaVersion"], 4);
         assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
         assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
         assert_eq!(migrated["llmModel"], "gpt-4o-mini");
+        assert_eq!(migrated["selectedModelPreset"], "openrouter_free_dev");
         assert_eq!(migrated["captureMaxSeconds"], 30);
         assert_eq!(migrated["activeAnswerProfile"], "interview_concise");
         // Schema-defined fields must remain; no phantom fields should appear.

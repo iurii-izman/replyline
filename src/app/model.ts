@@ -14,6 +14,7 @@ export type AppSettings = {
   hotkey: string;
   llmBaseUrl: string;
   llmModel: string;
+  selectedModelPreset: string;
   captureMaxSeconds: number;
   activeAnswerProfile: string;
 };
@@ -290,10 +291,11 @@ export type CandidatePackDraft = {
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
+  selectedModelPreset: "custom_openai_compatible",
   captureMaxSeconds: 45,
   activeAnswerProfile: "interview_default",
 };

@@ -23,10 +23,11 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     if (command === "load_bootstrap") {
       return {
         settings: {
-          schemaVersion: 3,
+          schemaVersion: 4,
           hotkey: "Ctrl+Alt+Space",
           llmBaseUrl: "https://api.example/v1",
           llmModel: "gpt-4o-mini",
+          selectedModelPreset: "custom_openai_compatible",
           captureMaxSeconds: 45,
           activeAnswerProfile: "interview_default",
         },
@@ -208,8 +209,18 @@ describe("App UX stabilization", () => {
     expect(screen.getByRole("button", { name: "Сохранить" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
     expect(screen.getByText("Профиль ответа")).toBeTruthy();
+    expect(screen.getByText("Профиль модели")).toBeTruthy();
     expect(screen.getByTestId("answer-profile-field")).toBeTruthy();
     expect(screen.queryByText(/raw prompt/i)).toBeNull();
+  });
+
+  it("allows selecting OpenRouter Free / Dev profile", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    const preset = await screen.findByDisplayValue("Custom OpenAI-compatible");
+    fireEvent.input(preset, { target: { value: "openrouter_free_dev" } });
+    expect(await screen.findByDisplayValue("OpenRouter Free / Dev")).toBeTruthy();
+    expect(screen.getByText(/Fallback chain:/)).toBeTruthy();
   });
 });
 
@@ -371,10 +382,11 @@ describe("Setup wizard (first-run guidance)", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 3,
+            schemaVersion: 4,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: overrides.llmBaseUrl ?? "",
             llmModel: overrides.llmModel ?? "gpt-4o-mini",
+            selectedModelPreset: "custom_openai_compatible",
             captureMaxSeconds: 45,
             activeAnswerProfile: "interview_default",
           },
@@ -391,7 +403,7 @@ describe("Setup wizard (first-run guidance)", () => {
         const input = (args as Record<string, unknown> | undefined)?.input as
           | Record<string, unknown>
           | undefined;
-        return { ...input, schemaVersion: 3 };
+        return { ...input, schemaVersion: 4 };
       }
       if (command === "save_secret") {
         return null;
@@ -555,5 +567,10 @@ describe("Setup wizard (first-run guidance)", () => {
       // Should transition to main surface
       expect(screen.getByTestId("main-surface")).toBeTruthy();
     });
+    const saveCall = mock.invoke.mock.calls.find((call) => call[0] === "save_settings");
+    expect(saveCall).toBeTruthy();
+    const input = (saveCall?.[1] as { input?: Record<string, unknown> } | undefined)?.input ?? {};
+    expect(Object.prototype.hasOwnProperty.call(input, "llmApiKey")).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(input, "deepgramApiKey")).toBe(false);
   });
 });

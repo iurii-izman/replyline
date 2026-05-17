@@ -7,6 +7,8 @@ const RETRY_BASE_MS: u64 = 500;
 #[derive(Debug, Serialize)]
 pub struct ChatRequest<'a> {
     pub model: &'a str,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub models: Vec<&'a str>,
     pub messages: Vec<ChatMessage<'a>>,
     pub temperature: f32,
     pub max_tokens: u16,
@@ -41,6 +43,7 @@ struct ResponseMessage {
 pub async fn request_card_raw_text(
     base_url: &str,
     model: &str,
+    fallback_models: &[&str],
     api_key: Option<&str>,
     system_prompt: &str,
     user_prompt: &str,
@@ -48,6 +51,7 @@ pub async fn request_card_raw_text(
 ) -> Result<(String, String), String> {
     let request = ChatRequest {
         model: model.trim(),
+        models: fallback_models.to_vec(),
         messages: vec![
             ChatMessage {
                 role: "system",
@@ -133,4 +137,41 @@ pub async fn request_card_raw_text(
     };
 
     Ok((raw_text, "LLM returned invalid JSON: ".to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ChatMessage, ChatRequest};
+
+    #[test]
+    fn request_payload_includes_models_when_present() {
+        let req = ChatRequest {
+            model: "openai/gpt-4o-mini",
+            models: vec!["anthropic/claude-3.5-haiku"],
+            messages: vec![ChatMessage {
+                role: "user",
+                content: "ping",
+            }],
+            temperature: 0.25,
+            max_tokens: 64,
+        };
+        let raw = serde_json::to_string(&req).expect("serialize request");
+        assert!(raw.contains("\"models\":[\"anthropic/claude-3.5-haiku\"]"));
+    }
+
+    #[test]
+    fn request_payload_omits_models_when_empty() {
+        let req = ChatRequest {
+            model: "gpt-4o-mini",
+            models: vec![],
+            messages: vec![ChatMessage {
+                role: "user",
+                content: "ping",
+            }],
+            temperature: 0.25,
+            max_tokens: 64,
+        };
+        let raw = serde_json::to_string(&req).expect("serialize request");
+        assert!(!raw.contains("\"models\""));
+    }
 }

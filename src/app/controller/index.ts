@@ -17,6 +17,7 @@ import {
 import { getUi, type UiStrings } from "../locale";
 import { currentLanguage } from "../language_profile";
 import type { AppPlatform } from "../platform";
+import { resolveModelPreset } from "../modelPresets";
 
 import { createNotices } from "./notices";
 import { createSelectors } from "./selectors";
@@ -411,6 +412,14 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmApiKeyDraft: (value: string) => setDraftSecrets("llmApiKey", value),
     setLlmBaseUrl: (value: string) => setSettings("llmBaseUrl", value),
     setLlmModel: (value: string) => setSettings("llmModel", value),
+    setSelectedModelPreset: (value: string) => {
+      const preset = resolveModelPreset(value);
+      setSettings("selectedModelPreset", preset.id);
+      if (preset.id !== "custom_openai_compatible") {
+        setSettings("llmBaseUrl", preset.baseUrl);
+        setSettings("llmModel", preset.primaryModel);
+      }
+    },
     setActiveAnswerProfile: (value: string) => setSettings("activeAnswerProfile", value),
     setCandidatePackDraft: (key: keyof typeof candidatePackDraft, value: string) =>
       setCandidatePackDraft(key, value),

@@ -7,6 +7,14 @@ Replyline не является полностью on-device системой п
 - **STT provider (Deepgram path):** получает released audio snippet для распознавания речи.
 - **LLM provider (OpenAI-compatible route):** получает transcript/context для генерации `gist / say_now / next_move`.
 
+## OpenRouter preset notes
+
+- Free models can have stricter limits and variable availability.
+- Paid profiles require active credits/billing.
+- Fallback routing (`models` ladder) is enabled only for known OpenRouter presets.
+- Preset recommendations can change; do not treat one model as permanently best.
+- Validate answer quality regularly on your golden dataset before changing defaults.
+
 ## What Replyline controls
 
 - Когда начинается захват (только при удержании hotkey).
