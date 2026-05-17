@@ -80,6 +80,11 @@ See:
 - [docs/known-limitations.md](docs/known-limitations.md)
 - [docs/README.md](docs/README.md)
 
+## Security and Support
+
+- Security reporting: [.github/SECURITY.md](.github/SECURITY.md)
+- Support and issue routing: [.github/SUPPORT.md](.github/SUPPORT.md)
+
 ## License
 
 [MIT](LICENSE)

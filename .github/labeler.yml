@@ -1,0 +1,45 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "README.md"
+          - "docs/**"
+          - ".github/ISSUE_TEMPLATE/**"
+          - ".github/PULL_REQUEST_TEMPLATE/**"
+
+area:ui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/app/**"
+          - "src/App.tsx"
+          - "src/App.css"
+          - "src/index.tsx"
+          - "landing/**"
+
+area:runtime:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src-tauri/**"
+          - "scripts/runtime-*.ps1"
+          - "scripts/parse-pipeline-latency*.mjs"
+          - "docs/runtime-*.md"
+          - "docs/core-pipeline-slo.json"
+
+area:privacy-trust:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src-tauri/src/privacy.rs"
+          - "src-tauri/src/credentials.rs"
+          - "src-tauri/src/app_log.rs"
+          - "docs/privacy*.md"
+          - "docs/copy-rules.md"
+          - "docs/known-limitations.md"
+
+area:build-ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/**"
+          - "scripts/check-*.mjs"
+          - "package.json"
+          - "pnpm-lock.yaml"
+          - ".gitattributes"
+          - ".gitignore"

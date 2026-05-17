@@ -1,1 +1,8 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Support Guide
+    url: https://github.com/iurii-izman/replyline/blob/main/.github/SUPPORT.md
+    about: Troubleshooting and support path before opening issues.
+  - name: Security Policy
+    url: https://github.com/iurii-izman/replyline/blob/main/.github/SECURITY.md
+    about: Report vulnerabilities privately.
