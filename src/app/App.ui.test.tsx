@@ -319,6 +319,7 @@ describe("Interview card rendering", () => {
   });
 
   it("prepares candidate pack on explicit action and saves only after explicit confirmation", async () => {
+    const mock = createMockPlatform();
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
     await waitFor(() => expect(screen.getByText("AI Candidate Pack")).toBeTruthy());
