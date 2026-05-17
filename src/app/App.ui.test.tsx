@@ -12,7 +12,7 @@ type MockPlatform = {
 
 type MockPlatformOptions = {
   analysisError?: unknown;
-  analysisCard?: { gist: string; sayNow: string; nextMove: string };
+  analysisCard?: Record<string, unknown>;
 };
 
 function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
@@ -190,6 +190,112 @@ describe("App UX stabilization", () => {
     await waitFor(() => expect(screen.getByText("Настройки")).toBeTruthy());
     expect(screen.getByRole("button", { name: "Сохранить" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
+  });
+});
+
+describe("Interview card rendering", () => {
+  function interviewCard(overrides: Record<string, unknown> = {}) {
+    return {
+      gist: "legacy gist",
+      sayNow: "legacy say",
+      nextMove: "legacy next",
+      charsBand: "normal",
+      interviewCardSchemaV1: {
+        answer: {
+          main: "Primary answer main",
+          short: ["Short 1"],
+          strong: ["Strong 1"],
+        },
+        question: {
+          rawTranscript: "um can you tell me",
+          cleanQuestion: "Tell me about a delivery incident.",
+          interviewerIntent: "Validate ownership",
+          questionType: "behavioral",
+        },
+        signals: {
+          mustMention: ["ownership"],
+          keywords: ["impact"],
+          metrics: [],
+          resumeAnchors: ["project x"],
+        },
+        risks: {
+          weakPoints: ["no numbers"],
+          avoid: ["blame others"],
+          safeReframe: ["focus on learning"],
+        },
+        followUps: [{ question: "What changed?", bridgeAnswer: "I introduced weekly review." }],
+        clarifier: { needed: false, question: "Which timeframe?" },
+      },
+      ...overrides,
+    };
+  }
+
+  it("interview answer renders first", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    const labels = (await screen.findByTestId("main-card-shell")).querySelectorAll(".result-label");
+    expect(labels[0]?.textContent).toBe("Ответ");
+  });
+
+  it("copy copies answer.main", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.click(await screen.findByRole("button", { name: "Скопировать ответ" }));
+    await waitFor(() =>
+      expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("Primary answer main"),
+    );
+  });
+
+  it("question card renders cleanQuestion", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    expect(await screen.findByText(/Tell me about a delivery incident\./)).toBeTruthy();
+  });
+
+  it("signals hide empty metrics", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    expect(screen.queryByText("Метрики:")).toBeNull();
+  });
+
+  it("clarifier hidden when not needed", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    expect(screen.queryByTestId("section-interview-clarifier")).toBeNull();
+  });
+
+  it("work mode still renders legacy sections", async () => {
+    const mock = createMockPlatform({
+      analysisCard: { gist: "g", sayNow: "say", nextMove: "next", charsBand: "normal" },
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    expect(await screen.findByTestId("section-gist")).toBeTruthy();
+    expect(screen.getByTestId("section-say-now")).toBeTruthy();
+    expect(screen.getByTestId("section-next-move")).toBeTruthy();
   });
 });
 

@@ -1,5 +1,11 @@
 import type { Accessor, Setter } from "solid-js";
-import type { Phase, AnalysisCard, ContextStatusDto, CommandErrorKind } from "../model";
+import type {
+  Phase,
+  AnalysisCard,
+  AnalysisCardDto,
+  ContextStatusDto,
+  CommandErrorKind,
+} from "../model";
 import type { UiStrings } from "../locale";
 import type { AppPlatform } from "../platform";
 import type { NoticeApi } from "./notices";
@@ -7,6 +13,7 @@ import {
   userSafeClearContextError,
   userSafePipelineError,
   parseCommandInvokeError,
+  asAnalysisCard,
 } from "../model";
 
 export interface PipelineActionDeps {
@@ -68,12 +75,13 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
     });
     deps.setStatusDetail(deps.strings().notices.retrying);
     try {
-      const result = await deps.platform.invoke<AnalysisCard>("retry_last_analysis", {
+      const result = await deps.platform.invoke<AnalysisCardDto>("retry_last_analysis", {
         runId,
       });
-      deps.setCard(result);
+      const card = asAnalysisCard(result);
+      deps.setCard(card);
       deps.setCaptureQuality(
-        result.charsBand === "short" ? "short" : result.charsBand === "long" ? "long" : "normal",
+        card.charsBand === "short" ? "short" : card.charsBand === "long" ? "long" : "normal",
       );
       const status = await deps.platform.invoke<ContextStatusDto>("get_context_status");
       deps.applyContextStatus(status);

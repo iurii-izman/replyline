@@ -3,6 +3,7 @@ import type { SetStoreFunction } from "solid-js/store";
 import type {
   Phase,
   AnalysisCard,
+  AnalysisCardDto,
   AppSettings,
   ContextStatusDto,
   CommandErrorKind,
@@ -17,6 +18,7 @@ import {
   userSafeCaptureStartError,
   userSafePipelineError,
   formatHotkeyFromEvent,
+  asAnalysisCard,
 } from "../model";
 
 export interface HotkeyDeps {
@@ -85,12 +87,13 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         armed = false;
         deps.setPhase("transcribing");
         try {
-          const result = await deps.platform.invoke<AnalysisCard>("capture_stop_and_analyze");
-          deps.setCard(result);
+          const result = await deps.platform.invoke<AnalysisCardDto>("capture_stop_and_analyze");
+          const card = asAnalysisCard(result);
+          deps.setCard(card);
           deps.setCaptureQuality(
-            result.charsBand === "short"
+            card.charsBand === "short"
               ? "short"
-              : result.charsBand === "long"
+              : card.charsBand === "long"
                 ? "long"
                 : "normal",
           );

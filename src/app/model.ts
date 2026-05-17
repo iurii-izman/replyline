@@ -121,7 +121,7 @@ export function invokeErrorMessage(err: unknown): string {
   return rawInvokeErrorString(err);
 }
 
-export type AnalysisCard = {
+export type LegacyAnalysisCard = {
   gist: string;
   sayNow: string;
   nextMove: string;
@@ -130,6 +130,84 @@ export type AnalysisCard = {
   /// Supporting evidence snippet from the LLM response. Not surfaced in Slim Stable Beta UI.
   starEvidence?: string;
 };
+
+export type InterviewAnswerDto = {
+  main: string;
+  short?: string[];
+  strong?: string[];
+};
+
+export type InterviewQuestionDto = {
+  rawTranscript: string;
+  cleanQuestion: string;
+  interviewerIntent: string;
+  questionType: string;
+};
+
+export type InterviewSignalsDto = {
+  mustMention: string[];
+  keywords: string[];
+  metrics?: string[];
+  resumeAnchors?: string[];
+};
+
+export type InterviewRisksDto = {
+  weakPoints: string[];
+  avoid: string[];
+  safeReframe: string[];
+};
+
+export type InterviewFollowUpDto = {
+  question: string;
+  bridgeAnswer: string;
+};
+
+export type InterviewClarifierDto = {
+  needed: boolean;
+  question?: string;
+};
+
+export type InterviewCardDto = {
+  answer: InterviewAnswerDto;
+  question: InterviewQuestionDto;
+  signals: InterviewSignalsDto;
+  risks: InterviewRisksDto;
+  followUps: InterviewFollowUpDto[];
+  clarifier?: InterviewClarifierDto;
+};
+
+export type WorkConversationCard = LegacyAnalysisCard & {
+  mode: "work";
+};
+
+export type InterviewAnalysisCard = LegacyAnalysisCard & {
+  mode: "interview";
+  interview: InterviewCardDto;
+};
+
+export type AnalysisCard = WorkConversationCard | InterviewAnalysisCard;
+
+export type AnalysisCardDto = LegacyAnalysisCard & {
+  interviewCard?: InterviewCardDto | null;
+  interviewCardSchemaV1?: InterviewCardDto | null;
+};
+
+export function asAnalysisCard(input: AnalysisCardDto): AnalysisCard {
+  const interview = input.interviewCardSchemaV1 ?? input.interviewCard ?? null;
+  if (interview) {
+    return {
+      ...input,
+      mode: "interview",
+      interview,
+      // Keep action semantics stable: primary copy always mirrors interview answer.
+      sayNow: interview.answer.main?.trim() || input.sayNow,
+    };
+  }
+  return {
+    ...input,
+    mode: "work",
+  };
+}
 
 export type StatusEvent = {
   runId?: string;

@@ -96,32 +96,195 @@ export function MainSurface(props: { controller: ReplylineController }) {
 
         <div class="main-card-body" data-testid="main-card-body">
           <article class="result-card" data-testid="main-card-shell">
-            <section class="result-section" data-testid="section-gist">
-              <div class="result-label">{st().card.gistLabel}</div>
-              <p
-                class={`result-text ${controller().card()?.gist?.trim() ? "" : "result-text--placeholder"}`}
-              >
-                {controller().card()?.gist?.trim() || st().card.emptyGist}
-              </p>
-            </section>
+            <Show
+              when={controller().card()?.mode === "interview"}
+              fallback={
+                <>
+                  <section class="result-section" data-testid="section-gist">
+                    <div class="result-label">{st().card.gistLabel}</div>
+                    <p
+                      class={`result-text ${controller().card()?.gist?.trim() ? "" : "result-text--placeholder"}`}
+                    >
+                      {controller().card()?.gist?.trim() || st().card.emptyGist}
+                    </p>
+                  </section>
 
-            <section class="result-section result-section--primary" data-testid="section-say-now">
-              <div class="result-label">{st().card.sayNowLabel}</div>
-              <p
-                class={`result-text result-text--speak ${controller().card()?.sayNow?.trim() ? "" : "result-text--placeholder"}`}
-              >
-                {controller().card()?.sayNow?.trim() || st().card.emptySayNow}
-              </p>
-            </section>
+                  <section class="result-section result-section--primary" data-testid="section-say-now">
+                    <div class="result-label">{st().card.sayNowLabel}</div>
+                    <p
+                      class={`result-text result-text--speak ${controller().card()?.sayNow?.trim() ? "" : "result-text--placeholder"}`}
+                    >
+                      {controller().card()?.sayNow?.trim() || st().card.emptySayNow}
+                    </p>
+                  </section>
 
-            <section class="result-section" data-testid="section-next-move">
-              <div class="result-label">{st().card.nextMoveLabel}</div>
-              <p
-                class={`result-text ${controller().card()?.nextMove?.trim() ? "" : "result-text--placeholder"}`}
+                  <section class="result-section" data-testid="section-next-move">
+                    <div class="result-label">{st().card.nextMoveLabel}</div>
+                    <p
+                      class={`result-text ${controller().card()?.nextMove?.trim() ? "" : "result-text--placeholder"}`}
+                    >
+                      {controller().card()?.nextMove?.trim() || st().card.emptyNextMove}
+                    </p>
+                  </section>
+                </>
+              }
+            >
+              <section class="result-section result-section--primary" data-testid="section-interview-answer">
+                <div class="result-label">{st().card.interview.answer}</div>
+                <p class="result-text result-text--speak">
+                  {controller().card()?.mode === "interview" ? controller().card().interview.answer.main : ""}
+                </p>
+                <Show
+                  when={
+                    controller().card()?.mode === "interview" &&
+                    (controller().card().interview.answer.short?.length ?? 0) > 0
+                  }
+                >
+                  <div class="result-label">{st().card.interview.answerShort}</div>
+                  <p class="result-text">
+                    {controller().card()?.mode === "interview"
+                      ? controller().card().interview.answer.short?.join(" • ")
+                      : ""}
+                  </p>
+                </Show>
+                <Show
+                  when={
+                    controller().card()?.mode === "interview" &&
+                    (controller().card().interview.answer.strong?.length ?? 0) > 0
+                  }
+                >
+                  <div class="result-label">{st().card.interview.answerStrong}</div>
+                  <p class="result-text">
+                    {controller().card()?.mode === "interview"
+                      ? controller().card().interview.answer.strong?.join(" • ")
+                      : ""}
+                  </p>
+                </Show>
+              </section>
+
+              <section class="result-section" data-testid="section-interview-question">
+                <div class="result-label">{st().card.interview.question}</div>
+                <p class="result-text">
+                  {st().card.interview.rawTranscript}:{" "}
+                  {controller().card()?.mode === "interview"
+                    ? controller().card().interview.question.rawTranscript
+                    : ""}
+                </p>
+                <p class="result-text">
+                  {st().card.interview.cleanQuestion}:{" "}
+                  {controller().card()?.mode === "interview"
+                    ? controller().card().interview.question.cleanQuestion
+                    : ""}
+                </p>
+                <p class="result-text">
+                  {st().card.interview.interviewerIntent}:{" "}
+                  {controller().card()?.mode === "interview"
+                    ? controller().card().interview.question.interviewerIntent
+                    : ""}
+                </p>
+                <p class="result-text">
+                  {st().card.interview.questionType}:{" "}
+                  <strong>
+                    {controller().card()?.mode === "interview"
+                      ? controller().card().interview.question.questionType
+                      : ""}
+                  </strong>
+                </p>
+              </section>
+
+              <section class="result-section" data-testid="section-interview-signals">
+                <div class="result-label">{st().card.interview.signals}</div>
+                <p class="result-text">
+                  {st().card.interview.mustMention}:{" "}
+                  {controller().card()?.mode === "interview"
+                    ? controller().card().interview.signals.mustMention.join(" • ")
+                    : ""}
+                </p>
+                <p class="result-text">
+                  {st().card.interview.keywords}:{" "}
+                  {controller().card()?.mode === "interview"
+                    ? controller().card().interview.signals.keywords.join(" • ")
+                    : ""}
+                </p>
+                <Show
+                  when={
+                    controller().card()?.mode === "interview" &&
+                    (controller().card().interview.signals.metrics?.length ?? 0) > 0
+                  }
+                >
+                  <p class="result-text">
+                    {st().card.interview.metrics}:{" "}
+                    {controller().card()?.mode === "interview"
+                      ? controller().card().interview.signals.metrics?.join(" • ")
+                      : ""}
+                  </p>
+                </Show>
+                <Show
+                  when={
+                    controller().card()?.mode === "interview" &&
+                    (controller().card().interview.signals.resumeAnchors?.length ?? 0) > 0
+                  }
+                >
+                  <p class="result-text">
+                    {st().card.interview.resumeAnchors}:{" "}
+                    {controller().card()?.mode === "interview"
+                      ? controller().card().interview.signals.resumeAnchors?.join(" • ")
+                      : ""}
+                  </p>
+                </Show>
+              </section>
+
+              <section class="result-section" data-testid="section-interview-risks">
+                <div class="result-label">{st().card.interview.risks}</div>
+                <p class="result-text">
+                  {st().card.interview.weakPoints}:{" "}
+                  {controller().card()?.mode === "interview"
+                    ? controller().card().interview.risks.weakPoints.join(" • ")
+                    : ""}
+                </p>
+                <p class="result-text">
+                  {st().card.interview.avoid}:{" "}
+                  {controller().card()?.mode === "interview"
+                    ? controller().card().interview.risks.avoid.join(" • ")
+                    : ""}
+                </p>
+                <p class="result-text">
+                  {st().card.interview.safeReframe}:{" "}
+                  {controller().card()?.mode === "interview"
+                    ? controller().card().interview.risks.safeReframe.join(" • ")
+                    : ""}
+                </p>
+              </section>
+
+              <section class="result-section" data-testid="section-interview-followups">
+                <div class="result-label">{st().card.interview.followUps}</div>
+                <Show when={controller().card()?.mode === "interview"}>
+                  <For each={controller().card()?.mode === "interview" ? controller().card().interview.followUps : []}>
+                    {(item) => (
+                      <p class="result-text">
+                        {item.question} ({st().card.interview.bridgeAnswer}: {item.bridgeAnswer})
+                      </p>
+                    )}
+                  </For>
+                </Show>
+              </section>
+
+              <Show
+                when={
+                  controller().card()?.mode === "interview" &&
+                  controller().card().interview.clarifier?.needed
+                }
               >
-                {controller().card()?.nextMove?.trim() || st().card.emptyNextMove}
-              </p>
-            </section>
+                <section class="result-section" data-testid="section-interview-clarifier">
+                  <div class="result-label">{st().card.interview.clarifier}</div>
+                  <p class="result-text">
+                    {controller().card()?.mode === "interview"
+                      ? controller().card().interview.clarifier?.question
+                      : ""}
+                  </p>
+                </section>
+              </Show>
+            </Show>
           </article>
         </div>
 
