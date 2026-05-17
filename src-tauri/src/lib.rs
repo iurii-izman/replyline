@@ -149,7 +149,9 @@ pub fn run() {
         commands::quit_app,
         commands::check_stt_config,
         commands::check_llm_config,
-        commands::check_runtime_config
+        commands::check_runtime_config,
+        commands::prepare_candidate_pack,
+        commands::save_prepared_candidate_pack
     ]);
     #[cfg(not(any(debug_assertions, test)))]
     let builder = builder.invoke_handler(tauri::generate_handler![
@@ -173,7 +175,9 @@ pub fn run() {
         commands::quit_app,
         commands::check_stt_config,
         commands::check_llm_config,
-        commands::check_runtime_config
+        commands::check_runtime_config,
+        commands::prepare_candidate_pack,
+        commands::save_prepared_candidate_pack
     ]);
     builder
         .run(tauri::generate_context!())

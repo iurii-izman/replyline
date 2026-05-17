@@ -277,6 +277,70 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
           </div>
 
           <div class="settings-actions">
+            <fieldset class="setup-fieldset" data-testid="candidate-pack-ai-section">
+              <legend class="setup-legend">{st().settings.prepTitle}</legend>
+              <label class="field">
+                <span class="field-label">{st().settings.resumeLabel}</span>
+                <textarea
+                  class="field-input field-textarea"
+                  value={controller().candidateRawResume()}
+                  onInput={(event) => controller().setCandidateRawResume(event.currentTarget.value)}
+                />
+              </label>
+              <label class="field">
+                <span class="field-label">{st().settings.jdLabel}</span>
+                <textarea
+                  class="field-input field-textarea"
+                  value={controller().candidateJobDescription()}
+                  onInput={(event) =>
+                    controller().setCandidateJobDescription(event.currentTarget.value)
+                  }
+                />
+              </label>
+              <label class="field">
+                <span class="field-label">{st().settings.valuesLabel}</span>
+                <textarea
+                  class="field-input field-textarea"
+                  value={controller().candidateCompanyValues()}
+                  onInput={(event) =>
+                    controller().setCandidateCompanyValues(event.currentTarget.value)
+                  }
+                />
+              </label>
+              <div class="settings-actions">
+                <button
+                  class="btn-secondary"
+                  type="button"
+                  disabled={controller().candidatePackPreparing()}
+                  onClick={() => void controller().prepareCandidatePack()}
+                >
+                  {controller().candidatePackPreparing()
+                    ? st().settings.preparing
+                    : st().settings.prepare}
+                </button>
+                <button
+                  class="btn-primary"
+                  type="button"
+                  disabled={!controller().candidatePackPreview() || controller().candidatePackSaving()}
+                  onClick={() => void controller().savePreparedCandidatePack()}
+                >
+                  {st().settings.savePack}
+                </button>
+              </div>
+              <div class="candidate-pack-preview" data-testid="candidate-pack-preview">
+                <div class="field-label">{st().settings.previewTitle}</div>
+                <Show when={controller().candidatePackPreview()} fallback={<p>{st().settings.noPreview}</p>}>
+                  <div class="preview-grid">
+                    <p>
+                      Score: <strong>{controller().candidatePackPreview()!.packQualityScore}</strong>
+                    </p>
+                    <p>Facts: {controller().candidatePackPreview()!.candidateFacts.length}</p>
+                    <p>Role keywords: {controller().candidatePackPreview()!.roleKeywords.join(", ")}</p>
+                    <p>Company values: {controller().candidatePackPreview()!.companyValues.join(", ")}</p>
+                  </div>
+                </Show>
+              </div>
+            </fieldset>
             <button class="btn-primary" type="submit" disabled={controller().saving()}>
               {controller().saving() ? st().settings.saving : st().settings.save}
             </button>

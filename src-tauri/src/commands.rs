@@ -6,13 +6,15 @@ use crate::app_log;
 use crate::audio::CaptureRun;
 use crate::candidate_pack;
 use crate::credentials;
+use crate::fs_atomic;
+use crate::providers::candidate_pack_provider;
 use crate::services::capture_pipeline;
 use crate::services::pipeline_events::{emit_status, update_tray_title};
 use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
-    AnalysisCardDto, AppSettings, BootstrapDto, CheckItemDto, CommandError, ContextStatusDto,
-    RuntimeCheckDto, SecretSlot,
+    AnalysisCardDto, AppSettings, BootstrapDto, CandidatePackDraftDto, CheckItemDto, CommandError,
+    ContextStatusDto, PrepareCandidatePackInputDto, RuntimeCheckDto, SecretSlot,
 };
 
 static RUN_SEQ: AtomicU64 = AtomicU64::new(0);
@@ -537,4 +539,74 @@ pub async fn check_runtime_config() -> Result<RuntimeCheckDto, CommandError> {
         settings: settings_result,
         runtime_ready,
     })
+}
+
+fn prepared_candidate_pack_path() -> Result<std::path::PathBuf, CommandError> {
+    let settings_path = settings::settings_path().map_err(CommandError::from)?;
+    let dir = settings_path
+        .parent()
+        .ok_or_else(|| CommandError::Internal("settings parent directory missing".to_string()))?;
+    Ok(dir.join("candidate-pack-latest.json"))
+}
+
+#[tauri::command]
+pub async fn prepare_candidate_pack(
+    input: PrepareCandidatePackInputDto,
+) -> Result<CandidatePackDraftDto, CommandError> {
+    let raw_resume = input.raw_resume.trim();
+    let job_description = input.job_description.trim();
+    let company_values_text = input.company_values_text.trim();
+    if raw_resume.is_empty() || job_description.is_empty() {
+        return Err(CommandError::Settings(
+            "raw_resume and job_description are required".to_string(),
+        ));
+    }
+    let detail =
+        candidate_pack::build_prepare_log_detail(raw_resume, job_description, company_values_text);
+    let _ = app_log::append_event("candidate_pack_prepare_attempt", detail);
+
+    let settings = settings::load()?;
+    let api_key = credentials::load(SecretSlot::LlmApiKey)
+        .map_err(CommandError::from)?
+        .unwrap_or_default();
+    let draft = candidate_pack_provider::prepare_candidate_pack(
+        &settings,
+        if api_key.trim().is_empty() {
+            None
+        } else {
+            Some(api_key.trim())
+        },
+        raw_resume,
+        job_description,
+        company_values_text,
+    )
+    .await
+    .map_err(CommandError::Pipeline)?;
+
+    let _ = app_log::append_event(
+        "candidate_pack_prepare_ok",
+        format!(
+            "facts={} role_keywords={} company_values={}",
+            draft.candidate_facts.len(),
+            draft.role_keywords.len(),
+            draft.company_values.len()
+        ),
+    );
+    Ok(draft)
+}
+
+#[tauri::command]
+pub fn save_prepared_candidate_pack(draft: CandidatePackDraftDto) -> Result<(), CommandError> {
+    let path = prepared_candidate_pack_path()?;
+    fs_atomic::write_json_atomically(&path, &draft)
+        .map_err(|err| CommandError::Internal(err.to_string()))?;
+    let _ = app_log::append_event(
+        "prepared_candidate_pack_save_ok",
+        format!(
+            "facts={} score={}",
+            draft.candidate_facts.len(),
+            draft.pack_quality_score
+        ),
+    );
+    Ok(())
 }

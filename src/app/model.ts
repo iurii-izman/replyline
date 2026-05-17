@@ -271,6 +271,22 @@ export type RuntimeCheckDto = {
   runtimeReady: boolean;
 };
 
+export type CandidatePackDraftFact = {
+  fact: string;
+  evidence: string;
+  strength: "strong" | "medium" | "weak";
+  metrics: string[];
+};
+
+export type CandidatePackDraft = {
+  packQualityScore: number;
+  missingDataWarnings: string[];
+  suggestedMissingInfo: string[];
+  candidateFacts: CandidatePackDraftFact[];
+  roleKeywords: string[];
+  companyValues: string[];
+};
+
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {

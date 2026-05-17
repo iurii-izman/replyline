@@ -369,6 +369,24 @@ input {
   outline: none;
 }
 
+.field-textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.candidate-pack-preview {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(20, 35, 33, 0.08);
+}
+
+.preview-grid p {
+  margin: 4px 0;
+  font-size: 0.75rem;
+}
+
 .field-input:focus {
   border-color: rgba(35, 116, 98, 0.4);
   box-shadow: 0 0 0 3px rgba(35, 116, 98, 0.12);
