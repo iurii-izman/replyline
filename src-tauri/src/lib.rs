@@ -7,6 +7,7 @@ mod context;
 mod credentials;
 mod diag_contract;
 mod fs_atomic;
+mod interview_card_v1;
 mod language_profile;
 mod llm;
 mod pipeline_timing;
