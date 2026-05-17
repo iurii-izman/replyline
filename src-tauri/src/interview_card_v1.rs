@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
 use serde::{Deserialize, Serialize};
+use std::future::Future;
+use std::time::Instant;
 
 use crate::privacy;
 
@@ -140,12 +142,146 @@ impl Default for InterviewWordLimits {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InterviewQualityFailureReason {
+    InvalidJsonAfterRepair,
+    AnswerMainTooShort,
+    AnswerMainTooGeneric,
+    MissingDirectAnswer,
+    BehavioralMissingStar,
+    HallucinatedMetricDetected,
+    MandatoryClarifierNotNeeded,
+    EmptySignals,
+}
+
+#[derive(Debug, Clone)]
+pub struct InterviewQualityGate {
+    pub passed: bool,
+    pub score: u8,
+    pub failed_reasons: Vec<InterviewQualityFailureReason>,
+    pub repairable: bool,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct InterviewGenerationTelemetry {
+    pub interview_generation_attempts: u8,
+    pub interview_repair_attempted: bool,
+    pub interview_repair_success: bool,
+    pub duration_ms_per_attempt: Vec<u128>,
+}
+
+#[derive(Debug, Clone)]
+pub struct InterviewGenerationOutcome {
+    pub card: InterviewCardDto,
+    pub quality_gate: InterviewQualityGate,
+    pub telemetry: InterviewGenerationTelemetry,
+    pub risk_note: Option<String>,
+}
+
+const INTERVIEW_PRIMARY_MAX_TOKENS: u16 = 700;
+const INTERVIEW_REPAIR_MAX_TOKENS: u16 = 700;
+const INTERVIEW_REPAIR_MAX_ATTEMPTS: u8 = 1;
+
 pub fn parse_and_normalize_interview_card(
     raw_text: &str,
     input_context: &str,
 ) -> Result<InterviewCardDto, String> {
     let parsed = parse_interview_card_json(raw_text)?;
     normalize_and_validate(parsed, input_context, InterviewWordLimits::default())
+}
+
+pub async fn generate_interview_card_with_conditional_repair<F, Fut>(
+    transcript: &str,
+    context: &str,
+    language: &str,
+    mut request_fn: F,
+) -> Result<InterviewGenerationOutcome, String>
+where
+    F: FnMut(String, String, u16) -> Fut,
+    Fut: Future<Output = Result<(String, String), String>>,
+{
+    let system_prompt = build_interview_system_prompt(language);
+    let primary_prompt = build_interview_user_prompt(transcript, context, language);
+    let mut telemetry = InterviewGenerationTelemetry::default();
+
+    let start_first = Instant::now();
+    let (first_raw, _first_parse_prefix) = request_fn(
+        system_prompt.to_string(),
+        primary_prompt.clone(),
+        INTERVIEW_PRIMARY_MAX_TOKENS,
+    )
+    .await?;
+    telemetry.interview_generation_attempts = 1;
+    telemetry
+        .duration_ms_per_attempt
+        .push(start_first.elapsed().as_millis());
+
+    let first_attempt = parse_and_normalize_interview_card(&first_raw, transcript);
+    let first_gate = evaluate_quality_gate(first_attempt.as_ref(), transcript);
+    if first_gate.passed {
+        let card = first_attempt?;
+        return Ok(InterviewGenerationOutcome {
+            card,
+            quality_gate: first_gate,
+            telemetry,
+            risk_note: None,
+        });
+    }
+
+    if !first_gate.repairable || INTERVIEW_REPAIR_MAX_ATTEMPTS == 0 {
+        let fallback = build_safe_fallback_card(transcript, first_gate.failed_reasons.as_slice());
+        return Ok(InterviewGenerationOutcome {
+            card: fallback,
+            quality_gate: first_gate,
+            telemetry,
+            risk_note: Some(
+                "Quality gate failed; returned safe fallback with low confidence".to_string(),
+            ),
+        });
+    }
+
+    telemetry.interview_repair_attempted = true;
+    let repair_prompt = build_interview_repair_user_prompt(
+        transcript,
+        context,
+        language,
+        &first_gate,
+        first_attempt.as_ref().ok(),
+    );
+
+    let start_second = Instant::now();
+    let (second_raw, _second_parse_prefix) = request_fn(
+        system_prompt.to_string(),
+        repair_prompt,
+        INTERVIEW_REPAIR_MAX_TOKENS,
+    )
+    .await?;
+    telemetry.interview_generation_attempts = 2;
+    telemetry
+        .duration_ms_per_attempt
+        .push(start_second.elapsed().as_millis());
+
+    let second_attempt = parse_and_normalize_interview_card(&second_raw, transcript);
+    let second_gate = evaluate_quality_gate(second_attempt.as_ref(), transcript);
+    if second_gate.passed {
+        telemetry.interview_repair_success = true;
+        return Ok(InterviewGenerationOutcome {
+            card: second_attempt?,
+            quality_gate: second_gate,
+            telemetry,
+            risk_note: None,
+        });
+    }
+
+    let fallback = build_safe_fallback_card(transcript, second_gate.failed_reasons.as_slice());
+    Ok(InterviewGenerationOutcome {
+        card: fallback,
+        quality_gate: second_gate,
+        telemetry,
+        risk_note: Some(
+            "Repair attempt failed; returned safe fallback with low confidence".to_string(),
+        ),
+    })
 }
 
 pub fn parse_interview_card_json(raw_text: &str) -> Result<InterviewCardDto, String> {
@@ -427,9 +563,184 @@ fn word_count(value: &str) -> usize {
     value.split_whitespace().count()
 }
 
+fn evaluate_quality_gate(
+    normalized_attempt: Result<&InterviewCardDto, &String>,
+    transcript: &str,
+) -> InterviewQualityGate {
+    let mut failed_reasons = Vec::new();
+    match normalized_attempt {
+        Ok(card) => {
+            if word_count(&card.answer.main) < InterviewWordLimits::default().main_min {
+                failed_reasons.push(InterviewQualityFailureReason::AnswerMainTooShort);
+            }
+            if ensure_no_generic_filler(&card.answer).is_err() {
+                failed_reasons.push(InterviewQualityFailureReason::AnswerMainTooGeneric);
+            }
+            if !has_direct_answer(&card.answer.main) {
+                failed_reasons.push(InterviewQualityFailureReason::MissingDirectAnswer);
+            }
+            if card.question.question_type == InterviewQuestionType::Behavioral
+                && !has_star_structure(card)
+            {
+                failed_reasons.push(InterviewQualityFailureReason::BehavioralMissingStar);
+            }
+            if ensure_no_fabricated_metrics(card, transcript).is_err() {
+                failed_reasons.push(InterviewQualityFailureReason::HallucinatedMetricDetected);
+            }
+            if card.clarifier.needed && !clarifier_is_needed(transcript) {
+                failed_reasons.push(InterviewQualityFailureReason::MandatoryClarifierNotNeeded);
+            }
+            if card.signals.must_mention.is_empty()
+                && card.signals.keywords.is_empty()
+                && card.signals.metrics.is_empty()
+                && card.signals.resume_anchors.is_empty()
+            {
+                failed_reasons.push(InterviewQualityFailureReason::EmptySignals);
+            }
+        }
+        Err(err) => {
+            let lower = err.to_lowercase();
+            if lower.contains("answer.main word count") {
+                failed_reasons.push(InterviewQualityFailureReason::AnswerMainTooShort);
+            } else if lower.contains("generic filler") {
+                failed_reasons.push(InterviewQualityFailureReason::AnswerMainTooGeneric);
+            } else if lower.contains("metric") {
+                failed_reasons.push(InterviewQualityFailureReason::HallucinatedMetricDetected);
+            } else if lower.contains("clarifier") {
+                failed_reasons.push(InterviewQualityFailureReason::MandatoryClarifierNotNeeded);
+            } else if lower.contains("required fields are empty") {
+                failed_reasons.push(InterviewQualityFailureReason::EmptySignals);
+            } else {
+                failed_reasons.push(InterviewQualityFailureReason::InvalidJsonAfterRepair);
+            }
+        }
+    }
+    let score = (100_i32 - (failed_reasons.len() as i32 * 15)).clamp(0, 100) as u8;
+    InterviewQualityGate {
+        passed: failed_reasons.is_empty(),
+        score,
+        failed_reasons,
+        repairable: true,
+    }
+}
+
+fn has_direct_answer(main: &str) -> bool {
+    let lower = main.to_lowercase();
+    lower.contains(" i ")
+        || lower.starts_with("i ")
+        || lower.contains(" my ")
+        || lower.contains(" we ")
+        || lower.contains(" would ")
+        || lower.contains(" я ")
+        || lower.starts_with("я ")
+        || lower.contains(" мы ")
+}
+
+fn has_star_structure(card: &InterviewCardDto) -> bool {
+    let combined = format!("{} {}", card.answer.main, card.answer.strong).to_lowercase();
+    let en = ["situation", "task", "action", "result"];
+    let ru = ["ситуац", "задач", "действ", "результ"];
+    en.iter().all(|token| combined.contains(token))
+        || ru.iter().all(|token| combined.contains(token))
+}
+
+fn clarifier_is_needed(transcript: &str) -> bool {
+    let lower = transcript.to_lowercase();
+    [
+        "unclear",
+        "ambiguous",
+        "not sure",
+        "уточни",
+        "непонятно",
+        "ambigu",
+    ]
+    .iter()
+    .any(|token| lower.contains(token))
+}
+
+fn build_interview_repair_user_prompt(
+    transcript: &str,
+    context: &str,
+    language: &str,
+    gate: &InterviewQualityGate,
+    first_card: Option<&InterviewCardDto>,
+) -> String {
+    let failed = gate
+        .failed_reasons
+        .iter()
+        .map(|reason| format!("{reason:?}"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let first_summary = first_card
+        .map(|card| {
+            format!(
+                "question_type={:?}; confidence={:?}; main_words={}; clarifier_needed={}; metrics_count={}",
+                card.question.question_type,
+                card.question.confidence,
+                word_count(&card.answer.main),
+                card.clarifier.needed,
+                card.signals.metrics.len()
+            )
+        })
+        .unwrap_or_else(|| "first_output=unparseable".to_string());
+    let base = build_interview_user_prompt(transcript, context, language);
+    format!(
+        "{base}\n\nREPAIR PASS (max 1): Fix only failed fields. Keep question classification stable unless clearly wrong.\nFailed checks: {failed}\nFirst output summary: {first_summary}\nDo not invent facts or metrics. Keep same transcript/context/candidate pack scope."
+    )
+}
+
+fn build_safe_fallback_card(
+    transcript: &str,
+    failed_reasons: &[InterviewQualityFailureReason],
+) -> InterviewCardDto {
+    let risk_reason = if failed_reasons.is_empty() {
+        "quality gate fallback"
+    } else {
+        "quality gate failed"
+    };
+    InterviewCardDto {
+        mode: InterviewMode::Interview,
+        question: InterviewQuestion {
+            raw_transcript: normalize_whitespace(transcript),
+            clean_question: "Please restate the question goal and constraints briefly.".to_string(),
+            question_type: InterviewQuestionType::Unknown,
+            interviewer_intent: "Clarify what the interviewer wants and answer directly without fabricated details."
+                .to_string(),
+            confidence: InterviewConfidence::Low,
+        },
+        answer: InterviewAnswer {
+            main: "I want to answer this directly and stay factual. I would first confirm the exact scope, then give a concise response based only on what we know from the interview context. I would avoid inventing metrics and keep claims tied to concrete actions, ownership, and expected outcomes. If details are missing, I would state the uncertainty, propose a practical next step, and align on what evidence the interviewer wants.".to_string(),
+            short: "I would answer directly, stay factual, avoid invented metrics, and confirm scope first.".to_string(),
+            strong: "Situation: the question requires a precise and credible answer. Task: provide a direct response without inventing facts. Action: clarify scope, anchor claims to known context, state uncertainty where needed, and commit to a concrete next action with owner and timeline. Result: the answer remains consistent, safe, and useful while preserving trust and interview signal quality.".to_string(),
+            structure: InterviewAnswerStructure::Direct,
+        },
+        signals: InterviewSignals {
+            must_mention: vec!["scope".to_string(), "evidence".to_string()],
+            keywords: vec!["ownership".to_string(), "timeline".to_string()],
+            metrics: vec![],
+            resume_anchors: vec![],
+        },
+        risks: InterviewRisks {
+            weak_points: vec!["low confidence fallback".to_string()],
+            avoid: vec!["inventing metrics".to_string(), "generic filler".to_string()],
+            safe_reframe: format!("Low confidence: {risk_reason}. Keep response factual and constrained."),
+        },
+        follow_ups: vec![InterviewFollowUp {
+            question: "What evidence would make this answer stronger?".to_string(),
+            bridge_answer: "I can add concrete examples once we confirm the exact scope and available facts."
+                .to_string(),
+        }],
+        clarifier: InterviewClarifier::default(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
 
     fn words(prefix: &str, count: usize) -> String {
         (0..count)
@@ -474,7 +785,7 @@ mod tests {
   "followUps":[{{"question":"What was the result?","bridgeAnswer":"Result was measurable and tied to timeline."}}],
   "clarifier":{clarifier}
 }}"#,
-            main = words("main", 100),
+            main = format!("I {}", words("main", 99)),
             short = words("short", 30),
             strong = words("strong", 150),
         )
@@ -584,5 +895,134 @@ mod tests {
         let raw = "```json\n{\"mode\":\"interview\"\n```";
         let err = parse_interview_card_json(raw).expect_err("must fail");
         assert!(err.contains("invalid JSON payload"));
+    }
+
+    #[tokio::test]
+    async fn valid_card_does_not_trigger_second_pass() {
+        let response = base_json("technical", r#"{"needed":false,"text":null}"#, "[]", "[]");
+        let calls = Arc::new(AtomicUsize::new(0));
+        let calls_ref = calls.clone();
+        let outcome = generate_interview_card_with_conditional_repair(
+            "conflict with colleague",
+            "interview context",
+            "en",
+            move |_system, _user, _max_tokens| {
+                let value = response.clone();
+                let calls = calls_ref.clone();
+                async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok((value, String::new()))
+                }
+            },
+        )
+        .await
+        .expect("must pass");
+        assert!(outcome.quality_gate.passed);
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert!(!outcome.telemetry.interview_repair_attempted);
+    }
+
+    #[tokio::test]
+    async fn too_short_answer_triggers_second_pass() {
+        let mut short = base_json("technical", r#"{"needed":false,"text":null}"#, "[]", "[]");
+        short = short.replace(
+            &format!("I {}", words("main", 99)),
+            "I would answer directly.",
+        );
+        let valid = base_json("technical", r#"{"needed":false,"text":null}"#, "[]", "[]");
+        let calls = Arc::new(AtomicUsize::new(0));
+        let calls_ref = calls.clone();
+        let outcome = generate_interview_card_with_conditional_repair(
+            "conflict with colleague",
+            "interview context",
+            "en",
+            move |_system, _user, _max_tokens| {
+                let first = short.clone();
+                let second = valid.clone();
+                let calls = calls_ref.clone();
+                async move {
+                    let idx = calls.fetch_add(1, Ordering::SeqCst);
+                    Ok((if idx == 0 { first } else { second }, String::new()))
+                }
+            },
+        )
+        .await
+        .expect("must pass");
+        assert!(outcome.quality_gate.passed);
+        assert!(outcome.telemetry.interview_repair_attempted);
+        assert!(outcome.telemetry.interview_repair_success);
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn hallucinated_metric_triggers_repair_and_can_fallback() {
+        let bad = base_json(
+            "behavioral",
+            r#"{"needed":false,"text":null}"#,
+            "[\"improved conversion by 73%\"]",
+            "[]",
+        );
+        let calls = Arc::new(AtomicUsize::new(0));
+        let calls_ref = calls.clone();
+        let outcome = generate_interview_card_with_conditional_repair(
+            "no numbers in transcript",
+            "interview context",
+            "en",
+            move |_system, _user, _max_tokens| {
+                let value = bad.clone();
+                let calls = calls_ref.clone();
+                async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok((value, String::new()))
+                }
+            },
+        )
+        .await
+        .expect("fallback is returned");
+        assert!(outcome.telemetry.interview_repair_attempted);
+        assert!(!outcome.telemetry.interview_repair_success);
+        assert_eq!(outcome.card.question.confidence, InterviewConfidence::Low);
+        assert!(outcome.risk_note.is_some());
+    }
+
+    #[tokio::test]
+    async fn second_pass_is_max_once() {
+        let invalid = "not json".to_string();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let calls_ref = calls.clone();
+        let _ = generate_interview_card_with_conditional_repair(
+            "ambiguous transcript",
+            "context",
+            "en",
+            move |_system, _user, _max_tokens| {
+                let value = invalid.clone();
+                let calls = calls_ref.clone();
+                async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok((value, String::new()))
+                }
+            },
+        )
+        .await
+        .expect("fallback");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn fallback_card_generated_if_repair_fails() {
+        let invalid = "```json\n{\"mode\":\"interview\"\n```".to_string();
+        let outcome = generate_interview_card_with_conditional_repair(
+            "ambiguous transcript",
+            "context",
+            "en",
+            move |_system, _user, _max_tokens| {
+                let value = invalid.clone();
+                async move { Ok((value, String::new())) }
+            },
+        )
+        .await
+        .expect("fallback");
+        assert_eq!(outcome.card.question.confidence, InterviewConfidence::Low);
+        assert!(outcome.risk_note.unwrap_or_default().contains("fallback"));
     }
 }
