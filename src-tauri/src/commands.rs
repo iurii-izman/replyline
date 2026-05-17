@@ -4,6 +4,7 @@ use tauri::{AppHandle, Manager, State};
 
 use crate::app_log;
 use crate::audio::CaptureRun;
+use crate::candidate_pack;
 use crate::credentials;
 use crate::services::capture_pipeline;
 use crate::services::pipeline_events::{emit_status, update_tray_title};
@@ -20,6 +21,21 @@ fn next_run_id() -> String {
     let ts = chrono::Utc::now().timestamp_millis() as u64;
     let seq = RUN_SEQ.fetch_add(1, Ordering::Relaxed);
     format!("{}-{}", ts, seq)
+}
+
+fn candidate_pack_save_ok_detail(saved: &candidate_pack::CandidatePackDto) -> String {
+    let weak_count = saved
+        .resume_facts
+        .iter()
+        .filter(|fact| fact.strength == candidate_pack::CandidateFactStrength::Weak)
+        .count();
+    format!(
+        "facts={} weak_facts={} summary_len={} role_len={}",
+        saved.resume_facts.len(),
+        weak_count,
+        saved.candidate_summary.chars().count(),
+        saved.target_role.chars().count()
+    )
 }
 
 impl From<crate::settings::SettingsError> for CommandError {
@@ -125,6 +141,89 @@ pub fn save_settings(input: AppSettings) -> Result<AppSettings, CommandError> {
             Err(CommandError::from(err))
         }
     }
+}
+
+#[tauri::command]
+pub fn load_candidate_pack() -> Result<Option<candidate_pack::CandidatePackDto>, CommandError> {
+    candidate_pack::load().map_err(CommandError::Internal)
+}
+
+#[tauri::command]
+pub fn save_candidate_pack(
+    input: candidate_pack::CandidatePackDto,
+) -> Result<candidate_pack::CandidatePackDto, CommandError> {
+    let fact_count = input.resume_facts.len();
+    let _ = app_log::append_event("candidate_pack_save_attempt", format!("facts={fact_count}"));
+    match candidate_pack::save(&input) {
+        Ok(saved) => {
+            let _ = app_log::append_event(
+                "candidate_pack_save_ok",
+                candidate_pack_save_ok_detail(&saved),
+            );
+            Ok(saved)
+        }
+        Err(err) => {
+            let _ = app_log::append_event("candidate_pack_save_failed", "status=failed");
+            Err(CommandError::Internal(err))
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::candidate_pack_save_ok_detail;
+    use crate::candidate_pack::{
+        CandidateAnswerConstraints, CandidateFact, CandidateFactStrength, CandidateJobDescription,
+        CandidatePackDto,
+    };
+
+    #[test]
+    fn candidate_pack_log_detail_does_not_include_raw_profile_text() {
+        let pack = CandidatePackDto {
+            candidate_summary: "Raw summary should not be logged".to_string(),
+            target_role: "Principal Engineer".to_string(),
+            resume_facts: vec![CandidateFact {
+                id: "fact-1".to_string(),
+                title: "Title".to_string(),
+                claim: "Claim".to_string(),
+                description: "Description".to_string(),
+                evidence: String::new(),
+                skills: vec![],
+                metrics: vec!["42%".to_string()],
+                strength: CandidateFactStrength::Weak,
+                suitable_for_questions: vec![],
+            }],
+            job_description: CandidateJobDescription {
+                title: "Role".to_string(),
+                company: "Company".to_string(),
+                requirements: vec![],
+                responsibilities: vec![],
+                keywords: vec![],
+            },
+            company_values: vec!["Trust".to_string()],
+            answer_constraints: CandidateAnswerConstraints {
+                avoid_claims: vec![],
+                preferred_examples: vec![],
+                language: "ru".to_string(),
+            },
+        };
+        let detail = candidate_pack_save_ok_detail(&pack);
+        assert!(detail.contains("facts=1"));
+        assert!(!detail.contains("Raw summary"));
+        assert!(!detail.contains("Principal Engineer"));
+    }
+}
+
+#[tauri::command]
+pub fn clear_candidate_pack() -> Result<(), CommandError> {
+    candidate_pack::clear().map_err(CommandError::Internal)?;
+    let _ = app_log::append_event("candidate_pack_clear_ok", "status=cleared");
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_candidate_pack_status() -> Result<candidate_pack::CandidatePackStatusDto, CommandError> {
+    candidate_pack::status().map_err(CommandError::Internal)
 }
 
 #[tauri::command]

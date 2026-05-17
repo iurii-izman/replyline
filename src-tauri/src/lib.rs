@@ -1,5 +1,6 @@
 mod app_log;
 mod audio;
+mod candidate_pack;
 mod capture_debug;
 mod card_v3;
 mod commands;
@@ -130,6 +131,10 @@ pub fn run() {
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::load_bootstrap,
         commands::save_settings,
+        commands::load_candidate_pack,
+        commands::save_candidate_pack,
+        commands::clear_candidate_pack,
+        commands::get_candidate_pack_status,
         commands::save_secret,
         commands::clear_context,
         commands::delete_secret,
@@ -150,6 +155,10 @@ pub fn run() {
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::load_bootstrap,
         commands::save_settings,
+        commands::load_candidate_pack,
+        commands::save_candidate_pack,
+        commands::clear_candidate_pack,
+        commands::get_candidate_pack_status,
         commands::save_secret,
         commands::clear_context,
         commands::delete_secret,

@@ -18,6 +18,45 @@ export type AppSettings = {
   activeAnswerProfile: string;
 };
 
+export type CandidateFactStrength = "strong" | "medium" | "weak";
+
+export type CandidateFact = {
+  id: string;
+  title: string;
+  claim: string;
+  description: string;
+  evidence: string;
+  skills: string[];
+  metrics: string[];
+  strength: CandidateFactStrength;
+  suitableForQuestions: string[];
+};
+
+export type CandidatePackDto = {
+  candidateSummary: string;
+  targetRole: string;
+  resumeFacts: CandidateFact[];
+  jobDescription: {
+    title: string;
+    company: string;
+    requirements: string[];
+    responsibilities: string[];
+    keywords: string[];
+  };
+  companyValues: string[];
+  answerConstraints: {
+    avoidClaims: string[];
+    preferredExamples: string[];
+    language: string;
+  };
+};
+
+export type CandidatePackStatusDto = {
+  exists: boolean;
+  factCount: number;
+  weakFactCount: number;
+};
+
 /**
  * Mirrors Rust LogStatusDto for IPC deserialization.
  * Not surfaced in Slim Stable Beta UI — available for diagnostics via IPC only.
