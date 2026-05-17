@@ -36,6 +36,7 @@
     "test:ui": "vitest run",
     "test:ui:coverage": "vitest run --coverage",
     "test:prompt-contract": "node scripts/check-prompt-contract.mjs",
+    "test:interview-quality": "node scripts/test-interview-quality.mjs",
     "test:say-now-scenarios": "node scripts/check-say-now-scenarios.mjs",
     "test:ipc-contract": "node scripts/check-ipc-handler-contract.mjs",
     "test:locale-keys": "node scripts/check-locale-keys.mjs",
@@ -102,6 +103,8 @@
     "parse:latency": "node scripts/parse-pipeline-latency.mjs",
     "test:latency-parser": "node scripts/parse-pipeline-latency.test.mjs",
     "report:card-quality": "node scripts/runtime-card-quality-report.mjs"
+    ,
+    "report:interview-quality": "node scripts/report-interview-quality.mjs"
   },
   "license": "MIT",
   "dependencies": {

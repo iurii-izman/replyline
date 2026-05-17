@@ -21,6 +21,7 @@ const matrix = {
     "test:locale-keys",
     "test:public-footprint",
     "test:prompt-contract",
+    "test:interview-quality",
     "copy:check",
   ],
   optional: [
@@ -47,6 +48,7 @@ const matrix = {
     "parse:latency",
     "test:latency-parser",
     "report:card-quality",
+    "report:interview-quality",
     "docker:replyline:check",
     "docker:replyline:check:dry",
     "docker:replyline:heal",
