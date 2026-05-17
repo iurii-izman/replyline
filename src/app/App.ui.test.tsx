@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
+import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "../App";
@@ -46,6 +46,22 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     }
     if (command === "clear_context") {
       return { contextActive: false, entryCount: 0, canRetryLastTranscript: false };
+    }
+    if (command === "prepare_candidate_pack") {
+      return {
+        packQualityScore: 84,
+        missingDataWarnings: ["add metrics"],
+        suggestedMissingInfo: ["add leadership example"],
+        candidateFacts: [{ fact: "Fact", evidence: "Resume line", strength: "strong", metrics: [] }],
+        roleKeywords: ["rust", "ownership"],
+        companyValues: ["customer obsession"],
+      };
+    }
+    if (command === "save_candidate_pack") {
+      return null;
+    }
+    if (command === "save_prepared_candidate_pack") {
+      return null;
     }
     return null;
   });
@@ -301,6 +317,35 @@ describe("Interview card rendering", () => {
     expect(screen.getByTestId("section-say-now")).toBeTruthy();
     expect(screen.getByTestId("section-next-move")).toBeTruthy();
   });
+
+  it("prepares candidate pack on explicit action and saves only after explicit confirmation", async () => {
+    const mock = createMockPlatform();
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    await waitFor(() => expect(screen.getByText("AI Candidate Pack")).toBeTruthy());
+
+    const section = screen.getByTestId("candidate-pack-ai-section");
+    const textareas = within(section).getAllByRole("textbox");
+    fireEvent.input(textareas[0], { target: { value: "resume raw text" } });
+    fireEvent.input(textareas[1], { target: { value: "jd raw text" } });
+
+    const prepareBtn = screen.getByRole("button", { name: "Подготовить профиль" });
+    fireEvent.click(prepareBtn);
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "prepare_candidate_pack")).toBe(true),
+    );
+    expect(screen.getByText("Score:")).toBeTruthy();
+    expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(
+      false,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить Candidate Pack" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(
+        true,
+      ),
+    );
+  });
 });
 
 describe("Setup wizard (first-run guidance)", () => {
@@ -512,4 +557,3 @@ describe("Setup wizard (first-run guidance)", () => {
     });
   });
 });
-

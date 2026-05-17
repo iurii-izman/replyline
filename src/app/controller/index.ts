@@ -1,6 +1,7 @@
 import { createMemo, createSignal, type Accessor } from "solid-js";
 import { createStore } from "solid-js/store";
 import {
+  type CandidatePackDraft,
   type CandidatePackDto,
   type CandidatePackStatusDto,
   DEFAULT_SETTINGS,
@@ -70,6 +71,14 @@ export function useReplylineController(platform: AppPlatform) {
     preferredExamplesText: "",
     language: "ru",
   });
+  const [candidateRawResume, setCandidateRawResume] = createSignal("");
+  const [candidateJobDescription, setCandidateJobDescription] = createSignal("");
+  const [candidateCompanyValues, setCandidateCompanyValues] = createSignal("");
+  const [candidatePackPreview, setCandidatePackPreview] = createSignal<CandidatePackDraft | null>(
+    null,
+  );
+  const [candidatePackPreparing, setCandidatePackPreparing] = createSignal(false);
+  const [candidatePackSaving, setCandidatePackSaving] = createSignal(false);
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -296,6 +305,39 @@ export function useReplylineController(platform: AppPlatform) {
     });
     setCandidatePackStatus({ exists: false, factCount: 0, weakFactCount: 0 });
   }
+  async function prepareCandidatePack() {
+    setCandidatePackPreparing(true);
+    setError(null);
+    try {
+      const draft = await platform.invoke<CandidatePackDraft>("prepare_candidate_pack", {
+        input: {
+          rawResume: candidateRawResume(),
+          jobDescription: candidateJobDescription(),
+          companyValuesText: candidateCompanyValues(),
+        },
+      });
+      setCandidatePackPreview(draft);
+      notices.pushNotice({ tone: "info", message: strings().notices.candidatePackPrepared });
+    } catch (err) {
+      setError(invokeErrorMessage(err));
+    } finally {
+      setCandidatePackPreparing(false);
+    }
+  }
+  async function savePreparedCandidatePack() {
+    const draft = candidatePackPreview();
+    if (!draft) return;
+    setCandidatePackSaving(true);
+    setError(null);
+    try {
+      await platform.invoke("save_prepared_candidate_pack", { draft });
+      notices.pushNotice({ tone: "info", message: strings().notices.candidatePackSaved });
+    } catch (err) {
+      setError(invokeErrorMessage(err));
+    } finally {
+      setCandidatePackSaving(false);
+    }
+  }
 
   return {
     strings,
@@ -322,6 +364,12 @@ export function useReplylineController(platform: AppPlatform) {
     runtimeCheckRunning,
     candidatePackStatus,
     candidatePackDraft,
+    candidateRawResume,
+    candidateJobDescription,
+    candidateCompanyValues,
+    candidatePackPreview,
+    candidatePackPreparing,
+    candidatePackSaving,
     checkRuntimeConfig: async () => {
       setRuntimeCheckRunning(true);
       setRuntimeCheckResult(null);
@@ -369,6 +417,11 @@ export function useReplylineController(platform: AppPlatform) {
     loadCandidatePack,
     saveCandidatePack,
     clearCandidatePack,
+    setCandidateRawResume: (value: string) => setCandidateRawResume(value),
+    setCandidateJobDescription: (value: string) => setCandidateJobDescription(value),
+    setCandidateCompanyValues: (value: string) => setCandidateCompanyValues(value),
+    prepareCandidatePack,
+    savePreparedCandidatePack,
     setError,
     dismissNotice: notices.dismissNotice,
   };
