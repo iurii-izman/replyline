@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an improvement within current stable beta scope
 title: "[feature] "
-labels: ["enhancement"]
+labels: ["enhancement", "scope:stable-beta"]
 assignees: []
 ---
 

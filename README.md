@@ -1,38 +1,85 @@
 # Replyline
 
-Slim Stable Beta: minimal path only.
+[![CI](https://github.com/iurii-izman/replyline/actions/workflows/ci.yml/badge.svg)](https://github.com/iurii-izman/replyline/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)](docs/runtime-bringup.md)
 
-## Product flow
+Windows-first desktop app for difficult live work conversations.
 
-`capture -> stt -> llm -> card`
+Core flow: `capture -> stt -> llm -> card`
 
-Canonical hotkey: `Ctrl+Alt+Space`.
-Card schema: `gist / say_now / next_move`.
+## What It Does
+
+- Hotkey-gated capture (`Ctrl+Alt+Space`) of short system-audio snippets.
+- Generates one compact response card: `gist / say_now / next_move`.
+- Keeps scope intentionally narrow for stable-beta reliability and trust.
+
 If the LLM returns a vague `next_move`, Rust repairs it with bounded context heuristics before rendering.
+
+## What It Is Not
+
 Replyline is not a meeting assistant, not a transcript tool, and not a speaking coach.
 
-## Privacy v1 (redaction baseline)
+Also out of scope in current stable beta:
 
-- API keys хранятся через OS keyring (Windows Credential Manager), никогда не попадают в логи.
-- `app_log::sanitize` применяет многоуровневую редакцию: секреты, email, длинные числовые ID, URL query strings, ограничение 400 символов.
-- `privacy::redact_secrets` — defence-in-depth слой для всех путей, где могут появиться токены/ключи.
-- `privacy::redact_transcript_like` / `safe_preview` — предотвращают логирование полного transcript или LLM prompt (только chars_band + безопасный preview).
-- Response body от Deepgram/LLM **намеренно отбрасывается** при HTTP ошибках, чтобы не логировать чувствительные payloads.
-- CSP `connect-src` включает `https://*` — необходимо для поддержки user-configured LLM base URL (любой провайдер). `wss://*.deepgram.com` разрешён для STT. Локальные `http://127.0.0.1:*` сохранены для Ollama/LM Studio.
-- См. `docs/privacy-and-trust.md` для полной privacy-модели.
+- transcript/history/team workflow UI
+- Advanced Mode user surface
+- memory/diagnostics user surface
 
-## UI scope
+## Supported Runtime Path
 
-- Main: fixed status top, scrollable card body (`gist/say_now/next_move`), fixed action row: `Скопировать ответ`, `Пересобрать`, `Очистить`.
-- Settings: hotkey, capture max seconds, Deepgram API key, LLM base URL, LLM model, optional LLM API key, Save, Back.
-- No Advanced Mode. No memory/diagnostics user surface.
+- OS: Windows 10/11
+- Capture: WASAPI loopback, hold-to-capture
+- STT: Deepgram
+- LLM: OpenAI-compatible endpoint (user-configured)
+- Stack: Tauri (Rust) + Solid.js (TypeScript)
 
-## Run
+## Quick Start
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm smoke
-pnpm verify
-pnpm rust:deps
-pnpm audit:npm
+pnpm verify:fast
 ```
+
+Then configure runtime settings in app UI:
+
+- Deepgram API key
+- LLM base URL
+- LLM model
+- optional LLM API key
+
+For release candidate validation:
+
+```bash
+pnpm verify:full
+```
+
+## Validation Profiles
+
+- `pnpm verify:fast` — default local/PR profile (`smoke` + security lane + public-footprint guard)
+- `pnpm verify:full` — release profile (`verify:fast` + freeze + dependency/security checks)
+- `pnpm verify:extended` — full profile + extra coverage/fixtures/say-now lanes
+
+## Privacy Baseline
+
+- API keys are stored in OS keyring (Windows Credential Manager), not in plain-text settings.
+- Logging pipeline applies layered sanitization and secret redaction.
+- Full transcript / full prompt are not logged by default (`redact_transcript_like` + `safe_preview`).
+- Runtime/evidence artifacts may contain sensitive content when explicitly generated under `reports/`.
+
+See:
+
+- [docs/privacy-and-trust.md](docs/privacy-and-trust.md)
+- [docs/public-vs-local-artifacts.md](docs/public-vs-local-artifacts.md)
+
+## Documentation Map
+
+- [docs/beta-readiness.md](docs/beta-readiness.md)
+- [docs/runtime-bringup.md](docs/runtime-bringup.md)
+- [docs/runtime-evidence.md](docs/runtime-evidence.md)
+- [docs/known-limitations.md](docs/known-limitations.md)
+- [docs/README.md](docs/README.md)
+
+## License
+
+[MIT](LICENSE)

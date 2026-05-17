@@ -2,7 +2,7 @@
 name: Beta handoff release
 about: Track stable-beta handoff readiness for one release candidate
 title: "[beta-handoff] "
-labels: ["release", "beta-handoff"]
+labels: ["release", "beta-handoff", "scope:stable-beta"]
 assignees: []
 ---
 

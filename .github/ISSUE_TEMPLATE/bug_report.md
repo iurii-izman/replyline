@@ -2,7 +2,7 @@
 name: Bug report
 about: Report a reproducible issue in Replyline stable beta
 title: "[bug] "
-labels: ["bug"]
+labels: ["bug", "scope:stable-beta"]
 assignees: []
 ---
 
