@@ -957,8 +957,12 @@ mod tests {
             "Да, укладываемся: сегодня до 17:00 закрываю проверку и подтверждаю финальную дату. После этого отправлю короткий итог в чат с владельцем и контрольной точкой.",
             "Отправлю письмо с владельцем и сроком сегодня.",
         );
-        let (card, _) = normalize_parsed_card(&raw, "Успеваете к пятнице или нет?")
-            .expect("direct answer must pass");
+        let (card, _) = normalize_parsed_card(
+            &raw,
+            "Успеваете к пятнице или нет?",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("direct answer must pass");
         assert!(card.say_now.contains("укладываемся"));
         assert!(!card.say_now.contains("Риск/уточнение:"));
     }
@@ -970,8 +974,12 @@ mod tests {
             "Чтобы не промахнуться, уточню: вы ждете закрытия по сроку, по качеству или по владельцу? После ответа сразу зафиксирую решение и дедлайн в чате.",
             "Зафиксирую в чате критерий, владельца и срок после уточнения.",
         );
-        let (card, _) = normalize_parsed_card(&raw, "Нужно закрыть это нормально.")
-            .expect("clarifier should pass when ambiguity is real");
+        let (card, _) = normalize_parsed_card(
+            &raw,
+            "Нужно закрыть это нормально.",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("clarifier should pass when ambiguity is real");
         assert!(card.say_now.contains("?"));
     }
 
@@ -982,7 +990,9 @@ mod tests {
             "В целом много факторов и как-нибудь решим, посмотрим.",
             "Отправлю письмо с владельцем и сроком завтра.",
         );
-        let (card, quality) = normalize_parsed_card(&raw, "").expect("generic filler must repair");
+        let (card, quality) =
+            normalize_parsed_card(&raw, "", crate::prompt_registry::default_answer_profile())
+                .expect("generic filler must repair");
         assert!(quality.repair_used);
         let say_now_lower = card.say_now.to_lowercase();
         assert!(!say_now_lower.contains("как-нибудь"));

@@ -287,7 +287,11 @@ fn normalize_text_items(values: Vec<String>) -> Vec<String> {
         .collect()
 }
 
-pub fn build_prepare_prompt(raw_resume: &str, job_description: &str, company_values: &str) -> String {
+pub fn build_prepare_prompt(
+    raw_resume: &str,
+    job_description: &str,
+    company_values: &str,
+) -> String {
     format!(
         "Resume:\n{}\n\nJob description:\n{}\n\nCompany values/about text:\n{}",
         raw_resume.trim(),
