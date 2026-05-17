@@ -15,7 +15,19 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  public-footprint-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+      - name: Public footprint guard
+        run: node scripts/check-public-footprint.mjs
+
   verify:
+    needs: public-footprint-guard
     runs-on: windows-latest
     timeout-minutes: 45
 
@@ -63,7 +75,7 @@ jobs:
         run: cargo install --locked cargo-deny cargo-audit
 
       - name: Local quality and security gate (fail-fast)
-        run: pnpm verify
+        run: pnpm verify:fast
 
       - name: Fetch base ref for release-freeze check
         if: success() || failure()

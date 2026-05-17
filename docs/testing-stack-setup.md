@@ -3,7 +3,8 @@
 ## Required Gates
 
 - Install deps: `pnpm install --frozen-lockfile`
-- Required quality/security gate: `pnpm verify`
+- Required PR/local profile: `pnpm verify:fast`
+- Release profile: `pnpm verify:full`
 - Rust supply chain lane: `pnpm rust:deps`
 - npm advisories: `pnpm audit:npm`
 

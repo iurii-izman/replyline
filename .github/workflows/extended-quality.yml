@@ -26,8 +26,12 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Install cargo-deny and cargo-audit
         run: cargo install --locked cargo-deny cargo-audit
-      - name: Extended verification gate (opt-in)
-        id: verify_extended
+      - name: Full verification profile
+        id: verify_full
+        continue-on-error: true
+        run: pnpm verify:full
+      - name: Extended verification lane (coverage + fixtures)
+        id: verify_profile_extended
         continue-on-error: true
         run: pnpm verify:extended
       - name: Optional API lane
@@ -51,7 +55,8 @@ jobs:
         shell: pwsh
         run: |
           $failed = @()
-          if ("${{ steps.verify_extended.outcome }}" -ne "success") { $failed += "verify:extended" }
+          if ("${{ steps.verify_full.outcome }}" -ne "success") { $failed += "verify:full" }
+          if ("${{ steps.verify_profile_extended.outcome }}" -ne "success") { $failed += "verify:profile:extended" }
           if ("${{ steps.optional_api.outcome }}" -ne "success") { $failed += "test:optional:api" }
           if ("${{ steps.optional_e2e_web.outcome }}" -ne "success") { $failed += "test:optional:e2e:web" }
           if ("${{ steps.optional_e2e_desktop.outcome }}" -ne "success") { $failed += "test:optional:e2e:desktop" }

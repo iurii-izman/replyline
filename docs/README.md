@@ -5,6 +5,7 @@
 ## Read first
 
 - [beta-readiness.md](beta-readiness.md)
+- [public-vs-local-artifacts.md](public-vs-local-artifacts.md)
 - [verification-lanes.md](verification-lanes.md)
 - [runtime-bringup.md](runtime-bringup.md)
 - [runtime-evidence.md](runtime-evidence.md)

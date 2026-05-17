@@ -4,8 +4,8 @@ Release gate for Slim Stable Beta.
 
 ## Must pass
 
-- `pnpm smoke`
-- `pnpm verify`
+- `pnpm verify:fast`
+- `pnpm verify:full`
 - `pnpm rust:deps`
 - `pnpm audit:npm` (no high/critical)
 

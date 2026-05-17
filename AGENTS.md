@@ -16,6 +16,12 @@ These instructions apply to the whole repository.
 - Before merge, run release-freeze guardrail check: `pnpm release:freeze:check`.
 - Do not claim checks passed unless they were actually executed.
 
+## Verification Profiles
+
+- `pnpm verify:fast` is the default PR/local profile (required).
+- `pnpm verify:full` is the release profile (fast + freeze + dependency/security gates).
+- `pnpm verify` is an alias to `pnpm verify:fast`.
+
 ## Architecture Boundaries
 
 - Keep frontend state and types in `src/app/model.ts`.
@@ -47,3 +53,9 @@ These instructions apply to the whole repository.
   2. Tool-specific adapter files in this repository
   3. Machine-level global rules
   4. Personal preferences
+
+## Solo Main Workflow
+
+- Current repository mode: single developer.
+- Default integration path is direct into `main` after local verification.
+- Feature branches remain optional for risky or long-running changes.

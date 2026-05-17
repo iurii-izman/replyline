@@ -71,7 +71,8 @@ Required validation lane for this handoff:
 1. `pnpm test:doc-links`
 2. `pnpm test:consistency`
 3. `pnpm smoke`
-4. `pnpm verify`
+4. `pnpm verify:fast`
+5. `pnpm verify:full` (release candidate profile)
 
 Additional release-safety lanes (run when applicable):
 

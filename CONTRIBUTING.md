@@ -19,9 +19,22 @@ Keep Replyline in Slim Stable Beta scope:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm smoke
-pnpm verify
-pnpm release:freeze:check
-pnpm rust:deps
-pnpm audit:npm
+pnpm verify:fast
 ```
+
+## Release candidate profile
+
+```bash
+pnpm verify:full
+```
+
+`verify:full` includes:
+- `pnpm verify:fast`
+- `pnpm release:freeze:check`
+- `pnpm rust:deps`
+- `pnpm audit:npm`
+
+## Solo workflow mode
+
+- Repository currently assumes one active developer.
+- Direct work to `main` is acceptable after required checks pass.
