@@ -285,6 +285,138 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             </button>
           </div>
         </form>
+        <fieldset class="setup-fieldset" data-testid="candidate-pack-section">
+          <legend class="setup-legend">{st().settings.candidatePackTitle}</legend>
+          <p class="setup-overall-hint">
+            {st().settings.candidatePackStatus}:{" "}
+            {controller().candidatePackStatus().exists
+              ? `${controller().candidatePackStatus().factCount} / weak ${controller().candidatePackStatus().weakFactCount}`
+              : st().settings.candidatePackEmpty}
+          </p>
+          <label class="field">
+            <span class="field-label">{st().settings.candidateSummaryLabel}</span>
+            <textarea
+              class="field-input"
+              value={controller().candidatePackDraft.candidateSummary}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("candidateSummary", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.targetRoleLabel}</span>
+            <input
+              class="field-input"
+              value={controller().candidatePackDraft.targetRole}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("targetRole", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.factsLabel}</span>
+            <textarea
+              class="field-input"
+              placeholder={st().settings.factsHint}
+              value={controller().candidatePackDraft.factsText}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("factsText", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.jobTitleLabel}</span>
+            <input
+              class="field-input"
+              value={controller().candidatePackDraft.jobTitle}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("jobTitle", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.jobCompanyLabel}</span>
+            <input
+              class="field-input"
+              value={controller().candidatePackDraft.jobCompany}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("jobCompany", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.requirementsLabel}</span>
+            <textarea
+              class="field-input"
+              value={controller().candidatePackDraft.requirementsText}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("requirementsText", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.responsibilitiesLabel}</span>
+            <textarea
+              class="field-input"
+              value={controller().candidatePackDraft.responsibilitiesText}
+              onInput={(event) =>
+                controller().setCandidatePackDraft(
+                  "responsibilitiesText",
+                  event.currentTarget.value,
+                )}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.keywordsLabel}</span>
+            <textarea
+              class="field-input"
+              value={controller().candidatePackDraft.keywordsText}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("keywordsText", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.companyValuesLabel}</span>
+            <textarea
+              class="field-input"
+              value={controller().candidatePackDraft.companyValuesText}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("companyValuesText", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.avoidClaimsLabel}</span>
+            <textarea
+              class="field-input"
+              value={controller().candidatePackDraft.avoidClaimsText}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("avoidClaimsText", event.currentTarget.value)}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.preferredExamplesLabel}</span>
+            <textarea
+              class="field-input"
+              value={controller().candidatePackDraft.preferredExamplesText}
+              onInput={(event) =>
+                controller().setCandidatePackDraft(
+                  "preferredExamplesText",
+                  event.currentTarget.value,
+                )}
+            />
+          </label>
+          <label class="field">
+            <span class="field-label">{st().settings.profileLanguageLabel}</span>
+            <input
+              class="field-input"
+              value={controller().candidatePackDraft.language}
+              onInput={(event) =>
+                controller().setCandidatePackDraft("language", event.currentTarget.value)}
+            />
+          </label>
+          <div class="settings-actions">
+            <button class="btn-primary" type="button" onClick={() => void controller().saveCandidatePack()}>
+              {st().settings.saveCandidatePack}
+            </button>
+            <button class="btn-ghost" type="button" onClick={() => void controller().clearCandidatePack()}>
+              {st().settings.clearCandidatePack}
+            </button>
+          </div>
+        </fieldset>
       </section>
     </Show>
   );

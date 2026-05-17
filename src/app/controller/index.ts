@@ -1,6 +1,8 @@
 import { createMemo, createSignal, type Accessor } from "solid-js";
 import { createStore } from "solid-js/store";
 import {
+  type CandidatePackDto,
+  type CandidatePackStatusDto,
   DEFAULT_SETTINGS,
   type AnalysisCard,
   type AppSettings,
@@ -49,6 +51,25 @@ export function useReplylineController(platform: AppPlatform) {
   );
   const [runtimeCheckResult, setRuntimeCheckResult] = createSignal<RuntimeCheckDto | null>(null);
   const [runtimeCheckRunning, setRuntimeCheckRunning] = createSignal(false);
+  const [candidatePackStatus, setCandidatePackStatus] = createSignal<CandidatePackStatusDto>({
+    exists: false,
+    factCount: 0,
+    weakFactCount: 0,
+  });
+  const [candidatePackDraft, setCandidatePackDraft] = createStore({
+    candidateSummary: "",
+    targetRole: "",
+    factsText: "",
+    jobTitle: "",
+    jobCompany: "",
+    requirementsText: "",
+    responsibilitiesText: "",
+    keywordsText: "",
+    companyValuesText: "",
+    avoidClaimsText: "",
+    preferredExamplesText: "",
+    language: "ru",
+  });
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -151,6 +172,7 @@ export function useReplylineController(platform: AppPlatform) {
     setLastCommandErrorKind,
     notices,
     hotkeys,
+    loadCandidatePack,
   });
 
   // ── Lifecycle effects ──────────────────────────────────────────────────
@@ -188,6 +210,93 @@ export function useReplylineController(platform: AppPlatform) {
   });
 
   // ── Public API ─────────────────────────────────────────────────────────
+  function lines(value: string): string[] {
+    return value
+      .split("\n")
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+  function parseFactsText(value: string): CandidatePackDto["resumeFacts"] {
+    return lines(value).map((line, index) => {
+      const [id = `fact-${index + 1}`, title = "", claim = "", evidence = ""] = line
+        .split("|")
+        .map((part) => part.trim());
+      return {
+        id,
+        title,
+        claim,
+        description: "",
+        evidence,
+        skills: [],
+        metrics: [],
+        strength: evidence ? "medium" : "weak",
+        suitableForQuestions: [],
+      };
+    });
+  }
+  async function loadCandidatePack() {
+    const pack = await platform.invoke<CandidatePackDto | null>("load_candidate_pack");
+    const status = await platform.invoke<CandidatePackStatusDto>("get_candidate_pack_status");
+    setCandidatePackStatus(status);
+    if (!pack) return;
+    setCandidatePackDraft({
+      candidateSummary: pack.candidateSummary,
+      targetRole: pack.targetRole,
+      factsText: pack.resumeFacts
+        .map((fact) => [fact.id, fact.title, fact.claim, fact.evidence].join(" | "))
+        .join("\n"),
+      jobTitle: pack.jobDescription.title,
+      jobCompany: pack.jobDescription.company,
+      requirementsText: pack.jobDescription.requirements.join("\n"),
+      responsibilitiesText: pack.jobDescription.responsibilities.join("\n"),
+      keywordsText: pack.jobDescription.keywords.join("\n"),
+      companyValuesText: pack.companyValues.join("\n"),
+      avoidClaimsText: pack.answerConstraints.avoidClaims.join("\n"),
+      preferredExamplesText: pack.answerConstraints.preferredExamples.join("\n"),
+      language: pack.answerConstraints.language || "ru",
+    });
+  }
+  async function saveCandidatePack() {
+    const input: CandidatePackDto = {
+      candidateSummary: candidatePackDraft.candidateSummary,
+      targetRole: candidatePackDraft.targetRole,
+      resumeFacts: parseFactsText(candidatePackDraft.factsText),
+      jobDescription: {
+        title: candidatePackDraft.jobTitle,
+        company: candidatePackDraft.jobCompany,
+        requirements: lines(candidatePackDraft.requirementsText),
+        responsibilities: lines(candidatePackDraft.responsibilitiesText),
+        keywords: lines(candidatePackDraft.keywordsText),
+      },
+      companyValues: lines(candidatePackDraft.companyValuesText),
+      answerConstraints: {
+        avoidClaims: lines(candidatePackDraft.avoidClaimsText),
+        preferredExamples: lines(candidatePackDraft.preferredExamplesText),
+        language: candidatePackDraft.language,
+      },
+    };
+    await platform.invoke("save_candidate_pack", { input });
+    await loadCandidatePack();
+  }
+  async function clearCandidatePack() {
+    await platform.invoke("clear_candidate_pack");
+    setCandidatePackDraft({
+      candidateSummary: "",
+      targetRole: "",
+      factsText: "",
+      jobTitle: "",
+      jobCompany: "",
+      requirementsText: "",
+      responsibilitiesText: "",
+      keywordsText: "",
+      companyValuesText: "",
+      avoidClaimsText: "",
+      preferredExamplesText: "",
+      language: "ru",
+    });
+    setCandidatePackStatus({ exists: false, factCount: 0, weakFactCount: 0 });
+  }
+
   return {
     strings,
     phase,
@@ -211,6 +320,8 @@ export function useReplylineController(platform: AppPlatform) {
     lastCommandErrorKind,
     runtimeCheckResult,
     runtimeCheckRunning,
+    candidatePackStatus,
+    candidatePackDraft,
     checkRuntimeConfig: async () => {
       setRuntimeCheckRunning(true);
       setRuntimeCheckResult(null);
@@ -253,6 +364,11 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmBaseUrl: (value: string) => setSettings("llmBaseUrl", value),
     setLlmModel: (value: string) => setSettings("llmModel", value),
     setActiveAnswerProfile: (value: string) => setSettings("activeAnswerProfile", value),
+    setCandidatePackDraft: (key: keyof typeof candidatePackDraft, value: string) =>
+      setCandidatePackDraft(key, value),
+    loadCandidatePack,
+    saveCandidatePack,
+    clearCandidatePack,
     setError,
     dismissNotice: notices.dismissNotice,
   };

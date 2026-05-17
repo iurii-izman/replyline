@@ -3,6 +3,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use tauri::AppHandle;
 
 use crate::app_log;
+use crate::candidate_pack;
 use crate::credentials;
 use crate::diag_contract::{
     RL_ANALYSIS_OK, RL_CAPTURE_JOIN_FAILED, RL_CAPTURE_NOT_ACTIVE, RL_CAPTURE_READY,
@@ -189,12 +190,32 @@ pub async fn capture_stop_and_analyze(
             .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
         context.formatted_context()
     };
+    let candidate_context = candidate_pack::load()
+        .ok()
+        .flatten()
+        .map(|pack| candidate_pack::compact_context(&pack))
+        .unwrap_or_default();
+    let combined_context = if candidate_context.trim().is_empty() {
+        context_text
+    } else if context_text.trim().is_empty() {
+        format!("Candidate context:\n{candidate_context}")
+    } else {
+        format!("{context_text}\n\nCandidate context:\n{candidate_context}")
+    };
+    let _ = app_log::append_event(
+        "candidate_pack_context_status",
+        format!(
+            "pack_active={} candidate_context_chars={}",
+            !candidate_context.trim().is_empty(),
+            candidate_context.chars().count()
+        ),
+    );
 
     let outcome = match llm_provider::analyze_transcript(
         &settings,
         llm_key.as_deref(),
         &transcript,
-        &context_text,
+        &combined_context,
     )
     .await
     {
@@ -305,11 +326,23 @@ pub async fn retry_last_analysis(
         &crate::tray_status::tooltip_for_phase(lang, "analyzing", Some(retry_detail)),
     );
 
+    let candidate_context = candidate_pack::load()
+        .ok()
+        .flatten()
+        .map(|pack| candidate_pack::compact_context(&pack))
+        .unwrap_or_default();
+    let combined_context = if candidate_context.trim().is_empty() {
+        context_text
+    } else if context_text.trim().is_empty() {
+        format!("Candidate context:\n{candidate_context}")
+    } else {
+        format!("{context_text}\n\nCandidate context:\n{candidate_context}")
+    };
     let card = match llm_provider::analyze_transcript(
         &settings,
         llm_key.as_deref(),
         &transcript,
-        &context_text,
+        &combined_context,
     )
     .await
     {

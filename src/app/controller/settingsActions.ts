@@ -43,6 +43,7 @@ export interface SettingsActionDeps {
   setLastCommandErrorKind: Setter<CommandErrorKind | null>;
   notices: NoticeApi;
   hotkeys: HotkeyApi;
+  loadCandidatePack: () => Promise<void>;
 }
 
 export interface SettingsActions {
@@ -65,6 +66,7 @@ export function createSettingsActions(
       deps.setContextActive(boot.contextActive);
       deps.setContextEntryCount(boot.contextEntryCount);
       deps.setPanel(boot.runtimeReady ? "main" : "settings");
+      await deps.loadCandidatePack();
       await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
       deps.setPhase("idle");
     } catch (err) {
