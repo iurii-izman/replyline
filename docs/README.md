@@ -20,6 +20,10 @@
 - [benchmark-policy.md](benchmark-policy.md)
 - [rust-dependency-security.md](rust-dependency-security.md)
 
+## Architecture decisions (ADR)
+
+- [adr/0001-interview-card-engine.md](adr/0001-interview-card-engine.md)
+
 ## Product and trust
 
 - [copy-rules.md](copy-rules.md)
