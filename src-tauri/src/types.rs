@@ -31,6 +31,7 @@ pub struct AppSettings {
     pub hotkey: String,
     pub llm_base_url: String,
     pub llm_model: String,
+    pub selected_model_preset: String,
     pub capture_max_seconds: u16,
     pub active_answer_profile: String,
 }
@@ -38,10 +39,11 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 3,
+            schema_version: 4,
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
+            selected_model_preset: "custom_openai_compatible".to_string(),
             capture_max_seconds: 45,
             active_answer_profile: crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID.to_string(),
         }

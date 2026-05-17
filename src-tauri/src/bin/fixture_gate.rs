@@ -22,6 +22,8 @@ mod language_profile;
 mod llm;
 #[path = "../providers/llm_provider.rs"]
 mod llm_provider;
+#[path = "../model_presets.rs"]
+mod model_presets;
 #[path = "../providers/openai_compatible.rs"]
 mod openai_compatible;
 #[path = "../pipeline_timing.rs"]

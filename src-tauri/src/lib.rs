@@ -11,6 +11,7 @@ mod fs_atomic;
 mod interview_card_v1;
 mod language_profile;
 mod llm;
+mod model_presets;
 mod pipeline_timing;
 mod privacy;
 mod prompt_registry;

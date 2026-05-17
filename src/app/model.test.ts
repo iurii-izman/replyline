@@ -195,5 +195,9 @@ describe("model", () => {
     it("DEFAULT_SETTINGS llmModel is not empty", () => {
       expect(DEFAULT_SETTINGS.llmModel.trim().length).toBeGreaterThan(0);
     });
+
+    it("DEFAULT_SETTINGS has model preset selected", () => {
+      expect(DEFAULT_SETTINGS.selectedModelPreset).toBe("custom_openai_compatible");
+    });
   });
 });

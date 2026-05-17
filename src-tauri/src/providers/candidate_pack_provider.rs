@@ -15,6 +15,7 @@ pub async fn prepare_candidate_pack(
     let (raw_text, _prefix) = openai_compatible::request_card_raw_text(
         &settings.llm_base_url,
         &settings.llm_model,
+        &[],
         api_key,
         candidate_pack::system_prompt(),
         &user_prompt,

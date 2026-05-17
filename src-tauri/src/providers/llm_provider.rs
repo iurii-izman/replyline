@@ -1,6 +1,7 @@
 use crate::card_v3::CardQualityFlags;
 use crate::diag_contract::{RL_CARD_NORM_TIMED, RL_LLM_REQUEST_TIMED};
 use crate::llm;
+use crate::model_presets::{resolve_model_preset, ProviderKind};
 use crate::pipeline_timing::{PipelineTimer, StageTiming};
 use crate::prompt_registry::resolve_answer_profile;
 use crate::types::{AnalysisCardDto, AppSettings};
@@ -120,10 +121,17 @@ async fn request_card_with_prompt(
 ) -> Result<(String, String), String> {
     let user_prompt = llm::build_user_prompt(transcript, context, language, profile, extra_suffix);
     let system_prompt = llm::system_prompt_for_profile(profile, language);
+    let preset = resolve_model_preset(&settings.selected_model_preset);
+    let fallback_models = if preset.provider_kind == ProviderKind::OpenRouter {
+        preset.fallback_models
+    } else {
+        &[]
+    };
 
     openai_compatible::request_card_raw_text(
         &settings.llm_base_url,
         &settings.llm_model,
+        fallback_models,
         api_key,
         system_prompt,
         &user_prompt,
