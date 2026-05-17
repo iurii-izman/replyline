@@ -88,3 +88,9 @@ See:
 ## License
 
 [MIT](LICENSE)
+
+## Releases
+
+- Tag format: `vX.Y.Z` (for example: `v0.2.0`)
+- On push of a `v*` tag, GitHub Action `Release On Tag` creates a release with auto-generated notes.
+- Notes are grouped by labels via `.github/release.yml`.

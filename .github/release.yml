@@ -1,0 +1,27 @@
+changelog:
+  exclude:
+    labels:
+      - scope:out-of-scope
+      - invalid
+      - duplicate
+      - question
+      - wontfix
+  categories:
+    - title: Runtime
+      labels:
+        - area:runtime
+    - title: UI
+      labels:
+        - area:ui
+    - title: Privacy and Trust
+      labels:
+        - area:privacy-trust
+    - title: Build and CI
+      labels:
+        - area:build-ci
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Other Changes
+      labels:
+        - "*"
