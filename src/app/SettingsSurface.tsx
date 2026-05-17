@@ -1,4 +1,5 @@
 import { For, Show } from "solid-js";
+import { ANSWER_PROFILE_OPTIONS, resolveAnswerProfileOption } from "./answerProfiles";
 import type { ReplylineController } from "./controller";
 import type { CheckItemDto } from "./model";
 import type { UiStrings } from "./locale";
@@ -128,6 +129,24 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 value={controller().settings.llmModel}
                 onInput={(event) => controller().setLlmModel(event.currentTarget.value)}
               />
+            </label>
+
+            <label class="field" data-testid="answer-profile-field">
+              <span class="field-label">{st().settings.answerProfileLabel}</span>
+              <select
+                class="field-input"
+                value={controller().settings.activeAnswerProfile}
+                onInput={(event) => controller().setActiveAnswerProfile(event.currentTarget.value)}
+              >
+                <For each={ANSWER_PROFILE_OPTIONS}>
+                  {(profile) => <option value={profile.id}>{profile.title}</option>}
+                </For>
+              </select>
+              <span class="field-help">
+                {
+                  resolveAnswerProfileOption(controller().settings.activeAnswerProfile).description
+                }
+              </span>
             </label>
 
             <label class="field">

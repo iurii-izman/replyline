@@ -2,6 +2,7 @@
 
 use serde::Deserialize;
 
+use crate::prompt_registry::AnswerProfileConfig;
 use crate::types::AnalysisCardDto;
 
 const SHORT_TRANSCRIPT_MAX: usize = 40;
@@ -37,6 +38,7 @@ struct CardLimits {
     star_evidence: usize,
     next_step: usize,
     answer_min_words: usize,
+    answer_max_words: usize,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -59,9 +61,10 @@ pub fn chars_band(transcript: &str) -> &'static str {
 pub fn normalize_parsed_card(
     raw_text: &str,
     transcript: &str,
+    profile: &AnswerProfileConfig,
 ) -> Result<(AnalysisCardDto, CardQualityFlags), String> {
     let parsed = parse_card_json(raw_text)?;
-    normalize_card(parsed, transcript)
+    normalize_card(parsed, transcript, profile)
 }
 
 fn parse_card_json(raw_text: &str) -> Result<ParsedCard, String> {
@@ -141,8 +144,9 @@ fn extract_field(text: &str, key: &str) -> Option<String> {
 fn normalize_card(
     parsed: ParsedCard,
     transcript: &str,
+    profile: &AnswerProfileConfig,
 ) -> Result<(AnalysisCardDto, CardQualityFlags), String> {
-    let limits = limits_for_transcript(transcript);
+    let limits = limits_for_transcript(transcript, profile);
     let band = chars_band(transcript).to_string();
     let mut quality = CardQualityFlags::default();
 
@@ -275,7 +279,9 @@ fn repair_section(
 fn validate_section(value: &str, section: Section, limits: CardLimits) -> Result<(), String> {
     match section {
         Section::QuestionBrief => validate_question_brief(value),
-        Section::AnswerNow => validate_answer_now(value, limits.answer_min_words),
+        Section::AnswerNow => {
+            validate_answer_now(value, limits.answer_min_words, limits.answer_max_words)
+        }
         Section::NextStep => validate_next_step(value),
     }
 }
@@ -291,7 +297,7 @@ fn validate_question_brief(value: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn validate_answer_now(value: &str, min_words: usize) -> Result<(), String> {
+fn validate_answer_now(value: &str, min_words: usize, max_words: usize) -> Result<(), String> {
     let lower = value.to_lowercase();
     let words = word_count(value);
 
@@ -303,6 +309,9 @@ fn validate_answer_now(value: &str, min_words: usize) -> Result<(), String> {
     }
     if words < min_words {
         return Err("answer_now is too short for paragraph guidance.".to_string());
+    }
+    if words > max_words {
+        return Err("answer_now is too long for active profile.".to_string());
     }
     if contains_any(
         &lower,
@@ -642,28 +651,33 @@ pub fn build_fallback_next_step(say_now: &str, transcript: &str) -> String {
     .to_string()
 }
 
-fn limits_for_transcript(transcript: &str) -> CardLimits {
+fn limits_for_transcript(transcript: &str, profile: &AnswerProfileConfig) -> CardLimits {
+    let min_words = profile.answer_word_min;
+    let max_words = profile.answer_word_max;
     match chars_band(transcript) {
         "short" => CardLimits {
             question_brief: 120,
             answer_now: 360,
             star_evidence: 160,
             next_step: 140,
-            answer_min_words: 10,
+            answer_min_words: min_words.min(profile.short_word_max),
+            answer_max_words: max_words.min(profile.short_word_max),
         },
         "medium" => CardLimits {
             question_brief: 140,
             answer_now: 480,
             star_evidence: 220,
             next_step: 180,
-            answer_min_words: 14,
+            answer_min_words: min_words,
+            answer_max_words: max_words.min(profile.strong_word_max),
         },
         _ => CardLimits {
             question_brief: 160,
             answer_now: 560,
             star_evidence: 260,
             next_step: 200,
-            answer_min_words: 16,
+            answer_min_words: min_words,
+            answer_max_words: max_words.min(profile.strong_word_max),
         },
     }
 }
@@ -746,9 +760,13 @@ mod tests {
             answer,
             "Потом посмотрим.",
         );
-        normalize_parsed_card(&raw, transcript)
-            .expect("fallback card must normalize")
-            .0
+        normalize_parsed_card(
+            &raw,
+            transcript,
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("fallback card must normalize")
+        .0
     }
 
     #[test]
@@ -773,8 +791,12 @@ mod tests {
             "В фрагменте прозвучал запрос на дату.",
             "Отправлю письмо с владельцем и чекпоинтом на завтра.",
         );
-        let (card, quality) =
-            normalize_parsed_card(&raw, "medium length transcript for band").expect("must map");
+        let (card, quality) = normalize_parsed_card(
+            &raw,
+            "medium length transcript for band",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("must map");
         assert!(card.gist.contains("срок"));
         assert!(card.say_now.contains("17:00"));
         assert!(card.next_move.contains("письмо"));
@@ -788,7 +810,8 @@ mod tests {
             "Извините.",
             "Письмо позже с владельцем и сроком.",
         );
-        let err = normalize_parsed_card(&raw, "").expect_err("must reject");
+        let err = normalize_parsed_card(&raw, "", crate::prompt_registry::default_answer_profile())
+            .expect_err("must reject");
         assert!(err.contains("apology-only") || err.contains("repair_failed"));
     }
 
@@ -799,7 +822,9 @@ mod tests {
             "Давайте согласуем приоритеты и срок сегодня до 17:00. Я подготовлю короткий итог и отправлю его в чат до конца дня.",
             "Потом посмотрим.",
         );
-        let (card, quality) = normalize_parsed_card(&raw, "").expect("must repair");
+        let (card, quality) =
+            normalize_parsed_card(&raw, "", crate::prompt_registry::default_answer_profile())
+                .expect("must repair");
         assert!(quality.fallback_used || quality.repair_used);
         validate_next_step(&card.next_move).expect("fallback must pass");
     }
@@ -894,7 +919,12 @@ mod tests {
 
     #[test]
     fn malformed_json_fails() {
-        let err = normalize_parsed_card("not json at all", "").expect_err("must fail");
+        let err = normalize_parsed_card(
+            "not json at all",
+            "",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect_err("must fail");
         assert!(err.contains("invalid JSON"));
     }
 
@@ -912,7 +942,9 @@ mod tests {
             "Давайте сейчас зафиксируем владельца и срок: я пришлю обновление сегодня до 17:00. После этого отправлю краткий итог в чат.",
             "Отправлю письмо с владельцем и чекпоинтом на завтра.",
         );
-        let (card, _) = normalize_parsed_card(&raw, "").expect("legacy must work");
+        let (card, _) =
+            normalize_parsed_card(&raw, "", crate::prompt_registry::default_answer_profile())
+                .expect("legacy must work");
         assert!(card.say_now.contains("сегодня"));
     }
 }

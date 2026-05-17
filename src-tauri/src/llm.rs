@@ -1,4 +1,7 @@
 use crate::card_v3::{self, CardQualityFlags};
+use crate::prompt_registry::{
+    default_answer_profile, AnswerProfileConfig, ClarifierPolicy, StructurePreference,
+};
 use crate::types::AnalysisCardDto;
 
 // ---------------------------------------------------------------------------
@@ -63,7 +66,13 @@ Limits (server clamps by fragment length):
 - next_step: up to 200 chars
 - risk_or_clarifier: optional, up to 120 chars"#;
 
+#[allow(dead_code)]
 pub fn system_prompt_for_language(language: &str) -> &'static str {
+    system_prompt_for_profile(default_answer_profile(), language)
+}
+
+pub fn system_prompt_for_profile(profile: &AnswerProfileConfig, language: &str) -> &'static str {
+    let _ = profile;
     match language {
         "en" => SYSTEM_PROMPT_EN,
         _ => SYSTEM_PROMPT_RU,
@@ -78,6 +87,7 @@ pub fn build_user_prompt(
     transcript: &str,
     context: &str,
     language: &str,
+    profile: &AnswerProfileConfig,
     extra_suffix: Option<&str>,
 ) -> String {
     let (clean_context, prompt_template) = if language == "en" {
@@ -107,7 +117,41 @@ pub fn build_user_prompt(
         prompt.push_str("\n\n");
         prompt.push_str(suffix.trim());
     }
+    prompt.push_str("\n\n");
+    prompt.push_str(&build_profile_prompt_suffix(profile, language));
     prompt
+}
+
+fn build_profile_prompt_suffix(profile: &AnswerProfileConfig, language: &str) -> String {
+    let structure = match profile.structure_preference {
+        StructurePreference::Star => "STAR",
+        StructurePreference::Case => "CASE",
+        StructurePreference::Direct => "DIRECT",
+        StructurePreference::Technical => "TECHNICAL",
+        StructurePreference::Executive => "EXECUTIVE",
+    };
+    let clarifier = match profile.clarifier_policy {
+        ClarifierPolicy::OnlyWhenBlocked => "only when blocked",
+        ClarifierPolicy::AllowWhenAmbiguous => "allow when ambiguous",
+        ClarifierPolicy::NeverDefault => "never default",
+    };
+    if language == "en" {
+        format!(
+            "Active answer profile: {id}\nTone: {tone}\nStructure preference: {structure}\nClarifier policy: {clarifier}\nAnswer now target words: {min}-{max}\nDo not fabricate facts. If detail is unknown, state uncertainty and keep claims anchored to transcript/context only.",
+            id = profile.id,
+            tone = profile.tone,
+            min = profile.answer_word_min,
+            max = profile.answer_word_max
+        )
+    } else {
+        format!(
+            "Активный профиль ответа: {id}\nТон: {tone}\nСтруктура ответа: {structure}\nПравило уточнений: {clarifier}\nЦелевой размер answer_now: {min}-{max} слов\nНе выдумывай факты. Если данных не хватает, явно укажи неопределенность и опирайся только на фрагмент/контекст.",
+            id = profile.id,
+            tone = profile.tone,
+            min = profile.answer_word_min,
+            max = profile.answer_word_max
+        )
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -117,8 +161,9 @@ pub fn build_user_prompt(
 pub fn normalize_from_raw(
     raw_text: &str,
     transcript: &str,
+    profile: &AnswerProfileConfig,
 ) -> Result<(AnalysisCardDto, CardQualityFlags), String> {
-    card_v3::normalize_parsed_card(raw_text, transcript)
+    card_v3::normalize_parsed_card(raw_text, transcript, profile)
 }
 
 // ---------------------------------------------------------------------------
@@ -127,4 +172,26 @@ pub fn normalize_from_raw(
 
 pub fn chars_band(transcript: &str) -> &'static str {
     card_v3::chars_band(transcript)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::build_user_prompt;
+    use crate::prompt_registry::resolve_answer_profile;
+
+    #[test]
+    fn executive_profile_includes_no_fabrication_rule() {
+        let profile = resolve_answer_profile("interview_executive");
+        let prompt = build_user_prompt("fragment", "", "en", profile, None);
+        assert!(prompt.contains("Do not fabricate facts"));
+        assert!(prompt.contains("confident"));
+    }
+
+    #[test]
+    fn technical_profile_requests_technical_structure() {
+        let profile = resolve_answer_profile("interview_technical");
+        let prompt = build_user_prompt("fragment", "", "en", profile, None);
+        assert!(prompt.contains("Structure preference: TECHNICAL"));
+        assert!(prompt.contains("technical"));
+    }
 }

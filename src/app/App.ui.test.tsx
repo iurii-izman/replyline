@@ -23,11 +23,12 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     if (command === "load_bootstrap") {
       return {
         settings: {
-          schemaVersion: 2,
+          schemaVersion: 3,
           hotkey: "Ctrl+Alt+Space",
           llmBaseUrl: "https://api.example/v1",
           llmModel: "gpt-4o-mini",
           captureMaxSeconds: 45,
+          activeAnswerProfile: "interview_default",
         },
         deepgramKeyPresent: true,
         llmKeyPresent: true,
@@ -190,6 +191,9 @@ describe("App UX stabilization", () => {
     await waitFor(() => expect(screen.getByText("Настройки")).toBeTruthy());
     expect(screen.getByRole("button", { name: "Сохранить" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
+    expect(screen.getByText("Профиль ответа")).toBeTruthy();
+    expect(screen.getByTestId("answer-profile-field")).toBeTruthy();
+    expect(screen.queryByText(/raw prompt/i)).toBeNull();
   });
 });
 
@@ -216,11 +220,12 @@ describe("Setup wizard (first-run guidance)", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 2,
+            schemaVersion: 3,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: overrides.llmBaseUrl ?? "",
             llmModel: overrides.llmModel ?? "gpt-4o-mini",
             captureMaxSeconds: 45,
+            activeAnswerProfile: "interview_default",
           },
           deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
           llmKeyPresent: overrides.llmKeyPresent ?? false,
@@ -235,7 +240,7 @@ describe("Setup wizard (first-run guidance)", () => {
         const input = (args as Record<string, unknown> | undefined)?.input as
           | Record<string, unknown>
           | undefined;
-        return { ...input, schemaVersion: 2 };
+        return { ...input, schemaVersion: 3 };
       }
       if (command === "save_secret") {
         return null;
@@ -401,3 +406,4 @@ describe("Setup wizard (first-run guidance)", () => {
     });
   });
 });
+

@@ -11,6 +11,7 @@ mod language_profile;
 mod llm;
 mod pipeline_timing;
 mod privacy;
+mod prompt_registry;
 mod providers;
 mod services;
 mod settings;

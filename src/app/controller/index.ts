@@ -252,6 +252,7 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmApiKeyDraft: (value: string) => setDraftSecrets("llmApiKey", value),
     setLlmBaseUrl: (value: string) => setSettings("llmBaseUrl", value),
     setLlmModel: (value: string) => setSettings("llmModel", value),
+    setActiveAnswerProfile: (value: string) => setSettings("activeAnswerProfile", value),
     setError,
     dismissNotice: notices.dismissNotice,
   };
