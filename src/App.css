@@ -218,12 +218,42 @@ input {
   min-height: 360px;
   overflow: hidden;
 }
+.main-card--compact .main-card-top {
+  gap: 4px;
+}
 
 .main-card-top {
   grid-area: top;
   display: grid;
   gap: 8px;
   align-content: start;
+}
+.interview-card-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.interview-card-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1 1 auto;
+}
+
+.interview-card-tab {
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-accent);
+  padding: 5px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.interview-card-tab.is-active {
+  background: rgba(185, 135, 37, 0.16);
+  border-color: rgba(185, 135, 37, 0.34);
 }
 
 .main-status-row {

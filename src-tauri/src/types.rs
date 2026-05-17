@@ -34,18 +34,22 @@ pub struct AppSettings {
     pub selected_model_preset: String,
     pub capture_max_seconds: u16,
     pub active_answer_profile: String,
+    pub window_opacity: u8,
+    pub interview_compact_mode: bool,
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 4,
+            schema_version: 5,
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
             selected_model_preset: "custom_openai_compatible".to_string(),
             capture_max_seconds: 45,
             active_answer_profile: crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID.to_string(),
+            window_opacity: 100,
+            interview_compact_mode: false,
         }
     }
 }

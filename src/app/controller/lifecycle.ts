@@ -13,7 +13,7 @@ export interface LifecycleDeps {
   setStatusDetail: Setter<string | null>;
   setContextActive: Setter<boolean>;
   setContextEntryCount: Setter<number>;
-  setCard: Setter<AnalysisCard | null>;
+  setCard: (card: AnalysisCard | null) => void;
   notices: NoticeApi;
   settingsActions: SettingsActions;
   showWindow: (panelName?: Panel) => Promise<void>;

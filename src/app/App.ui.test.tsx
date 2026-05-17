@@ -23,13 +23,15 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     if (command === "load_bootstrap") {
       return {
         settings: {
-          schemaVersion: 4,
+          schemaVersion: 5,
           hotkey: "Ctrl+Alt+Space",
           llmBaseUrl: "https://api.example/v1",
           llmModel: "gpt-4o-mini",
           selectedModelPreset: "custom_openai_compatible",
           captureMaxSeconds: 45,
           activeAnswerProfile: "interview_default",
+          windowOpacity: 100,
+          interviewCompactMode: false,
         },
         deepgramKeyPresent: true,
         llmKeyPresent: true,
@@ -57,6 +59,12 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
         roleKeywords: ["rust", "ownership"],
         companyValues: ["customer obsession"],
       };
+    }
+    if (command === "load_candidate_pack") {
+      return null;
+    }
+    if (command === "get_candidate_pack_status") {
+      return { exists: false, factCount: 0, weakFactCount: 0 };
     }
     if (command === "save_candidate_pack") {
       return null;
@@ -90,6 +98,7 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
       setFocus: vi.fn(async () => undefined),
       hide: vi.fn(async () => undefined),
       startDragging: vi.fn(async () => undefined),
+      setOpacity: vi.fn(async () => undefined),
       onCloseRequested: vi.fn(async () => (() => undefined) as Unlisten),
     },
   };
@@ -222,6 +231,57 @@ describe("App UX stabilization", () => {
     expect(await screen.findByDisplayValue("OpenRouter Free / Dev")).toBeTruthy();
     expect(screen.getByText(/Fallback chain:/)).toBeTruthy();
   });
+
+  it("opacity setting persists and applies to window", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    const opacity = await screen.findByDisplayValue("100%");
+    fireEvent.input(opacity, { target: { value: "80" } });
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() => {
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "save_settings")).toBe(true);
+    });
+    const saveCall = mock.invoke.mock.calls.find((c) => c[0] === "save_settings");
+    const input = (saveCall?.[1] as { input?: Record<string, unknown> } | undefined)?.input ?? {};
+    expect(input.windowOpacity).toBe(80);
+    await waitFor(() => expect(mock.platform.window.setOpacity).toHaveBeenCalledWith(0.8));
+  });
+
+  it("compact mode hides pipeline", async () => {
+    mock = createMockPlatform({
+      analysisCard: {
+        gist: "g",
+        sayNow: "say",
+        nextMove: "next",
+        charsBand: "normal",
+        interviewCardSchemaV1: {
+          answer: { main: "Primary answer main" },
+          question: {
+            rawTranscript: "raw",
+            cleanQuestion: "clean",
+            interviewerIntent: "intent",
+            questionType: "behavioral",
+          },
+          signals: { mustMention: ["ownership"], keywords: ["impact"] },
+          risks: { weakPoints: ["wp"], avoid: ["avoid"], safeReframe: ["safe"] },
+          followUps: [{ question: "q", bridgeAnswer: "a" }],
+          clarifier: { needed: false },
+        },
+      },
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    const compactToggle = await screen.findByLabelText("Compact interview mode");
+    fireEvent.click(compactToggle);
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+    await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
+    expect(screen.queryByTestId("pipeline-timeline")).toBeNull();
+  });
 });
 
 describe("Interview card rendering", () => {
@@ -292,6 +352,7 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
+    fireEvent.keyDown(window, { key: "2" });
     expect(await screen.findByText(/Tell me about a delivery incident\./)).toBeTruthy();
   });
 
@@ -302,6 +363,7 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
+    fireEvent.keyDown(window, { key: "3" });
     expect(screen.queryByText("Метрики:")).toBeNull();
   });
 
@@ -313,6 +375,50 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Released" });
 
     expect(screen.queryByTestId("section-interview-clarifier")).toBeNull();
+  });
+
+  it("carousel switches cards and answer is default", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    expect(await screen.findByTestId("section-interview-question")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "1" });
+    expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
+  });
+
+  it("pin keeps the selected card visible after refresh", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.keyDown(window, { key: "3" });
+    fireEvent.click(await screen.findByRole("button", { name: "Закрепить" }));
+    fireEvent.keyDown(window, { key: "r" });
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "retry_last_analysis")).toBe(true),
+    );
+    expect(await screen.findByTestId("section-interview-signals")).toBeTruthy();
+  });
+
+  it("copy current card works for carousel card", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.keyDown(window, { key: "2" });
+    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    await waitFor(() =>
+      expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("Tell me about a delivery incident."),
+    );
   });
 
   it("work mode still renders legacy sections", async () => {
@@ -382,13 +488,15 @@ describe("Setup wizard (first-run guidance)", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 4,
+            schemaVersion: 5,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: overrides.llmBaseUrl ?? "",
             llmModel: overrides.llmModel ?? "gpt-4o-mini",
             selectedModelPreset: "custom_openai_compatible",
             captureMaxSeconds: 45,
             activeAnswerProfile: "interview_default",
+            windowOpacity: 100,
+            interviewCompactMode: false,
           },
           deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
           llmKeyPresent: overrides.llmKeyPresent ?? false,
@@ -403,7 +511,7 @@ describe("Setup wizard (first-run guidance)", () => {
         const input = (args as Record<string, unknown> | undefined)?.input as
           | Record<string, unknown>
           | undefined;
-        return { ...input, schemaVersion: 4 };
+        return { ...input, schemaVersion: 5 };
       }
       if (command === "save_secret") {
         return null;

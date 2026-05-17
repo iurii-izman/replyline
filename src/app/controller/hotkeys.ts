@@ -30,7 +30,7 @@ export interface HotkeyDeps {
   setError: Setter<string | null>;
   setPhase: Setter<Phase>;
   setPanel: Setter<Panel>;
-  setCard: Setter<AnalysisCard | null>;
+  setCard: (card: AnalysisCard | null) => void;
   setCaptureQuality: Setter<"short" | "normal" | "long">;
   setContextActive: Setter<boolean>;
   setSettings: SetStoreFunction<AppSettings>;

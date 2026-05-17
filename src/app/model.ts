@@ -17,6 +17,8 @@ export type AppSettings = {
   selectedModelPreset: string;
   captureMaxSeconds: number;
   activeAnswerProfile: string;
+  windowOpacity: 100 | 90 | 80 | 70;
+  interviewCompactMode: boolean;
 };
 
 export type CandidateFactStrength = "strong" | "medium" | "weak";
@@ -298,6 +300,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   selectedModelPreset: "custom_openai_compatible",
   captureMaxSeconds: 45,
   activeAnswerProfile: "interview_default",
+  windowOpacity: 100,
+  interviewCompactMode: false,
 };
 
 export function isConfiguredLlmRoute(baseUrl: string, model: string): boolean {

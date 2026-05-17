@@ -200,6 +200,34 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 onInput={(event) => controller().setLlmApiKeyDraft(event.currentTarget.value)}
               />
             </label>
+
+            <label class="field">
+              <span class="field-label">{st().settings.windowOpacityLabel}</span>
+              <select
+                class="field-input"
+                value={String(controller().settings.windowOpacity)}
+                onInput={(event) =>
+                  void controller().setWindowOpacity(
+                    Number.parseInt(event.currentTarget.value, 10) as 100 | 90 | 80 | 70,
+                  )
+                }
+              >
+                <option value="100">100%</option>
+                <option value="90">90%</option>
+                <option value="80">80%</option>
+                <option value="70">70%</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">{st().settings.compactModeLabel}</span>
+              <input
+                type="checkbox"
+                aria-label={st().settings.compactModeLabel}
+                checked={controller().settings.interviewCompactMode}
+                onInput={(event) => controller().setCompactMode(event.currentTarget.checked)}
+              />
+            </label>
           </fieldset>
 
           {/* ── 3. Горячая клавиша / Hotkey ─────────────────────── */}

@@ -62,6 +62,7 @@ export type AppPlatform = {
     setFocus(): Promise<void>;
     hide(): Promise<void>;
     startDragging(): Promise<void>;
+    setOpacity?(value: number): Promise<void>;
     onCloseRequested(
       handler: (event: CloseRequestEvent) => void | Promise<void>,
     ): Promise<Unlisten>;
@@ -92,6 +93,7 @@ export function getDefaultPlatform(): AppPlatform {
       setFocus: () => windowRef.setFocus(),
       hide: () => windowRef.hide(),
       startDragging: () => windowRef.startDragging(),
+      setOpacity: (value) => windowRef.setOpacity(value),
       onCloseRequested: (handler) => windowRef.onCloseRequested(handler),
     },
   };

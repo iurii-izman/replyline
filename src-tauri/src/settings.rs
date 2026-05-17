@@ -81,7 +81,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     }
 }
 
-const CURRENT_SCHEMA_VERSION: u32 = 4;
+const CURRENT_SCHEMA_VERSION: u32 = 5;
 
 fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     let version = value
@@ -97,6 +97,9 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     }
     if version < 4 {
         migrate_v3_to_v4(&mut value);
+    }
+    if version < 5 {
+        migrate_v4_to_v5(&mut value);
     }
 
     value
@@ -129,6 +132,15 @@ fn migrate_v3_to_v4(value: &mut serde_json::Value) {
     }
 }
 
+fn migrate_v4_to_v5(value: &mut serde_json::Value) {
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("schemaVersion".to_string(), serde_json::json!(5));
+        obj.entry("windowOpacity").or_insert(serde_json::json!(100));
+        obj.entry("interviewCompactMode")
+            .or_insert(serde_json::json!(false));
+    }
+}
+
 pub fn save(settings: &AppSettings) -> Result<AppSettings, SettingsError> {
     validate(settings)?;
     let path = settings_path()?;
@@ -158,6 +170,9 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     if settings.selected_model_preset.trim().is_empty() {
         return Err(SettingsError::PartialConfigInvalid);
     }
+    if ![70u8, 80u8, 90u8, 100u8].contains(&settings.window_opacity) {
+        return Err(SettingsError::PartialConfigInvalid);
+    }
     Ok(())
 }
 
@@ -173,6 +188,8 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "selectedModelPreset",
         "captureMaxSeconds",
         "activeAnswerProfile",
+        "windowOpacity",
+        "interviewCompactMode",
     ] {
         if !obj.contains_key(key) {
             return Err(SettingsError::PartialConfigInvalid);
@@ -334,7 +351,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v1_settings_to_v4_with_default_profile_and_preset() {
+    fn migrates_v1_settings_to_v5_with_default_profile_and_preset() {
         let v1 = serde_json::json!({
             "schemaVersion": 1,
             "hotkey": "Ctrl+Alt+Space",
@@ -343,35 +360,41 @@ mod tests {
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
-        assert_eq!(migrated["schemaVersion"], 4);
+        assert_eq!(migrated["schemaVersion"], 5);
         assert_eq!(
             migrated["activeAnswerProfile"],
             crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
         );
         assert_eq!(migrated["selectedModelPreset"], "custom_openai_compatible");
+        assert_eq!(migrated["windowOpacity"], 100);
+        assert_eq!(migrated["interviewCompactMode"], false);
         // llmTemperature must NOT be injected — the field is not part of the current schema.
         assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
-    fn v4_settings_pass_through_unchanged() {
-        let v4 = serde_json::json!({
-            "schemaVersion": 4,
+    fn v5_settings_pass_through_unchanged() {
+        let v5 = serde_json::json!({
+            "schemaVersion": 5,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
             "selectedModelPreset": "openrouter_free_dev",
             "captureMaxSeconds": 30,
-            "activeAnswerProfile": "interview_concise"
+            "activeAnswerProfile": "interview_concise",
+            "windowOpacity": 90,
+            "interviewCompactMode": true
         });
-        let migrated = super::migrate_settings(v4);
-        assert_eq!(migrated["schemaVersion"], 4);
+        let migrated = super::migrate_settings(v5);
+        assert_eq!(migrated["schemaVersion"], 5);
         assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
         assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
         assert_eq!(migrated["llmModel"], "gpt-4o-mini");
         assert_eq!(migrated["selectedModelPreset"], "openrouter_free_dev");
         assert_eq!(migrated["captureMaxSeconds"], 30);
         assert_eq!(migrated["activeAnswerProfile"], "interview_concise");
+        assert_eq!(migrated["windowOpacity"], 90);
+        assert_eq!(migrated["interviewCompactMode"], true);
         // Schema-defined fields must remain; no phantom fields should appear.
         assert!(migrated.get("llmTemperature").is_none());
     }

@@ -18,12 +18,12 @@ import {
 
 export interface PipelineActionDeps {
   platform: AppPlatform;
-  card: Accessor<AnalysisCard | null>;
-  canCopySayNow: Accessor<boolean>;
+  canCopyCurrentCard: Accessor<boolean>;
+  copyText: Accessor<string>;
   strings: Accessor<UiStrings>;
   setError: Setter<string | null>;
   setPhase: Setter<Phase>;
-  setCard: Setter<AnalysisCard | null>;
+  setCard: (card: AnalysisCard | null) => void;
   setCaptureQuality: Setter<"short" | "normal" | "long">;
   setContextActive: Setter<boolean>;
   setStatusDetail: Setter<string | null>;
@@ -36,7 +36,7 @@ export interface PipelineActionDeps {
 export interface PipelineActions {
   clearContext: () => Promise<void>;
   retryAnalysis: () => Promise<void>;
-  copySection: (section: "sayNow") => Promise<void>;
+  copyCurrentCard: () => Promise<void>;
 }
 
 export function createPipelineActions(deps: PipelineActionDeps): PipelineActions {
@@ -104,10 +104,10 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
     }
   }
 
-  async function copySection(section: "sayNow") {
+  async function copyCurrentCard() {
     deps.setError(null);
-    const value = deps.card()?.[section]?.trim();
-    if (!value || !deps.canCopySayNow()) return;
+    const value = deps.copyText().trim();
+    if (!value || !deps.canCopyCurrentCard()) return;
     await deps.platform.clipboard.writeText(value);
     deps.notices.pushNotice({
       tone: "info",
@@ -115,5 +115,5 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
     });
   }
 
-  return { clearContext, retryAnalysis, copySection };
+  return { clearContext, retryAnalysis, copyCurrentCard };
 }

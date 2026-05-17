@@ -1,4 +1,4 @@
-import { createMemo, createSignal, type Accessor } from "solid-js";
+import { createEffect, createMemo, createSignal, type Accessor } from "solid-js";
 import { createStore } from "solid-js/store";
 import {
   type CandidatePackDraft,
@@ -27,6 +27,8 @@ import { createPipelineActions } from "./pipelineActions";
 import { setupLifecycle } from "./lifecycle";
 import { setupKeyboardShortcuts } from "./keyboardShortcuts";
 import { setupTraySync } from "./traySync";
+
+type InterviewCardKey = "answer" | "question" | "signals" | "risks" | "followUps" | "clarifier";
 
 export function useReplylineController(platform: AppPlatform) {
   // ── State ──────────────────────────────────────────────────────────────
@@ -80,6 +82,8 @@ export function useReplylineController(platform: AppPlatform) {
   );
   const [candidatePackPreparing, setCandidatePackPreparing] = createSignal(false);
   const [candidatePackSaving, setCandidatePackSaving] = createSignal(false);
+  const [activeInterviewCardIndex, setActiveInterviewCardIndex] = createSignal(0);
+  const [pinnedInterviewCard, setPinnedInterviewCard] = createSignal<InterviewCardKey | null>(null);
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -88,6 +92,50 @@ export function useReplylineController(platform: AppPlatform) {
     deepgramApiKey: "",
     llmApiKey: "",
   });
+
+  createEffect(() => {
+    const nextOpacity = settings.windowOpacity;
+    if (platform.window.setOpacity) {
+      void platform.window.setOpacity(nextOpacity / 100);
+    }
+  });
+
+  const interviewCarouselKeys = (nextCard: AnalysisCard | null): InterviewCardKey[] => {
+    if (nextCard?.mode !== "interview") return [];
+    const keys: InterviewCardKey[] = ["answer", "question", "signals", "risks", "followUps"];
+    if (nextCard.interview.clarifier?.needed) keys.push("clarifier");
+    return keys;
+  };
+
+  const applyIncomingCard = (nextCard: AnalysisCard | null) => {
+    setCard(nextCard);
+    if (nextCard?.mode !== "interview") {
+      setActiveInterviewCardIndex(0);
+      setPinnedInterviewCard(null);
+      return;
+    }
+    const keys = interviewCarouselKeys(nextCard);
+    const pinned = pinnedInterviewCard();
+    if (pinned) {
+      const pinnedIndex = keys.indexOf(pinned);
+      if (pinnedIndex >= 0) {
+        setActiveInterviewCardIndex(pinnedIndex);
+        return;
+      }
+      setPinnedInterviewCard(null);
+    }
+    setActiveInterviewCardIndex(0);
+  };
+
+  const clampInterviewCardIndex = (next: number) => {
+    const max = Math.max(0, interviewCarouselKeys(card()).length - 1);
+    return Math.min(Math.max(0, next), max);
+  };
+  const activeInterviewCardKeyNow = (): InterviewCardKey | null => {
+    const keys = interviewCarouselKeys(card());
+    if (!keys.length) return null;
+    return keys[clampInterviewCardIndex(activeInterviewCardIndex())] ?? keys[0] ?? null;
+  };
 
   // ── Derived ────────────────────────────────────────────────────────────
   const strings: Accessor<UiStrings> = createMemo(() => getUi(currentLanguage()));
@@ -130,7 +178,7 @@ export function useReplylineController(platform: AppPlatform) {
     setError,
     setPhase,
     setPanel,
-    setCard,
+    setCard: applyIncomingCard,
     setCaptureQuality,
     setContextActive,
     setSettings,
@@ -145,12 +193,34 @@ export function useReplylineController(platform: AppPlatform) {
   // ── Pipeline / context actions ─────────────────────────────────────────
   const pipelineActions = createPipelineActions({
     platform,
-    card,
-    canCopySayNow: selectors.canCopySayNow,
+    canCopyCurrentCard: selectors.canCopySayNow,
+    copyText: () => {
+      const currentCard = card();
+      if (!currentCard) return "";
+      if (currentCard.mode !== "interview") return currentCard.sayNow ?? "";
+      switch (activeInterviewCardKeyNow()) {
+        case "answer":
+          return currentCard.interview.answer.main ?? "";
+        case "question":
+          return currentCard.interview.question.cleanQuestion ?? "";
+        case "signals":
+          return currentCard.interview.signals.mustMention.join(" • ");
+        case "risks":
+          return currentCard.interview.risks.safeReframe.join(" • ");
+        case "followUps":
+          return currentCard.interview.followUps
+            .map((item) => `${item.question} (${item.bridgeAnswer})`)
+            .join("\n");
+        case "clarifier":
+          return currentCard.interview.clarifier?.question ?? "";
+        default:
+          return currentCard.interview.answer.main ?? "";
+      }
+    },
     strings,
     setError,
     setPhase,
-    setCard,
+    setCard: applyIncomingCard,
     setCaptureQuality,
     setContextActive,
     setStatusDetail,
@@ -194,7 +264,7 @@ export function useReplylineController(platform: AppPlatform) {
     setStatusDetail,
     setContextActive,
     setContextEntryCount,
-    setCard,
+    setCard: applyIncomingCard,
     notices,
     settingsActions,
     showWindow,
@@ -202,10 +272,16 @@ export function useReplylineController(platform: AppPlatform) {
 
   setupKeyboardShortcuts({
     panel,
-    canCopySayNow: selectors.canCopySayNow,
+    canCopyCurrentCard: selectors.canCopySayNow,
     canRetry: selectors.canRetry,
-    copySection: pipelineActions.copySection,
+    copyCurrentCard: pipelineActions.copyCurrentCard,
     retryAnalysis: pipelineActions.retryAnalysis,
+    nextInterviewCard: () =>
+      setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current + 1)),
+    prevInterviewCard: () =>
+      setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current - 1)),
+    selectInterviewCardByNumber: (number) =>
+      setActiveInterviewCardIndex(clampInterviewCardIndex(number - 1)),
     dismissNotice: notices.dismissNotice,
     setError,
   });
@@ -339,6 +415,20 @@ export function useReplylineController(platform: AppPlatform) {
       setCandidatePackSaving(false);
     }
   }
+  const interviewCardKeys = createMemo(() => interviewCarouselKeys(card()));
+  const activeInterviewCardKey = createMemo<InterviewCardKey | null>(() => activeInterviewCardKeyNow());
+  const compactMode = createMemo(() => settings.interviewCompactMode);
+  const setWindowOpacity = async (value: AppSettings["windowOpacity"]) => {
+    setSettings("windowOpacity", value);
+    if (platform.window.setOpacity) {
+      await platform.window.setOpacity(value / 100);
+    }
+  };
+  const togglePinInterviewCard = () => {
+    const active = activeInterviewCardKey();
+    if (!active) return;
+    setPinnedInterviewCard((current) => (current === active ? null : active));
+  };
 
   return {
     strings,
@@ -371,6 +461,11 @@ export function useReplylineController(platform: AppPlatform) {
     candidatePackPreview,
     candidatePackPreparing,
     candidatePackSaving,
+    activeInterviewCardIndex,
+    activeInterviewCardKey,
+    interviewCardKeys,
+    pinnedInterviewCard,
+    compactMode,
     checkRuntimeConfig: async () => {
       setRuntimeCheckRunning(true);
       setRuntimeCheckResult(null);
@@ -392,7 +487,7 @@ export function useReplylineController(platform: AppPlatform) {
     persistSettings: settingsActions.persistSettings,
     clearContext: pipelineActions.clearContext,
     retryAnalysis: pipelineActions.retryAnalysis,
-    copySection: pipelineActions.copySection,
+    copyCurrentCard: pipelineActions.copyCurrentCard,
     toggleSettingsPanel: () => setPanel(panel() === "settings" ? "main" : "settings"),
     openSettingsPanel: () => setPanel("settings"),
     openMainPanel: () => setPanel("main"),
@@ -412,6 +507,12 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmApiKeyDraft: (value: string) => setDraftSecrets("llmApiKey", value),
     setLlmBaseUrl: (value: string) => setSettings("llmBaseUrl", value),
     setLlmModel: (value: string) => setSettings("llmModel", value),
+    setWindowOpacity,
+    setCompactMode: (value: boolean) => setSettings("interviewCompactMode", value),
+    selectInterviewCardIndex: (index: number) => setActiveInterviewCardIndex(clampInterviewCardIndex(index)),
+    nextInterviewCard: () => setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current + 1)),
+    prevInterviewCard: () => setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current - 1)),
+    togglePinInterviewCard,
     setSelectedModelPreset: (value: string) => {
       const preset = resolveModelPreset(value);
       setSettings("selectedModelPreset", preset.id);
