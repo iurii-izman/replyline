@@ -1,6 +1,8 @@
 use super::deepgram;
 use crate::audio::encode_wav;
 use crate::capture_debug;
+use crate::diag_contract::{RL_STT_REQUEST_TIMED, RL_WAV_ENCODING_TIMED};
+use crate::pipeline_timing::{PipelineTimer, StageTiming};
 use crate::privacy;
 use crate::types::AppSettings;
 
@@ -8,11 +10,21 @@ pub async fn transcribe(
     settings: &AppSettings,
     deepgram_key: &str,
     pcm: &[i16],
-) -> Result<String, String> {
+) -> Result<(String, Vec<StageTiming>), String> {
+    let mut stages: Vec<StageTiming> = Vec::new();
+
+    let wav_timer = PipelineTimer::start();
     let wav = encode_wav(pcm);
+    stages.push(wav_timer.measure("wav_encoding", "ok", RL_WAV_ENCODING_TIMED));
+
+    let stt_timer = PipelineTimer::start();
     match deepgram::transcribe_wav(settings, deepgram_key, &wav).await {
-        Ok(t) => Ok(t),
+        Ok(t) => {
+            stages.push(stt_timer.measure("stt_request", "ok", RL_STT_REQUEST_TIMED));
+            Ok((t, stages))
+        }
         Err(err) => {
+            stages.push(stt_timer.measure("stt_request", "fail", RL_STT_REQUEST_TIMED));
             // R3 safe_preview: err may contain Deepgram response details;
             // keep it safe in case raw response text ever gets appended.
             let safe_err = privacy::safe_preview(&err, 300);

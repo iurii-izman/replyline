@@ -18,7 +18,8 @@
 
 Одной командой (эквивалент пунктов 1–4 ниже):
 
-- `pnpm alpha:preflight`
+- `pnpm beta:preflight`
+  (`pnpm alpha:preflight` — deprecated alias for compatibility)
 
 Или по шагам:
 
@@ -26,6 +27,7 @@
 2. `pnpm runtime:preflight`
 3. `pnpm probe:runtime`
 4. `pnpm evidence:bundle`
+5. `pnpm check:slo`
 
 Если любой шаг красный -> фиксируем blocker, дальше не идём.
 

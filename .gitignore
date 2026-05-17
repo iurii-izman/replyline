@@ -4,6 +4,12 @@ src-tauri/target
 *.log
 reports
 .vscode
+.idea
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.orig
 
 # Build / test artefacts
 coverage/
@@ -15,6 +21,19 @@ msedgedriver.exe
 # Personal / AI-assistant config (not project code)
 AI/
 .claude/
+.codex/
+.roo/
+
+# Local-only internal artifacts kept out of GitHub footprint
+.windsurf/
+.zed/
+docs/archive/
+docs-cleanup-task.md
+infra/
+postman/
+scratch/
+tests/api/postman/
+test-out.txt
 
 # Secrets — never commit
 .env

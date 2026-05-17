@@ -15,6 +15,12 @@ pub const RL_CARD_INVALID: &str = "RL_CARD_INVALID";
 pub const RL_ANALYSIS_OK: &str = "RL_ANALYSIS_OK";
 pub const RL_RETRY_EMPTY: &str = "RL_RETRY_EMPTY";
 pub const RL_RETRY_OK: &str = "RL_RETRY_OK";
+pub const RL_TIMING_SUMMARY: &str = "RL_TIMING_SUMMARY";
+pub const RL_CAPTURE_STOP_TIMED: &str = "RL_CAPTURE_STOP_TIMED";
+pub const RL_WAV_ENCODING_TIMED: &str = "RL_WAV_ENCODING_TIMED";
+pub const RL_STT_REQUEST_TIMED: &str = "RL_STT_REQUEST_TIMED";
+pub const RL_LLM_REQUEST_TIMED: &str = "RL_LLM_REQUEST_TIMED";
+pub const RL_CARD_NORM_TIMED: &str = "RL_CARD_NORM_TIMED";
 
 #[cfg(test)]
 mod tests {
@@ -39,12 +45,18 @@ mod tests {
             RL_ANALYSIS_OK,
             RL_RETRY_EMPTY,
             RL_RETRY_OK,
+            RL_TIMING_SUMMARY,
+            RL_CAPTURE_STOP_TIMED,
+            RL_WAV_ENCODING_TIMED,
+            RL_STT_REQUEST_TIMED,
+            RL_LLM_REQUEST_TIMED,
+            RL_CARD_NORM_TIMED,
         ];
         let mut seen = HashSet::new();
         for code in codes {
             assert!(code.starts_with("RL_"), "code must keep RL_ prefix: {code}");
             assert!(seen.insert(code), "duplicate diagnostic code: {code}");
         }
-        assert_eq!(codes.len(), 15);
+        assert_eq!(codes.len(), 21);
     }
 }

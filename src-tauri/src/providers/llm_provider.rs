@@ -1,5 +1,7 @@
 use crate::card_v3::CardQualityFlags;
+use crate::diag_contract::{RL_CARD_NORM_TIMED, RL_LLM_REQUEST_TIMED};
 use crate::llm;
+use crate::pipeline_timing::{PipelineTimer, StageTiming};
 use crate::types::{AnalysisCardDto, AppSettings};
 
 use super::openai_compatible;
@@ -13,6 +15,8 @@ pub struct CardGenerationOutcome {
     pub retry_success: bool,
     #[allow(dead_code)]
     pub quality: CardQualityFlags,
+    pub llm_stage_timings: Vec<StageTiming>,
+    pub card_norm_timing: Option<StageTiming>,
 }
 
 /// Analyze a transcript using the configured LLM provider and return a
@@ -27,6 +31,8 @@ pub async fn analyze_transcript(
     context: &str,
 ) -> Result<CardGenerationOutcome, String> {
     let language = crate::language_profile::llm_language().to_string();
+    let mut all_timings: Vec<StageTiming> = Vec::new();
+    let llm_timer = PipelineTimer::start();
     let (raw_text, parse_or_request_err) = request_card_with_prompt(
         settings,
         api_key,
@@ -37,14 +43,23 @@ pub async fn analyze_transcript(
         llm::PRIMARY_MAX_TOKENS,
     )
     .await?;
+    all_timings.push(llm_timer.measure("llm_request", "ok", RL_LLM_REQUEST_TIMED));
+    let norm_timer = PipelineTimer::start();
     match llm::normalize_from_raw(&raw_text, transcript) {
-        Ok((card, quality)) => Ok(CardGenerationOutcome {
-            card,
-            retry_attempted: false,
-            retry_success: false,
-            quality,
-        }),
+        Ok((card, quality)) => {
+            let norm_timing = norm_timer.measure("card_normalization", "ok", RL_CARD_NORM_TIMED);
+            Ok(CardGenerationOutcome {
+                card,
+                retry_attempted: false,
+                retry_success: false,
+                quality,
+                llm_stage_timings: all_timings,
+                card_norm_timing: Some(norm_timing),
+            })
+        }
         Err(err) if err.contains("Card output invalid:") && MAX_CARD_RETRY_ATTEMPTS > 0 => {
+            let _ = norm_timer.measure("card_normalization", "fail", RL_CARD_NORM_TIMED);
+            let retry_llm_timer = PipelineTimer::start();
             let (retry_raw_text, _parse_or_request_err) = request_card_with_prompt(
                 settings,
                 api_key,
@@ -57,19 +72,33 @@ pub async fn analyze_transcript(
                 llm::RETRY_MAX_TOKENS,
             )
             .await?;
+            all_timings.push(retry_llm_timer.measure(
+                "llm_request_retry",
+                "ok",
+                RL_LLM_REQUEST_TIMED,
+            ));
+            let retry_norm_timer = PipelineTimer::start();
             let (card, quality) = llm::normalize_from_raw(&retry_raw_text, transcript)
                 .map_err(|retry_err| format!("{err} | retry_failed: {retry_err}"))?;
+            let retry_norm_timing =
+                retry_norm_timer.measure("card_normalization_retry", "ok", RL_CARD_NORM_TIMED);
             Ok(CardGenerationOutcome {
                 card,
                 retry_attempted: true,
                 retry_success: true,
                 quality,
+                llm_stage_timings: all_timings,
+                card_norm_timing: Some(retry_norm_timing),
             })
         }
         Err(err) if err.contains("LLM returned invalid JSON") => {
+            let _ = norm_timer.measure("card_normalization", "fail", RL_CARD_NORM_TIMED);
             Err(format!("{parse_or_request_err}{err}"))
         }
-        Err(err) => Err(err),
+        Err(err) => {
+            let _ = norm_timer.measure("card_normalization", "fail", RL_CARD_NORM_TIMED);
+            Err(err)
+        }
     }
 }
 

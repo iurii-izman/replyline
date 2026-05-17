@@ -4,6 +4,7 @@
 
 ## Read first
 
+- [beta-readiness.md](beta-readiness.md)
 - [verification-lanes.md](verification-lanes.md)
 - [runtime-bringup.md](runtime-bringup.md)
 - [runtime-evidence.md](runtime-evidence.md)
@@ -25,10 +26,6 @@
 - [known-limitations.md](known-limitations.md)
 - [third-party-providers.md](third-party-providers.md)
 - [prompt-contract-lane.md](prompt-contract-lane.md)
-
-## Archived strategy docs
-
-- [archive/strategic/README.md](archive/strategic/README.md)
 
 ## Internal reference
 

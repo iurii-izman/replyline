@@ -30,6 +30,23 @@ $runtimeJson = @($files | Where-Object {
   $_.FullName.StartsWith($runtimeDir) -and $_.Extension -eq ".json" -and $_.Name -notlike "latency-comparison.json"
 })
 
+$latencySummaryGenerated = $false
+$latencySummaryPath = Join-Path $runtimeDir "pipeline-latency-summary.json"
+if (Test-Path $logPath) {
+  try {
+    $parseResult = & node --no-warnings (Join-Path $root "scripts\parse-pipeline-latency.mjs") 2>&1
+    if ($LASTEXITCODE -eq 0 -and (Test-Path $latencySummaryPath)) {
+      $latencySummaryGenerated = $true
+      $files += Get-Item -Path $latencySummaryPath
+    } else {
+      Write-Host "Latency parser note: $parseResult" -ForegroundColor DarkGray
+    }
+  } catch {
+    Write-Host "Latency parser skipped." -ForegroundColor DarkGray
+  }
+}
+$files = @($files | Sort-Object FullName -Unique)
+
 foreach ($file in $files) {
   Copy-Item -Path $file.FullName -Destination (Join-Path $bundleDir $file.Name) -Force
 }
@@ -43,11 +60,13 @@ $manifest = [ordered]@{
   copiedFileCount = $files.Count
   logIncluded = (Test-Path $logPath)
   runtimeArtifactsOptional = $true
+  latencySummaryGenerated = $latencySummaryGenerated
   files = @($files | ForEach-Object { $_.Name })
   provenanceNotes = @(
     "Runtime artifacts are copied only from a detected local Replyline workspace reports/runtime directory."
     "App log is included when available, even if no nearby repo runtime artifacts exist."
     "Bundle location may fall back to the installed app support-bundles directory outside the repo."
+    "Pipeline latency summary is auto-generated from app_log pipeline_timing events when app.log is available."
   )
   benchmarkLabels = @{
     target = "intended design goal without local runtime artifact"
@@ -57,7 +76,8 @@ $manifest = [ordered]@{
   honesty = @{
     proves = @(
       "local provider path worked",
-      "local capture->transcript->card timing was recorded"
+      "local capture->transcript->card timing was recorded",
+      "pipeline stage latency summary exists when parser succeeded"
     )
     does_not_prove = @(
       "same behavior on every workstation",
@@ -71,3 +91,6 @@ $manifest | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $bundleDir "m
 
 Write-Host "Runtime evidence bundle created:" -ForegroundColor Green
 Write-Host $bundleDir
+if ($latencySummaryGenerated) {
+  Write-Host "  (pipeline latency summary included)" -ForegroundColor Green
+}

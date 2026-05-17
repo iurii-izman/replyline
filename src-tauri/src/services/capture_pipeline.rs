@@ -6,10 +6,11 @@ use crate::app_log;
 use crate::credentials;
 use crate::diag_contract::{
     RL_ANALYSIS_OK, RL_CAPTURE_JOIN_FAILED, RL_CAPTURE_NOT_ACTIVE, RL_CAPTURE_READY,
-    RL_CAPTURE_START, RL_CAPTURE_STOP_FAILED, RL_LLM_OK, RL_RETRY_EMPTY, RL_RETRY_OK,
-    RL_STT_FAILED, RL_STT_KEY_MISSING, RL_STT_OK, RL_STT_TOO_SHORT,
+    RL_CAPTURE_START, RL_CAPTURE_STOP_FAILED, RL_CAPTURE_STOP_TIMED, RL_LLM_OK, RL_RETRY_EMPTY,
+    RL_RETRY_OK, RL_STT_FAILED, RL_STT_KEY_MISSING, RL_STT_OK, RL_STT_TOO_SHORT, RL_TIMING_SUMMARY,
 };
 use crate::llm;
+use crate::pipeline_timing::{self, PipelineTimer, StageTiming};
 use crate::providers::llm_provider;
 use crate::providers::stt_provider;
 use crate::services::pipeline_errors;
@@ -74,21 +75,38 @@ pub async fn capture_stop_and_analyze(
         &crate::tray_status::tooltip_for_phase(lang, "transcribing", None),
     );
 
-    let pcm = tauri::async_runtime::spawn_blocking(move || capture_run.stop())
-        .await
-        .map_err(|_| {
-            let _ = log_diag(
-                "capture",
-                "fail",
-                RL_CAPTURE_JOIN_FAILED,
-                "capture join failed",
-            );
-            CommandError::Capture("Capture join failed".to_string())
-        })?
-        .map_err(|err| {
-            let _ = log_diag("capture", "fail", RL_CAPTURE_STOP_FAILED, &err);
-            CommandError::Capture(err)
-        })?;
+    let pipeline_timer = PipelineTimer::start();
+    let mut stage_timings: Vec<StageTiming> = Vec::new();
+
+    let (pcm, capture_stop_timing) = tauri::async_runtime::spawn_blocking(move || {
+        let stop_timer = PipelineTimer::start();
+        let result = capture_run.stop();
+        let outcome = if result.is_ok() { "ok" } else { "fail" };
+        let code = if result.is_ok() {
+            RL_CAPTURE_STOP_TIMED
+        } else {
+            RL_CAPTURE_STOP_FAILED
+        };
+        let timing = stop_timer.measure("capture_stop", outcome, code);
+        (result, timing)
+    })
+    .await
+    .map_err(|_| {
+        let _ = log_diag(
+            "capture",
+            "fail",
+            RL_CAPTURE_JOIN_FAILED,
+            "capture join failed",
+        );
+        CommandError::Capture("Capture join failed".to_string())
+    })?;
+    let _ = pipeline_timing::log_stage_timing(&capture_stop_timing);
+    stage_timings.push(capture_stop_timing);
+
+    let pcm = pcm.map_err(|err| {
+        let _ = log_diag("capture", "fail", RL_CAPTURE_STOP_FAILED, &err);
+        CommandError::Capture(err)
+    })?;
     let _ = log_diag(
         "capture",
         "ok",
@@ -104,16 +122,21 @@ pub async fn capture_stop_and_analyze(
     })?;
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
 
-    let transcript = match stt_provider::transcribe(&settings, &deepgram_key, &pcm).await {
-        Ok(t) => t,
-        Err(err) => {
-            let event = "analysis_stt_failed";
-            let _ = app_log::append_event(event, &err);
-            let code = RL_STT_FAILED;
-            let _ = log_diag("stt", "fail", code, &err);
-            return Err(CommandError::Pipeline(err));
-        }
-    };
+    let (transcript, stt_stages) =
+        match stt_provider::transcribe(&settings, &deepgram_key, &pcm).await {
+            Ok(value) => value,
+            Err(err) => {
+                let event = "analysis_stt_failed";
+                let _ = app_log::append_event(event, &err);
+                let code = RL_STT_FAILED;
+                let _ = log_diag("stt", "fail", code, &err);
+                return Err(CommandError::Pipeline(err));
+            }
+        };
+    for timing in &stt_stages {
+        let _ = pipeline_timing::log_stage_timing(timing);
+    }
+    stage_timings.extend(stt_stages);
     let transcript_chars = transcript.chars().count();
     let chars_band = llm::chars_band(&transcript);
     let _ = app_log::append_event(
@@ -186,6 +209,14 @@ pub async fn capture_stop_and_analyze(
         }
     };
     let card = outcome.card;
+    for timing in &outcome.llm_stage_timings {
+        let _ = pipeline_timing::log_stage_timing(timing);
+    }
+    stage_timings.extend(outcome.llm_stage_timings);
+    if let Some(ref norm_timing) = outcome.card_norm_timing {
+        let _ = pipeline_timing::log_stage_timing(norm_timing);
+        stage_timings.push(norm_timing.clone());
+    }
     if outcome.retry_attempted {
         let _ = app_log::append_event(
             "card_retry_attempt",
@@ -230,6 +261,9 @@ pub async fn capture_stop_and_analyze(
     );
     let _ = app_log::append_event("analysis_ok", "card_ready");
     let _ = log_diag("card", "ok", RL_ANALYSIS_OK, "card_ready");
+    let release_to_card = pipeline_timer.measure("release_to_card", "ok", RL_TIMING_SUMMARY);
+    let _ = pipeline_timing::log_stage_timing(&release_to_card);
+    stage_timings.push(release_to_card);
     Ok(card)
 }
 

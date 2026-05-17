@@ -10,12 +10,18 @@ use std::time::{Duration, Instant};
 use chrono::Utc;
 use serde::Serialize;
 
+#[path = "../app_log.rs"]
+mod app_log;
 #[path = "../audio.rs"]
 mod audio;
+#[path = "../capture_debug.rs"]
+mod capture_debug;
 #[path = "../card_v3.rs"]
 mod card_v3;
 #[path = "../providers/deepgram.rs"]
 mod deepgram;
+#[path = "../diag_contract.rs"]
+mod diag_contract;
 #[path = "../fs_atomic.rs"]
 mod fs_atomic;
 #[path = "../language_profile.rs"]
@@ -26,6 +32,10 @@ mod llm;
 mod llm_provider;
 #[path = "../providers/openai_compatible.rs"]
 mod openai_compatible;
+#[path = "../pipeline_timing.rs"]
+mod pipeline_timing;
+#[path = "../privacy.rs"]
+mod privacy;
 #[path = "../settings.rs"]
 mod settings;
 #[path = "../types.rs"]

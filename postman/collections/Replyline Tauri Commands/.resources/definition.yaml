@@ -1,7 +1,0 @@
-$kind: collection
-name: 'Replyline Tauri Commands'
-description: 'Reference collection generated from Tauri IPC commands implemented in src-tauri/src/commands.rs and registered in src-tauri/src/lib.rs. These are app-internal invoke commands, modeled here as HTTP-style reference requests for documentation and testing setup.'
-variables:
-  - key: commandBaseUrl
-    value: 'http://localhost:3000'
-    description: 'Placeholder base URL for any future HTTP bridge or mock layer over Tauri commands.'

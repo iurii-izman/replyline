@@ -76,7 +76,7 @@
     "smoke": "pnpm typecheck && pnpm lint && pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo test --manifest-path src-tauri/Cargo.toml && pnpm test:ui && pnpm test:consistency && pnpm test:ipc-contract && pnpm test:locale-keys && pnpm test:prompt-contract && pnpm copy:check",
     "verify": "pnpm smoke && pnpm test:security-lanes",
     "verify:extended": "pnpm verify && pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:say-now-scenarios",
-    "test:api:postman": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage newman --exec pnpm -- exec newman run tests/api/postman/Replyline.postman_collection.json -e tests/api/postman/Replyline.local.postman_environment.json",
+    "test:api:postman": "node scripts/run-optional-lane.mjs --tool postman --checkPath tests/api/postman/Replyline.postman_collection.json --checkPackage newman --exec pnpm -- exec newman run tests/api/postman/Replyline.postman_collection.json -e tests/api/postman/Replyline.local.postman_environment.json",
     "test:e2e:web": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage playwright --exec pnpm -- exec playwright test",
     "test:e2e:web:ui": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage playwright --exec pnpm -- exec playwright test --ui",
     "test:e2e:desktop": "pnpm exec wdio run tests/e2e/desktop/wdio.tauri.conf.mjs",
@@ -96,6 +96,8 @@
     "release:freeze:check:strict": "node scripts/check-release-freeze.mjs --strict",
     "probe:soak": "pwsh -File scripts/runtime-soak.ps1",
     "check:slo": "node scripts/check-slo-budget.mjs",
+    "parse:latency": "node scripts/parse-pipeline-latency.mjs",
+    "test:latency-parser": "node scripts/parse-pipeline-latency.test.mjs",
     "report:card-quality": "node scripts/runtime-card-quality-report.mjs"
   },
   "license": "MIT",

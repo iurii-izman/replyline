@@ -18,8 +18,8 @@
 Replyline keeps one API stack: **Postman/Newman**.
 
 - API smoke: `pnpm test:api:postman`
-- Collection path: `tests/api/postman/Replyline.postman_collection.json`
-- Environment path: `tests/api/postman/Replyline.local.postman_environment.json`
+- In this minimal public footprint, Postman collection/environment files may remain local-only.
+- If local Postman files are absent, `pnpm test:api:postman` exits with `SKIP` and does not fail the pipeline.
 
 Bruno assets and scripts were removed to avoid duplicate maintenance.
 

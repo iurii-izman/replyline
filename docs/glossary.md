@@ -18,7 +18,7 @@
 ## D
 
 - **Deepgram** — текущий STT провайдер. Поддерживается batch и streaming, default = batch.
-- **archive/strategic/** — архив стратегических и roadmap-документов, вынесенных из active beta-readiness контура.
+- **archive/strategic/** — локальный архив стратегических/roadmap-документов вне минимального публичного GitHub footprint.
 
 ## E
 

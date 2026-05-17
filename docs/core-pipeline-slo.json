@@ -3,7 +3,43 @@
   "corePipeline": {
     "releaseToCardP95Ms": 12000,
     "pipelineFailPercentMax": 5,
-    "retryPercentMax": 15
+    "retryPercentMax": 15,
+    "stages": {
+      "capture_stop": {
+        "p50TargetMs": 500,
+        "p95TargetMs": 1500,
+        "maxFailuresPercent": 5
+      },
+      "wav_encoding": {
+        "p50TargetMs": 10,
+        "p95TargetMs": 50,
+        "maxFailuresPercent": 1
+      },
+      "stt_request": {
+        "p50TargetMs": 2000,
+        "p95TargetMs": 5000,
+        "maxFailuresPercent": 5
+      },
+      "llm_request": {
+        "p50TargetMs": 1500,
+        "p95TargetMs": 4000,
+        "maxFailuresPercent": 5
+      },
+      "card_normalization": {
+        "p50TargetMs": 50,
+        "p95TargetMs": 200,
+        "maxFailuresPercent": 2
+      },
+      "release_to_card": {
+        "p50TargetMs": 5000,
+        "p95TargetMs": 12000,
+        "maxFailuresPercent": 5
+      }
+    },
+    "fixture_probe": {
+      "maxAllowedFailures": 1,
+      "maxAllowedRetriesPerFixture": 3
+    }
   },
   "classification": {
     "blocker": [

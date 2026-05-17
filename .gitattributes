@@ -1,0 +1,19 @@
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.svg -text
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+
+# Keep release archives leaner for external consumers.
+docs/archive/** export-ignore
+scratch/** export-ignore
+infra/** export-ignore

@@ -9,9 +9,17 @@ Replyline keeps runtime evidence local. The goal is to avoid "it probably works"
 - `pnpm probe:bench`
   writes multiple JSON reports plus one Markdown comparison table.
 - `pnpm evidence:bundle`
-  creates one timestamped folder containing copied runtime reports and a manifest.
-- `pnpm alpha:handoff`
-  creates one timestamped `reports/alpha-handoff-*` folder that composes runtime evidence, manual smoke template, and benchmark scaffold references for machine-local handoff.
+  creates one timestamped folder containing copied runtime reports, a manifest,
+  and auto-generated `pipeline-latency-summary.json` (when app log is available).
+- `pnpm parse:latency`
+  parses `pipeline_timing` events from app log into
+  `reports/runtime/pipeline-latency-summary.json`.
+- `pnpm check:slo`
+  validates global probe metrics plus per-stage latency targets from
+  `docs/core-pipeline-slo.json` when stage data is available.
+- `pnpm beta:handoff`
+  creates one timestamped `reports/beta-handoff-*` folder that composes runtime evidence, manual smoke template, and benchmark scaffold references for machine-local handoff.
+  `pnpm alpha:handoff` remains a deprecated compatibility alias.
 
 Note:
 
@@ -34,6 +42,25 @@ At least one runtime JSON report should contain:
 - final card with `gist / say_now / next_move`
 
 ## Latency budgets (stable-beta operating targets)
+
+### Pipeline stage targets
+
+Per-stage targets are defined in `docs/core-pipeline-slo.json` under `corePipeline.stages`.
+Timing data is extracted from app log (`pipeline_timing` events) via `pnpm parse:latency`.
+
+| Stage              | p50 target |  p95 target |
+| ------------------ | ---------: | ----------: |
+| capture_stop       |  <= 500 ms |  <= 1500 ms |
+| wav_encoding       |   <= 10 ms |    <= 50 ms |
+| stt_request        | <= 2000 ms |  <= 5000 ms |
+| llm_request        | <= 1500 ms |  <= 4000 ms |
+| card_normalization |   <= 50 ms |   <= 200 ms |
+| release_to_card    | <= 5000 ms | <= 12000 ms |
+
+Fixture/probe gate policy:
+- `maxAllowedFailures` lives in `corePipeline.fixture_probe.maxAllowedFailures`.
+- `check:slo` applies this to `probe:soak` failure count when `soak-summary.json` exists.
+- If `soak-summary.json` or parsed stage summary is absent, `check:slo` enters documented fallback mode and prints required follow-up commands.
 
 These are engineering targets used for trend tracking, not universal guarantees:
 
@@ -71,8 +98,9 @@ Bundle acceptance:
 
 - `reports/runtime/*.json` (runtime probe reports)
 - `reports/runtime/*.md` (runtime comparison tables)
+- `reports/runtime/pipeline-latency-summary.json` (per-stage latency summary from `app.log`)
 - `reports/runtime-evidence-*/manifest.json` (timestamped evidence bundles)
-- `reports/alpha-handoff-*/manifest.json` (compact alpha handoff manifest)
+- `reports/beta-handoff-*/manifest.json` (compact beta handoff manifest)
 
 ## See also
 

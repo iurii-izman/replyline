@@ -9,6 +9,7 @@ mod diag_contract;
 mod fs_atomic;
 mod language_profile;
 mod llm;
+mod pipeline_timing;
 mod privacy;
 mod providers;
 mod services;
