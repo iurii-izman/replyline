@@ -27,6 +27,7 @@
 - [known-limitations.md](known-limitations.md)
 - [third-party-providers.md](third-party-providers.md)
 - [prompt-contract-lane.md](prompt-contract-lane.md)
+- [interview-golden-dataset-v1.md](interview-golden-dataset-v1.md)
 
 ## Internal reference
 

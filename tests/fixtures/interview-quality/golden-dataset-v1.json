@@ -1,0 +1,1011 @@
+[
+  {
+    "id": "iqv1-01-tell-yourself",
+    "scenario": "Tell me about yourself",
+    "transcript": "Interviewer: Tell me about yourself and your background.",
+    "candidatePack": {
+      "resumeFacts": [
+        "5 years in B2B SaaS",
+        "led onboarding redesign"
+      ],
+      "company": "Replyline"
+    },
+    "expected": {
+      "questionType": "intro",
+      "mustMention": [
+        "B2B SaaS"
+      ],
+      "mustNotMention": [
+        "childhood"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": true,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "intro",
+      "answer": {
+        "main": "I have five years in B2B SaaS, mostly in product operations and customer onboarding. In my last role I led an onboarding redesign that reduced time-to-value, and I now focus on high-ambiguity execution with cross-functional teams."
+      },
+      "hints": [
+        "Lead with role-relevant scope, not full biography."
+      ],
+      "signals": [
+        "Maps prior work to this interview context."
+      ],
+      "resumeAnchor": "5 years in B2B SaaS; led onboarding redesign"
+    }
+  },
+  {
+    "id": "iqv1-02-why-company",
+    "scenario": "Why this company?",
+    "transcript": "Interviewer: Why do you want to work at Replyline?",
+    "candidatePack": {
+      "company": "Replyline",
+      "companyValues": [
+        "clarity",
+        "craft",
+        "speed"
+      ]
+    },
+    "expected": {
+      "questionType": "motivation",
+      "mustMention": [
+        "Replyline"
+      ],
+      "mustNotMention": [
+        "any company"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "motivation",
+      "answer": {
+        "main": "I want to join Replyline because the product solves a real communication pain point, and your clarity-plus-craft culture matches how I work. I prefer teams that ship quickly with strong quality bars, which is exactly how your public engineering notes read."
+      },
+      "hints": [
+        "Connect motivation to concrete company context."
+      ],
+      "signals": [
+        "Shows informed intent, not generic enthusiasm."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-03-why-role",
+    "scenario": "Why this role?",
+    "transcript": "Interviewer: Why this role specifically?",
+    "candidatePack": {
+      "resumeFacts": [
+        "shipped workflow automations",
+        "owns incident retrospectives"
+      ]
+    },
+    "expected": {
+      "questionType": "motivation",
+      "mustMention": [
+        "workflow automations"
+      ],
+      "mustNotMention": [
+        "I just need a job"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": true,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "motivation",
+      "answer": {
+        "main": "This role is a fit because it combines operational rigor and product judgment, which I use daily in workflow automations and incident follow-through. I like roles where I can turn ambiguous problems into clear plans and measurable execution."
+      },
+      "hints": [
+        "Tie role scope to proven work patterns."
+      ],
+      "signals": [
+        "Demonstrates intent aligned to role mechanics."
+      ],
+      "resumeAnchor": "shipped workflow automations"
+    }
+  },
+  {
+    "id": "iqv1-04-conflict",
+    "scenario": "Conflict with colleague",
+    "transcript": "Interviewer: Tell me about a conflict with a colleague.",
+    "candidatePack": {
+      "resumeFacts": [
+        "partnered with design and engineering"
+      ]
+    },
+    "expected": {
+      "questionType": "behavioral",
+      "mustMention": [
+        "situation",
+        "action",
+        "result"
+      ],
+      "mustNotMention": [
+        "they were incompetent"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "behavioral",
+      "answer": {
+        "main": "Situation: design and engineering disagreed on scope before release. Task: I needed alignment without slipping delivery. Action: I ran a decision session with tradeoff framing, agreed owner-level decisions, and documented acceptance criteria. Result: we shipped on time and reduced reopening in the next sprint."
+      },
+      "hints": [
+        "Use STAR explicitly for conflict prompts."
+      ],
+      "signals": [
+        "Shows collaboration over blame."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-05-missed-deadline",
+    "scenario": "Missed deadline",
+    "transcript": "Interviewer: Describe a time you missed a deadline.",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "behavioral",
+      "mustMention": [
+        "what I learned"
+      ],
+      "mustNotMention": [
+        "not my fault"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "behavioral",
+      "answer": {
+        "main": "Situation: I underestimated integration risk and missed a target date. Task: recover trust and deliver safely. Action: I communicated impact early, reset scope with stakeholders, and added risk checkpoints for future plans. Result: we recovered with a stable launch, and what I learned was to front-load dependency mapping."
+      },
+      "hints": [
+        "Own the miss and show control actions."
+      ],
+      "signals": [
+        "Demonstrates accountability and process learning."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-06-leadership",
+    "scenario": "Leadership example",
+    "transcript": "Interviewer: Give me an example of leadership.",
+    "candidatePack": {
+      "resumeFacts": [
+        "mentored two junior PMs"
+      ]
+    },
+    "expected": {
+      "questionType": "behavioral",
+      "mustMention": [
+        "action",
+        "result"
+      ],
+      "mustNotMention": [
+        "I just told people what to do"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "behavioral",
+      "answer": {
+        "main": "Situation: ownership was fragmented across two teams during a critical launch. Task: create alignment and clear execution. Action: I set a joint operating cadence, clarified owners, and mentored two newer PMs on decision framing. Result: we improved handoffs and delivered the launch with fewer cross-team blockers."
+      },
+      "hints": [
+        "Frame leadership as influence plus structure."
+      ],
+      "signals": [
+        "Balances team enablement with delivery outcomes."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-07-failure",
+    "scenario": "Failure example",
+    "transcript": "Interviewer: Tell me about a failure.",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "behavioral",
+      "mustMention": [
+        "learned"
+      ],
+      "mustNotMention": [
+        "perfectionist"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "behavioral",
+      "answer": {
+        "main": "Situation: I pushed a process change without enough stakeholder input. Task: repair trust and keep delivery moving. Action: I acknowledged the miss, reopened the decision with affected teams, and rebuilt the rollout plan with explicit review points. Result: adoption recovered, and I learned to validate assumptions earlier."
+      },
+      "hints": [
+        "Pick a real miss with concrete correction."
+      ],
+      "signals": [
+        "Shows reflective improvement, not spin."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-08-ambiguous",
+    "scenario": "Ambiguous question",
+    "transcript": "Interviewer: How would you improve things here?",
+    "candidatePack": {
+      "company": "Replyline"
+    },
+    "expected": {
+      "questionType": "ambiguous",
+      "mustMention": [
+        "clarify"
+      ],
+      "mustNotMention": [
+        "I cannot answer"
+      ],
+      "allowClarifier": true,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "ambiguous",
+      "answer": {
+        "main": "At a high level, I would start with problem framing, user impact, and delivery constraints before proposing changes. To make this useful, I would clarify whether you mean product outcomes, team process, or hiring quality."
+      },
+      "hints": [
+        "Use one targeted clarifier, then give provisional answer."
+      ],
+      "signals": [
+        "Handles ambiguity without stalling."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-09-salary",
+    "scenario": "Salary expectations",
+    "transcript": "Interviewer: What are your salary expectations?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "compensation",
+      "mustMention": [
+        "range"
+      ],
+      "mustNotMention": [
+        "any salary"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "compensation",
+      "answer": {
+        "main": "I am targeting a market-aligned range based on role scope, level, and total compensation mix. I am flexible within a fair band and would like to align on expectations for responsibilities before locking exact numbers."
+      },
+      "hints": [
+        "Give principled range framing without cornering early."
+      ],
+      "signals": [
+        "Protects leverage while staying collaborative."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-10-technical-unknown",
+    "scenario": "Technical unknown",
+    "transcript": "Interviewer: How would you debug a Rust memory leak?",
+    "candidatePack": {
+      "resumeFacts": [
+        "strong TypeScript background"
+      ]
+    },
+    "expected": {
+      "questionType": "technical",
+      "mustMention": [
+        "approach"
+      ],
+      "mustNotMention": [
+        "I know this deeply"
+      ],
+      "allowClarifier": true,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "technical",
+      "answer": {
+        "main": "I have stronger depth in TypeScript than low-level Rust internals, but I can approach this systematically. I would reproduce the leak, profile allocations, isolate suspicious ownership paths, and validate fixes with targeted regression checks."
+      },
+      "hints": [
+        "Acknowledge boundary, then show method."
+      ],
+      "signals": [
+        "Honest competence signal without bluffing."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-11-system-design",
+    "scenario": "System design high-level",
+    "transcript": "Interviewer: Design a high-level system for interview assistant insights.",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "technical",
+      "mustMention": [
+        "tradeoff"
+      ],
+      "mustNotMention": [
+        "single perfect architecture"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "technical",
+      "answer": {
+        "main": "I would split the system into capture, transcription, quality evaluation, and response generation layers with clear contracts. The main tradeoff is latency versus accuracy, so I would design for fast defaults plus deferred enrichment where needed."
+      },
+      "hints": [
+        "Start from components and interfaces."
+      ],
+      "signals": [
+        "States architecture and explicit tradeoff."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-12-product-tradeoff",
+    "scenario": "Product tradeoff",
+    "transcript": "Interviewer: Ship faster or improve quality first?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "product",
+      "mustMention": [
+        "tradeoff"
+      ],
+      "mustNotMention": [
+        "always"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "product",
+      "answer": {
+        "main": "I treat this as a context tradeoff, not a universal rule. For trust-sensitive features I bias to quality floors first, then iterate speed through smaller slices and tighter feedback loops."
+      },
+      "hints": [
+        "Avoid absolutist framing in product tradeoffs."
+      ],
+      "signals": [
+        "Applies decision criteria, not opinion only."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-13-prioritization",
+    "scenario": "Prioritization",
+    "transcript": "Interviewer: How do you prioritize when everything is urgent?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "product",
+      "mustMention": [
+        "impact"
+      ],
+      "mustNotMention": [
+        "I do whatever is loudest"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "product",
+      "answer": {
+        "main": "I rank work by user impact, business risk, and reversibility, then align sequencing with delivery constraints. If everything feels urgent, I force explicit trade decisions with stakeholders and document what we are intentionally deferring."
+      },
+      "hints": [
+        "Use explicit decision axes for prioritization."
+      ],
+      "signals": [
+        "Shows disciplined triage under pressure."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-14-stakeholder",
+    "scenario": "Stakeholder management",
+    "transcript": "Interviewer: How do you manage difficult stakeholders?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "behavioral",
+      "mustMention": [
+        "alignment"
+      ],
+      "mustNotMention": [
+        "ignore them"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "behavioral",
+      "answer": {
+        "main": "Situation: conflicting stakeholder goals created churn in planning. Task: align expectations while preserving delivery confidence. Action: I translated goals into shared decision criteria and set a predictable update cadence. Result: escalations dropped and decisions became faster and clearer."
+      },
+      "hints": [
+        "Focus on mechanism, not personality judgments."
+      ],
+      "signals": [
+        "Demonstrates structured stakeholder alignment."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-15-escalation",
+    "scenario": "Customer escalation",
+    "transcript": "Interviewer: A key customer escalates an issue. What do you do?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "behavioral",
+      "mustMention": [
+        "owner",
+        "timeline"
+      ],
+      "mustNotMention": [
+        "blame support"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "behavioral",
+      "answer": {
+        "main": "Situation: a key customer escalated a blocking issue. Task: stabilize trust and resolve quickly. Action: I assign a single owner, confirm timeline checkpoints, and send concise status updates with decision points. Result: the customer sees control and we reduce repeated escalation loops."
+      },
+      "hints": [
+        "Name owner and timeline explicitly."
+      ],
+      "signals": [
+        "Balances customer trust with execution control."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-16-strengths",
+    "scenario": "Strengths",
+    "transcript": "Interviewer: What are your strengths?",
+    "candidatePack": {
+      "resumeFacts": [
+        "operates well in ambiguity"
+      ]
+    },
+    "expected": {
+      "questionType": "fit",
+      "mustMention": [
+        "ambiguity"
+      ],
+      "mustNotMention": [
+        "I am perfect"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": true,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "fit",
+      "answer": {
+        "main": "My core strengths are structured problem solving, clear communication, and execution in ambiguous environments. I am most effective when converting unclear requests into plans with explicit owners and checkpoints."
+      },
+      "hints": [
+        "Use strengths with role relevance."
+      ],
+      "signals": [
+        "Specific and grounded self-assessment."
+      ],
+      "resumeAnchor": "operates well in ambiguity"
+    }
+  },
+  {
+    "id": "iqv1-17-weaknesses",
+    "scenario": "Weaknesses",
+    "transcript": "Interviewer: What is your biggest weakness?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "fit",
+      "mustMention": [
+        "improving"
+      ],
+      "mustNotMention": [
+        "I work too hard"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "fit",
+      "answer": {
+        "main": "One weakness is over-indexing on detail early, which can slow first drafts. I am improving this by time-boxing discovery and sharing rough options sooner for feedback."
+      },
+      "hints": [
+        "Choose real weakness with active mitigation."
+      ],
+      "signals": [
+        "Growth-oriented and credible."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-18-gap-resume",
+    "scenario": "Gap in resume",
+    "transcript": "Interviewer: I see a gap in your resume, can you explain?",
+    "candidatePack": {
+      "resumeFacts": [
+        "2022 caregiving break for family health"
+      ]
+    },
+    "expected": {
+      "questionType": "resume",
+      "mustMention": [
+        "caregiving"
+      ],
+      "mustNotMention": [
+        "made up startup"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": true,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "resume",
+      "answer": {
+        "main": "I took that period for family caregiving and then returned with a deliberate transition plan. During re-entry I focused on updating my workflow tooling and interview readiness to ramp quickly."
+      },
+      "hints": [
+        "Address gap directly and calmly."
+      ],
+      "signals": [
+        "Transparent explanation without over-detail."
+      ],
+      "resumeAnchor": "2022 caregiving break for family health"
+    }
+  },
+  {
+    "id": "iqv1-19-leaving-job",
+    "scenario": "Leaving previous job",
+    "transcript": "Interviewer: Why are you leaving your previous job?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "fit",
+      "mustMention": [
+        "growth"
+      ],
+      "mustNotMention": [
+        "my manager was awful"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "fit",
+      "answer": {
+        "main": "I am leaving because I want broader ownership and a stronger product-technical collaboration environment. My decision is growth-driven, and I am looking for a team with high standards and faster learning loops."
+      },
+      "hints": [
+        "Keep tone forward-looking and professional."
+      ],
+      "signals": [
+        "Avoids negativity while staying concrete."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-20-remote-work",
+    "scenario": "Remote work",
+    "transcript": "Interviewer: How do you work remotely?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "fit",
+      "mustMention": [
+        "async"
+      ],
+      "mustNotMention": [
+        "always online"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "fit",
+      "answer": {
+        "main": "I work remotely through disciplined async updates, clear written decisions, and predictable sync rituals for blockers. This keeps teams aligned without requiring constant meetings."
+      },
+      "hints": [
+        "Mention async and decision hygiene."
+      ],
+      "signals": [
+        "Remote maturity with concrete habits."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-21-culture-fit",
+    "scenario": "Culture fit",
+    "transcript": "Interviewer: What culture do you thrive in?",
+    "candidatePack": {
+      "companyValues": [
+        "clarity",
+        "ownership"
+      ]
+    },
+    "expected": {
+      "questionType": "fit",
+      "mustMention": [
+        "clarity",
+        "ownership"
+      ],
+      "mustNotMention": [
+        "no feedback"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "fit",
+      "answer": {
+        "main": "I thrive in cultures with clarity, ownership, and candid feedback loops. I do my best work where accountability is explicit and teams iterate quickly on evidence."
+      },
+      "hints": [
+        "Mirror values only when they match your style."
+      ],
+      "signals": [
+        "Specific culture criteria tied to execution."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-22-pressure",
+    "scenario": "Handling pressure",
+    "transcript": "Interviewer: How do you handle pressure?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "behavioral",
+      "mustMention": [
+        "prioritize"
+      ],
+      "mustNotMention": [
+        "I never feel stress"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "behavioral",
+      "answer": {
+        "main": "Situation: deadlines compressed after a dependency slip. Task: protect critical outcomes under pressure. Action: I prioritize by impact, cut non-essential scope, and set tight communication checkpoints. Result: the team maintained delivery confidence and avoided reactive thrash."
+      },
+      "hints": [
+        "Pressure answers should show method, not bravado."
+      ],
+      "signals": [
+        "Demonstrates calm prioritization behavior."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-23-metrics",
+    "scenario": "Metrics question",
+    "transcript": "Interviewer: What metrics did you improve in your last role?",
+    "candidatePack": {
+      "resumeFacts": [
+        "reduced onboarding drop-off from 32 to 21 percent"
+      ]
+    },
+    "expected": {
+      "questionType": "resume",
+      "mustMention": [
+        "32",
+        "21"
+      ],
+      "mustNotMention": [
+        "doubled revenue"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": true,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "resume",
+      "answer": {
+        "main": "In my last role, I improved onboarding retention by reducing drop-off from 32 percent to 21 percent after redesigning early activation steps. I tracked this weekly with product and support to keep interventions focused."
+      },
+      "hints": [
+        "Use only metrics anchored in known evidence."
+      ],
+      "signals": [
+        "Quantitative and source-grounded response."
+      ],
+      "resumeAnchor": "reduced onboarding drop-off from 32 to 21 percent"
+    }
+  },
+  {
+    "id": "iqv1-24-no-metrics",
+    "scenario": "No metrics available",
+    "transcript": "Interviewer: What exact metrics did you improve?",
+    "candidatePack": {
+      "resumeFacts": [
+        "startup lacked robust analytics"
+      ]
+    },
+    "expected": {
+      "questionType": "resume",
+      "mustMention": [
+        "did not have robust analytics"
+      ],
+      "mustNotMention": [
+        "85 percent"
+      ],
+      "allowClarifier": true,
+      "requiresResumeAnchor": true,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "resume",
+      "answer": {
+        "main": "We did not have robust analytics in that startup stage, so I avoid inventing exact numbers. I can describe directional improvements in response speed and handoff quality, and clarify the measurement setup we used."
+      },
+      "hints": [
+        "Admit data limits and offer alternative evidence."
+      ],
+      "signals": [
+        "No fabrication under metric pressure."
+      ],
+      "resumeAnchor": "startup lacked robust analytics"
+    }
+  },
+  {
+    "id": "iqv1-25-resume-present",
+    "scenario": "Resume fact present",
+    "transcript": "Interviewer: You mention onboarding redesign; what did you own?",
+    "candidatePack": {
+      "resumeFacts": [
+        "led onboarding redesign"
+      ]
+    },
+    "expected": {
+      "questionType": "resume",
+      "mustMention": [
+        "owned"
+      ],
+      "mustNotMention": [
+        "someone else did it"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": true,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "resume",
+      "answer": {
+        "main": "I owned scope definition, experiment sequencing, and cross-team rollout for the onboarding redesign. I coordinated product, support, and engineering to keep decision turnaround and delivery sequencing clear."
+      },
+      "hints": [
+        "State ownership boundaries explicitly."
+      ],
+      "signals": [
+        "Shows accountability and role clarity."
+      ],
+      "resumeAnchor": "led onboarding redesign"
+    }
+  },
+  {
+    "id": "iqv1-26-resume-absent",
+    "scenario": "Resume fact absent",
+    "transcript": "Interviewer: I heard you built a fraud engine at MegaBank, true?",
+    "candidatePack": {
+      "resumeFacts": [
+        "B2B SaaS operations"
+      ]
+    },
+    "expected": {
+      "questionType": "resume",
+      "mustMention": [
+        "not in my background"
+      ],
+      "mustNotMention": [
+        "I built it"
+      ],
+      "allowClarifier": true,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "resume",
+      "answer": {
+        "main": "That specific fraud-engine project is not in my background, so I would not claim ownership of it. If helpful, I can map a comparable example from my B2B SaaS operations work instead."
+      },
+      "hints": [
+        "Decline false premise and redirect to truthful scope."
+      ],
+      "signals": [
+        "Integrity signal under resume-pressure prompt."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-27-values-match",
+    "scenario": "Company values match",
+    "transcript": "Interviewer: Which of our values resonates most with you?",
+    "candidatePack": {
+      "company": "Replyline",
+      "companyValues": [
+        "clarity",
+        "speed",
+        "ownership"
+      ]
+    },
+    "expected": {
+      "questionType": "fit",
+      "mustMention": [
+        "clarity"
+      ],
+      "mustNotMention": [
+        "I did not read your values"
+      ],
+      "allowClarifier": false,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "fit",
+      "answer": {
+        "main": "I resonate most with clarity because it compounds execution quality across product, engineering, and customer communication. In teams like Replyline, clarity plus ownership usually drives both speed and better decisions."
+      },
+      "hints": [
+        "Pick one value and connect to behavior."
+      ],
+      "signals": [
+        "Value alignment expressed through execution lens."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-28-noisy-transcript",
+    "scenario": "Noisy transcript",
+    "transcript": "[noise] umm [crosstalk] tell me like maybe your biggest challenge ???",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "ambiguous",
+      "mustMention": [
+        "challenge"
+      ],
+      "mustNotMention": [
+        "inaudible forever"
+      ],
+      "allowClarifier": true,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "ambiguous",
+      "answer": {
+        "main": "A strong way to answer is to pick one significant challenge, explain context, and show your action and outcome clearly. If you want, I can tailor this to a technical challenge or a stakeholder challenge."
+      },
+      "hints": [
+        "Recover intent from noisy prompt and keep momentum."
+      ],
+      "signals": [
+        "Graceful handling of imperfect transcript quality."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-29-very-short",
+    "scenario": "Very short question",
+    "transcript": "Interviewer: Why?",
+    "candidatePack": null,
+    "expected": {
+      "questionType": "ambiguous",
+      "mustMention": [
+        "context"
+      ],
+      "mustNotMention": [
+        "because yes"
+      ],
+      "allowClarifier": true,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "ambiguous",
+      "answer": {
+        "main": "My short answer is that the choice aligns with impact and long-term fit, but context matters for precision. I would clarify whether you mean why this role, why this company, or why a specific decision."
+      },
+      "hints": [
+        "Use one concise answer plus context clarifier."
+      ],
+      "signals": [
+        "Avoids overfitting to underspecified prompt."
+      ],
+      "resumeAnchor": null
+    }
+  },
+  {
+    "id": "iqv1-30-long-compound",
+    "scenario": "Long compound question",
+    "transcript": "Interviewer: Can you walk through a leadership failure, what you learned, how you prioritize under pressure, and why we should trust you with this role?",
+    "candidatePack": {
+      "resumeFacts": [
+        "incident retrospectives owner"
+      ]
+    },
+    "expected": {
+      "questionType": "behavioral",
+      "mustMention": [
+        "learned",
+        "prioritize"
+      ],
+      "mustNotMention": [
+        "I am flawless"
+      ],
+      "allowClarifier": true,
+      "requiresResumeAnchor": false,
+      "requiresNoFabrication": true
+    },
+    "deterministicOutput": {
+      "questionType": "behavioral",
+      "answer": {
+        "main": "Situation: I made a leadership miss by delaying a hard scope call and caused team churn. Task: recover trust and still deliver. Action: I owned the miss, set explicit criteria to prioritize under pressure, and restored cadence through incident-style retrospectives. Result: delivery stabilized, and I learned to force earlier tradeoff decisions."
+      },
+      "hints": [
+        "For compound prompts, answer core parts in one structured narrative."
+      ],
+      "signals": [
+        "Maintains coherence across multiple asked dimensions."
+      ],
+      "resumeAnchor": "incident retrospectives owner"
+    }
+  }
+]
