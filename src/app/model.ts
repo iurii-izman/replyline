@@ -15,6 +15,7 @@ export type AppSettings = {
   llmBaseUrl: string;
   llmModel: string;
   captureMaxSeconds: number;
+  activeAnswerProfile: string;
 };
 
 /**
@@ -234,11 +235,12 @@ export type RuntimeCheckDto = {
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
   captureMaxSeconds: 45,
+  activeAnswerProfile: "interview_default",
 };
 
 export function isConfiguredLlmRoute(baseUrl: string, model: string): boolean {

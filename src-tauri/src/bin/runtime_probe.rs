@@ -36,6 +36,8 @@ mod openai_compatible;
 mod pipeline_timing;
 #[path = "../privacy.rs"]
 mod privacy;
+#[path = "../prompt_registry.rs"]
+mod prompt_registry;
 #[path = "../settings.rs"]
 mod settings;
 #[path = "../types.rs"]

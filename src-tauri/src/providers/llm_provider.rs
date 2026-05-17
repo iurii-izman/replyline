@@ -2,6 +2,7 @@ use crate::card_v3::CardQualityFlags;
 use crate::diag_contract::{RL_CARD_NORM_TIMED, RL_LLM_REQUEST_TIMED};
 use crate::llm;
 use crate::pipeline_timing::{PipelineTimer, StageTiming};
+use crate::prompt_registry::resolve_answer_profile;
 use crate::types::{AnalysisCardDto, AppSettings};
 
 use super::openai_compatible;
@@ -31,6 +32,7 @@ pub async fn analyze_transcript(
     context: &str,
 ) -> Result<CardGenerationOutcome, String> {
     let language = crate::language_profile::llm_language().to_string();
+    let profile = resolve_answer_profile(&settings.active_answer_profile);
     let mut all_timings: Vec<StageTiming> = Vec::new();
     let llm_timer = PipelineTimer::start();
     let (raw_text, parse_or_request_err) = request_card_with_prompt(
@@ -39,13 +41,14 @@ pub async fn analyze_transcript(
         transcript,
         context,
         &language,
+        profile,
         None,
         llm::PRIMARY_MAX_TOKENS,
     )
     .await?;
     all_timings.push(llm_timer.measure("llm_request", "ok", RL_LLM_REQUEST_TIMED));
     let norm_timer = PipelineTimer::start();
-    match llm::normalize_from_raw(&raw_text, transcript) {
+    match llm::normalize_from_raw(&raw_text, transcript, profile) {
         Ok((card, quality)) => {
             let norm_timing = norm_timer.measure("card_normalization", "ok", RL_CARD_NORM_TIMED);
             Ok(CardGenerationOutcome {
@@ -66,6 +69,7 @@ pub async fn analyze_transcript(
                 transcript,
                 context,
                 &language,
+                profile,
                 Some(
                     "RETRY MODE: stricter CardSchemaV3. answer_now must be a concise 2-4 sentence paragraph with a direct response and concrete action (owner/deadline when possible). Use clarifier only when ambiguity blocks a direct response. next_step must name artifact+owner+deadline.",
                 ),
@@ -78,7 +82,7 @@ pub async fn analyze_transcript(
                 RL_LLM_REQUEST_TIMED,
             ));
             let retry_norm_timer = PipelineTimer::start();
-            let (card, quality) = llm::normalize_from_raw(&retry_raw_text, transcript)
+            let (card, quality) = llm::normalize_from_raw(&retry_raw_text, transcript, profile)
                 .map_err(|retry_err| format!("{err} | retry_failed: {retry_err}"))?;
             let retry_norm_timing =
                 retry_norm_timer.measure("card_normalization_retry", "ok", RL_CARD_NORM_TIMED);
@@ -103,17 +107,19 @@ pub async fn analyze_transcript(
 }
 
 /// Build the full prompt and call the OpenAI-compatible provider.
+#[allow(clippy::too_many_arguments)]
 async fn request_card_with_prompt(
     settings: &AppSettings,
     api_key: Option<&str>,
     transcript: &str,
     context: &str,
     language: &str,
+    profile: &crate::prompt_registry::AnswerProfileConfig,
     extra_suffix: Option<&str>,
     max_tokens: u16,
 ) -> Result<(String, String), String> {
-    let user_prompt = llm::build_user_prompt(transcript, context, language, extra_suffix);
-    let system_prompt = llm::system_prompt_for_language(language);
+    let user_prompt = llm::build_user_prompt(transcript, context, language, profile, extra_suffix);
+    let system_prompt = llm::system_prompt_for_profile(profile, language);
 
     openai_compatible::request_card_raw_text(
         &settings.llm_base_url,

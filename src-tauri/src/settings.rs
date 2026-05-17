@@ -81,7 +81,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     }
 }
 
-const CURRENT_SCHEMA_VERSION: u32 = 2;
+const CURRENT_SCHEMA_VERSION: u32 = 3;
 
 fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     let version = value
@@ -91,6 +91,9 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
 
     if version < 2 {
         migrate_v1_to_v2(&mut value);
+    }
+    if version < 3 {
+        migrate_v2_to_v3(&mut value);
     }
 
     value
@@ -102,6 +105,16 @@ fn migrate_v1_to_v2(value: &mut serde_json::Value) {
         if let Some(v) = obj.get_mut("schemaVersion") {
             *v = serde_json::json!(2);
         }
+    }
+}
+
+fn migrate_v2_to_v3(value: &mut serde_json::Value) {
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("schemaVersion".to_string(), serde_json::json!(3));
+        obj.entry("activeAnswerProfile")
+            .or_insert(serde_json::json!(
+                crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
+            ));
     }
 }
 
@@ -128,6 +141,9 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     if !settings.llm_base_url.trim().is_empty() {
         validate_http_url(settings.llm_base_url.trim(), SettingsError::InvalidUrl)?;
     }
+    if settings.active_answer_profile.trim().is_empty() {
+        return Err(SettingsError::PartialConfigInvalid);
+    }
     Ok(())
 }
 
@@ -141,6 +157,7 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "llmBaseUrl",
         "llmModel",
         "captureMaxSeconds",
+        "activeAnswerProfile",
     ] {
         if !obj.contains_key(key) {
             return Err(SettingsError::PartialConfigInvalid);
@@ -302,7 +319,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v1_settings_to_v2() {
+    fn migrates_v1_settings_to_v3_with_default_profile() {
         let v1 = serde_json::json!({
             "schemaVersion": 1,
             "hotkey": "Ctrl+Alt+Space",
@@ -311,26 +328,32 @@ mod tests {
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
-        assert_eq!(migrated["schemaVersion"], 2);
+        assert_eq!(migrated["schemaVersion"], 3);
+        assert_eq!(
+            migrated["activeAnswerProfile"],
+            crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
+        );
         // llmTemperature must NOT be injected — the field is not part of the current schema.
         assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
-    fn v2_settings_pass_through_unchanged() {
-        let v2 = serde_json::json!({
-            "schemaVersion": 2,
+    fn v3_settings_pass_through_unchanged() {
+        let v3 = serde_json::json!({
+            "schemaVersion": 3,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
-            "captureMaxSeconds": 30
+            "captureMaxSeconds": 30,
+            "activeAnswerProfile": "interview_concise"
         });
-        let migrated = super::migrate_settings(v2);
-        assert_eq!(migrated["schemaVersion"], 2);
+        let migrated = super::migrate_settings(v3);
+        assert_eq!(migrated["schemaVersion"], 3);
         assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
         assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
         assert_eq!(migrated["llmModel"], "gpt-4o-mini");
         assert_eq!(migrated["captureMaxSeconds"], 30);
+        assert_eq!(migrated["activeAnswerProfile"], "interview_concise");
         // Schema-defined fields must remain; no phantom fields should appear.
         assert!(migrated.get("llmTemperature").is_none());
     }
@@ -338,7 +361,7 @@ mod tests {
     #[test]
     fn required_fields_reject_missing_hotkey() {
         let value = serde_json::json!({
-            "schemaVersion": 2,
+            "schemaVersion": 3,
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
             "captureMaxSeconds": 30
