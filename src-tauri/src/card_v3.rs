@@ -421,7 +421,9 @@ fn repair_answer_now(value: &str, transcript: &str, limits: CardLimits) -> Strin
 fn repair_answer_now_inner(value: &str, transcript: &str) -> String {
     let clean = value.trim().trim_end_matches('.').trim();
     if clean.ends_with('?') {
-        return clean.to_string();
+        return format!(
+            "{clean} После уточнения сразу зафиксирую решение, владельца и ближайший срок в рабочем канале."
+        );
     }
     let lower = format!("{clean}\n{transcript}").to_lowercase();
     let variant = transcript
@@ -646,7 +648,7 @@ fn limits_for_transcript(transcript: &str) -> CardLimits {
     match chars_band(transcript) {
         "short" => CardLimits {
             question_brief: 120,
-            answer_now: 360,
+            answer_now: 420,
             star_evidence: 160,
             next_step: 140,
             answer_min_words: 10,
@@ -914,5 +916,45 @@ mod tests {
         );
         let (card, _) = normalize_parsed_card(&raw, "").expect("legacy must work");
         assert!(card.say_now.contains("сегодня"));
+    }
+
+    #[test]
+    fn accepts_direct_answer_without_mandatory_clarifier() {
+        let raw = legacy_json(
+            "Нужен ответ по сроку релиза.",
+            "Да, укладываемся: сегодня до 17:00 закрываю проверку и подтверждаю финальную дату. После этого отправлю короткий итог в чат с владельцем и контрольной точкой.",
+            "Отправлю письмо с владельцем и сроком сегодня.",
+        );
+        let (card, _) = normalize_parsed_card(&raw, "Успеваете к пятнице или нет?")
+            .expect("direct answer must pass");
+        assert!(card.say_now.contains("укладываемся"));
+        assert!(!card.say_now.contains("Риск/уточнение:"));
+    }
+
+    #[test]
+    fn allows_clarifier_when_ambiguity_blocks_direct_response() {
+        let raw = legacy_json(
+            "Запрос расплывчатый.",
+            "Чтобы не промахнуться, уточню: вы ждете закрытия по сроку, по качеству или по владельцу? После ответа сразу зафиксирую решение и дедлайн в чате.",
+            "Зафиксирую в чате критерий, владельца и срок после уточнения.",
+        );
+        let (card, _) = normalize_parsed_card(&raw, "Нужно закрыть это нормально.")
+            .expect("clarifier should pass when ambiguity is real");
+        assert!(card.say_now.contains("?"));
+    }
+
+    #[test]
+    fn repairs_generic_filler_answer_into_concrete_paragraph() {
+        let raw = legacy_json(
+            "Нужен конкретный ответ по следующему шагу.",
+            "В целом много факторов и как-нибудь решим, посмотрим.",
+            "Отправлю письмо с владельцем и сроком завтра.",
+        );
+        let (card, quality) = normalize_parsed_card(&raw, "").expect("generic filler must repair");
+        assert!(quality.repair_used);
+        let say_now_lower = card.say_now.to_lowercase();
+        assert!(!say_now_lower.contains("как-нибудь"));
+        assert!(!say_now_lower.contains("посмотрим"));
+        assert!(!say_now_lower.contains("в целом"));
     }
 }

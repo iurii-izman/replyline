@@ -67,7 +67,7 @@ pub async fn analyze_transcript(
                 context,
                 &language,
                 Some(
-                    "RETRY MODE: stricter CardSchemaV3. answer_now must be a 2-sentence paragraph with owner/deadline or clarifier. next_step must name artifact+owner+deadline.",
+                    "RETRY MODE: stricter CardSchemaV3. answer_now must be a concise 2-4 sentence paragraph with a direct response and concrete action (owner/deadline when possible). Use clarifier only when ambiguity blocks a direct response. next_step must name artifact+owner+deadline.",
                 ),
                 llm::RETRY_MAX_TOKENS,
             )
