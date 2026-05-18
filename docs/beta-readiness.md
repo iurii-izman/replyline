@@ -4,10 +4,10 @@ Single handoff doc for preparing an internal stable-beta build.
 
 ## 1) Product scope
 
-Replyline stable beta is a narrow runtime path:
+Replyline stable beta supports two bounded modes:
 
-- `capture -> stt -> llm -> card`
-- one card schema: `gist / say_now / next_move`
+- WorkConversation: `capture -> stt -> llm -> card`
+- Interview Mode: preparation-oriented interview assistance
 - Windows-first desktop tray workflow
 
 Out of scope for current beta:
@@ -15,6 +15,7 @@ Out of scope for current beta:
 - no meeting assistant
 - no transcript tool
 - no speaking coach
+- no stealth cheating features
 - no transcript/history UI
 - no Advanced Mode user surface
 
@@ -70,9 +71,19 @@ Required validation lane for this handoff:
 
 1. `pnpm test:doc-links`
 2. `pnpm test:consistency`
-3. `pnpm smoke`
-4. `pnpm verify:fast`
-5. `pnpm verify:full` (release candidate profile)
+3. `pnpm typecheck`
+4. `pnpm lint`
+5. `pnpm test:ui`
+6. `pnpm test:ipc-contract`
+7. `pnpm test:prompt-contract`
+8. `pnpm test:interview-quality`
+9. `pnpm report:interview-quality`
+10. `cargo check --manifest-path src-tauri/Cargo.toml`
+11. `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings`
+12. `cargo test --manifest-path src-tauri/Cargo.toml`
+13. `pnpm smoke`
+14. `pnpm verify:fast`
+15. `pnpm verify:full` (release candidate profile)
 
 Additional release-safety lanes (run when applicable):
 
@@ -80,7 +91,20 @@ Additional release-safety lanes (run when applicable):
 - `pnpm rust:deps` (when Rust dependencies changed)
 - `pnpm audit:npm` (when `package.json` or `pnpm-lock.yaml` changed)
 
-## 7) Known limitations
+## 7) Interview Engine release gate (Stage 3/4 closeout)
+
+Release is blocked unless all items are complete:
+
+1. Baseline is green (`pnpm smoke`, `pnpm verify:fast`).
+2. Interview quality report is attached (`pnpm report:interview-quality`).
+3. Privacy checklist is passed:
+   - no secrets in logs
+   - no raw transcript in `app.log`
+   - reports remain local unless explicitly shared by operator
+4. Model presets are reviewed (including free-tier and credits caveats).
+5. Known limitations are reviewed and updated.
+
+## 8) Known limitations
 
 Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in every beta handoff:
 
@@ -89,7 +113,7 @@ Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in eve
 - no transcript/history/team workflows in current stable-beta product scope
 - no meeting assistant, no transcript tool, no speaking coach
 
-## 8) Command naming standard (beta-first)
+## 9) Command naming standard (beta-first)
 
 - Primary handoff/preflight commands:
   - `pnpm beta:preflight`

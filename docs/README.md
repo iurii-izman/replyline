@@ -5,6 +5,10 @@
 ## Read first
 
 - [beta-readiness.md](beta-readiness.md)
+- [interview-mode.md](interview-mode.md)
+- [candidate-pack.md](candidate-pack.md)
+- [model-ladder.md](model-ladder.md)
+- [interview-quality.md](interview-quality.md)
 - [public-vs-local-artifacts.md](public-vs-local-artifacts.md)
 - [verification-lanes.md](verification-lanes.md)
 - [runtime-bringup.md](runtime-bringup.md)
