@@ -2,7 +2,8 @@ import { strict as assert } from "node:assert";
 
 function parseTimingRecords(lines) {
   const records = [];
-  const timingRe = /\[pipeline_timing\]\s+stage=(\S+)\s+duration_ms=(\d+)\s+outcome=(\S+)\s+code=(\S+)/;
+  const timingRe =
+    /\[pipeline_timing\]\s+stage=(\S+)\s+duration_ms=(\d+)\s+outcome=(\S+)\s+code=(\S+)/;
   for (const line of lines) {
     const m = line.match(timingRe);
     if (!m) continue;
@@ -37,7 +38,8 @@ function aggregateStages(records) {
     const { durations, failCount } = agg;
     const sorted = [...durations].sort((a, b) => a - b);
     const count = durations.length;
-    const meanMs = count > 0 ? Math.round((durations.reduce((a, b) => a + b, 0) / count) * 10) / 10 : 0;
+    const meanMs =
+      count > 0 ? Math.round((durations.reduce((a, b) => a + b, 0) / count) * 10) / 10 : 0;
     stages[stage] = {
       p50Ms: percentile(durations, 50),
       p95Ms: percentile(durations, 95),

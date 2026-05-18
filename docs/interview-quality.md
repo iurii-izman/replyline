@@ -33,6 +33,7 @@ Dataset and expectations are documented in `docs/interview-golden-dataset-v1.md`
 3. Updated `docs/known-limitations.md` when behavior/coverage changed.
 
 Blocking means fail fast in CI/local:
+
 - any schema mismatch
 - any fabricated metrics/resume anchors
 - any profile-limit violation

@@ -26,7 +26,15 @@ function assertIncludes(haystack, needle, message) {
   }
 }
 
-const [fixtureRaw, llmRaw, cardV3Raw, interviewCardRaw, llmProviderRaw, promptRegistryRaw, answerProfilesRaw] = await Promise.all([
+const [
+  fixtureRaw,
+  llmRaw,
+  cardV3Raw,
+  interviewCardRaw,
+  llmProviderRaw,
+  promptRegistryRaw,
+  answerProfilesRaw,
+] = await Promise.all([
   readFile(fixturePath, "utf8"),
   readFile(llmPath, "utf8"),
   readFile(cardV3Path, "utf8"),
@@ -41,11 +49,7 @@ if (!Array.isArray(fixtures) || fixtures.length < 20) {
   fail("Fixture corpus is too small for prompt-contract checks (need >= 20).");
 }
 
-assertIncludes(
-  llmRaw,
-  "CardSchemaV3",
-  "llm.rs must document CardSchemaV3 in system prompt.",
-);
+assertIncludes(llmRaw, "CardSchemaV3", "llm.rs must document CardSchemaV3 in system prompt.");
 assertIncludes(
   llmRaw,
   '"question_brief":"...","answer_now":"...","star_evidence":"...","next_step":"..."',
@@ -54,7 +58,11 @@ assertIncludes(
 assertIncludes(cardV3Raw, "struct RawCardV3", "card_v3.rs must define RawCardV3.");
 assertIncludes(cardV3Raw, "struct RawCardLegacy", "card_v3.rs must keep legacy RawCard parser.");
 assertIncludes(cardV3Raw, "map_v3_fields", "card_v3.rs must map v3 to legacy fields.");
-assertIncludes(cardV3Raw, "repair_section", "card_v3.rs must implement repair-first normalization.");
+assertIncludes(
+  cardV3Raw,
+  "repair_section",
+  "card_v3.rs must implement repair-first normalization.",
+);
 assertIncludes(
   llmRaw,
   "не давай терапевтические советы",
@@ -116,11 +124,7 @@ assertIncludes(
   "unwrap_or_else(|| default_answer_profile())",
   "Unknown profile must safely fallback to interview_default.",
 );
-assertIncludes(
-  llmRaw,
-  "Active answer profile:",
-  "Prompt suffix must include active profile id.",
-);
+assertIncludes(llmRaw, "Active answer profile:", "Prompt suffix must include active profile id.");
 assertIncludes(
   llmRaw,
   "Structure preference:",
@@ -138,14 +142,18 @@ assertIncludes(
 );
 assertIncludes(
   promptRegistryRaw,
-  "INTERVIEW_SCHEMA_VERSION: &str = \"InterviewCardSchemaV1\"",
+  'INTERVIEW_SCHEMA_VERSION: &str = "InterviewCardSchemaV1"',
   "InterviewCardSchemaV1 must stay explicit in prompt registry.",
 );
 
 const backendProfileIds = [...promptRegistryRaw.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
 const frontendProfileIds = [...answerProfilesRaw.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
-const frontendDefault = answerProfilesRaw.match(/DEFAULT_ANSWER_PROFILE:\s*AnswerProfileId\s*=\s*"([^"]+)"/)?.[1];
-const backendDefault = promptRegistryRaw.match(/DEFAULT_ANSWER_PROFILE_ID:\s*&str\s*=\s*"([^"]+)"/)?.[1];
+const frontendDefault = answerProfilesRaw.match(
+  /DEFAULT_ANSWER_PROFILE:\s*AnswerProfileId\s*=\s*"([^"]+)"/,
+)?.[1];
+const backendDefault = promptRegistryRaw.match(
+  /DEFAULT_ANSWER_PROFILE_ID:\s*&str\s*=\s*"([^"]+)"/,
+)?.[1];
 if (!frontendDefault || !backendDefault) {
   fail("Cannot parse frontend/backend default profile ids.");
 }
@@ -229,6 +237,4 @@ for (const sample of negativeCases) {
   }
 }
 
-console.log(
-  `Prompt contract OK: ${fixtures.length} fixtures validated (legacy + v3 + mapping).`,
-);
+console.log(`Prompt contract OK: ${fixtures.length} fixtures validated (legacy + v3 + mapping).`);

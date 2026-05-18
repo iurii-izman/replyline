@@ -57,6 +57,7 @@ Supported provider/runtime path for stable beta:
    - LLM model
    - optional LLM API key
 4. Verify a valid playback device is set as default in Windows Sound settings.
+5. For runtime probe credentials setup, use `docs/runtime-probe-credentials.md` (local env only, never committed).
 
 ## 5) Validation matrix
 
@@ -67,12 +68,23 @@ Supported provider/runtime path for stable beta:
 5. Extended verify: `pnpm verify:extended`
 6. Beta preflight lane: `pnpm beta:preflight`
 7. Interview quality report artifact: `pnpm report:interview-quality`
+8. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
 
 Additional conditional gates:
 
 - `pnpm rust:deps` when Rust dependencies changed
 - `pnpm audit:npm` when `package.json` or `pnpm-lock.yaml` changed
 - `pnpm release:freeze:check` before merge/release handoff
+
+Runtime preflight has two modes:
+
+- real mode (`pnpm runtime:preflight`): reads `%APPDATA%\com.replyline.app\settings.json`
+- fixture contract mode (`pnpm test:runtime-preflight-contract`): runs `scripts/runtime-preflight.ps1` against `tests/fixtures/runtime/*.json` via `-SettingsPath` and does not depend on local `%APPDATA%`
+
+Runtime probe credentials note:
+
+- `pnpm probe:runtime` requires local `DEEPGRAM_API_KEY` and `OPENROUTER_API_KEY` or `LLM_API_KEY`.
+- Missing probe credentials is an expected local setup failure, not a product regression by itself.
 
 ## 6) Privacy checklist
 

@@ -21,7 +21,12 @@ export function traySyncPayload(input: TrayPayloadInput): { phase: string; detai
   return { phase: "idle_ready", detail: null };
 }
 
-export function phaseLabelFor(phase: Phase, setupRequired: boolean, hotkeyFailed: boolean, s: UiStrings): string {
+export function phaseLabelFor(
+  phase: Phase,
+  setupRequired: boolean,
+  hotkeyFailed: boolean,
+  s: UiStrings,
+): string {
   switch (phase) {
     case "booting":
       return s.phase.booting;

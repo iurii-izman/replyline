@@ -86,10 +86,15 @@ export function useReplylineController(platform: AppPlatform) {
   const [candidatePackSaving, setCandidatePackSaving] = createSignal(false);
   const [activeInterviewCardIndex, setActiveInterviewCardIndex] = createSignal(0);
   const [pinnedInterviewCard, setPinnedInterviewCard] = createSignal<InterviewCardKey | null>(null);
-  const [interviewSession, setInterviewSession] = createSignal<InterviewSessionStateDto | null>(null);
+  const [interviewSession, setInterviewSession] = createSignal<InterviewSessionStateDto | null>(
+    null,
+  );
   const [interviewReport, setInterviewReport] = createSignal<InterviewReportDto | null>(null);
-  const [interviewReportMarkdownPath, setInterviewReportMarkdownPath] = createSignal<string | null>(null);
-  const [interviewReportRedactedMarkdownPath, setInterviewReportRedactedMarkdownPath] = createSignal<string | null>(null);
+  const [interviewReportMarkdownPath, setInterviewReportMarkdownPath] = createSignal<string | null>(
+    null,
+  );
+  const [interviewReportRedactedMarkdownPath, setInterviewReportRedactedMarkdownPath] =
+    createSignal<string | null>(null);
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -457,7 +462,9 @@ export function useReplylineController(platform: AppPlatform) {
     }
   }
   const interviewCardKeys = createMemo(() => interviewCarouselKeys(card()));
-  const activeInterviewCardKey = createMemo<InterviewCardKey | null>(() => activeInterviewCardKeyNow());
+  const activeInterviewCardKey = createMemo<InterviewCardKey | null>(() =>
+    activeInterviewCardKeyNow(),
+  );
   const compactMode = createMemo(() => settings.interviewCompactMode);
   const setWindowOpacity = async (value: AppSettings["windowOpacity"]) => {
     setSettings("windowOpacity", value);
@@ -588,9 +595,12 @@ export function useReplylineController(platform: AppPlatform) {
     setCompactMode: (value: boolean) => setSettings("interviewCompactMode", value),
     setInterviewReportRetentionDays: (value: AppSettings["interviewReportRetentionDays"]) =>
       setSettings("interviewReportRetentionDays", value),
-    selectInterviewCardIndex: (index: number) => setActiveInterviewCardIndex(clampInterviewCardIndex(index)),
-    nextInterviewCard: () => setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current + 1)),
-    prevInterviewCard: () => setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current - 1)),
+    selectInterviewCardIndex: (index: number) =>
+      setActiveInterviewCardIndex(clampInterviewCardIndex(index)),
+    nextInterviewCard: () =>
+      setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current + 1)),
+    prevInterviewCard: () =>
+      setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current - 1)),
     togglePinInterviewCard,
     startInterviewSession,
     endInterviewSession,

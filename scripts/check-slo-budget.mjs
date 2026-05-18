@@ -24,7 +24,9 @@ function percentile(values, p) {
 
 const soakAvailable = existsSync(summaryPath);
 if (!soakAvailable) {
-  console.log("slo-check: reports/runtime/soak-summary.json not found — skipping probe/failure envelope checks.");
+  console.log(
+    "slo-check: reports/runtime/soak-summary.json not found — skipping probe/failure envelope checks.",
+  );
 } else {
   const summary = JSON.parse(readFileSync(summaryPath, "utf8"));
   const runs = (summary.runs ?? []).filter((r) => r && typeof r === "object");
@@ -36,14 +38,33 @@ if (!soakAvailable) {
     .sort((a, b) => a - b);
 
   const p95 = percentile(releaseToCardSorted, 95);
-  const failPercent = runs.length > 0 ? ((runs.length - successRuns.length) / runs.length) * 100 : 100;
-  const retryPercent = runs.length > 0 ? (runs.reduce((sum, r) => sum + Number(r.retryUsed ?? 0), 0) / runs.length) * 100 : 0;
+  const failPercent =
+    runs.length > 0 ? ((runs.length - successRuns.length) / runs.length) * 100 : 100;
+  const retryPercent =
+    runs.length > 0
+      ? (runs.reduce((sum, r) => sum + Number(r.retryUsed ?? 0), 0) / runs.length) * 100
+      : 0;
   const failCount = runs.length - successRuns.length;
 
   const globalChecks = [
-    { metric: "releaseToCardP95Ms", actual: p95, threshold: thresholds.releaseToCardP95Ms, blocker: blockerKeys.has("releaseToCardP95Ms") },
-    { metric: "pipelineFailPercentMax", actual: failPercent, threshold: thresholds.pipelineFailPercentMax, blocker: blockerKeys.has("pipelineFailPercentMax") },
-    { metric: "retryPercentMax", actual: retryPercent, threshold: thresholds.retryPercentMax, blocker: blockerKeys.has("retryPercentMax") },
+    {
+      metric: "releaseToCardP95Ms",
+      actual: p95,
+      threshold: thresholds.releaseToCardP95Ms,
+      blocker: blockerKeys.has("releaseToCardP95Ms"),
+    },
+    {
+      metric: "pipelineFailPercentMax",
+      actual: failPercent,
+      threshold: thresholds.pipelineFailPercentMax,
+      blocker: blockerKeys.has("pipelineFailPercentMax"),
+    },
+    {
+      metric: "retryPercentMax",
+      actual: retryPercent,
+      threshold: thresholds.retryPercentMax,
+      blocker: blockerKeys.has("retryPercentMax"),
+    },
     {
       metric: "probe_max_allowed_failures",
       actual: failCount,
@@ -67,8 +88,12 @@ if (!soakAvailable) {
 const stagesAvailable = existsSync(latencySummaryPath);
 if (!stagesAvailable) {
   console.log("slo-check: reports/runtime/pipeline-latency-summary.json not found.");
-  console.log("slo-check: fallback mode — per-stage SLO cannot be evaluated without parsed app_log pipeline_timing events.");
-  console.log("slo-check: run pnpm parse:latency (or pnpm evidence:bundle) after a runtime capture.");
+  console.log(
+    "slo-check: fallback mode — per-stage SLO cannot be evaluated without parsed app_log pipeline_timing events.",
+  );
+  console.log(
+    "slo-check: run pnpm parse:latency (or pnpm evidence:bundle) after a runtime capture.",
+  );
 } else if (thresholds.stages) {
   const latencyData = JSON.parse(readFileSync(latencySummaryPath, "utf8"));
   const stageMetrics = latencyData.stages ?? {};
@@ -80,9 +105,21 @@ if (!stagesAvailable) {
       continue;
     }
     const checks = [
-      { metric: `${stageName}_p50_ms`, actual: data.p50Ms ?? null, threshold: stageSlo.p50TargetMs },
-      { metric: `${stageName}_p95_ms`, actual: data.p95Ms ?? null, threshold: stageSlo.p95TargetMs },
-      { metric: `${stageName}_fail_percent`, actual: data.failPercent ?? null, threshold: stageSlo.maxFailuresPercent },
+      {
+        metric: `${stageName}_p50_ms`,
+        actual: data.p50Ms ?? null,
+        threshold: stageSlo.p50TargetMs,
+      },
+      {
+        metric: `${stageName}_p95_ms`,
+        actual: data.p95Ms ?? null,
+        threshold: stageSlo.p95TargetMs,
+      },
+      {
+        metric: `${stageName}_fail_percent`,
+        actual: data.failPercent ?? null,
+        threshold: stageSlo.maxFailuresPercent,
+      },
     ];
     for (const c of checks) {
       const pass = c.actual != null ? c.actual <= c.threshold : false;
@@ -99,7 +136,9 @@ if (!stagesAvailable) {
 
 console.log("SLO check results:");
 for (const row of violations) {
-  console.log(`- ${row.metric}: actual=${row.actual} threshold=${row.threshold} blocker=${row.blocker} pass=${row.pass}`);
+  console.log(
+    `- ${row.metric}: actual=${row.actual} threshold=${row.threshold} blocker=${row.blocker} pass=${row.pass}`,
+  );
 }
 
 const failedBlockers = violations.filter((v) => !v.pass && v.blocker);
@@ -114,5 +153,7 @@ if (failedNonBlockers.length > 0) {
 }
 
 if (!soakAvailable) {
-  console.log("slo-check: fixture/probe fallback — no soak summary found, maxAllowedFailures check skipped.");
+  console.log(
+    "slo-check: fixture/probe fallback — no soak summary found, maxAllowedFailures check skipped.",
+  );
 }

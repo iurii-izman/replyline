@@ -59,7 +59,9 @@ if (!customBlock) {
   }
 }
 
-if (!/_\s*=>\s*ModelPreset\s*\{[\s\S]*provider_kind:\s*ProviderKind::OpenAiCompatible/.test(rsSource)) {
+if (
+  !/_\s*=>\s*ModelPreset\s*\{[\s\S]*provider_kind:\s*ProviderKind::OpenAiCompatible/.test(rsSource)
+) {
   failures.push("Unknown preset safe fallback must resolve to ProviderKind::OpenAiCompatible.");
 }
 if (!/_\s*=>\s*ModelPreset\s*\{[\s\S]*fallback_models:\s*&\[\s*]/.test(rsSource)) {

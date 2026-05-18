@@ -1,10 +1,39 @@
-param()
+param(
+  [string]$SettingsPath,
+  [string]$RuntimeDir
+)
 
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
-$settingsPath = Join-Path $env:APPDATA "com.replyline.app\settings.json"
-$runtimeDir = Join-Path $root "reports\runtime"
+if ([string]::IsNullOrWhiteSpace($SettingsPath)) {
+  $settingsPath = Join-Path $env:APPDATA "com.replyline.app\settings.json"
+} else {
+  $settingsPath = $SettingsPath
+}
+if ([string]::IsNullOrWhiteSpace($RuntimeDir)) {
+  $runtimeDir = Join-Path $root "reports\runtime"
+} else {
+  $runtimeDir = $RuntimeDir
+}
+
+function Get-JsonPropertyOrNull {
+  param(
+    [object]$InputObject,
+    [string]$PropertyName
+  )
+
+  if ($null -eq $InputObject) {
+    return $null
+  }
+
+  $prop = $InputObject.PSObject.Properties[$PropertyName]
+  if ($null -eq $prop) {
+    return $null
+  }
+
+  return $prop.Value
+}
 
 function Test-CredentialServicePresence {
   param(
@@ -62,6 +91,33 @@ $credSignal = Test-CredentialServicePresence -ServiceName "com.replyline.app.cre
 $deepgramEnvPresent = -not [string]::IsNullOrWhiteSpace($env:DEEPGRAM_API_KEY)
 $llmEnvPresent = (-not [string]::IsNullOrWhiteSpace($env:OPENROUTER_API_KEY)) -or (-not [string]::IsNullOrWhiteSpace($env:LLM_API_KEY))
 
+$expectedSettingsFields = @(
+  "schemaVersion",
+  "hotkey",
+  "llmBaseUrl",
+  "llmModel",
+  "selectedModelPreset",
+  "captureMaxSeconds",
+  "activeAnswerProfile",
+  "windowOpacity",
+  "interviewCompactMode"
+)
+
+$settingsFieldNames = @()
+if ($settingsData) {
+  $settingsFieldNames = @($settingsData.PSObject.Properties.Name)
+}
+$knownFieldsPresent = @($expectedSettingsFields | Where-Object { $settingsFieldNames -contains $_ })
+$missingExpectedFields = @($expectedSettingsFields | Where-Object { $settingsFieldNames -notcontains $_ })
+$extraFields = @($settingsFieldNames | Where-Object { $expectedSettingsFields -notcontains $_ })
+
+$schemaWarning = $null
+if ($settingsExists -and $settingsError) {
+  $schemaWarning = "Settings JSON parse failed; schema field diagnostics are unavailable."
+} elseif ($settingsExists -and -not $settingsData) {
+  $schemaWarning = "Settings file exists but could not be loaded as an object."
+}
+
 $report = [ordered]@{
   generatedAtLocal = (Get-Date).ToString("s")
   lane = "runtime-preflight"
@@ -74,10 +130,22 @@ $report = [ordered]@{
       parseError = $settingsError
     }
     configuredFields = [ordered]@{
-      llmBaseUrl = if ($settingsData) { $settingsData.llmBaseUrl } else { $null }
-      llmModel = if ($settingsData) { $settingsData.llmModel } else { $null }
-      captureMaxSeconds = if ($settingsData) { $settingsData.captureMaxSeconds } else { $null }
-      primaryLanguage = if ($settingsData) { $settingsData.primaryLanguage } else { $null }
+      schemaVersion = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "schemaVersion"
+      hotkey = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "hotkey"
+      llmBaseUrl = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "llmBaseUrl"
+      llmModel = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "llmModel"
+      selectedModelPreset = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "selectedModelPreset"
+      captureMaxSeconds = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "captureMaxSeconds"
+      activeAnswerProfile = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "activeAnswerProfile"
+      windowOpacity = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "windowOpacity"
+      interviewCompactMode = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "interviewCompactMode"
+    }
+    schema = [ordered]@{
+      schemaVersion = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "schemaVersion"
+      knownFieldsPresent = $knownFieldsPresent
+      missingExpectedFields = $missingExpectedFields
+      extraFields = $extraFields
+      schemaWarning = $schemaWarning
     }
     credentials = [ordered]@{
       deepgram = [ordered]@{

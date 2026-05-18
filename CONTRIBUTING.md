@@ -29,6 +29,7 @@ pnpm verify:full
 ```
 
 `verify:full` includes:
+
 - `pnpm verify:fast`
 - `pnpm release:freeze:check`
 - `pnpm rust:deps`

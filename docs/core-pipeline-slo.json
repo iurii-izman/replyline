@@ -42,12 +42,7 @@
     }
   },
   "classification": {
-    "blocker": [
-      "releaseToCardP95Ms",
-      "pipelineFailPercentMax"
-    ],
-    "nonBlocker": [
-      "retryPercentMax"
-    ]
+    "blocker": ["releaseToCardP95Ms", "pipelineFailPercentMax"],
+    "nonBlocker": ["retryPercentMax"]
   }
 }

@@ -9,6 +9,10 @@ The shell running Replyline should have:
 - `DEEPGRAM_API_KEY`
 - `OPENROUTER_API_KEY` or `LLM_API_KEY`
 
+Credential setup examples and cleanup are documented in:
+
+- [runtime-probe-credentials.md](runtime-probe-credentials.md)
+
 ## 2. Local app state
 
 Replyline stores:
@@ -23,6 +27,8 @@ Run:
 ```powershell
 pnpm probe:runtime
 ```
+
+If env credentials are missing, this command is expected to fail.
 
 This proves on this workstation:
 

@@ -56,7 +56,9 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
         packQualityОценка: 84,
         missingDataWarnings: ["add metrics"],
         suggestedMissingInfo: ["add leadership example"],
-        candidateFacts: [{ fact: "Fact", evidence: "Resume line", strength: "strong", metrics: [] }],
+        candidateFacts: [
+          { fact: "Fact", evidence: "Resume line", strength: "strong", metrics: [] },
+        ],
         roleKeywords: ["rust", "ownership"],
         companyValues: ["customer obsession"],
       };
@@ -414,7 +416,9 @@ describe("App UX stabilization", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
     fireEvent.keyDown(window, { key: "r" });
 
-    expect(await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ.")).toBeTruthy();
+    expect(
+      await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
+    ).toBeTruthy();
   });
 
   it("manages interview report actions", async () => {
@@ -422,10 +426,16 @@ describe("App UX stabilization", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Начать сессию" }));
     fireEvent.click(screen.getByRole("button", { name: "Завершить сессию" }));
     await waitFor(() => expect(screen.getByTestId("interview-report-summary")).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Экспортировать full Markdown (с transcript)" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Экспортировать full Markdown (с transcript)" }),
+    );
     await waitFor(() => expect(screen.getByText(/interview-report-full-is-1\.md/)).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Экспортировать redacted Markdown (без transcript)" }));
-    await waitFor(() => expect(screen.getByText(/interview-report-redacted-is-1\.md/)).toBeTruthy());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Экспортировать redacted Markdown (без transcript)" }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(/interview-report-redacted-is-1\.md/)).toBeTruthy(),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Очистить отчёты" }));
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "clear_interview_reports")).toBe(true),
@@ -633,7 +643,9 @@ describe("Interview card rendering", () => {
     fireEvent.keyDown(window, { key: "2" });
     fireEvent.keyDown(window, { key: "c", ctrlKey: true });
     await waitFor(() =>
-      expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("Tell me about a delivery incident."),
+      expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith(
+        "Tell me about a delivery incident.",
+      ),
     );
   });
 
@@ -735,9 +747,7 @@ describe("Interview card rendering", () => {
       expect(mock.invoke.mock.calls.some((c) => c[0] === "prepare_candidate_pack")).toBe(true),
     );
     expect(screen.getByText("Оценка:")).toBeTruthy();
-    expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(
-      false,
-    );
+    expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(false);
 
     fireEvent.click(screen.getByRole("button", { name: "Сохранить Candidate Pack" }));
     await waitFor(() =>
@@ -780,7 +790,7 @@ describe("Setup wizard (first-run guidance)", () => {
             activeAnswerProfile: "interview_default",
             windowOpacity: 100,
             interviewCompactMode: false,
-          interviewReportRetentionDays: 0,
+            interviewReportRetentionDays: 0,
           },
           deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
           llmKeyPresent: overrides.llmKeyPresent ?? false,
@@ -966,4 +976,3 @@ describe("Setup wizard (first-run guidance)", () => {
     expect(Object.prototype.hasOwnProperty.call(input, "deepgramApiKey")).toBe(false);
   });
 });
-

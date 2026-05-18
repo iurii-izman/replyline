@@ -18,10 +18,7 @@ export function createNotices(setNotice: Setter<NoticeValue>): NoticeApi {
     noticeTimer = null;
   }
 
-  function pushNotice(
-    next: { tone: NoticeTone; message: string },
-    durationMs = 2800,
-  ) {
+  function pushNotice(next: { tone: NoticeTone; message: string }, durationMs = 2800) {
     clearNoticeTimer();
     setNotice(next);
     noticeTimer = setTimeout(() => {

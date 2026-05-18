@@ -6,7 +6,12 @@ import { join } from "node:path";
 const cwd = process.cwd();
 const logPath =
   process.env.REPLYLINE_LOG_PATH ??
-  join(process.env.LOCALAPPDATA ?? join(homedir(), "AppData", "Local"), "com.replyline.app", "logs", "app.log");
+  join(
+    process.env.LOCALAPPDATA ?? join(homedir(), "AppData", "Local"),
+    "com.replyline.app",
+    "logs",
+    "app.log",
+  );
 
 const outDir = join(cwd, "reports", "runtime");
 const outPath = join(outDir, "pipeline-latency-summary.json");
@@ -23,7 +28,8 @@ const lines = raw.split(/\r?\n/);
 /** @type {TimingRecord[]} */
 const records = [];
 
-const timingRe = /\[pipeline_timing\]\s+stage=(\S+)\s+duration_ms=(\d+)\s+outcome=(\S+)\s+code=(\S+)/;
+const timingRe =
+  /\[pipeline_timing\]\s+stage=(\S+)\s+duration_ms=(\d+)\s+outcome=(\S+)\s+code=(\S+)/;
 
 for (const line of lines) {
   const m = line.match(timingRe);
@@ -73,7 +79,8 @@ for (const [stage, agg] of Object.entries(stageAgg)) {
   const { durations, failCount } = agg;
   const sorted = [...durations].sort((a, b) => a - b);
   const count = durations.length;
-  const meanMs = count > 0 ? Math.round((durations.reduce((a, b) => a + b, 0) / count) * 10) / 10 : 0;
+  const meanMs =
+    count > 0 ? Math.round((durations.reduce((a, b) => a + b, 0) / count) * 10) / 10 : 0;
   stages[stage] = {
     p50Ms: percentile(durations, 50),
     p95Ms: percentile(durations, 95),

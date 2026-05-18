@@ -6,12 +6,7 @@ export function normalize(text) {
 
 export const LEGACY_CARD_KEYS = ["gist", "next_move", "say_now"];
 
-export const V3_CARD_KEYS = [
-  "answer_now",
-  "next_step",
-  "question_brief",
-  "star_evidence",
-];
+export const V3_CARD_KEYS = ["answer_now", "next_step", "question_brief", "star_evidence"];
 
 /** Map CardSchemaV3 object to legacy gist/say_now/next_move for IPC/UI regression. */
 export function mapV3ToLegacy(cardV3) {
@@ -23,7 +18,10 @@ export function mapV3ToLegacy(cardV3) {
 
   let sayNow = answer;
   if (star && !normalize(sayNow).includes(normalize(star))) {
-    sayNow = sayNow.endsWith(".") || sayNow.endsWith("?") ? `${sayNow} Опора: ${star}` : `${sayNow}. Опора: ${star}`;
+    sayNow =
+      sayNow.endsWith(".") || sayNow.endsWith("?")
+        ? `${sayNow} Опора: ${star}`
+        : `${sayNow}. Опора: ${star}`;
   }
   if (risk && !normalize(sayNow).includes(normalize(risk))) {
     sayNow = `${sayNow} Риск/уточнение: ${risk}`;

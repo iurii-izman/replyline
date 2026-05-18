@@ -91,11 +91,7 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
           const card = asAnalysisCard(result);
           deps.setCard(card);
           deps.setCaptureQuality(
-            card.charsBand === "short"
-              ? "short"
-              : card.charsBand === "long"
-                ? "long"
-                : "normal",
+            card.charsBand === "short" ? "short" : card.charsBand === "long" ? "long" : "normal",
           );
           deps.setContextActive(true);
           const status = await deps.platform.invoke<ContextStatusDto>("get_context_status");

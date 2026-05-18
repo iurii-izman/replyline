@@ -7,9 +7,11 @@ This runbook is the beta-ops source of truth for observability and diagnostics.
 Replyline writes a user-safe diagnostic event line to `app.log` for runtime chain milestones.
 
 Event name:
+
 - `diag_runtime_event`
 
 Detail fields:
+
 - `stage`: `capture | stt | llm | card | retry`
 - `outcome`: `start | ok | fail`
 - `code`: stable code (for example `RL_STT_FAILED`)
@@ -47,6 +49,7 @@ Codes are for correlation and triage. User-facing messages still come from `user
 ## 3) Log redaction guarantees
 
 Before writing to `app.log`, Replyline sanitizes details and redacts:
+
 - bearer/token/password/secret/api key markers
 - JSON secret fields (`authorization`, `apiKey`, `api_key`, `token`, `password`, `secret`)
 - probable emails
@@ -54,6 +57,7 @@ Before writing to `app.log`, Replyline sanitizes details and redacts:
 - URL query values (`?[redacted_query]`)
 
 Constraint:
+
 - diagnostics should be useful for debugging, but never rely on raw secrets or transcript dumps in logs.
 
 ## 4) Diagnostic bundle structure
@@ -70,6 +74,7 @@ Bundle is valid even if runtime reports are absent. App log + manifest are suffi
 ## 5) How to collect diagnostics
 
 From command:
+
 1. `pnpm evidence:bundle`.
 2. Attach generated `reports/runtime-evidence-*` folder.
 
@@ -86,12 +91,14 @@ The diagnostic bundle collection UI is not exposed in the current stable-beta Se
 ## 7) Blocker vs non-blocker
 
 Blocker before release:
+
 - repeated `fail` in same stage/code under normal setup
 - `RL_STT_KEY_MISSING` or config errors in installer/default flow
 - diagnostic redaction failure (secrets/PII visible)
 - runtime chain cannot complete `capture -> stt -> llm -> card`
 
 Non-blocker (can ship with note):
+
 - isolated provider/network outage with clear user-safe guidance
 - optional runtime reports missing but bundle still valid
 - single flaky run not reproducible with repeated local checks
@@ -101,6 +108,7 @@ Non-blocker (can ship with note):
 Run at least 2-3 scenarios before release discussion and validate `diagnostics/runtime-events.json`.
 
 Scenario A: STT key missing
+
 1. Remove/clear Deepgram key in Settings.
 2. Hold/release hotkey once.
 3. Collect diagnostic bundle.
@@ -110,6 +118,7 @@ Scenario A: STT key missing
    - `code=RL_STT_KEY_MISSING`
 
 Scenario B: Retry without prior transcript
+
 1. Restart app (fresh session).
 2. Click `Rebuild card` before any capture.
 3. Collect diagnostic bundle.
@@ -119,6 +128,7 @@ Scenario B: Retry without prior transcript
    - `code=RL_RETRY_EMPTY`
 
 Scenario C: Invalid LLM route or unreachable gateway
+
 1. Set non-working `llmBaseUrl` and save.
 2. Run one capture cycle.
 3. Collect diagnostic bundle.
@@ -128,6 +138,7 @@ Scenario C: Invalid LLM route or unreachable gateway
    - `code=RL_LLM_FAILED` or `RL_CARD_INVALID`
 
 See also:
+
 - `docs/release-readiness.md`
 - `docs/privacy-and-trust.md`
 - `docs/error-catalog.md`

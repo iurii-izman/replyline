@@ -39,5 +39,6 @@ test-out.txt
 .env
 .env.*
 !.env.keys
+scripts/runtime-probe-env.local.ps1
 *.pem
 *.key

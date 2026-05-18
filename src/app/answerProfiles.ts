@@ -54,8 +54,5 @@ export const ANSWER_PROFILE_OPTIONS: AnswerProfileOption[] = [
 ];
 
 export function resolveAnswerProfileOption(id: string): AnswerProfileOption {
-  return (
-    ANSWER_PROFILE_OPTIONS.find((option) => option.id === id) ??
-    ANSWER_PROFILE_OPTIONS[0]
-  );
+  return ANSWER_PROFILE_OPTIONS.find((option) => option.id === id) ?? ANSWER_PROFILE_OPTIONS[0];
 }

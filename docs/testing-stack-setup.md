@@ -9,6 +9,7 @@
 - npm advisories: `pnpm audit:npm`
 
 `pnpm smoke` is required and includes:
+
 - `cargo test --manifest-path src-tauri/Cargo.toml`
 - `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings`
 - `cargo fmt --manifest-path src-tauri/Cargo.toml --check`

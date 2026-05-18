@@ -6,13 +6,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const cwd = resolve(__dirname, "..");
 
-const targetFiles = [
-  "README.md",
-  "AGENTS.md",
-  "CLAUDE.md",
-  "CONTRIBUTING.md",
-  "CHANGELOG.md"
-];
+const targetFiles = ["README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "CHANGELOG.md"];
 
 function getMarkdownFiles(dir) {
   let results = [];
@@ -34,7 +28,7 @@ function getMarkdownFiles(dir) {
 
 const docsDir = join(cwd, "docs");
 const docsFiles = getMarkdownFiles(docsDir);
-const allFiles = [...targetFiles.map(f => join(cwd, f)), ...docsFiles];
+const allFiles = [...targetFiles.map((f) => join(cwd, f)), ...docsFiles];
 
 const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 const imageExts = new Set([".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"]);
@@ -46,7 +40,10 @@ for (const filePath of allFiles) {
   if (!existsSync(filePath)) continue;
 
   const content = readFileSync(filePath, "utf8");
-  const relPath = filePath.replace(cwd, "").replace(/^[\\/]/, "").replace(/\\/g, "/");
+  const relPath = filePath
+    .replace(cwd, "")
+    .replace(/^[\\/]/, "")
+    .replace(/\\/g, "/");
 
   // Remove code blocks before checking for links
   const contentNoCode = content.replace(/```[\s\S]*?```/g, "");
@@ -59,14 +56,19 @@ for (const filePath of allFiles) {
       totalLinks++;
       let target = match[2].trim();
 
-      if (target.startsWith("http://") || target.startsWith("https://") || target.startsWith("mailto:") || target.startsWith("#")) {
+      if (
+        target.startsWith("http://") ||
+        target.startsWith("https://") ||
+        target.startsWith("mailto:") ||
+        target.startsWith("#")
+      ) {
         continue;
       }
 
       // Strip query and anchor
       const hashIndex = target.indexOf("#");
       if (hashIndex !== -1) target = target.slice(0, hashIndex);
-      
+
       const queryIndex = target.indexOf("?");
       if (queryIndex !== -1) target = target.slice(0, queryIndex);
 

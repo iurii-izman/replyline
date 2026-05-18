@@ -143,7 +143,8 @@ export const ui_ru = {
     modelPresetPrimary: "Primary model",
     modelPresetFallback: "Fallback chain",
     modelPresetNoFallback: "нет",
-    modelPresetCreditsCaveat: "Paid presets require active credits/billing; provider limits may change.",
+    modelPresetCreditsCaveat:
+      "Paid presets require active credits/billing; provider limits may change.",
     modelPresetSnapshotPrefix: "Snapshot reviewed on",
     llmBaseUrlLabel: "LLM base URL",
     llmBaseUrlPlaceholder: "https://api.example.com/v1",
@@ -159,8 +160,7 @@ export const ui_ru = {
     interviewReportRetentionOption7d: "7 дней",
     interviewReportRetentionOption30d: "30 дней",
     interviewReportRetentionOption90d: "90 дней",
-    interviewReportClearHint:
-      "Кнопка «Очистить отчёты» удаляет локальные interview reports сразу.",
+    interviewReportClearHint: "Кнопка «Очистить отчёты» удаляет локальные interview reports сразу.",
     savedBadge: "сохранено",
     checkSettings: "Проверить настройки",
     checking: "Проверяем...",
@@ -366,7 +366,8 @@ export const ui_en: UiStrings = {
     modelPresetPrimary: "Primary model",
     modelPresetFallback: "Fallback chain",
     modelPresetNoFallback: "none",
-    modelPresetCreditsCaveat: "Paid presets require active credits/billing; provider limits may change.",
+    modelPresetCreditsCaveat:
+      "Paid presets require active credits/billing; provider limits may change.",
     modelPresetSnapshotPrefix: "Snapshot reviewed on",
     llmBaseUrlLabel: "LLM base URL",
     llmBaseUrlPlaceholder: "https://api.example.com/v1",
@@ -382,8 +383,7 @@ export const ui_en: UiStrings = {
     interviewReportRetentionOption7d: "7 days",
     interviewReportRetentionOption30d: "30 days",
     interviewReportRetentionOption90d: "90 days",
-    interviewReportClearHint:
-      "\"Clear reports\" removes local interview reports immediately.",
+    interviewReportClearHint: '"Clear reports" removes local interview reports immediately.',
     savedBadge: "saved",
     checkSettings: "Check settings",
     checking: "Checking...",

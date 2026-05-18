@@ -4,12 +4,12 @@
 
 ## Class Definitions
 
-| Class | Owner | Purpose |
-| --- | --- | --- |
-| `required` | engineering | merge/release quality gate, блокирующий |
-| `optional` | engineering + QA + ops | полезные, но не блокирующие lane |
-| `experimental` | perf/security track owners | нестабильные machine-dependent проверки |
-| `deprecated` | release operations | legacy aliases, не использовать в новом потоке |
+| Class          | Owner                      | Purpose                                        |
+| -------------- | -------------------------- | ---------------------------------------------- |
+| `required`     | engineering                | merge/release quality gate, блокирующий        |
+| `optional`     | engineering + QA + ops     | полезные, но не блокирующие lane               |
+| `experimental` | perf/security track owners | нестабильные machine-dependent проверки        |
+| `deprecated`   | release operations         | legacy aliases, не использовать в новом потоке |
 
 ## Required
 
@@ -30,5 +30,6 @@
 ## Validation
 
 `pnpm scripts:lifecycle` проверяет:
+
 - что каждое имя в матрице существует в `package.json`
 - что ни один script из `package.json` не остался без lifecycle-класса

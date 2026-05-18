@@ -1,12 +1,6 @@
 import type { Accessor, Setter } from "solid-js";
 import type { SetStoreFunction } from "solid-js/store";
-import type {
-  Phase,
-  Panel,
-  AppSettings,
-  BootstrapDto,
-  CommandErrorKind,
-} from "../model";
+import type { Phase, Panel, AppSettings, BootstrapDto, CommandErrorKind } from "../model";
 import type { UiStrings } from "../locale";
 import type { AppPlatform } from "../platform";
 import type { NoticeApi } from "./notices";
@@ -51,15 +45,12 @@ export interface SettingsActions {
   persistSettings: () => Promise<void>;
 }
 
-export function createSettingsActions(
-  deps: SettingsActionDeps,
-): SettingsActions {
+export function createSettingsActions(deps: SettingsActionDeps): SettingsActions {
   async function reloadBootstrap() {
     deps.setPhase("booting");
     deps.setError(null);
     try {
-      const boot =
-        await deps.platform.invoke<BootstrapDto>("load_bootstrap");
+      const boot = await deps.platform.invoke<BootstrapDto>("load_bootstrap");
       deps.setSettings({ ...DEFAULT_SETTINGS, ...boot.settings });
       deps.setDeepgramSaved(boot.deepgramKeyPresent);
       deps.setLlmKeySaved(boot.llmKeyPresent);
@@ -109,9 +100,7 @@ export function createSettingsActions(
       if (!deps.setupRequired()) deps.setPanel("main");
     } catch (err) {
       deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
-      deps.setSettingsFormHint(
-        mapSettingsSaveError(err) ?? invokeErrorMessage(err),
-      );
+      deps.setSettingsFormHint(mapSettingsSaveError(err) ?? invokeErrorMessage(err));
       deps.setHotkeyFailed(true);
     } finally {
       deps.setSaving(false);

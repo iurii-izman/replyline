@@ -57,22 +57,27 @@ This avoids overfitting early-alpha policy while still flagging high-signal supp
 ## Duplicate warning triage decision (2026-05-14)
 
 Observed in current `cargo deny` output:
+
 - multiple duplicate-version warnings (`base64`, `bitflags`, `cssparser`, `windows_*`, `winnow`, etc.)
 - dominant source is Tauri/GTK multi-platform transitive graph, not direct Replyline crates
 
 Decision:
+
 - keep current stance as `warn` for duplicates (do not fail release gate on these warnings now)
 - avoid forced pin/unify attempts that can destabilize Tauri transitives in alpha
 - treat this as known technical debt, not as ignored risk
 
 Why:
+
 - no direct security advisory from this warning class alone
 - minimizing duplicates across Tauri transitives currently has high churn risk vs low immediate beta value
 
 Review date:
+
 - `REVIEW_DATE: 2026-07-15`
 
 Re-evaluation trigger:
+
 - Tauri major/minor dependency refresh
 - security advisory touching any duplicate crate family
 - measurable build/runtime regression linked to duplicated trees

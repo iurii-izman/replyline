@@ -13,6 +13,7 @@
 - [known-limitations.md](known-limitations.md)
 - [verification-lanes.md](verification-lanes.md)
 - [runtime-bringup.md](runtime-bringup.md)
+- [runtime-probe-credentials.md](runtime-probe-credentials.md)
 - [runtime-evidence.md](runtime-evidence.md)
 - [smoke-checks.md](smoke-checks.md)
 - [release-readiness.md](release-readiness.md)

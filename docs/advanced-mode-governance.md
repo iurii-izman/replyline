@@ -5,6 +5,7 @@ This document defines lightweight governance for Advanced Mode as an ops-only di
 ## Purpose
 
 Advanced Mode exists as a controlled diagnostics track for beta-ops experimentation:
+
 - custom system prompt (ops experimentation only)
 - streaming STT toggle (ops experimentation only)
 - dev fixture run (debug builds only)
@@ -16,11 +17,13 @@ Advanced Mode is not a hidden automation mode and does not bypass explicit user 
 ## Risks and constraints
 
 When exercised in ops diagnostics:
+
 - higher latency
 - lower stability or fallback churn
 - card format drift under custom prompts
 
 Constraints:
+
 - keep user-safe error mapping active
 - keep diagnostics redacted
 - do not claim improved quality without evidence artifact
@@ -28,6 +31,7 @@ Constraints:
 ## Enable criteria
 
 Enable only when all are true:
+
 1. There is a concrete debug/experiment task.
 2. One owner is responsible for the run.
 3. Verification scenario is documented.
@@ -36,6 +40,7 @@ Enable only when all are true:
 ## Disable criteria
 
 Disable when any is true:
+
 1. Returning to routine beta usage.
 2. Pipeline error rate grows during test window.
 3. Card quality regression is confirmed.

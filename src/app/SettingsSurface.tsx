@@ -152,8 +152,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               <div class="field-help">{st().settings.modelPresetCreditsCaveat}</div>
             </Show>
             <div class="field-help">
-              {st().settings.modelPresetSnapshotPrefix} {selectedPreset().lastReviewedAt}. Availability and
-              rate limits can change.
+              {st().settings.modelPresetSnapshotPrefix} {selectedPreset().lastReviewedAt}.
+              Availability and rate limits can change.
             </div>
 
             <label class="field">
@@ -187,9 +187,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 </For>
               </select>
               <span class="field-help">
-                {
-                  resolveAnswerProfileOption(controller().settings.activeAnswerProfile).description
-                }
+                {resolveAnswerProfileOption(controller().settings.activeAnswerProfile).description}
               </span>
             </label>
 
@@ -413,7 +411,9 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 <button
                   class="btn-primary"
                   type="button"
-                  disabled={!controller().candidatePackPreview() || controller().candidatePackSaving()}
+                  disabled={
+                    !controller().candidatePackPreview() || controller().candidatePackSaving()
+                  }
                   onClick={() => void controller().savePreparedCandidatePack()}
                 >
                   {st().settings.savePack}
@@ -421,14 +421,27 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </div>
               <div class="candidate-pack-preview" data-testid="candidate-pack-preview">
                 <div class="field-label">{st().settings.previewTitle}</div>
-                <Show when={controller().candidatePackPreview()} fallback={<p>{st().settings.noPreview}</p>}>
+                <Show
+                  when={controller().candidatePackPreview()}
+                  fallback={<p>{st().settings.noPreview}</p>}
+                >
                   <div class="preview-grid">
                     <p>
-                      {st().settings.candidatePackPreview.score}: <strong>{controller().candidatePackPreview()!.packQualityScore}</strong>
+                      {st().settings.candidatePackPreview.score}:{" "}
+                      <strong>{controller().candidatePackPreview()!.packQualityScore}</strong>
                     </p>
-                    <p>{st().settings.candidatePackPreview.facts}: {controller().candidatePackPreview()!.candidateFacts.length}</p>
-                    <p>{st().settings.candidatePackPreview.roleKeywords}: {controller().candidatePackPreview()!.roleKeywords.join(", ")}</p>
-                    <p>{st().settings.candidatePackPreview.companyValues}: {controller().candidatePackPreview()!.companyValues.join(", ")}</p>
+                    <p>
+                      {st().settings.candidatePackPreview.facts}:{" "}
+                      {controller().candidatePackPreview()!.candidateFacts.length}
+                    </p>
+                    <p>
+                      {st().settings.candidatePackPreview.roleKeywords}:{" "}
+                      {controller().candidatePackPreview()!.roleKeywords.join(", ")}
+                    </p>
+                    <p>
+                      {st().settings.candidatePackPreview.companyValues}:{" "}
+                      {controller().candidatePackPreview()!.companyValues.join(", ")}
+                    </p>
                   </div>
                 </Show>
               </div>
@@ -455,7 +468,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.candidateSummary}
               onInput={(event) =>
-                controller().setCandidatePackDraft("candidateSummary", event.currentTarget.value)}
+                controller().setCandidatePackDraft("candidateSummary", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -464,7 +478,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.targetRole}
               onInput={(event) =>
-                controller().setCandidatePackDraft("targetRole", event.currentTarget.value)}
+                controller().setCandidatePackDraft("targetRole", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -474,7 +489,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               placeholder={st().settings.factsHint}
               value={controller().candidatePackDraft.factsText}
               onInput={(event) =>
-                controller().setCandidatePackDraft("factsText", event.currentTarget.value)}
+                controller().setCandidatePackDraft("factsText", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -483,7 +499,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.jobTitle}
               onInput={(event) =>
-                controller().setCandidatePackDraft("jobTitle", event.currentTarget.value)}
+                controller().setCandidatePackDraft("jobTitle", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -492,7 +509,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.jobCompany}
               onInput={(event) =>
-                controller().setCandidatePackDraft("jobCompany", event.currentTarget.value)}
+                controller().setCandidatePackDraft("jobCompany", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -501,7 +519,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.requirementsText}
               onInput={(event) =>
-                controller().setCandidatePackDraft("requirementsText", event.currentTarget.value)}
+                controller().setCandidatePackDraft("requirementsText", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -513,7 +532,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 controller().setCandidatePackDraft(
                   "responsibilitiesText",
                   event.currentTarget.value,
-                )}
+                )
+              }
             />
           </label>
           <label class="field">
@@ -522,7 +542,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.keywordsText}
               onInput={(event) =>
-                controller().setCandidatePackDraft("keywordsText", event.currentTarget.value)}
+                controller().setCandidatePackDraft("keywordsText", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -531,7 +552,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.companyValuesText}
               onInput={(event) =>
-                controller().setCandidatePackDraft("companyValuesText", event.currentTarget.value)}
+                controller().setCandidatePackDraft("companyValuesText", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -540,7 +562,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.avoidClaimsText}
               onInput={(event) =>
-                controller().setCandidatePackDraft("avoidClaimsText", event.currentTarget.value)}
+                controller().setCandidatePackDraft("avoidClaimsText", event.currentTarget.value)
+              }
             />
           </label>
           <label class="field">
@@ -552,7 +575,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 controller().setCandidatePackDraft(
                   "preferredExamplesText",
                   event.currentTarget.value,
-                )}
+                )
+              }
             />
           </label>
           <label class="field">
@@ -561,14 +585,23 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               class="field-input"
               value={controller().candidatePackDraft.language}
               onInput={(event) =>
-                controller().setCandidatePackDraft("language", event.currentTarget.value)}
+                controller().setCandidatePackDraft("language", event.currentTarget.value)
+              }
             />
           </label>
           <div class="settings-actions">
-            <button class="btn-primary" type="button" onClick={() => void controller().saveCandidatePack()}>
+            <button
+              class="btn-primary"
+              type="button"
+              onClick={() => void controller().saveCandidatePack()}
+            >
               {st().settings.saveCandidatePack}
             </button>
-            <button class="btn-ghost" type="button" onClick={() => void controller().clearCandidatePack()}>
+            <button
+              class="btn-ghost"
+              type="button"
+              onClick={() => void controller().clearCandidatePack()}
+            >
               {st().settings.clearCandidatePack}
             </button>
           </div>

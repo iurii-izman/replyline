@@ -12,6 +12,7 @@ Offline deterministic gate for interview-answer quality.
 Path: `tests/fixtures/interview-quality/golden-dataset-v1.json`
 
 Each fixture includes:
+
 - `transcript`
 - optional `candidatePack`
 - `expected.questionType`

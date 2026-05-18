@@ -2,12 +2,12 @@
 
 ## Severity lanes
 
-| Severity | Definition | Release decision |
-|---|---|---|
-| S0 | data leak, credential exposure, or critical trust/security breach | No-Go |
-| S1 | core path unavailable (`capture -> card`) or repeat crash/restart loop | No-Go |
-| S2 | degraded core quality with workaround (retry helps, partial failure) | Conditional Go with explicit risk sign-off |
-| S3 | minor UX/doc drift, no core path break | Go |
+| Severity | Definition                                                             | Release decision                           |
+| -------- | ---------------------------------------------------------------------- | ------------------------------------------ |
+| S0       | data leak, credential exposure, or critical trust/security breach      | No-Go                                      |
+| S1       | core path unavailable (`capture -> card`) or repeat crash/restart loop | No-Go                                      |
+| S2       | degraded core quality with workaround (retry helps, partial failure)   | Conditional Go with explicit risk sign-off |
+| S3       | minor UX/doc drift, no core path break                                 | Go                                         |
 
 ## Security lane sync
 

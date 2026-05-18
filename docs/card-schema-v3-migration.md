@@ -6,13 +6,13 @@ Replyline now generates **CardSchemaV3** at the LLM boundary and maps it to the 
 
 ## V3 fields
 
-| V3 field | Legacy mapping | Role |
-| --- | --- | --- |
-| `question_brief` | `gist` | What the other side is asking or pushing |
-| `answer_now` | `say_now` | Paragraph-style words to say now |
-| `star_evidence` | folded into `say_now` when needed | Short anchor from the fragment |
-| `next_step` | `next_move` | Concrete coordination artifact |
-| `risk_or_clarifier` (optional) | appended to `say_now` when present | Risk or clarifier |
+| V3 field                       | Legacy mapping                     | Role                                     |
+| ------------------------------ | ---------------------------------- | ---------------------------------------- |
+| `question_brief`               | `gist`                             | What the other side is asking or pushing |
+| `answer_now`                   | `say_now`                          | Paragraph-style words to say now         |
+| `star_evidence`                | folded into `say_now` when needed  | Short anchor from the fragment           |
+| `next_step`                    | `next_move`                        | Concrete coordination artifact           |
+| `risk_or_clarifier` (optional) | appended to `say_now` when present | Risk or clarifier                        |
 
 ## Compatibility
 
@@ -31,11 +31,11 @@ Replyline now generates **CardSchemaV3** at the LLM boundary and maps it to the 
 
 Limits scale with `transcript_chars`:
 
-| Band | Transcript chars | `answer_now` max (chars) | Min words |
-| --- | --- | --- | --- |
-| short | ≤ 40 | 360 | 10 |
-| medium | ≤ 120 | 480 | 14 |
-| long | > 120 | 560 | 16 |
+| Band   | Transcript chars | `answer_now` max (chars) | Min words |
+| ------ | ---------------- | ------------------------ | --------- |
+| short  | ≤ 40             | 360                      | 10        |
+| medium | ≤ 120            | 480                      | 14        |
+| long   | > 120            | 560                      | 16        |
 
 ## Quality logging
 

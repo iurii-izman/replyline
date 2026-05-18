@@ -4,20 +4,13 @@
     "scenario": "Tell me about yourself",
     "transcript": "Interviewer: Tell me about yourself and your background.",
     "candidatePack": {
-      "resumeFacts": [
-        "5 years in B2B SaaS",
-        "led onboarding redesign"
-      ],
+      "resumeFacts": ["5 years in B2B SaaS", "led onboarding redesign"],
       "company": "Replyline"
     },
     "expected": {
       "questionType": "hr",
-      "mustMention": [
-        "B2B SaaS"
-      ],
-      "mustNotMention": [
-        "childhood"
-      ],
+      "mustMention": ["B2B SaaS"],
+      "mustNotMention": ["childhood"],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
@@ -39,25 +32,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "B2B SaaS"
-        ],
-        "keywords": [
-          "B2B SaaS"
-        ],
+        "mustMention": ["B2B SaaS"],
+        "keywords": ["B2B SaaS"],
         "metrics": [],
-        "resumeAnchors": [
-          "5 years in B2B SaaS"
-        ]
+        "resumeAnchors": ["5 years in B2B SaaS"]
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -78,20 +60,12 @@
     "transcript": "Interviewer: Why do you want to work at Replyline?",
     "candidatePack": {
       "company": "Replyline",
-      "companyValues": [
-        "clarity",
-        "craft",
-        "speed"
-      ]
+      "companyValues": ["clarity", "craft", "speed"]
     },
     "expected": {
       "questionType": "hr",
-      "mustMention": [
-        "Replyline"
-      ],
-      "mustNotMention": [
-        "any company"
-      ],
+      "mustMention": ["Replyline"],
+      "mustNotMention": ["any company"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -113,23 +87,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "Replyline"
-        ],
-        "keywords": [
-          "Replyline"
-        ],
+        "mustMention": ["Replyline"],
+        "keywords": ["Replyline"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -149,19 +114,12 @@
     "scenario": "Why this role?",
     "transcript": "Interviewer: Why this role specifically?",
     "candidatePack": {
-      "resumeFacts": [
-        "shipped workflow automations",
-        "owns incident retrospectives"
-      ]
+      "resumeFacts": ["shipped workflow automations", "owns incident retrospectives"]
     },
     "expected": {
       "questionType": "hr",
-      "mustMention": [
-        "workflow automations"
-      ],
-      "mustNotMention": [
-        "I just need a job"
-      ],
+      "mustMention": ["workflow automations"],
+      "mustNotMention": ["I just need a job"],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
@@ -183,25 +141,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "workflow automations"
-        ],
-        "keywords": [
-          "workflow automations"
-        ],
+        "mustMention": ["workflow automations"],
+        "keywords": ["workflow automations"],
         "metrics": [],
-        "resumeAnchors": [
-          "shipped workflow automations"
-        ]
+        "resumeAnchors": ["shipped workflow automations"]
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -221,20 +168,12 @@
     "scenario": "Conflict with colleague",
     "transcript": "Interviewer: Tell me about a conflict with a colleague.",
     "candidatePack": {
-      "resumeFacts": [
-        "partnered with design and engineering"
-      ]
+      "resumeFacts": ["partnered with design and engineering"]
     },
     "expected": {
       "questionType": "behavioral",
-      "mustMention": [
-        "situation",
-        "action",
-        "result"
-      ],
-      "mustNotMention": [
-        "they were incompetent"
-      ],
+      "mustMention": ["situation", "action", "result"],
+      "mustNotMention": ["they were incompetent"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -256,26 +195,14 @@
         "structure": "STAR"
       },
       "signals": {
-        "mustMention": [
-          "situation",
-          "action",
-          "result"
-        ],
-        "keywords": [
-          "situation",
-          "action"
-        ],
+        "mustMention": ["situation", "action", "result"],
+        "keywords": ["situation", "action"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -297,12 +224,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "behavioral",
-      "mustMention": [
-        "what I learned"
-      ],
-      "mustNotMention": [
-        "not my fault"
-      ],
+      "mustMention": ["what I learned"],
+      "mustNotMention": ["not my fault"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -324,23 +247,14 @@
         "structure": "STAR"
       },
       "signals": {
-        "mustMention": [
-          "what I learned"
-        ],
-        "keywords": [
-          "what I learned"
-        ],
+        "mustMention": ["what I learned"],
+        "keywords": ["what I learned"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -360,19 +274,12 @@
     "scenario": "Leadership example",
     "transcript": "Interviewer: Give me an example of leadership.",
     "candidatePack": {
-      "resumeFacts": [
-        "mentored two junior PMs"
-      ]
+      "resumeFacts": ["mentored two junior PMs"]
     },
     "expected": {
       "questionType": "behavioral",
-      "mustMention": [
-        "action",
-        "result"
-      ],
-      "mustNotMention": [
-        "I just told people what to do"
-      ],
+      "mustMention": ["action", "result"],
+      "mustNotMention": ["I just told people what to do"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -394,25 +301,14 @@
         "structure": "STAR"
       },
       "signals": {
-        "mustMention": [
-          "action",
-          "result"
-        ],
-        "keywords": [
-          "action",
-          "result"
-        ],
+        "mustMention": ["action", "result"],
+        "keywords": ["action", "result"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -434,12 +330,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "behavioral",
-      "mustMention": [
-        "learned"
-      ],
-      "mustNotMention": [
-        "perfectionist"
-      ],
+      "mustMention": ["learned"],
+      "mustNotMention": ["perfectionist"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -461,23 +353,14 @@
         "structure": "STAR"
       },
       "signals": {
-        "mustMention": [
-          "learned"
-        ],
-        "keywords": [
-          "learned"
-        ],
+        "mustMention": ["learned"],
+        "keywords": ["learned"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -501,12 +384,8 @@
     },
     "expected": {
       "questionType": "unknown",
-      "mustMention": [
-        "clarify"
-      ],
-      "mustNotMention": [
-        "I cannot answer"
-      ],
+      "mustMention": ["clarify"],
+      "mustNotMention": ["I cannot answer"],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -528,23 +407,14 @@
         "structure": "CLARIFY"
       },
       "signals": {
-        "mustMention": [
-          "clarify"
-        ],
-        "keywords": [
-          "clarify"
-        ],
+        "mustMention": ["clarify"],
+        "keywords": ["clarify"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -566,12 +436,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "salary",
-      "mustMention": [
-        "range"
-      ],
-      "mustNotMention": [
-        "any salary"
-      ],
+      "mustMention": ["range"],
+      "mustNotMention": ["any salary"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -593,23 +459,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "range"
-        ],
-        "keywords": [
-          "range"
-        ],
+        "mustMention": ["range"],
+        "keywords": ["range"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -629,18 +486,12 @@
     "scenario": "Technical unknown",
     "transcript": "Interviewer: How would you debug a Rust memory leak?",
     "candidatePack": {
-      "resumeFacts": [
-        "strong TypeScript background"
-      ]
+      "resumeFacts": ["strong TypeScript background"]
     },
     "expected": {
       "questionType": "technical",
-      "mustMention": [
-        "approach"
-      ],
-      "mustNotMention": [
-        "I know this deeply"
-      ],
+      "mustMention": ["approach"],
+      "mustNotMention": ["I know this deeply"],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -662,23 +513,14 @@
         "structure": "CLARIFY"
       },
       "signals": {
-        "mustMention": [
-          "approach"
-        ],
-        "keywords": [
-          "approach"
-        ],
+        "mustMention": ["approach"],
+        "keywords": ["approach"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -700,12 +542,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "technical",
-      "mustMention": [
-        "tradeoff"
-      ],
-      "mustNotMention": [
-        "single perfect architecture"
-      ],
+      "mustMention": ["tradeoff"],
+      "mustNotMention": ["single perfect architecture"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -727,23 +565,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "tradeoff"
-        ],
-        "keywords": [
-          "tradeoff"
-        ],
+        "mustMention": ["tradeoff"],
+        "keywords": ["tradeoff"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -765,12 +594,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "product",
-      "mustMention": [
-        "tradeoff"
-      ],
-      "mustNotMention": [
-        "always"
-      ],
+      "mustMention": ["tradeoff"],
+      "mustNotMention": ["always"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -792,23 +617,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "tradeoff"
-        ],
-        "keywords": [
-          "tradeoff"
-        ],
+        "mustMention": ["tradeoff"],
+        "keywords": ["tradeoff"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -830,12 +646,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "product",
-      "mustMention": [
-        "impact"
-      ],
-      "mustNotMention": [
-        "I do whatever is loudest"
-      ],
+      "mustMention": ["impact"],
+      "mustNotMention": ["I do whatever is loudest"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -857,23 +669,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "impact"
-        ],
-        "keywords": [
-          "impact"
-        ],
+        "mustMention": ["impact"],
+        "keywords": ["impact"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -895,12 +698,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "behavioral",
-      "mustMention": [
-        "alignment"
-      ],
-      "mustNotMention": [
-        "ignore them"
-      ],
+      "mustMention": ["alignment"],
+      "mustNotMention": ["ignore them"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -922,23 +721,14 @@
         "structure": "STAR"
       },
       "signals": {
-        "mustMention": [
-          "alignment"
-        ],
-        "keywords": [
-          "alignment"
-        ],
+        "mustMention": ["alignment"],
+        "keywords": ["alignment"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -960,13 +750,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "behavioral",
-      "mustMention": [
-        "owner",
-        "timeline"
-      ],
-      "mustNotMention": [
-        "blame support"
-      ],
+      "mustMention": ["owner", "timeline"],
+      "mustNotMention": ["blame support"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -988,25 +773,14 @@
         "structure": "STAR"
       },
       "signals": {
-        "mustMention": [
-          "owner",
-          "timeline"
-        ],
-        "keywords": [
-          "owner",
-          "timeline"
-        ],
+        "mustMention": ["owner", "timeline"],
+        "keywords": ["owner", "timeline"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1026,18 +800,12 @@
     "scenario": "Strengths",
     "transcript": "Interviewer: What are your strengths?",
     "candidatePack": {
-      "resumeFacts": [
-        "operates well in ambiguity"
-      ]
+      "resumeFacts": ["operates well in ambiguity"]
     },
     "expected": {
       "questionType": "culture_fit",
-      "mustMention": [
-        "ambiguity"
-      ],
-      "mustNotMention": [
-        "I am perfect"
-      ],
+      "mustMention": ["ambiguity"],
+      "mustNotMention": ["I am perfect"],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
@@ -1059,25 +827,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "ambiguity"
-        ],
-        "keywords": [
-          "ambiguity"
-        ],
+        "mustMention": ["ambiguity"],
+        "keywords": ["ambiguity"],
         "metrics": [],
-        "resumeAnchors": [
-          "operates well in ambiguity"
-        ]
+        "resumeAnchors": ["operates well in ambiguity"]
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1099,12 +856,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "culture_fit",
-      "mustMention": [
-        "improving"
-      ],
-      "mustNotMention": [
-        "I work too hard"
-      ],
+      "mustMention": ["improving"],
+      "mustNotMention": ["I work too hard"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1126,23 +879,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "improving"
-        ],
-        "keywords": [
-          "improving"
-        ],
+        "mustMention": ["improving"],
+        "keywords": ["improving"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1162,18 +906,12 @@
     "scenario": "Gap in resume",
     "transcript": "Interviewer: I see a gap in your resume, can you explain?",
     "candidatePack": {
-      "resumeFacts": [
-        "2022 caregiving break for family health"
-      ]
+      "resumeFacts": ["2022 caregiving break for family health"]
     },
     "expected": {
       "questionType": "hr",
-      "mustMention": [
-        "caregiving"
-      ],
-      "mustNotMention": [
-        "made up startup"
-      ],
+      "mustMention": ["caregiving"],
+      "mustNotMention": ["made up startup"],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
@@ -1195,25 +933,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "caregiving"
-        ],
-        "keywords": [
-          "caregiving"
-        ],
+        "mustMention": ["caregiving"],
+        "keywords": ["caregiving"],
         "metrics": [],
-        "resumeAnchors": [
-          "2022 caregiving break for family health"
-        ]
+        "resumeAnchors": ["2022 caregiving break for family health"]
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1235,12 +962,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "culture_fit",
-      "mustMention": [
-        "growth"
-      ],
-      "mustNotMention": [
-        "my manager was awful"
-      ],
+      "mustMention": ["growth"],
+      "mustNotMention": ["my manager was awful"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1262,23 +985,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "growth"
-        ],
-        "keywords": [
-          "growth"
-        ],
+        "mustMention": ["growth"],
+        "keywords": ["growth"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1300,12 +1014,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "culture_fit",
-      "mustMention": [
-        "async"
-      ],
-      "mustNotMention": [
-        "always online"
-      ],
+      "mustMention": ["async"],
+      "mustNotMention": ["always online"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1327,23 +1037,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "async"
-        ],
-        "keywords": [
-          "async"
-        ],
+        "mustMention": ["async"],
+        "keywords": ["async"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1363,20 +1064,12 @@
     "scenario": "Culture fit",
     "transcript": "Interviewer: What culture do you thrive in?",
     "candidatePack": {
-      "companyValues": [
-        "clarity",
-        "ownership"
-      ]
+      "companyValues": ["clarity", "ownership"]
     },
     "expected": {
       "questionType": "culture_fit",
-      "mustMention": [
-        "clarity",
-        "ownership"
-      ],
-      "mustNotMention": [
-        "no feedback"
-      ],
+      "mustMention": ["clarity", "ownership"],
+      "mustNotMention": ["no feedback"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1398,25 +1091,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "clarity",
-          "ownership"
-        ],
-        "keywords": [
-          "clarity",
-          "ownership"
-        ],
+        "mustMention": ["clarity", "ownership"],
+        "keywords": ["clarity", "ownership"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1438,12 +1120,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "behavioral",
-      "mustMention": [
-        "prioritize"
-      ],
-      "mustNotMention": [
-        "I never feel stress"
-      ],
+      "mustMention": ["prioritize"],
+      "mustNotMention": ["I never feel stress"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1465,23 +1143,14 @@
         "structure": "STAR"
       },
       "signals": {
-        "mustMention": [
-          "prioritize"
-        ],
-        "keywords": [
-          "prioritize"
-        ],
+        "mustMention": ["prioritize"],
+        "keywords": ["prioritize"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1501,19 +1170,12 @@
     "scenario": "Metrics question",
     "transcript": "Interviewer: What metrics did you improve in your last role?",
     "candidatePack": {
-      "resumeFacts": [
-        "reduced onboarding drop-off from 32 to 21 percent"
-      ]
+      "resumeFacts": ["reduced onboarding drop-off from 32 to 21 percent"]
     },
     "expected": {
       "questionType": "hr",
-      "mustMention": [
-        "32",
-        "21"
-      ],
-      "mustNotMention": [
-        "doubled revenue"
-      ],
+      "mustMention": ["32", "21"],
+      "mustNotMention": ["doubled revenue"],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
@@ -1535,30 +1197,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "32",
-          "21"
-        ],
-        "keywords": [
-          "32",
-          "21"
-        ],
-        "metrics": [
-          "32",
-          "21"
-        ],
-        "resumeAnchors": [
-          "reduced onboarding drop-off from 32 to 21 percent"
-        ]
+        "mustMention": ["32", "21"],
+        "keywords": ["32", "21"],
+        "metrics": ["32", "21"],
+        "resumeAnchors": ["reduced onboarding drop-off from 32 to 21 percent"]
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1578,18 +1224,12 @@
     "scenario": "No metrics available",
     "transcript": "Interviewer: What exact metrics did you improve?",
     "candidatePack": {
-      "resumeFacts": [
-        "startup lacked robust analytics"
-      ]
+      "resumeFacts": ["startup lacked robust analytics"]
     },
     "expected": {
       "questionType": "hr",
-      "mustMention": [
-        "did not have robust analytics"
-      ],
-      "mustNotMention": [
-        "85 percent"
-      ],
+      "mustMention": ["did not have robust analytics"],
+      "mustNotMention": ["85 percent"],
       "allowClarifier": true,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
@@ -1611,25 +1251,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "did not have robust analytics"
-        ],
-        "keywords": [
-          "did not have robust analytics"
-        ],
+        "mustMention": ["did not have robust analytics"],
+        "keywords": ["did not have robust analytics"],
         "metrics": [],
-        "resumeAnchors": [
-          "startup lacked robust analytics"
-        ]
+        "resumeAnchors": ["startup lacked robust analytics"]
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1649,18 +1278,12 @@
     "scenario": "Resume fact present",
     "transcript": "Interviewer: You mention onboarding redesign; what did you own?",
     "candidatePack": {
-      "resumeFacts": [
-        "led onboarding redesign"
-      ]
+      "resumeFacts": ["led onboarding redesign"]
     },
     "expected": {
       "questionType": "hr",
-      "mustMention": [
-        "owned"
-      ],
-      "mustNotMention": [
-        "someone else did it"
-      ],
+      "mustMention": ["owned"],
+      "mustNotMention": ["someone else did it"],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
@@ -1682,25 +1305,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "owned"
-        ],
-        "keywords": [
-          "owned"
-        ],
+        "mustMention": ["owned"],
+        "keywords": ["owned"],
         "metrics": [],
-        "resumeAnchors": [
-          "led onboarding redesign"
-        ]
+        "resumeAnchors": ["led onboarding redesign"]
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1720,18 +1332,12 @@
     "scenario": "Resume fact absent",
     "transcript": "Interviewer: I heard you built a fraud engine at MegaBank, true?",
     "candidatePack": {
-      "resumeFacts": [
-        "B2B SaaS operations"
-      ]
+      "resumeFacts": ["B2B SaaS operations"]
     },
     "expected": {
       "questionType": "hr",
-      "mustMention": [
-        "not in my background"
-      ],
-      "mustNotMention": [
-        "I built it"
-      ],
+      "mustMention": ["not in my background"],
+      "mustNotMention": ["I built it"],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1753,23 +1359,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "not in my background"
-        ],
-        "keywords": [
-          "not in my background"
-        ],
+        "mustMention": ["not in my background"],
+        "keywords": ["not in my background"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1790,20 +1387,12 @@
     "transcript": "Interviewer: Which of our values resonates most with you?",
     "candidatePack": {
       "company": "Replyline",
-      "companyValues": [
-        "clarity",
-        "speed",
-        "ownership"
-      ]
+      "companyValues": ["clarity", "speed", "ownership"]
     },
     "expected": {
       "questionType": "culture_fit",
-      "mustMention": [
-        "clarity"
-      ],
-      "mustNotMention": [
-        "I did not read your values"
-      ],
+      "mustMention": ["clarity"],
+      "mustNotMention": ["I did not read your values"],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1825,23 +1414,14 @@
         "structure": "DIRECT"
       },
       "signals": {
-        "mustMention": [
-          "clarity"
-        ],
-        "keywords": [
-          "clarity"
-        ],
+        "mustMention": ["clarity"],
+        "keywords": ["clarity"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1863,12 +1443,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "unknown",
-      "mustMention": [
-        "challenge"
-      ],
-      "mustNotMention": [
-        "inaudible forever"
-      ],
+      "mustMention": ["challenge"],
+      "mustNotMention": ["inaudible forever"],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1890,23 +1466,14 @@
         "structure": "CLARIFY"
       },
       "signals": {
-        "mustMention": [
-          "challenge"
-        ],
-        "keywords": [
-          "challenge"
-        ],
+        "mustMention": ["challenge"],
+        "keywords": ["challenge"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1928,12 +1495,8 @@
     "candidatePack": null,
     "expected": {
       "questionType": "unknown",
-      "mustMention": [
-        "context"
-      ],
-      "mustNotMention": [
-        "because yes"
-      ],
+      "mustMention": ["context"],
+      "mustNotMention": ["because yes"],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -1955,23 +1518,14 @@
         "structure": "CLARIFY"
       },
       "signals": {
-        "mustMention": [
-          "context"
-        ],
-        "keywords": [
-          "context"
-        ],
+        "mustMention": ["context"],
+        "keywords": ["context"],
         "metrics": [],
         "resumeAnchors": []
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [
@@ -1991,19 +1545,12 @@
     "scenario": "Long compound question",
     "transcript": "Interviewer: Can you walk through a leadership failure, what you learned, how you prioritize under pressure, and why we should trust you with this role?",
     "candidatePack": {
-      "resumeFacts": [
-        "incident retrospectives owner"
-      ]
+      "resumeFacts": ["incident retrospectives owner"]
     },
     "expected": {
       "questionType": "behavioral",
-      "mustMention": [
-        "learned",
-        "prioritize"
-      ],
-      "mustNotMention": [
-        "I am flawless"
-      ],
+      "mustMention": ["learned", "prioritize"],
+      "mustNotMention": ["I am flawless"],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
@@ -2025,27 +1572,14 @@
         "structure": "STAR"
       },
       "signals": {
-        "mustMention": [
-          "learned",
-          "prioritize"
-        ],
-        "keywords": [
-          "learned",
-          "prioritize"
-        ],
+        "mustMention": ["learned", "prioritize"],
+        "keywords": ["learned", "prioritize"],
         "metrics": [],
-        "resumeAnchors": [
-          "incident retrospectives owner"
-        ]
+        "resumeAnchors": ["incident retrospectives owner"]
       },
       "risks": {
-        "weakPoints": [
-          "overly generic framing"
-        ],
-        "avoid": [
-          "fabrication",
-          "coaching fluff"
-        ],
+        "weakPoints": ["overly generic framing"],
+        "avoid": ["fabrication", "coaching fluff"],
         "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
       },
       "followUps": [

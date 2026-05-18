@@ -34,12 +34,12 @@
 
 Многоуровневая система редакции в `src-tauri/src/privacy.rs`:
 
-| Tier | Helper | Что покрывает |
-|------|--------|--------------|
-| R1 | `redact_secrets` | API keys, bearer tokens, secret=, JSON secret fields, URL credentials |
-| R2 | `redact_transcript_like` | Полный transcript/LLM prompt → chars_band + safe preview |
-| R3 | `safe_preview` | Безопасное усечение любой строки с R1-редакцией |
-| R4 | `redact_url_credentials` | URL userinfo (`user:pass@`), token query params |
+| Tier | Helper                   | Что покрывает                                                         |
+| ---- | ------------------------ | --------------------------------------------------------------------- |
+| R1   | `redact_secrets`         | API keys, bearer tokens, secret=, JSON secret fields, URL credentials |
+| R2   | `redact_transcript_like` | Полный transcript/LLM prompt → chars_band + safe preview              |
+| R3   | `safe_preview`           | Безопасное усечение любой строки с R1-редакцией                       |
+| R4   | `redact_url_credentials` | URL userinfo (`user:pass@`), token query params                       |
 
 - R1 применяется автоматически в `app_log::sanitize` (каждое log-сообщение).
 - R2/R3 применяются явно в `pipeline_errors`, `stt_provider` и других call sites.
@@ -58,11 +58,13 @@ connect-src 'self' ipc: http://ipc.localhost http://localhost:* ws://localhost:*
 **`https://*` — обоснование:**
 
 Нельзя сузить до конкретных доменов, потому что:
+
 1. Пользователь сам настраивает `llm_base_url` — любой LLM-провайдер (OpenAI, OpenRouter, Together, Groq, локальный прокси и т.д.).
 2. Tauri CSP статичен на этапе сборки и не может динамически адаптироваться под настройки пользователя.
 3. Альтернатива (предлагать пользователю редактировать CSP) создаёт неприемлемый UX surface.
 
 Компенсирующие меры:
+
 - `http://127.0.0.1:*` ограничен loopback-адресом (не `http://*`).
 - `wss://*.deepgram.com` ограничен доменом Deepgram (единственный STT-провайдер).
 - Проверка в `check-security-lanes.mjs` гарантирует, что `https://*` не удалён без осознанного решения.

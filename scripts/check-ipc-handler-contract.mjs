@@ -83,15 +83,11 @@ const staticContractChecks = [
     message: "Expected CURRENT_SCHEMA_VERSION = 6 in src-tauri/src/settings.rs",
   },
   {
-    ok:
-      interviewRustText.includes("pub short: String") &&
-      modelText.includes("short: string;"),
+    ok: interviewRustText.includes("pub short: String") && modelText.includes("short: string;"),
     message: "Interview answer.short drift: Rust/TS must both be string",
   },
   {
-    ok:
-      interviewRustText.includes("pub strong: String") &&
-      modelText.includes("strong: string;"),
+    ok: interviewRustText.includes("pub strong: String") && modelText.includes("strong: string;"),
     message: "Interview answer.strong drift: Rust/TS must both be string",
   },
   {
@@ -103,7 +99,7 @@ const staticContractChecks = [
   {
     ok:
       interviewRustText.includes("pub confidence: InterviewConfidence") &&
-      modelText.includes("confidence: \"low\" | \"medium\" | \"high\";"),
+      modelText.includes('confidence: "low" | "medium" | "high";'),
     message: "Interview question.confidence drift between Rust/TS",
   },
   {

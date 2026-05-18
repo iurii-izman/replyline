@@ -3,7 +3,7 @@ name: Extended Quality
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 5 * * 1'
+    - cron: "0 5 * * 1"
 
 jobs:
   extended-quality:

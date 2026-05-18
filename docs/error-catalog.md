@@ -25,16 +25,16 @@ When a `CommandError` is received:
 
 ## Settings Validation Errors (mapSettingsSaveError)
 
-| Backend code             | User message                                  |
-| ------------------------ | --------------------------------------------- |
-| `HOTKEY_REQUIRED`        | Клавиша: задайте сочетание ниже               |
-| `MODEL_REQUIRED`         | Модель ответа: заполните поле                 |
-| `INVALID_URL`            | Адрес шлюза: http:// или https://, полный URL |
-| `CAPTURE_RANGE_INVALID`  | Лимит фрагмента: 5–180 секунд                 |
-| `INVALID_LANGUAGE`       | Файл настроек повреждён (язык)                |
-| `INVALID_SCHEMA`         | Версия settings.json не подходит              |
-| `IO:`                    | Не записался файл настроек                    |
-| `JSON`                   | Сбой записи настроек                          |
+| Backend code            | User message                                  |
+| ----------------------- | --------------------------------------------- |
+| `HOTKEY_REQUIRED`       | Клавиша: задайте сочетание ниже               |
+| `MODEL_REQUIRED`        | Модель ответа: заполните поле                 |
+| `INVALID_URL`           | Адрес шлюза: http:// или https://, полный URL |
+| `CAPTURE_RANGE_INVALID` | Лимит фрагмента: 5–180 секунд                 |
+| `INVALID_LANGUAGE`      | Файл настроек повреждён (язык)                |
+| `INVALID_SCHEMA`        | Версия settings.json не подходит              |
+| `IO:`                   | Не записался файл настроек                    |
+| `JSON`                  | Сбой записи настроек                          |
 
 ## Pipeline Error Heuristics (userSafePipelineError)
 

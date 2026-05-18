@@ -58,6 +58,7 @@ Timing data is extracted from app log (`pipeline_timing` events) via `pnpm parse
 | release_to_card    | <= 5000 ms | <= 12000 ms |
 
 Fixture/probe gate policy:
+
 - `maxAllowedFailures` lives in `corePipeline.fixture_probe.maxAllowedFailures`.
 - `check:slo` applies this to `probe:soak` failure count when `soak-summary.json` exists.
 - If `soak-summary.json` or parsed stage summary is absent, `check:slo` enters documented fallback mode and prints required follow-up commands.
