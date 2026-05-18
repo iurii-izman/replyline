@@ -67,4 +67,34 @@ mod tests {
         assert_eq!(preset.provider_kind, ProviderKind::Custom);
         assert!(preset.fallback_models.is_empty());
     }
+
+    #[test]
+    fn all_known_openrouter_presets_have_openrouter_provider_and_fallbacks() {
+        let preset_ids = [
+            "openrouter_free_dev",
+            "openrouter_fast_budget",
+            "openrouter_balanced_paid",
+            "openrouter_quality_paid",
+        ];
+
+        for preset_id in preset_ids {
+            let preset = resolve_model_preset(preset_id);
+            assert_eq!(
+                preset.provider_kind,
+                ProviderKind::OpenRouter,
+                "expected OpenRouter provider for {preset_id}"
+            );
+            assert!(
+                !preset.fallback_models.is_empty(),
+                "expected non-empty fallback for {preset_id}"
+            );
+        }
+    }
+
+    #[test]
+    fn unknown_preset_falls_back_to_openai_compatible_without_fallback_models() {
+        let preset = resolve_model_preset("unknown_model_preset");
+        assert_eq!(preset.provider_kind, ProviderKind::OpenAiCompatible);
+        assert!(preset.fallback_models.is_empty());
+    }
 }

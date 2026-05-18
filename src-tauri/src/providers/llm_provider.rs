@@ -11,6 +11,15 @@ use super::openai_compatible;
 
 const MAX_CARD_RETRY_ATTEMPTS: usize = 1;
 
+fn fallback_models_for_selected_preset(preset_id: &str) -> &'static [&'static str] {
+    let preset = resolve_model_preset(preset_id);
+    if preset.provider_kind == ProviderKind::OpenRouter {
+        preset.fallback_models
+    } else {
+        &[]
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AnalysisMode {
     WorkConversation,
@@ -196,12 +205,7 @@ async fn request_card_with_prompt(
 ) -> Result<(String, String), String> {
     let user_prompt = llm::build_user_prompt(transcript, context, language, profile, extra_suffix);
     let system_prompt = llm::system_prompt_for_profile(profile, language);
-    let preset = resolve_model_preset(&settings.selected_model_preset);
-    let fallback_models = if preset.provider_kind == ProviderKind::OpenRouter {
-        preset.fallback_models
-    } else {
-        &[]
-    };
+    let fallback_models = fallback_models_for_selected_preset(&settings.selected_model_preset);
 
     openai_compatible::request_card_raw_text(
         &settings.llm_base_url,
@@ -222,12 +226,7 @@ async fn request_raw_with_prompts(
     user_prompt: &str,
     max_tokens: u16,
 ) -> Result<(String, String), String> {
-    let preset = resolve_model_preset(&settings.selected_model_preset);
-    let fallback_models = if preset.provider_kind == ProviderKind::OpenRouter {
-        preset.fallback_models
-    } else {
-        &[]
-    };
+    let fallback_models = fallback_models_for_selected_preset(&settings.selected_model_preset);
 
     openai_compatible::request_card_raw_text(
         &settings.llm_base_url,
@@ -239,4 +238,27 @@ async fn request_raw_with_prompts(
         max_tokens,
     )
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::fallback_models_for_selected_preset;
+
+    #[test]
+    fn openrouter_preset_has_fallbacks() {
+        let models = fallback_models_for_selected_preset("openrouter_free_dev");
+        assert!(!models.is_empty());
+    }
+
+    #[test]
+    fn custom_preset_has_no_fallbacks() {
+        let models = fallback_models_for_selected_preset("custom_openai_compatible");
+        assert!(models.is_empty());
+    }
+
+    #[test]
+    fn unknown_preset_has_safe_empty_fallback() {
+        let models = fallback_models_for_selected_preset("unknown_preset_id");
+        assert!(models.is_empty());
+    }
 }

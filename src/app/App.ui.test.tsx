@@ -269,6 +269,49 @@ describe("App UX stabilization", () => {
     expect(screen.getByText(/Fallback chain:/)).toBeTruthy();
   });
 
+  it("syncs base URL and model for non-custom preset", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    const preset = await screen.findByDisplayValue("Custom OpenAI-compatible");
+    fireEvent.input(preset, { target: { value: "openrouter_balanced_paid" } });
+    expect(await screen.findByDisplayValue("OpenRouter Balanced Paid")).toBeTruthy();
+    expect(screen.getByDisplayValue("https://openrouter.ai/api/v1")).toBeTruthy();
+    expect(screen.getByDisplayValue("openai/gpt-4.1-mini")).toBeTruthy();
+  });
+
+  it("saves selectedModelPreset with synced route values", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    const preset = await screen.findByDisplayValue("Custom OpenAI-compatible");
+    fireEvent.input(preset, { target: { value: "openrouter_quality_paid" } });
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "save_settings")).toBe(true),
+    );
+    const saveCall = mock.invoke.mock.calls.find((call) => call[0] === "save_settings");
+    const input = (saveCall?.[1] as { input?: Record<string, unknown> } | undefined)?.input ?? {};
+    expect(input.selectedModelPreset).toBe("openrouter_quality_paid");
+    expect(input.llmBaseUrl).toBe("https://openrouter.ai/api/v1");
+    expect(input.llmModel).toBe("anthropic/claude-3.7-sonnet");
+  });
+
+  it("does not overwrite manual route fields when custom preset is selected", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    const baseUrl = await screen.findByDisplayValue("https://api.example/v1");
+    const model = screen.getByDisplayValue("gpt-4o-mini");
+    fireEvent.input(baseUrl, { target: { value: "https://custom.gateway/v1" } });
+    fireEvent.input(model, { target: { value: "custom-model-1" } });
+
+    const preset = await screen.findByDisplayValue("Custom OpenAI-compatible");
+    fireEvent.input(preset, { target: { value: "custom_openai_compatible" } });
+
+    expect(await screen.findByDisplayValue("Custom OpenAI-compatible")).toBeTruthy();
+    expect(screen.getByDisplayValue("https://custom.gateway/v1")).toBeTruthy();
+    expect(screen.getByDisplayValue("custom-model-1")).toBeTruthy();
+  });
+
   it("opacity setting persists and applies to window", async () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));

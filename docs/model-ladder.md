@@ -14,13 +14,16 @@ Current preset ladder is defined in `src/app/modelPresets.ts` and exposed in Set
 
 ## Ladder behavior
 
+- Presets are reviewed snapshots, not permanent recommendations.
 - OpenRouter presets can provide fallback model ladders (`models` payload).
-- Custom/OpenAI-compatible preset uses only `model` for compatibility.
+- Custom OpenAI-compatible route uses only `model` for compatibility and avoids OpenRouter-only payload fields.
+- Unknown preset ids fall back safely to OpenAI-compatible behavior without fallback ladder.
 
 ## Cost and reliability caveats
 
 - Free models can be rate-limited and availability may vary.
 - Paid presets require active credits/billing.
+- Provider availability, pricing, and rate limits can change between reviews.
 - A higher-cost model is not a permanent guarantee of best outcome.
 
 Do not publish a permanent "best model" claim. Re-validate with interview quality dataset before rollout.

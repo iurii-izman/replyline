@@ -148,6 +148,13 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             <Show when={selectedPreset().freeTierCaveats}>
               <div class="field-help">{selectedPreset().freeTierCaveats}</div>
             </Show>
+            <Show when={selectedPreset().requiresCredits}>
+              <div class="field-help">{st().settings.modelPresetCreditsCaveat}</div>
+            </Show>
+            <div class="field-help">
+              {st().settings.modelPresetSnapshotPrefix} {selectedPreset().lastReviewedAt}. Availability and
+              rate limits can change.
+            </div>
 
             <label class="field">
               <span class="field-label">{st().settings.llmBaseUrlLabel}</span>
