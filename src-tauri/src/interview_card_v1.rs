@@ -1025,4 +1025,52 @@ mod tests {
         assert_eq!(outcome.card.question.confidence, InterviewConfidence::Low);
         assert!(outcome.risk_note.unwrap_or_default().contains("fallback"));
     }
+
+    #[test]
+    fn interview_card_dto_serializes_canonical_contract_shape() {
+        let card = InterviewCardDto {
+            mode: InterviewMode::Interview,
+            question: InterviewQuestion {
+                raw_transcript: "raw".to_string(),
+                clean_question: "clean".to_string(),
+                question_type: InterviewQuestionType::Behavioral,
+                interviewer_intent: "intent".to_string(),
+                confidence: InterviewConfidence::High,
+            },
+            answer: InterviewAnswer {
+                main: "main".to_string(),
+                short: "short".to_string(),
+                strong: "strong".to_string(),
+                structure: InterviewAnswerStructure::Star,
+            },
+            signals: InterviewSignals {
+                must_mention: vec!["ownership".to_string()],
+                keywords: vec!["impact".to_string()],
+                metrics: vec![],
+                resume_anchors: vec![],
+            },
+            risks: InterviewRisks {
+                weak_points: vec!["risk".to_string()],
+                avoid: vec!["avoid".to_string()],
+                safe_reframe: "reframe".to_string(),
+            },
+            follow_ups: vec![InterviewFollowUp {
+                question: "q".to_string(),
+                bridge_answer: "a".to_string(),
+            }],
+            clarifier: InterviewClarifier {
+                needed: true,
+                text: Some("Need scope?".to_string()),
+            },
+        };
+
+        let value = serde_json::to_value(card).expect("serialize");
+        assert_eq!(value["mode"], "interview");
+        assert_eq!(value["question"]["confidence"], "high");
+        assert_eq!(value["answer"]["short"], "short");
+        assert_eq!(value["answer"]["strong"], "strong");
+        assert_eq!(value["risks"]["safeReframe"], "reframe");
+        assert_eq!(value["clarifier"]["text"], "Need scope?");
+        assert!(value["followUps"].is_array());
+    }
 }

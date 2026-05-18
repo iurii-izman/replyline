@@ -186,26 +186,26 @@ export function MainSurface(props: { controller: ReplylineController }) {
                   <Show
                     when={
                       controller().card()?.mode === "interview" &&
-                      (controller().card().interview.answer.short?.length ?? 0) > 0
+                      controller().card().interview.answer.short.trim().length > 0
                     }
                   >
                     <div class="result-label">{st().card.interview.answerShort}</div>
                     <p class="result-text">
                       {controller().card()?.mode === "interview"
-                        ? controller().card().interview.answer.short?.join(" • ")
+                        ? controller().card().interview.answer.short
                         : ""}
                     </p>
                   </Show>
                   <Show
                     when={
                       controller().card()?.mode === "interview" &&
-                      (controller().card().interview.answer.strong?.length ?? 0) > 0
+                      controller().card().interview.answer.strong.trim().length > 0
                     }
                   >
                     <div class="result-label">{st().card.interview.answerStrong}</div>
                     <p class="result-text">
                       {controller().card()?.mode === "interview"
-                        ? controller().card().interview.answer.strong?.join(" • ")
+                        ? controller().card().interview.answer.strong
                         : ""}
                     </p>
                   </Show>
@@ -251,7 +251,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                   <div class="result-label">{st().card.interview.risks}</div>
                   <p class="result-text">{st().card.interview.weakPoints}: {controller().card()?.mode === "interview" ? controller().card().interview.risks.weakPoints.join(" • ") : ""}</p>
                   <p class="result-text">{st().card.interview.avoid}: {controller().card()?.mode === "interview" ? controller().card().interview.risks.avoid.join(" • ") : ""}</p>
-                  <p class="result-text">{st().card.interview.safeReframe}: {controller().card()?.mode === "interview" ? controller().card().interview.risks.safeReframe.join(" • ") : ""}</p>
+                  <p class="result-text">{st().card.interview.safeReframe}: {controller().card()?.mode === "interview" ? controller().card().interview.risks.safeReframe : ""}</p>
                 </section>
               </Show>
 
@@ -270,7 +270,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                 <section class="result-section" data-testid="section-interview-clarifier">
                   <div class="result-label">{st().card.interview.clarifier}</div>
                   <p class="result-text">
-                    {controller().card()?.mode === "interview" ? controller().card().interview.clarifier?.question : ""}
+                    {controller().card()?.mode === "interview" ? controller().card().interview.clarifier.text ?? "" : ""}
                   </p>
                 </section>
               </Show>

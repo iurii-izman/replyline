@@ -211,13 +211,13 @@ export function useReplylineController(platform: AppPlatform) {
         case "signals":
           return currentCard.interview.signals.mustMention.join(" • ");
         case "risks":
-          return currentCard.interview.risks.safeReframe.join(" • ");
+          return currentCard.interview.risks.safeReframe;
         case "followUps":
           return currentCard.interview.followUps
             .map((item) => `${item.question} (${item.bridgeAnswer})`)
             .join("\n");
         case "clarifier":
-          return currentCard.interview.clarifier?.question ?? "";
+          return currentCard.interview.clarifier.text ?? "";
         default:
           return currentCard.interview.answer.main ?? "";
       }

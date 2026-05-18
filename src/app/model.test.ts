@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SETTINGS,
+  asAnalysisCard,
   formatHotkeyFromEvent,
   isConfiguredLlmRoute,
   parseCommandInvokeError,
@@ -183,6 +184,10 @@ describe("model", () => {
   });
 
   describe("settings validation preflight rules", () => {
+    it("DEFAULT_SETTINGS schemaVersion is 5 (matches backend)", () => {
+      expect(DEFAULT_SETTINGS.schemaVersion).toBe(5);
+    });
+
     it("DEFAULT_SETTINGS hotkey is non-empty", () => {
       expect(DEFAULT_SETTINGS.hotkey.trim().length).toBeGreaterThan(0);
     });
@@ -198,6 +203,55 @@ describe("model", () => {
 
     it("DEFAULT_SETTINGS has model preset selected", () => {
       expect(DEFAULT_SETTINGS.selectedModelPreset).toBe("custom_openai_compatible");
+    });
+  });
+
+  describe("interview DTO contract", () => {
+    it("keeps backend-compatible string fields and clarifier.text", () => {
+      const dto = {
+        gist: "legacy gist",
+        sayNow: "legacy say",
+        nextMove: "legacy next",
+        charsBand: "normal",
+        interviewCardSchemaV1: {
+          mode: "interview",
+          question: {
+            rawTranscript: "raw",
+            cleanQuestion: "clean",
+            interviewerIntent: "intent",
+            questionType: "behavioral",
+            confidence: "high",
+          },
+          answer: {
+            main: "main",
+            short: "short",
+            strong: "strong",
+            structure: "STAR",
+          },
+          signals: {
+            mustMention: ["ownership"],
+            keywords: ["impact"],
+            metrics: [],
+            resumeAnchors: [],
+          },
+          risks: {
+            weakPoints: ["risk"],
+            avoid: ["avoid"],
+            safeReframe: "reframe",
+          },
+          followUps: [{ question: "q1", bridgeAnswer: "a1" }],
+          clarifier: { needed: true, text: "Need scope?" },
+        },
+      } as const;
+
+      const card = asAnalysisCard(dto);
+      expect(card.mode).toBe("interview");
+      if (card.mode !== "interview") throw new Error("expected interview card");
+      expect(card.interview.answer.short).toBe("short");
+      expect(card.interview.answer.strong).toBe("strong");
+      expect(card.interview.risks.safeReframe).toBe("reframe");
+      expect(card.interview.clarifier.text).toBe("Need scope?");
+      expect(Array.isArray(card.interview.followUps)).toBe(true);
     });
   });
 });

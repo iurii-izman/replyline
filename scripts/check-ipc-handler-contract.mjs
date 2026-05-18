@@ -9,6 +9,9 @@ import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const libPath = join(root, "src-tauri", "src", "lib.rs");
+const modelPath = join(root, "src", "app", "model.ts");
+const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
+const settingsRustPath = join(root, "src-tauri", "src", "settings.rs");
 
 const REQUIRED = [
   "capture_start",
@@ -43,6 +46,9 @@ const REQUIRED = [
 const DEBUG_ONLY = [];
 
 const text = readFileSync(libPath, "utf8");
+const modelText = readFileSync(modelPath, "utf8");
+const interviewRustText = readFileSync(interviewRustPath, "utf8");
+const settingsRustText = readFileSync(settingsRustPath, "utf8");
 const matches = [...text.matchAll(/commands::(\w+)/g)].map((m) => m[1]);
 const found = new Set(matches);
 
@@ -66,6 +72,54 @@ if (missing.length || extra.length || !debugBlockHasGuard || !releaseBlockExclud
 }
 
 const hasDebugOnly = DEBUG_ONLY.some((name) => found.has(name));
+const staticContractChecks = [
+  {
+    ok: modelText.includes("schemaVersion: 5"),
+    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 5 in src/app/model.ts",
+  },
+  {
+    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 5;"),
+    message: "Expected CURRENT_SCHEMA_VERSION = 5 in src-tauri/src/settings.rs",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub short: String") &&
+      modelText.includes("short: string;"),
+    message: "Interview answer.short drift: Rust/TS must both be string",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub strong: String") &&
+      modelText.includes("strong: string;"),
+    message: "Interview answer.strong drift: Rust/TS must both be string",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub safe_reframe: String") &&
+      modelText.includes("safeReframe: string;"),
+    message: "Interview risks.safeReframe drift: Rust/TS must both be string",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub confidence: InterviewConfidence") &&
+      modelText.includes("confidence: \"low\" | \"medium\" | \"high\";"),
+    message: "Interview question.confidence drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub text: Option<String>") &&
+      modelText.includes("text?: string | null;"),
+    message: "Interview clarifier drift: expected clarifier.text on both sides",
+  },
+];
+const failedStatic = staticContractChecks.filter((item) => !item.ok);
+
+if (failedStatic.length) {
+  console.error("DTO/static contract mismatch.");
+  for (const item of failedStatic) console.error(item.message);
+  process.exit(1);
+}
+
 console.log(
   `IPC handler contract OK (${REQUIRED.length} required commands, debug-only present=${hasDebugOnly}).`,
 );

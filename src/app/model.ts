@@ -176,8 +176,9 @@ export type LegacyAnalysisCard = {
 
 export type InterviewAnswerDto = {
   main: string;
-  short?: string[];
-  strong?: string[];
+  short: string;
+  strong: string;
+  structure: "STAR" | "CASE" | "DIRECT" | "CLARIFY";
 };
 
 export type InterviewQuestionDto = {
@@ -185,6 +186,7 @@ export type InterviewQuestionDto = {
   cleanQuestion: string;
   interviewerIntent: string;
   questionType: string;
+  confidence: "low" | "medium" | "high";
 };
 
 export type InterviewSignalsDto = {
@@ -197,7 +199,7 @@ export type InterviewSignalsDto = {
 export type InterviewRisksDto = {
   weakPoints: string[];
   avoid: string[];
-  safeReframe: string[];
+  safeReframe: string;
 };
 
 export type InterviewFollowUpDto = {
@@ -207,16 +209,17 @@ export type InterviewFollowUpDto = {
 
 export type InterviewClarifierDto = {
   needed: boolean;
-  question?: string;
+  text?: string | null;
 };
 
 export type InterviewCardDto = {
+  mode: "interview";
   answer: InterviewAnswerDto;
   question: InterviewQuestionDto;
   signals: InterviewSignalsDto;
   risks: InterviewRisksDto;
   followUps: InterviewFollowUpDto[];
-  clarifier?: InterviewClarifierDto;
+  clarifier: InterviewClarifierDto;
 };
 
 export type WorkConversationCard = LegacyAnalysisCard & {
@@ -330,7 +333,7 @@ export type CandidatePackDraft = {
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  schemaVersion: 4,
+  schemaVersion: 5,
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",

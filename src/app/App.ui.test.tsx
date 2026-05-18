@@ -293,17 +293,24 @@ describe("App UX stabilization", () => {
         nextMove: "next",
         charsBand: "normal",
         interviewCardSchemaV1: {
-          answer: { main: "Primary answer main" },
+          mode: "interview",
+          answer: {
+            main: "Primary answer main",
+            short: "Short summary",
+            strong: "Strong STAR answer",
+            structure: "STAR",
+          },
           question: {
             rawTranscript: "raw",
             cleanQuestion: "clean",
             interviewerIntent: "intent",
             questionType: "behavioral",
+            confidence: "high",
           },
           signals: { mustMention: ["ownership"], keywords: ["impact"] },
-          risks: { weakPoints: ["wp"], avoid: ["avoid"], safeReframe: ["safe"] },
+          risks: { weakPoints: ["wp"], avoid: ["avoid"], safeReframe: "safe" },
           followUps: [{ question: "q", bridgeAnswer: "a" }],
-          clarifier: { needed: false },
+          clarifier: { needed: false, text: null },
         },
       },
     });
@@ -316,6 +323,7 @@ describe("App UX stabilization", () => {
     const compactToggle = await screen.findByLabelText("Compact interview mode");
     fireEvent.click(compactToggle);
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
     await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
     expect(screen.queryByTestId("pipeline-timeline")).toBeNull();
   });
@@ -342,16 +350,19 @@ describe("Interview card rendering", () => {
       nextMove: "legacy next",
       charsBand: "normal",
       interviewCardSchemaV1: {
+        mode: "interview",
         answer: {
           main: "Primary answer main",
-          short: ["Short 1"],
-          strong: ["Strong 1"],
+          short: "Short 1",
+          strong: "Strong 1",
+          structure: "STAR",
         },
         question: {
           rawTranscript: "um can you tell me",
           cleanQuestion: "Tell me about a delivery incident.",
           interviewerIntent: "Validate ownership",
           questionType: "behavioral",
+          confidence: "high",
         },
         signals: {
           mustMention: ["ownership"],
@@ -362,10 +373,10 @@ describe("Interview card rendering", () => {
         risks: {
           weakPoints: ["no numbers"],
           avoid: ["blame others"],
-          safeReframe: ["focus on learning"],
+          safeReframe: "focus on learning",
         },
         followUps: [{ question: "What changed?", bridgeAnswer: "I introduced weekly review." }],
-        clarifier: { needed: false, question: "Which timeframe?" },
+        clarifier: { needed: false, text: "Which timeframe?" },
       },
       ...overrides,
     };
