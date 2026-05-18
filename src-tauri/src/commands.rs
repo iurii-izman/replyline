@@ -14,7 +14,8 @@ use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
     AnalysisCardDto, AppSettings, BootstrapDto, CandidatePackDraftDto, CheckItemDto, CommandError,
-    ContextStatusDto, PrepareCandidatePackInputDto, RuntimeCheckDto, SecretSlot,
+    ContextStatusDto, InterviewReportDto, PrepareCandidatePackInputDto, RuntimeCheckDto,
+    SecretSlot,
 };
 
 static RUN_SEQ: AtomicU64 = AtomicU64::new(0);
@@ -608,5 +609,51 @@ pub fn save_prepared_candidate_pack(draft: CandidatePackDraftDto) -> Result<(), 
             draft.pack_quality_score
         ),
     );
+    Ok(())
+}
+
+#[tauri::command]
+pub fn start_interview_session(
+    state: State<'_, ReplylineState>,
+) -> Result<crate::interview_report::InterviewSessionState, CommandError> {
+    let mut session = state
+        .interview_session
+        .lock()
+        .map_err(|_| CommandError::Internal("Interview session lock poisoned".to_string()))?;
+    Ok(crate::interview_report::start_session(
+        &mut session,
+        crate::language_profile::default_language(),
+    ))
+}
+
+#[tauri::command]
+pub fn end_interview_session(
+    state: State<'_, ReplylineState>,
+) -> Result<Option<InterviewReportDto>, CommandError> {
+    let mut session = state
+        .interview_session
+        .lock()
+        .map_err(|_| CommandError::Internal("Interview session lock poisoned".to_string()))?;
+    crate::interview_report::end_session(&mut session).map_err(CommandError::Internal)
+}
+
+#[tauri::command]
+pub fn get_interview_report() -> Result<Option<InterviewReportDto>, CommandError> {
+    crate::interview_report::get_latest_report().map_err(CommandError::Internal)
+}
+
+#[tauri::command]
+pub fn export_interview_report_markdown() -> Result<Option<String>, CommandError> {
+    crate::interview_report::export_latest_report_markdown().map_err(CommandError::Internal)
+}
+
+#[tauri::command]
+pub fn clear_interview_reports(state: State<'_, ReplylineState>) -> Result<(), CommandError> {
+    crate::interview_report::clear_reports().map_err(CommandError::Internal)?;
+    let mut session = state
+        .interview_session
+        .lock()
+        .map_err(|_| CommandError::Internal("Interview session lock poisoned".to_string()))?;
+    *session = crate::interview_report::InterviewSessionState::default();
     Ok(())
 }

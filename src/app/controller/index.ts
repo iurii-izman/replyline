@@ -9,6 +9,8 @@ import {
   type AppSettings,
   type CommandErrorKind,
   type ContextStatusDto,
+  type InterviewReportDto,
+  type InterviewSessionStateDto,
   type Panel,
   type Phase,
   type RuntimeCheckDto,
@@ -84,6 +86,9 @@ export function useReplylineController(platform: AppPlatform) {
   const [candidatePackSaving, setCandidatePackSaving] = createSignal(false);
   const [activeInterviewCardIndex, setActiveInterviewCardIndex] = createSignal(0);
   const [pinnedInterviewCard, setPinnedInterviewCard] = createSignal<InterviewCardKey | null>(null);
+  const [interviewSession, setInterviewSession] = createSignal<InterviewSessionStateDto | null>(null);
+  const [interviewReport, setInterviewReport] = createSignal<InterviewReportDto | null>(null);
+  const [interviewReportMarkdownPath, setInterviewReportMarkdownPath] = createSignal<string | null>(null);
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -429,6 +434,31 @@ export function useReplylineController(platform: AppPlatform) {
     if (!active) return;
     setPinnedInterviewCard((current) => (current === active ? null : active));
   };
+  async function startInterviewSession() {
+    const session = await platform.invoke<InterviewSessionStateDto>("start_interview_session");
+    setInterviewSession(session);
+    setInterviewReport(null);
+    setInterviewReportMarkdownPath(null);
+  }
+  async function endInterviewSession() {
+    const report = await platform.invoke<InterviewReportDto | null>("end_interview_session");
+    setInterviewSession(null);
+    setInterviewReport(report);
+  }
+  async function openInterviewReport() {
+    const report = await platform.invoke<InterviewReportDto | null>("get_interview_report");
+    setInterviewReport(report);
+  }
+  async function exportInterviewReportMarkdown() {
+    const path = await platform.invoke<string | null>("export_interview_report_markdown");
+    setInterviewReportMarkdownPath(path);
+  }
+  async function clearInterviewReports() {
+    await platform.invoke("clear_interview_reports");
+    setInterviewReport(null);
+    setInterviewReportMarkdownPath(null);
+    setInterviewSession(null);
+  }
 
   return {
     strings,
@@ -465,6 +495,9 @@ export function useReplylineController(platform: AppPlatform) {
     activeInterviewCardKey,
     interviewCardKeys,
     pinnedInterviewCard,
+    interviewSession,
+    interviewReport,
+    interviewReportMarkdownPath,
     compactMode,
     checkRuntimeConfig: async () => {
       setRuntimeCheckRunning(true);
@@ -513,6 +546,11 @@ export function useReplylineController(platform: AppPlatform) {
     nextInterviewCard: () => setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current + 1)),
     prevInterviewCard: () => setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current - 1)),
     togglePinInterviewCard,
+    startInterviewSession,
+    endInterviewSession,
+    openInterviewReport,
+    exportInterviewReportMarkdown,
+    clearInterviewReports,
     setSelectedModelPreset: (value: string) => {
       const preset = resolveModelPreset(value);
       setSettings("selectedModelPreset", preset.id);

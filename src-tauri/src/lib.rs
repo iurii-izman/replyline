@@ -9,6 +9,7 @@ mod credentials;
 mod diag_contract;
 mod fs_atomic;
 mod interview_card_v1;
+mod interview_report;
 mod language_profile;
 mod llm;
 mod model_presets;
@@ -152,7 +153,12 @@ pub fn run() {
         commands::check_llm_config,
         commands::check_runtime_config,
         commands::prepare_candidate_pack,
-        commands::save_prepared_candidate_pack
+        commands::save_prepared_candidate_pack,
+        commands::start_interview_session,
+        commands::end_interview_session,
+        commands::get_interview_report,
+        commands::export_interview_report_markdown,
+        commands::clear_interview_reports
     ]);
     #[cfg(not(any(debug_assertions, test)))]
     let builder = builder.invoke_handler(tauri::generate_handler![
@@ -178,7 +184,12 @@ pub fn run() {
         commands::check_llm_config,
         commands::check_runtime_config,
         commands::prepare_candidate_pack,
-        commands::save_prepared_candidate_pack
+        commands::save_prepared_candidate_pack,
+        commands::start_interview_session,
+        commands::end_interview_session,
+        commands::get_interview_report,
+        commands::export_interview_report_markdown,
+        commands::clear_interview_reports
     ]);
     builder
         .run(tauri::generate_context!())

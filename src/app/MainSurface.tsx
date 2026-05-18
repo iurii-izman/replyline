@@ -279,6 +279,21 @@ export function MainSurface(props: { controller: ReplylineController }) {
         </div>
 
         <div class="result-actions" data-testid="action-row">
+          <button class="btn-ghost" type="button" onClick={() => void controller().startInterviewSession()}>
+            Start session
+          </button>
+          <button class="btn-ghost" type="button" onClick={() => void controller().endInterviewSession()}>
+            End session
+          </button>
+          <button class="btn-ghost" type="button" onClick={() => void controller().openInterviewReport()}>
+            Open report
+          </button>
+          <button class="btn-ghost" type="button" onClick={() => void controller().exportInterviewReportMarkdown()}>
+            Export markdown
+          </button>
+          <button class="btn-ghost" type="button" onClick={() => void controller().clearInterviewReports()}>
+            Clear reports
+          </button>
           <button
             class="btn-primary"
             disabled={!controller().canCopySayNow()}
@@ -304,6 +319,19 @@ export function MainSurface(props: { controller: ReplylineController }) {
             {st().card.clearContext}
           </button>
         </div>
+        <Show when={controller().interviewReport()}>
+          <section class="result-section" data-testid="interview-report-summary">
+            <div class="result-label">Interview report</div>
+            <p class="result-text">Session: {controller().interviewReport()!.sessionId}</p>
+            <p class="result-text">Questions: {controller().interviewReport()!.questions.length}</p>
+            <p class="result-text">
+              Scores: clarity {controller().interviewReport()!.scores.clarity}, relevance {controller().interviewReport()!.scores.relevance}, accuracy {controller().interviewReport()!.scores.accuracy}
+            </p>
+            <Show when={controller().interviewReportMarkdownPath()}>
+              <p class="result-text">Markdown: {controller().interviewReportMarkdownPath()}</p>
+            </Show>
+          </section>
+        </Show>
       </section>
     </Show>
   );
