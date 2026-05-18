@@ -4,15 +4,16 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)](docs/runtime-bringup.md)
 
-Windows-first desktop app for difficult live work conversations.
+Windows-first desktop tray app for difficult live work conversations and interview practice.
 
 Core flow: `capture -> stt -> llm -> card`
 
 ## What It Does
 
 - Hotkey-gated capture (`Ctrl+Alt+Space`) of short system-audio snippets.
-- Generates one compact response card: `gist / say_now / next_move`.
-- Keeps scope intentionally narrow for stable-beta reliability and trust.
+- WorkConversation path returns one compact response card: `gist / say_now / next_move` (generated from `CardSchemaV3`).
+- Interview path returns `InterviewCardSchemaV1` during active interview session and can produce a local post-interview report.
+- Scope stays intentionally narrow for stable-beta reliability and trust.
 
 If the LLM returns a vague `next_move`, Rust repairs it with bounded context heuristics before rendering.
 
@@ -22,9 +23,11 @@ Replyline is not a meeting assistant, not a transcript tool, and not a speaking 
 
 Also out of scope in current stable beta:
 
-- transcript/history/team workflow UI
-- Advanced Mode user surface
-- memory/diagnostics user surface
+- no transcript/history/team workflow UI
+- no hidden cheating workflow
+- no click-through hidden overlay
+- no Advanced Mode user surface
+- no memory/diagnostics user surface
 
 ## Supported Runtime Path
 
@@ -56,15 +59,16 @@ pnpm verify:full
 
 ## Validation Profiles
 
-- `pnpm verify:fast` — default local/PR profile (`smoke` + security lane + public-footprint guard)
-- `pnpm verify:full` — release profile (`verify:fast` + freeze + dependency/security checks)
-- `pnpm verify:extended` — full profile + extra coverage/fixtures/say-now lanes
+- `pnpm verify:fast` - default local/PR profile (`smoke` + security lane + public-footprint guard)
+- `pnpm verify:full` - release profile (`verify:fast` + freeze + dependency/security checks)
+- `pnpm verify:extended` - full profile + extra coverage/fixtures/say-now lanes
 
 ## Privacy Baseline
 
 - API keys are stored in OS keyring (Windows Credential Manager), not in plain-text settings.
 - Logging pipeline applies layered sanitization and secret redaction.
 - Full transcript / full prompt are not logged by default (`redact_transcript_like` + `safe_preview`).
+- STT/LLM providers can receive audio/text when configured by user.
 - Runtime/evidence artifacts may contain sensitive content when explicitly generated under `reports/`.
 
 See:

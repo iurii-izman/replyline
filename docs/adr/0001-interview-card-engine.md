@@ -1,109 +1,53 @@
-# ADR 0001: Interview Card Engine Architecture (Pre-Implementation)
+# ADR 0001: Interview Card Engine Architecture
 
 - Status: Accepted
 - Date: 2026-05-17
+- Last updated: 2026-05-18
 - Owners: Replyline maintainers
 
 ## Context
 
-Replyline currently uses WorkConversation-oriented structures (`AnalysisCardDto` and `CardSchemaV3`) with fields such as `question_brief`, `answer_now`, `star_evidence`, `next_step`, and `risk_or_clarifier`.
+Replyline has two production paths in current stable beta:
 
-This is sufficient for the current WorkConversation scope, but not sufficient for interview-specific response framing. Interview usage needs a dedicated model with explicit cards for response, interviewer intent, signals, risks, and follow-ups.
+- WorkConversation path based on `CardSchemaV3` and legacy UI projection `gist / say_now / next_move`.
+- Interview path based on `InterviewCardSchemaV1` with dedicated cards (`question`, `answer`, `signals`, `risks`, `followUps`, `clarifier`).
 
-This ADR is intentionally architecture-only and must not change runtime behavior in the current product.
+The architecture must keep WorkConversation stable while allowing interview-specific quality gates and session/report workflow.
 
 ## Decision
 
-### 1) Keep WorkConversation unchanged
+### 1) Keep WorkConversation stable on current contract
 
-- WorkConversation mode remains on current `CardSchemaV3` / `AnalysisCardDto`.
-- No DTO migration is introduced in this ADR stage.
-- Existing runtime behavior for current mode remains unchanged.
+- WorkConversation mode remains on `CardSchemaV3` / `AnalysisCardDto`.
+- Legacy UI projection remains compatible (`gist / say_now / next_move`).
 
-### 2) Introduce a separate interview schema
+### 2) Keep Interview contract separate
 
-- Interview Mode will use a distinct `InterviewCardSchemaV1`.
-- The schema is logically split into cards:
-  - `Answer` (primary)
-  - `Question`
-  - `Signals`
-  - `Risks`
-  - `FollowUps`
+- Interview Mode uses `InterviewCardSchemaV1` contract.
+- Runtime switch is explicit through interview session controls.
 
-### 3) Single-pass generation by default
+### 3) Generation strategy
 
-- Default generation path is one LLM request returning a single structured JSON payload for all interview cards.
-- This is selected as default to reduce:
-  - synchronization failures across independently generated card fragments,
-  - cost amplification from multiple calls,
-  - tail latency amplification from waiting on the slowest call.
+- Single-pass generation remains default.
+- Conditional second pass is allowed only when the first pass fails quality gate.
 
-### 4) Multi-request strategy is non-default
+### 4) Session and report boundaries
 
-- Three parallel LLM requests are explicitly not used as default.
-- A conditional second pass is allowed only when the first pass fails the quality gate.
+- Session controls are explicit (`start_interview_session`, `end_interview_session`, `get_interview_report`, `export_interview_report_markdown`, `clear_interview_reports`).
+- Report artifacts are local-only unless user exports/shares them manually.
 
-### 5) Card responsibilities in live UI
+### 5) Anti-goals remain strict
 
-- `Answer` card is the primary live UI surface.
-- `Question` card includes:
-  - `rawTranscript`
-  - `cleanQuestion`
-  - `type`
-  - `interviewerIntent`
-- `Signals` card includes:
-  - `mustMention`
-  - `keywords`
-  - `metrics`
-  - `resumeAnchors`
-- `Risks` card includes:
-  - `avoid`
-  - `weakPoints`
-  - `safeReframe`
-- `FollowUps` card includes likely next interviewer questions and bridge phrases.
+Interview path must not include:
 
-## Explicit Non-Goals (Anti-Goals)
-
-The Interview Card Engine must not include:
-
-- no stealth cheating mode
-- no screen-share bypass
-- no invisible overlay
-- no click-through stealth mode
-- no fabricated metrics
-- no hallucinated resume facts
-- no mandatory clarifier
-
-## Boundaries for This Stage
-
-This ADR does not introduce:
-
-- runtime behavior changes,
-- UI changes,
-- prompt changes,
-- `Candidate Pack`,
-- `OpenRouter` presets.
-
-## Rationale
-
-- Separation of concerns: WorkConversation remains stable while Interview Mode evolves independently.
-- Risk control: single-pass structured output provides a simpler consistency model and clearer quality-gate handling.
-- Product trust: explicit anti-goals prevent accidental drift toward stealth or deceptive behavior.
-
-## Future Stages Roadmap
-
-1. `InterviewCardSchemaV1`
-2. Interview golden dataset
-3. Interview UI
-4. Prompt Registry and profiles
-5. Candidate Pack
-6. OpenRouter Model Ladder
-7. Conditional second pass
-8. Session UX
-9. Post-interview report
+- stealth cheating mode
+- screen-share bypass
+- invisible/click-through overlay
+- fabricated metrics
+- hallucinated resume facts
 
 ## Consequences
 
-- Immediate: architecture is documented before implementation; no production behavior changes.
-- Near term: interview implementation can proceed with schema-first constraints and quality-gate policy.
-- Long term: WorkConversation compatibility is preserved while interview-specific capabilities scale on a dedicated path.
+- WorkConversation and Interview paths can evolve independently with contract checks.
+- Docs and guardrails must always reflect that cloud providers may receive data when configured.
+- Interview quality lane (`test:interview-quality` + `report:interview-quality`) is required for release/handoff confidence.

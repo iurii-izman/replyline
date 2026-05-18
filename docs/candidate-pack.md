@@ -4,9 +4,15 @@
 
 ## Storage and scope
 
-- Stored locally in user settings/profile flow.
-- Not a hidden cloud memory feature.
-- Intended for explicit preparation assistance.
+- Saved pack file: `%APPDATA%\com.replyline.app\candidate-pack.v1.json`.
+- Prepared draft file (`save_prepared_candidate_pack`): `%APPDATA%\com.replyline.app\candidate-pack-latest.json`.
+- Feature is explicit user-driven preparation, not hidden memory.
+
+## What is logged and what is not
+
+- Raw `resume`, raw `job description`, raw `company values` are not written to app logs.
+- Prepare/save logs keep only compact counters/status (`facts`, `weak_facts`, quality score).
+- Prepared/Final pack files themselves are local artifacts and may contain sensitive profile content.
 
 ## Data quality rules
 
@@ -15,6 +21,23 @@
 - If a metric is unknown, keep it unknown and reframe safely.
 
 These rules are enforced by interview quality fixtures and checks.
+
+## What is sent to LLM
+
+During `prepare_candidate_pack`, Replyline sends:
+
+- `Resume` text (raw input)
+- `Job description` text (raw input)
+- `Company values/about text` (raw input)
+- Fixed preparation system prompt with anti-fabrication rules
+
+During Interview Mode card generation, compact Candidate Pack context can be included in LLM context to anchor answers.
+
+## Privacy caveats
+
+- Candidate Pack data can leave the machine when you use cloud LLM providers.
+- Provider-side retention/logging policies are controlled by provider terms, not by Replyline.
+- Treat local pack files and interview reports as sensitive and redact before sharing.
 
 ## AI preparation boundary
 

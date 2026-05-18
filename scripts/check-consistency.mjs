@@ -10,8 +10,46 @@ const guardrailTokens = ["meeting assistant", "transcript tool", "speaking coach
 const requiredIncludes = [
   {
     path: "README.md",
-    includes: [canonicalHotkey, canonicalCard, ...guardrailTokens],
+    includes: [
+      canonicalHotkey,
+      canonicalCard,
+      "capture -> stt -> llm -> card",
+      "Windows-first",
+      ...guardrailTokens,
+    ],
     excludes: ["Ctrl+Shift+Space"],
+  },
+  {
+    path: "docs/beta-readiness.md",
+    includes: [
+      "WorkConversation",
+      "Interview Mode",
+      "InterviewCardSchemaV1",
+      "schemaVersion = 5",
+      "pnpm beta:preflight",
+      "pnpm verify:fast",
+      "pnpm verify:full",
+    ],
+    excludes: ["primary instruction", "alpha-only"],
+  },
+  {
+    path: "docs/interview-mode.md",
+    includes: [
+      "start_interview_session",
+      "end_interview_session",
+      "export_interview_report_markdown",
+      "InterviewCardSchemaV1",
+      "CardSchemaV3",
+    ],
+  },
+  {
+    path: "docs/candidate-pack.md",
+    includes: [
+      "candidate-pack.v1.json",
+      "candidate-pack-latest.json",
+      "Raw `resume`, raw `job description`, raw `company values` are not written to app logs",
+      "provider",
+    ],
   },
   {
     path: "docs/smoke-checks.md",
@@ -20,20 +58,21 @@ const requiredIncludes = [
   },
   {
     path: "docs/copy-rules.md",
-    includes: [canonicalCard],
+    includes: [canonicalCard, "best model", "nothing is ever stored anywhere"],
   },
   {
     path: "docs/known-limitations.md",
-    includes: [...guardrailTokens],
+    includes: [
+      ...guardrailTokens,
+      "скрытых cheating сценариев",
+      "click-through скрытого overlay",
+      "Everything is fully local",
+    ],
   },
   {
     path: "docs/privacy-and-trust.md",
     includes: ["Internal Stable Beta", "STT -> LLM -> карточка", "санитизацию/редакцию"],
     excludes: ["Pre-Alpha"],
-  },
-  {
-    path: "docs/tester-brief.md",
-    includes: [canonicalCard, ...guardrailTokens],
   },
   {
     path: "docs/beta-ops-diagnostics.md",
@@ -53,7 +92,23 @@ const requiredIncludes = [
   },
   {
     path: "src/app/model.ts",
-    includes: [canonicalHotkey],
+    includes: [canonicalHotkey, "schemaVersion: 5", "selectedModelPreset"],
+  },
+  {
+    path: "src-tauri/src/settings.rs",
+    includes: ["const CURRENT_SCHEMA_VERSION: u32 = 5;"],
+  },
+  {
+    path: "src-tauri/src/interview_card_v1.rs",
+    includes: ["InterviewCardSchemaV1"],
+  },
+  {
+    path: "src-tauri/src/card_v3.rs",
+    includes: ["CardSchemaV3"],
+  },
+  {
+    path: "docs/model-ladder.md",
+    includes: ["Unknown preset ids fall back safely", "OpenRouter presets"],
   },
 ];
 

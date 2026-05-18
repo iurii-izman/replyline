@@ -4,10 +4,10 @@ Single handoff doc for preparing an internal stable-beta build.
 
 ## 1) Product scope
 
-Replyline stable beta supports two bounded modes:
+Replyline stable beta supports two bounded paths:
 
 - WorkConversation: `capture -> stt -> llm -> card`
-- Interview Mode: preparation-oriented interview assistance
+- Interview Mode: interview preparation path with Candidate Pack and session report
 - Windows-first desktop tray workflow
 
 Out of scope for current beta:
@@ -16,7 +16,8 @@ Out of scope for current beta:
 - no transcript tool
 - no speaking coach
 - no stealth cheating features
-- no transcript/history UI
+- no transcript/history/team workflow UI
+- no click-through/invisible overlay
 - no Advanced Mode user surface
 
 ## 2) Supported runtime path
@@ -29,7 +30,23 @@ Supported provider/runtime path for stable beta:
 - LLM: OpenAI-compatible endpoint (configured by user)
 - app stack: Tauri (Rust backend) + Solid.js frontend
 
-## 3) Setup checklist
+## 3) Runtime contracts to verify in docs/code review
+
+- Settings schema: `schemaVersion = 5` (`src/app/model.ts`, `src-tauri/src/settings.rs`)
+- Work card path: `CardSchemaV3` (`src-tauri/src/card_v3.rs`)
+- Interview card path: `InterviewCardSchemaV1` (`src-tauri/src/interview_card_v1.rs`)
+- Interview session/report commands:
+  - `start_interview_session`
+  - `end_interview_session`
+  - `get_interview_report`
+  - `export_interview_report_markdown`
+  - `clear_interview_reports`
+- Model presets:
+  - OpenRouter presets can send fallback `models` ladder
+  - `custom_openai_compatible` sends only primary `model`
+  - unknown preset id falls back to OpenAI-compatible route without fallback ladder
+
+## 4) Setup checklist
 
 1. Install prerequisites: Node.js + `pnpm`, Rust toolchain, Windows build prerequisites for Tauri.
 2. Install dependencies: `pnpm install --frozen-lockfile`.
@@ -39,60 +56,43 @@ Supported provider/runtime path for stable beta:
    - LLM model
    - optional LLM API key
 4. Verify a valid playback device is set as default in Windows Sound settings.
-5. Run baseline gates:
-   - `pnpm smoke`
-   - `pnpm verify:fast`
 
-## 4) Preflight checklist (before beta build/handoff)
+## 5) Validation matrix
 
-1. Run `pnpm beta:preflight` (runtime evidence lane; not a replacement for `verify:fast` / `verify:full`).
-2. Ensure runtime evidence bundle exists from the run (`pnpm evidence:bundle` is part of preflight).
-3. Run release guardrail check: `pnpm release:freeze:check`.
-4. Confirm scope/trust wording remains aligned with:
-   - `docs/copy-rules.md`
-   - `docs/known-limitations.md`
-5. Confirm no deprecated alpha command is used as primary instruction in handoff docs.
+1. Dev loop: `pnpm test:quick`
+2. Smoke gate: `pnpm smoke`
+3. Fast verify: `pnpm verify:fast`
+4. Full verify: `pnpm verify:full`
+5. Extended verify: `pnpm verify:extended`
+6. Beta preflight lane: `pnpm beta:preflight`
+7. Interview quality report artifact: `pnpm report:interview-quality`
 
-## 5) Privacy checklist (baseline)
+Additional conditional gates:
+
+- `pnpm rust:deps` when Rust dependencies changed
+- `pnpm audit:npm` when `package.json` or `pnpm-lock.yaml` changed
+- `pnpm release:freeze:check` before merge/release handoff
+
+## 6) Privacy checklist
 
 1. Secrets are stored via OS keyring path; do not place provider keys in docs, examples, or committed artifacts.
 2. Do not export/share raw `settings.json` if it contains sensitive runtime values.
 3. Treat `reports/` as sensitive review material:
    - runtime/evidence artifacts may contain transcript/card content
-   - redact before external sharing
-4. Verify trust language stays honest:
-   - do not claim "nothing is ever stored anywhere"
-   - do not claim full local-only processing when cloud providers are enabled
+   - interview report store and markdown export may contain transcript content
+4. Keep trust language factual:
+   - do not claim all processing is local-only when cloud providers are enabled
+   - do not claim that nothing is ever stored anywhere
 5. Use `docs/privacy-and-trust.md` as privacy source of truth for stable beta.
 
-## 6) Validation commands
+## 7) Handoff acceptance checklist
 
-Required validation lane for this handoff:
-
-1. `pnpm test:quick` (fast dev loop)
-2. `pnpm smoke` (PR/main sanity lane, includes `test:interview-quality`)
-3. `pnpm verify:fast` (`smoke` + security lanes + public footprint)
-4. `pnpm verify:full` (`verify:fast` + release freeze report mode + deps/audit + `report:interview-quality`)
-5. `pnpm verify:extended` (extended release quality profile)
-6. `pnpm beta:preflight` (runtime evidence lane)
-
-Additional release-safety lanes (run when applicable):
-
-- `pnpm release:freeze:check`
-- `pnpm rust:deps` (when Rust dependencies changed)
-- `pnpm audit:npm` (when `package.json` or `pnpm-lock.yaml` changed)
-
-## 7) Interview Engine release gate (Stage 3/4 closeout)
-
-Release is blocked unless all items are complete:
+Release handoff is blocked unless all items are complete:
 
 1. Baseline is green (`pnpm smoke`, `pnpm verify:fast`).
 2. Interview quality report is attached (`pnpm report:interview-quality`).
-3. Privacy checklist is passed:
-   - no secrets in logs
-   - no raw transcript in `app.log`
-   - reports remain local unless explicitly shared by operator
-4. Model presets are reviewed (including free-tier and credits caveats).
+3. Privacy checklist is passed.
+4. Model presets and caveats are reviewed.
 5. Known limitations are reviewed and updated.
 
 ## 8) Known limitations
