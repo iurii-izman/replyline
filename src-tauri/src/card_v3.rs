@@ -189,6 +189,7 @@ fn normalize_card(
             next_move,
             star_evidence,
             chars_band: band,
+            interview_card_schema_v1: None,
             repair_used: quality.repair_used,
             fallback_used: quality.fallback_used,
         },

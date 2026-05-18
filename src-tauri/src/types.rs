@@ -114,10 +114,59 @@ pub struct AnalysisCardDto {
     pub star_evidence: Option<String>,
     pub next_move: String,
     pub chars_band: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interview_card_schema_v1: Option<crate::interview_card_v1::InterviewCardDto>,
     #[serde(skip)]
     pub repair_used: bool,
     #[serde(skip)]
     pub fallback_used: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InterviewQuestionReportDto {
+    pub timestamp: String,
+    pub raw_transcript: String,
+    pub clean_question: String,
+    pub question_type: String,
+    pub answer_main: String,
+    #[serde(default)]
+    pub hints: Vec<String>,
+    #[serde(default)]
+    pub signals: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InterviewReportScoresDto {
+    pub clarity: u8,
+    pub relevance: u8,
+    pub accuracy: u8,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InterviewReportFeedbackDto {
+    #[serde(default)]
+    pub strengths: Vec<String>,
+    #[serde(default)]
+    pub improvements: Vec<String>,
+    #[serde(default)]
+    pub missing_examples: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InterviewReportDto {
+    pub session_id: String,
+    pub started_at: String,
+    pub ended_at: String,
+    pub language: String,
+    #[serde(default)]
+    pub questions: Vec<InterviewQuestionReportDto>,
+    pub full_transcript: String,
+    pub scores: InterviewReportScoresDto,
+    pub feedback: InterviewReportFeedbackDto,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -72,6 +72,43 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     if (command === "save_prepared_candidate_pack") {
       return null;
     }
+    if (command === "start_interview_session") {
+      return {
+        active: true,
+        sessionId: "is-1",
+        startedAt: "2026-05-18T10:00:00Z",
+        language: "en",
+        questions: [],
+      };
+    }
+    if (command === "end_interview_session" || command === "get_interview_report") {
+      return {
+        sessionId: "is-1",
+        startedAt: "2026-05-18T10:00:00Z",
+        endedAt: "2026-05-18T10:30:00Z",
+        language: "en",
+        questions: [
+          {
+            timestamp: "2026-05-18T10:01:00Z",
+            rawTranscript: "Tell me about ownership",
+            cleanQuestion: "Tell me about ownership",
+            questionType: "behavioral",
+            answerMain: "I owned delivery.",
+            hints: ["safe reframe"],
+            signals: ["ownership"],
+          },
+        ],
+        fullTranscript: "Tell me about ownership",
+        scores: { clarity: 80, relevance: 77, accuracy: 70 },
+        feedback: { strengths: ["structured"], improvements: [], missingExamples: [] },
+      };
+    }
+    if (command === "export_interview_report_markdown") {
+      return "C:\\reports\\interview-report-is-1.md";
+    }
+    if (command === "clear_interview_reports") {
+      return null;
+    }
     return null;
   });
 
@@ -281,6 +318,19 @@ describe("App UX stabilization", () => {
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
     await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
     expect(screen.queryByTestId("pipeline-timeline")).toBeNull();
+  });
+
+  it("manages interview report actions", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Start session" }));
+    fireEvent.click(screen.getByRole("button", { name: "End session" }));
+    await waitFor(() => expect(screen.getByTestId("interview-report-summary")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Export markdown" }));
+    await waitFor(() => expect(screen.getByText(/interview-report-is-1\.md/)).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Clear reports" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "clear_interview_reports")).toBe(true),
+    );
   });
 });
 

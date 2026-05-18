@@ -204,4 +204,12 @@ mod tests {
         assert!(sanitized.contains("[redacted_number]"));
         assert!(sanitized.contains("?[redacted_query]"));
     }
+
+    #[test]
+    fn sanitize_redacts_prompt_and_api_key_markers() {
+        let value = "raw prompt=Please use token=sk-test-123 api_key=live-secret";
+        let sanitized = sanitize(value);
+        assert!(!sanitized.contains("sk-test-123"));
+        assert!(!sanitized.contains("live-secret"));
+    }
 }

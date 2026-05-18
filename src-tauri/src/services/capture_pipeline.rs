@@ -274,6 +274,11 @@ pub async fn capture_stop_and_analyze(
         context.push_transcript(&transcript);
         context.remember_card(card.clone());
     }
+    if let Some(interview) = card.interview_card_schema_v1.as_ref() {
+        if let Ok(mut session) = state.interview_session.lock() {
+            crate::interview_report::append_question(&mut session, &transcript, interview);
+        }
+    }
 
     emit_status(app, run_id.as_deref(), "ready", None);
     update_tray_title(

@@ -24,6 +24,8 @@ mod deepgram;
 mod diag_contract;
 #[path = "../fs_atomic.rs"]
 mod fs_atomic;
+#[path = "../interview_card_v1.rs"]
+mod interview_card_v1;
 #[path = "../language_profile.rs"]
 mod language_profile;
 #[path = "../llm.rs"]
