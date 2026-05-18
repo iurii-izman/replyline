@@ -4,8 +4,8 @@ Deterministic Interview Engine quality lane for real `InterviewCardSchemaV1`.
 
 ## Commands
 
-- `pnpm test:interview-quality` — blocking quality gate.
-- `pnpm report:interview-quality` — quality report for handoff/release evidence.
+- `pnpm test:interview-quality` — blocking quality gate included in `pnpm smoke`.
+- `pnpm report:interview-quality` — quality report included in `pnpm verify:full` for handoff/release evidence.
 
 Dataset and expectations are documented in `docs/interview-golden-dataset-v1.md`.
 

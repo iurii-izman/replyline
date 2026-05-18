@@ -59,6 +59,11 @@
 
 ## Fast gates
 
-- `pnpm smoke` -> build + Rust tests + mock/UI lane + deterministic product-policy gates
+- `pnpm test:quick` -> fast dev loop (`typecheck` + `lint` + `test:ui`)
+- `pnpm smoke` -> PR/main sanity lane: build + Rust checks/tests + policy/contract checks + `test:interview-quality`
+- `pnpm verify:fast` -> `smoke` + `test:security-lanes` + `test:public-footprint`
+- `pnpm verify:full` -> `verify:fast` + `release:freeze:check` + `rust:deps` + `audit:npm` + `report:interview-quality`
+- `pnpm verify:extended` -> `verify:full` + coverage/fixtures/scenario lanes
 - `pnpm runtime:preflight` -> machine-local readiness snapshot
+- `pnpm beta:preflight` -> runtime evidence lane (`runtime:preflight` + `probe:runtime` + `evidence:bundle`), not a replacement for verify lanes
 - `pnpm rust:deps` -> authoritative Rust supply-chain gate for this repo

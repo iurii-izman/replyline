@@ -41,11 +41,11 @@ Supported provider/runtime path for stable beta:
 4. Verify a valid playback device is set as default in Windows Sound settings.
 5. Run baseline gates:
    - `pnpm smoke`
-   - `pnpm verify`
+   - `pnpm verify:fast`
 
 ## 4) Preflight checklist (before beta build/handoff)
 
-1. Run `pnpm beta:preflight` (composite preflight lane).
+1. Run `pnpm beta:preflight` (runtime evidence lane; not a replacement for `verify:fast` / `verify:full`).
 2. Ensure runtime evidence bundle exists from the run (`pnpm evidence:bundle` is part of preflight).
 3. Run release guardrail check: `pnpm release:freeze:check`.
 4. Confirm scope/trust wording remains aligned with:
@@ -69,21 +69,12 @@ Supported provider/runtime path for stable beta:
 
 Required validation lane for this handoff:
 
-1. `pnpm test:doc-links`
-2. `pnpm test:consistency`
-3. `pnpm typecheck`
-4. `pnpm lint`
-5. `pnpm test:ui`
-6. `pnpm test:ipc-contract`
-7. `pnpm test:prompt-contract`
-8. `pnpm test:interview-quality`
-9. `pnpm report:interview-quality`
-10. `cargo check --manifest-path src-tauri/Cargo.toml`
-11. `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings`
-12. `cargo test --manifest-path src-tauri/Cargo.toml`
-13. `pnpm smoke`
-14. `pnpm verify:fast`
-15. `pnpm verify:full` (release candidate profile)
+1. `pnpm test:quick` (fast dev loop)
+2. `pnpm smoke` (PR/main sanity lane, includes `test:interview-quality`)
+3. `pnpm verify:fast` (`smoke` + security lanes + public footprint)
+4. `pnpm verify:full` (`verify:fast` + release freeze report mode + deps/audit + `report:interview-quality`)
+5. `pnpm verify:extended` (extended release quality profile)
+6. `pnpm beta:preflight` (runtime evidence lane)
 
 Additional release-safety lanes (run when applicable):
 

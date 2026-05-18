@@ -208,10 +208,24 @@ for (const [cmd, args] of checks) {
     windowsHide: true,
   });
   if (run.error) {
-    console.error(`[security-lane] failed to start "${pretty}": ${run.error.message}`);
+    const isMissingTool =
+      run.error.code === "ENOENT" || run.error.code === "ENOTDIR" || run.error.code === "EACCES";
+    if (isMissingTool) {
+      console.error(
+        `[security-lane] environment failure while starting "${pretty}": ${run.error.message}`,
+      );
+      console.error(
+        "[security-lane] this is not a code regression. Install the required toolchain and retry.",
+      );
+    } else {
+      console.error(`[security-lane] failed to start "${pretty}": ${run.error.message}`);
+    }
     process.exit(1);
   }
   if (run.status !== 0) {
+    console.error(
+      `[security-lane] "${pretty}" failed with exit code ${run.status ?? "unknown"} (blocking).`,
+    );
     process.exit(run.status ?? 1);
   }
 }

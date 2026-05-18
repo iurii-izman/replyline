@@ -39,14 +39,8 @@ Beta constraint:
 
 For Interview Mode changes run:
 
-1. `pnpm typecheck`
-2. `pnpm lint`
-3. `pnpm test:ui`
-4. `pnpm test:ipc-contract`
-5. `pnpm test:prompt-contract`
-6. `pnpm test:interview-quality`
-7. `pnpm report:interview-quality`
-8. `cargo check --manifest-path src-tauri/Cargo.toml`
-9. `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings`
-10. `cargo test --manifest-path src-tauri/Cargo.toml`
-11. `pnpm smoke`
+1. `pnpm test:quick`
+2. `pnpm smoke` (includes `pnpm test:interview-quality`)
+3. `pnpm verify:fast`
+4. `pnpm verify:full` (includes `pnpm report:interview-quality`)
+5. `pnpm beta:preflight` for runtime evidence handoff (non-replacement for verify lanes)
