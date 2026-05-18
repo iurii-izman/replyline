@@ -64,6 +64,26 @@ export function MainSurface(props: { controller: ReplylineController }) {
     if (key === "followUps") return st().card.interview.cardLabels.followUps;
     return st().card.interview.cardLabels.clarifier;
   };
+  const asText = (value: unknown): string => (typeof value === "string" ? value : "");
+  const listText = (value: unknown): string =>
+    Array.isArray(value)
+      ? value
+          .map((item) => (typeof item === "string" ? item.trim() : ""))
+          .filter(Boolean)
+          .join(" • ")
+      : "";
+  const valueOrDash = (value: unknown): string => {
+    const text = asText(value).trim();
+    return text ? text : st().card.interview.notAvailable;
+  };
+  const clarifierText = (): string => {
+    if (controller().card()?.mode !== "interview") return "";
+    const clarifier = controller().card().interview.clarifier as Record<string, unknown>;
+    const text = asText(clarifier.text).trim();
+    if (text) return text;
+    const question = asText(clarifier.question).trim();
+    return question;
+  };
 
   return (
     <Show when={controller().panel() === "main"}>
@@ -219,21 +239,29 @@ export function MainSurface(props: { controller: ReplylineController }) {
                   <p class="result-text">{st().card.interview.cleanQuestion}: {controller().card()?.mode === "interview" ? controller().card().interview.question.cleanQuestion : ""}</p>
                   <p class="result-text">{st().card.interview.interviewerIntent}: {controller().card()?.mode === "interview" ? controller().card().interview.question.interviewerIntent : ""}</p>
                   <p class="result-text">{st().card.interview.questionType}: {controller().card()?.mode === "interview" ? controller().card().interview.question.questionType : ""}</p>
+                  <Show
+                    when={
+                      controller().card()?.mode === "interview" &&
+                      controller().card().interview.question.confidence
+                    }
+                  >
+                    <p class="result-text">{st().card.interview.confidence}: {controller().card()?.mode === "interview" ? controller().card().interview.question.confidence : ""}</p>
+                  </Show>
                 </section>
               </Show>
 
               <Show when={controller().activeInterviewCardKey() === "signals"}>
                 <section class="result-section" data-testid="section-interview-signals">
                   <div class="result-label">{st().card.interview.signals}</div>
-                  <p class="result-text">{st().card.interview.mustMention}: {controller().card()?.mode === "interview" ? controller().card().interview.signals.mustMention.join(" • ") : ""}</p>
-                  <p class="result-text">{st().card.interview.keywords}: {controller().card()?.mode === "interview" ? controller().card().interview.signals.keywords.join(" • ") : ""}</p>
+                  <p class="result-text">{st().card.interview.mustMention}: {controller().card()?.mode === "interview" ? listText(controller().card().interview.signals.mustMention) : ""}</p>
+                  <p class="result-text">{st().card.interview.keywords}: {controller().card()?.mode === "interview" ? listText(controller().card().interview.signals.keywords) : ""}</p>
                   <Show
                     when={
                       controller().card()?.mode === "interview" &&
                       (controller().card().interview.signals.metrics?.length ?? 0) > 0
                     }
                   >
-                    <p class="result-text">{st().card.interview.metrics}: {controller().card()?.mode === "interview" ? controller().card().interview.signals.metrics?.join(" • ") : ""}</p>
+                    <p class="result-text">{st().card.interview.metrics}: {controller().card()?.mode === "interview" ? listText(controller().card().interview.signals.metrics) : ""}</p>
                   </Show>
                   <Show
                     when={
@@ -241,7 +269,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                       (controller().card().interview.signals.resumeAnchors?.length ?? 0) > 0
                     }
                   >
-                    <p class="result-text">{st().card.interview.resumeAnchors}: {controller().card()?.mode === "interview" ? controller().card().interview.signals.resumeAnchors?.join(" • ") : ""}</p>
+                    <p class="result-text">{st().card.interview.resumeAnchors}: {controller().card()?.mode === "interview" ? listText(controller().card().interview.signals.resumeAnchors) : ""}</p>
                   </Show>
                 </section>
               </Show>
@@ -249,9 +277,9 @@ export function MainSurface(props: { controller: ReplylineController }) {
               <Show when={controller().activeInterviewCardKey() === "risks"}>
                 <section class="result-section" data-testid="section-interview-risks">
                   <div class="result-label">{st().card.interview.risks}</div>
-                  <p class="result-text">{st().card.interview.weakPoints}: {controller().card()?.mode === "interview" ? controller().card().interview.risks.weakPoints.join(" • ") : ""}</p>
-                  <p class="result-text">{st().card.interview.avoid}: {controller().card()?.mode === "interview" ? controller().card().interview.risks.avoid.join(" • ") : ""}</p>
-                  <p class="result-text">{st().card.interview.safeReframe}: {controller().card()?.mode === "interview" ? controller().card().interview.risks.safeReframe : ""}</p>
+                  <p class="result-text">{st().card.interview.weakPoints}: {controller().card()?.mode === "interview" ? listText(controller().card().interview.risks.weakPoints) : ""}</p>
+                  <p class="result-text">{st().card.interview.avoid}: {controller().card()?.mode === "interview" ? listText(controller().card().interview.risks.avoid) : ""}</p>
+                  <p class="result-text">{st().card.interview.safeReframe}: {controller().card()?.mode === "interview" ? valueOrDash(controller().card().interview.risks.safeReframe) : ""}</p>
                 </section>
               </Show>
 
@@ -270,7 +298,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
                 <section class="result-section" data-testid="section-interview-clarifier">
                   <div class="result-label">{st().card.interview.clarifier}</div>
                   <p class="result-text">
-                    {controller().card()?.mode === "interview" ? controller().card().interview.clarifier.text ?? "" : ""}
+                    {clarifierText()}
                   </p>
                 </section>
               </Show>
@@ -321,14 +349,14 @@ export function MainSurface(props: { controller: ReplylineController }) {
         </div>
         <Show when={controller().interviewReport()}>
           <section class="result-section" data-testid="interview-report-summary">
-            <div class="result-label">Interview report</div>
-            <p class="result-text">Session: {controller().interviewReport()!.sessionId}</p>
-            <p class="result-text">Questions: {controller().interviewReport()!.questions.length}</p>
+            <div class="result-label">{st().card.interview.report.title}</div>
+            <p class="result-text">{st().card.interview.report.session}: {valueOrDash(controller().interviewReport()?.sessionId)}</p>
+            <p class="result-text">{st().card.interview.report.questions}: {controller().interviewReport()?.questions.length ?? 0}</p>
             <p class="result-text">
-              Scores: clarity {controller().interviewReport()!.scores.clarity}, relevance {controller().interviewReport()!.scores.relevance}, accuracy {controller().interviewReport()!.scores.accuracy}
+              {st().card.interview.report.scores}: {st().card.interview.report.clarity} {controller().interviewReport()?.scores?.clarity ?? 0}, {st().card.interview.report.relevance} {controller().interviewReport()?.scores?.relevance ?? 0}, {st().card.interview.report.accuracy} {controller().interviewReport()?.scores?.accuracy ?? 0}
             </p>
             <Show when={controller().interviewReportMarkdownPath()}>
-              <p class="result-text">Markdown: {controller().interviewReportMarkdownPath()}</p>
+              <p class="result-text">{st().card.interview.report.markdown}: {valueOrDash(controller().interviewReportMarkdownPath())}</p>
             </Show>
           </section>
         </Show>

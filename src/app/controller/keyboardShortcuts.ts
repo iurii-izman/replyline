@@ -45,7 +45,7 @@ export function setupKeyboardShortcuts(deps: KeyboardShortcutDeps): void {
           deps.prevInterviewCard();
           return;
         }
-        if (/^[1-5]$/.test(event.key)) {
+        if (/^[1-6]$/.test(event.key)) {
           event.preventDefault();
           deps.selectInterviewCardByNumber(Number.parseInt(event.key, 10));
           return;

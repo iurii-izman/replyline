@@ -328,6 +328,46 @@ describe("App UX stabilization", () => {
     expect(screen.queryByTestId("pipeline-timeline")).toBeNull();
   });
 
+  it("compact mode still shows critical error state", async () => {
+    mock = createMockPlatform({
+      analysisCard: {
+        gist: "g",
+        sayNow: "say",
+        nextMove: "next",
+        charsBand: "normal",
+        interviewCardSchemaV1: {
+          mode: "interview",
+          answer: { main: "Main", short: "Short", strong: "Strong", structure: "STAR" },
+          question: {
+            rawTranscript: "raw",
+            cleanQuestion: "clean",
+            interviewerIntent: "intent",
+            questionType: "behavioral",
+            confidence: "high",
+          },
+          signals: { mustMention: ["ownership"], keywords: ["impact"] },
+          risks: { weakPoints: ["wp"], avoid: ["avoid"], safeReframe: "safe" },
+          followUps: [{ question: "q", bridgeAnswer: "a" }],
+          clarifier: { needed: false, text: null },
+        },
+      },
+      analysisError: { kind: "Pipeline", message: "LLM timeout" },
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    const compactToggle = await screen.findByLabelText("Compact interview mode");
+    fireEvent.click(compactToggle);
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
+    fireEvent.keyDown(window, { key: "r" });
+
+    expect(await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ.")).toBeTruthy();
+  });
+
   it("manages interview report actions", async () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByRole("button", { name: "Start session" }));
@@ -428,6 +468,51 @@ describe("Interview card rendering", () => {
     expect(screen.queryByText("Метрики:")).toBeNull();
   });
 
+  it("renders interview card fixture without crash when list fields are malformed", async () => {
+    const mock = createMockPlatform({
+      analysisCard: interviewCard({
+        interviewCardSchemaV1: {
+          mode: "interview",
+          answer: {
+            main: "Primary answer main",
+            short: "Short 1",
+            strong: "Strong 1",
+            structure: "STAR",
+          },
+          question: {
+            rawTranscript: "raw",
+            cleanQuestion: "clean",
+            interviewerIntent: "intent",
+            questionType: "behavioral",
+            confidence: "high",
+          },
+          signals: {
+            mustMention: "ownership",
+            keywords: "impact",
+            metrics: null,
+            resumeAnchors: "project x",
+          },
+          risks: {
+            weakPoints: "no numbers",
+            avoid: "blame others",
+            safeReframe: "focus on learning",
+          },
+          followUps: [{ question: "q", bridgeAnswer: "a" }],
+          clarifier: { needed: false, text: null },
+        },
+      }),
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.keyDown(window, { key: "3" });
+    expect(await screen.findByTestId("section-interview-signals")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "4" });
+    expect(await screen.findByTestId("section-interview-risks")).toBeTruthy();
+  });
+
   it("clarifier hidden when not needed", async () => {
     const mock = createMockPlatform({ analysisCard: interviewCard() });
     render(() => <App platform={mock.platform} />);
@@ -436,6 +521,25 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Released" });
 
     expect(screen.queryByTestId("section-interview-clarifier")).toBeNull();
+  });
+
+  it("clarifier needed=true renders text", async () => {
+    const mock = createMockPlatform({
+      analysisCard: interviewCard({
+        interviewCardSchemaV1: {
+          ...interviewCard().interviewCardSchemaV1,
+          clarifier: { needed: true, text: "Which timeframe?" },
+        },
+      }),
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.keyDown(window, { key: "6" });
+    expect(await screen.findByTestId("section-interview-clarifier")).toBeTruthy();
+    expect(screen.getByText("Which timeframe?")).toBeTruthy();
   });
 
   it("carousel switches cards and answer is default", async () => {
@@ -480,6 +584,73 @@ describe("Interview card rendering", () => {
     await waitFor(() =>
       expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("Tell me about a delivery incident."),
     );
+  });
+
+  it("active tab copy works for risks/followUps/clarifier", async () => {
+    const mock = createMockPlatform({
+      analysisCard: interviewCard({
+        interviewCardSchemaV1: {
+          ...interviewCard().interviewCardSchemaV1,
+          clarifier: { needed: true, text: "Need scope?" },
+        },
+      }),
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.keyDown(window, { key: "4" });
+    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    await waitFor(() =>
+      expect(mock.platform.clipboard.writeText).toHaveBeenLastCalledWith("focus on learning"),
+    );
+
+    fireEvent.keyDown(window, { key: "5" });
+    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    await waitFor(() =>
+      expect(mock.platform.clipboard.writeText).toHaveBeenLastCalledWith(
+        "What changed? (I introduced weekly review.)",
+      ),
+    );
+
+    fireEvent.keyDown(window, { key: "6" });
+    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    await waitFor(() =>
+      expect(mock.platform.clipboard.writeText).toHaveBeenLastCalledWith("Need scope?"),
+    );
+  });
+
+  it("pin resets if pinned key absent in next card", async () => {
+    const withClarifier = interviewCard({
+      interviewCardSchemaV1: {
+        ...interviewCard().interviewCardSchemaV1,
+        clarifier: { needed: true, text: "Need scope?" },
+      },
+    });
+    const withoutClarifier = interviewCard({
+      interviewCardSchemaV1: {
+        ...interviewCard().interviewCardSchemaV1,
+        clarifier: { needed: false, text: null },
+      },
+    });
+    const mock = createMockPlatform({ analysisCard: withClarifier });
+    const baseInvoke = mock.invoke;
+    const patched = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "retry_last_analysis") return withoutClarifier;
+      return baseInvoke(command, args);
+    });
+    mock.platform.invoke = patched;
+    mock.invoke = patched;
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.keyDown(window, { key: "6" });
+    fireEvent.click(await screen.findByRole("button", { name: "Закрепить" }));
+    fireEvent.keyDown(window, { key: "r" });
+    expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
   });
 
   it("work mode still renders legacy sections", async () => {

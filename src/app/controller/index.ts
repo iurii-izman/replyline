@@ -141,6 +141,60 @@ export function useReplylineController(platform: AppPlatform) {
     if (!keys.length) return null;
     return keys[clampInterviewCardIndex(activeInterviewCardIndex())] ?? keys[0] ?? null;
   };
+  const joinNonEmpty = (items: unknown, separator = " • "): string => {
+    if (!Array.isArray(items)) return "";
+    return items
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
+      .filter(Boolean)
+      .join(separator);
+  };
+  const clarifierText = (cardValue: AnalysisCard): string => {
+    if (cardValue.mode !== "interview") return "";
+    const value = cardValue.interview.clarifier;
+    const text = typeof value.text === "string" ? value.text.trim() : "";
+    if (text) return text;
+    const maybeQuestion =
+      "question" in (value as Record<string, unknown>) &&
+      typeof (value as { question?: unknown }).question === "string"
+        ? ((value as { question: string }).question ?? "").trim()
+        : "";
+    return maybeQuestion;
+  };
+  const copyText = createMemo(() => {
+    const currentCard = card();
+    if (!currentCard) return "";
+    if (currentCard.mode !== "interview") return currentCard.sayNow ?? "";
+    switch (activeInterviewCardKeyNow()) {
+      case "answer":
+        return currentCard.interview.answer.main ?? "";
+      case "question":
+        return currentCard.interview.question.cleanQuestion ?? "";
+      case "signals": {
+        const signals = currentCard.interview.signals;
+        return [
+          joinNonEmpty(signals.mustMention),
+          joinNonEmpty(signals.keywords),
+          joinNonEmpty(signals.metrics),
+          joinNonEmpty(signals.resumeAnchors),
+        ]
+          .filter(Boolean)
+          .join("\n");
+      }
+      case "risks":
+        return currentCard.interview.risks.safeReframe?.trim()
+          ? currentCard.interview.risks.safeReframe
+          : joinNonEmpty(currentCard.interview.risks.avoid) ||
+              joinNonEmpty(currentCard.interview.risks.weakPoints);
+      case "followUps":
+        return currentCard.interview.followUps
+          .map((item) => `${item.question} (${item.bridgeAnswer})`)
+          .join("\n");
+      case "clarifier":
+        return clarifierText(currentCard);
+      default:
+        return currentCard.interview.answer.main ?? "";
+    }
+  });
 
   // ── Derived ────────────────────────────────────────────────────────────
   const strings: Accessor<UiStrings> = createMemo(() => getUi(currentLanguage()));
@@ -172,6 +226,9 @@ export function useReplylineController(platform: AppPlatform) {
     settingsLlmModel: () => settings.llmModel,
     strings,
   });
+  const canCopyCurrentCard = createMemo(
+    () => selectors.mainUiState() === "ready" && Boolean(copyText().trim()),
+  );
 
   // ── Hotkeys ────────────────────────────────────────────────────────────
   const hotkeys = createHotkeys({
@@ -198,30 +255,8 @@ export function useReplylineController(platform: AppPlatform) {
   // ── Pipeline / context actions ─────────────────────────────────────────
   const pipelineActions = createPipelineActions({
     platform,
-    canCopyCurrentCard: selectors.canCopySayNow,
-    copyText: () => {
-      const currentCard = card();
-      if (!currentCard) return "";
-      if (currentCard.mode !== "interview") return currentCard.sayNow ?? "";
-      switch (activeInterviewCardKeyNow()) {
-        case "answer":
-          return currentCard.interview.answer.main ?? "";
-        case "question":
-          return currentCard.interview.question.cleanQuestion ?? "";
-        case "signals":
-          return currentCard.interview.signals.mustMention.join(" • ");
-        case "risks":
-          return currentCard.interview.risks.safeReframe;
-        case "followUps":
-          return currentCard.interview.followUps
-            .map((item) => `${item.question} (${item.bridgeAnswer})`)
-            .join("\n");
-        case "clarifier":
-          return currentCard.interview.clarifier.text ?? "";
-        default:
-          return currentCard.interview.answer.main ?? "";
-      }
-    },
+    canCopyCurrentCard,
+    copyText,
     strings,
     setError,
     setPhase,
@@ -277,7 +312,7 @@ export function useReplylineController(platform: AppPlatform) {
 
   setupKeyboardShortcuts({
     panel,
-    canCopyCurrentCard: selectors.canCopySayNow,
+    canCopyCurrentCard,
     canRetry: selectors.canRetry,
     copyCurrentCard: pipelineActions.copyCurrentCard,
     retryAnalysis: pipelineActions.retryAnalysis,
@@ -480,6 +515,7 @@ export function useReplylineController(platform: AppPlatform) {
     settings,
     draftSecrets,
     ...selectors,
+    canCopySayNow: canCopyCurrentCard,
     lastCommandErrorKind,
     runtimeCheckResult,
     runtimeCheckRunning,
