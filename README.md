@@ -75,6 +75,10 @@ See:
 ## Documentation Map
 
 - [docs/beta-readiness.md](docs/beta-readiness.md)
+- [docs/interview-mode.md](docs/interview-mode.md)
+- [docs/candidate-pack.md](docs/candidate-pack.md)
+- [docs/model-ladder.md](docs/model-ladder.md)
+- [docs/interview-quality.md](docs/interview-quality.md)
 - [docs/runtime-bringup.md](docs/runtime-bringup.md)
 - [docs/runtime-evidence.md](docs/runtime-evidence.md)
 - [docs/known-limitations.md](docs/known-limitations.md)
