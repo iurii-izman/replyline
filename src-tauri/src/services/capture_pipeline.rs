@@ -13,6 +13,7 @@ use crate::diag_contract::{
 use crate::llm;
 use crate::pipeline_timing::{self, PipelineTimer, StageTiming};
 use crate::providers::llm_provider;
+use crate::providers::llm_provider::AnalysisMode;
 use crate::providers::stt_provider;
 use crate::services::pipeline_errors;
 use crate::services::pipeline_events::{emit_status, log_diag, update_tray_title};
@@ -29,6 +30,24 @@ fn next_retry_run_id() -> String {
     let ts = chrono::Utc::now().timestamp_millis() as u64;
     let seq = RETRY_RUN_SEQ.fetch_add(1, Ordering::Relaxed);
     format!("retry-{}-{}", ts, seq)
+}
+
+fn is_interview_session_active(state: &ReplylineState) -> Result<bool, CommandError> {
+    let session = state
+        .interview_session
+        .lock()
+        .map_err(|_| CommandError::Internal("Interview session lock poisoned".to_string()))?;
+    Ok(session.active)
+}
+
+fn mode_from_last_card(last_card: Option<&AnalysisCardDto>) -> Option<AnalysisMode> {
+    last_card.map(|card| {
+        if card.interview_card_schema_v1.is_some() {
+            AnalysisMode::Interview
+        } else {
+            AnalysisMode::WorkConversation
+        }
+    })
 }
 
 pub async fn capture_stop_and_analyze(
@@ -211,11 +230,18 @@ pub async fn capture_stop_and_analyze(
         ),
     );
 
+    let mode = if is_interview_session_active(state)? {
+        AnalysisMode::Interview
+    } else {
+        AnalysisMode::WorkConversation
+    };
+
     let outcome = match llm_provider::analyze_transcript(
         &settings,
         llm_key.as_deref(),
         &transcript,
         &combined_context,
+        mode,
     )
     .await
     {
@@ -304,7 +330,7 @@ pub async fn retry_last_analysis(
 
     let run_id = run_id_param.unwrap_or_else(next_retry_run_id);
 
-    let (transcript, context_text) = {
+    let (transcript, context_text, last_mode) = {
         let mut context = state
             .context
             .lock()
@@ -316,7 +342,16 @@ pub async fn retry_last_analysis(
             )
         })?;
         let context_text = context.formatted_context();
-        (transcript, context_text)
+        let last_mode = mode_from_last_card(context.last_card().as_ref());
+        (transcript, context_text, last_mode)
+    };
+    let mode = if let Some(last_mode) = last_mode {
+        last_mode
+    } else if is_interview_session_active(state)? {
+        AnalysisMode::Interview
+    } else {
+        // Safe fallback when mode cannot be inferred from context/session.
+        AnalysisMode::WorkConversation
     };
 
     let retry_detail = pick_lang(lang, en::RETRY_DETAIL, ru::RETRY_DETAIL);
@@ -348,6 +383,7 @@ pub async fn retry_last_analysis(
         llm_key.as_deref(),
         &transcript,
         &combined_context,
+        mode,
     )
     .await
     {
@@ -383,4 +419,70 @@ pub async fn retry_last_analysis(
         ),
     );
     Ok(card)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::mode_from_last_card;
+    use crate::providers::llm_provider::AnalysisMode;
+    use crate::types::AnalysisCardDto;
+
+    #[test]
+    fn work_path_card_maps_to_work_mode() {
+        let card = AnalysisCardDto {
+            gist: "g".to_string(),
+            say_now: "s".to_string(),
+            star_evidence: None,
+            next_move: "n".to_string(),
+            chars_band: "short".to_string(),
+            interview_card_schema_v1: None,
+            repair_used: false,
+            fallback_used: false,
+        };
+        assert_eq!(
+            mode_from_last_card(Some(&card)),
+            Some(AnalysisMode::WorkConversation)
+        );
+    }
+
+    #[test]
+    fn interview_path_card_maps_to_interview_mode() {
+        let card = AnalysisCardDto {
+            gist: "g".to_string(),
+            say_now: "s".to_string(),
+            star_evidence: None,
+            next_move: "n".to_string(),
+            chars_band: "short".to_string(),
+            interview_card_schema_v1: Some(crate::interview_card_v1::InterviewCardDto {
+                mode: crate::interview_card_v1::InterviewMode::Interview,
+                question: crate::interview_card_v1::InterviewQuestion {
+                    raw_transcript: "raw".to_string(),
+                    clean_question: "clean".to_string(),
+                    question_type: crate::interview_card_v1::InterviewQuestionType::Unknown,
+                    interviewer_intent: "intent".to_string(),
+                    confidence: crate::interview_card_v1::InterviewConfidence::Low,
+                },
+                answer: crate::interview_card_v1::InterviewAnswer {
+                    main: "main".to_string(),
+                    short: "short".to_string(),
+                    strong: "strong".to_string(),
+                    structure: crate::interview_card_v1::InterviewAnswerStructure::Direct,
+                },
+                signals: crate::interview_card_v1::InterviewSignals::default(),
+                risks: crate::interview_card_v1::InterviewRisks {
+                    weak_points: vec![],
+                    avoid: vec![],
+                    safe_reframe: "safe".to_string(),
+                },
+                follow_ups: vec![],
+                clarifier: crate::interview_card_v1::InterviewClarifier::default(),
+            }),
+            repair_used: false,
+            fallback_used: false,
+        };
+        assert_eq!(
+            mode_from_last_card(Some(&card)),
+            Some(AnalysisMode::Interview)
+        );
+    }
 }

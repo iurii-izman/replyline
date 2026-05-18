@@ -17,6 +17,10 @@ Interview Mode is designed for interview preparation and allowed assistance.
 
 - WorkConversation path uses `CardSchemaV3`.
 - Interview path uses `InterviewCardSchemaV1`.
+- Runtime switch is explicit:
+  - Interview path is active only while interview session is active (`start_interview_session` -> `end_interview_session`).
+  - Otherwise runtime uses WorkConversation path.
+- `retry_last_analysis` reuses the last card mode when available; if mode cannot be inferred, fallback is WorkConversation.
 - Default generation path is single-pass.
 - Conditional second pass is allowed only when the first pass fails the quality gate.
 

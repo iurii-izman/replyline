@@ -341,4 +341,55 @@ mod tests {
         let _ = fs::remove_dir_all(temp);
         std::env::remove_var("REPLYLINE_TEST_DATA_DIR");
     }
+
+    fn sample_interview_card() -> InterviewCardDto {
+        InterviewCardDto {
+            mode: InterviewMode::Interview,
+            answer: InterviewAnswer {
+                main: "I owned the delivery and sent status today.".to_string(),
+                short: "owned delivery".to_string(),
+                strong: "Situation task action result with owner and deadline.".to_string(),
+                structure: InterviewAnswerStructure::Star,
+            },
+            question: InterviewQuestion {
+                raw_transcript: "Tell me about ownership and deadline".to_string(),
+                clean_question: "Tell me about ownership and deadline".to_string(),
+                interviewer_intent: "Ownership".to_string(),
+                question_type: InterviewQuestionType::Behavioral,
+                confidence: InterviewConfidence::High,
+            },
+            signals: InterviewSignals {
+                must_mention: vec!["ownership".to_string()],
+                keywords: vec!["deadline".to_string()],
+                metrics: vec![],
+                resume_anchors: vec![],
+            },
+            risks: InterviewRisks {
+                weak_points: vec![],
+                avoid: vec![],
+                safe_reframe: "confirm scope".to_string(),
+            },
+            follow_ups: vec![],
+            clarifier: InterviewClarifier::default(),
+        }
+    }
+
+    #[test]
+    fn append_question_ignores_inactive_session() {
+        let mut session = InterviewSessionState::default();
+        append_question(&mut session, "question", &sample_interview_card());
+        assert!(session.questions.is_empty());
+    }
+
+    #[test]
+    fn append_question_adds_entry_for_active_session() {
+        let mut session = InterviewSessionState::default();
+        start_session(&mut session, "en");
+        append_question(&mut session, "question", &sample_interview_card());
+        assert_eq!(session.questions.len(), 1);
+        assert_eq!(
+            session.questions[0].clean_question,
+            "Tell me about ownership and deadline"
+        );
+    }
 }

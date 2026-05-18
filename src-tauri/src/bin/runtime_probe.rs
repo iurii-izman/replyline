@@ -163,8 +163,14 @@ async fn main() -> Result<(), String> {
     let stt_ms = stt_started_at.elapsed().as_millis();
 
     let llm_started_at = Instant::now();
-    let outcome =
-        llm_provider::analyze_transcript(&settings, Some(&llm_api_key), &transcript, "").await?;
+    let outcome = llm_provider::analyze_transcript(
+        &settings,
+        Some(&llm_api_key),
+        &transcript,
+        "",
+        llm_provider::AnalysisMode::WorkConversation,
+    )
+    .await?;
     let card = outcome.card;
     let llm_ms = llm_started_at.elapsed().as_millis();
     let release_to_card_ms = release_started_at.elapsed().as_millis();

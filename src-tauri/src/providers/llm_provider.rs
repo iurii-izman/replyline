@@ -1,5 +1,6 @@
 use crate::card_v3::CardQualityFlags;
 use crate::diag_contract::{RL_CARD_NORM_TIMED, RL_LLM_REQUEST_TIMED};
+use crate::interview_card_v1;
 use crate::llm;
 use crate::model_presets::{resolve_model_preset, ProviderKind};
 use crate::pipeline_timing::{PipelineTimer, StageTiming};
@@ -9,6 +10,12 @@ use crate::types::{AnalysisCardDto, AppSettings};
 use super::openai_compatible;
 
 const MAX_CARD_RETRY_ATTEMPTS: usize = 1;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AnalysisMode {
+    WorkConversation,
+    Interview,
+}
 
 #[derive(Debug, Clone)]
 pub struct CardGenerationOutcome {
@@ -27,6 +34,21 @@ pub struct CardGenerationOutcome {
 /// This is the LLM provider boundary — the pipeline calls this function
 /// without knowing which concrete LLM implementation is behind it.
 pub async fn analyze_transcript(
+    settings: &AppSettings,
+    api_key: Option<&str>,
+    transcript: &str,
+    context: &str,
+    mode: AnalysisMode,
+) -> Result<CardGenerationOutcome, String> {
+    match mode {
+        AnalysisMode::WorkConversation => {
+            analyze_work_conversation(settings, api_key, transcript, context).await
+        }
+        AnalysisMode::Interview => analyze_interview(settings, api_key, transcript, context).await,
+    }
+}
+
+async fn analyze_work_conversation(
     settings: &AppSettings,
     api_key: Option<&str>,
     transcript: &str,
@@ -107,6 +129,59 @@ pub async fn analyze_transcript(
     }
 }
 
+async fn analyze_interview(
+    settings: &AppSettings,
+    api_key: Option<&str>,
+    transcript: &str,
+    context: &str,
+) -> Result<CardGenerationOutcome, String> {
+    let language = crate::language_profile::llm_language().to_string();
+    let profile = resolve_answer_profile(&settings.active_answer_profile);
+    let mut all_timings: Vec<StageTiming> = Vec::new();
+
+    let base_llm_timer = PipelineTimer::start();
+    let (base_raw_text, parse_or_request_err) = request_card_with_prompt(
+        settings,
+        api_key,
+        transcript,
+        context,
+        &language,
+        profile,
+        None,
+        llm::PRIMARY_MAX_TOKENS,
+    )
+    .await?;
+    all_timings.push(base_llm_timer.measure("llm_request", "ok", RL_LLM_REQUEST_TIMED));
+
+    let base_norm_timer = PipelineTimer::start();
+    let (mut card, quality) = llm::normalize_from_raw(&base_raw_text, transcript, profile)
+        .map_err(|err| format!("{parse_or_request_err}{err}"))?;
+    let base_norm_timing = base_norm_timer.measure("card_normalization", "ok", RL_CARD_NORM_TIMED);
+
+    let interview_outcome = interview_card_v1::generate_interview_card_with_conditional_repair(
+        transcript,
+        context,
+        &language,
+        |system_prompt, user_prompt, max_tokens| async move {
+            request_raw_with_prompts(settings, api_key, &system_prompt, &user_prompt, max_tokens)
+                .await
+        },
+    )
+    .await?;
+
+    card.say_now = interview_outcome.card.answer.main.clone();
+    card.interview_card_schema_v1 = Some(interview_outcome.card);
+
+    Ok(CardGenerationOutcome {
+        card,
+        retry_attempted: interview_outcome.telemetry.interview_repair_attempted,
+        retry_success: interview_outcome.telemetry.interview_repair_success,
+        quality,
+        llm_stage_timings: all_timings,
+        card_norm_timing: Some(base_norm_timing),
+    })
+}
+
 /// Build the full prompt and call the OpenAI-compatible provider.
 #[allow(clippy::too_many_arguments)]
 async fn request_card_with_prompt(
@@ -135,6 +210,32 @@ async fn request_card_with_prompt(
         api_key,
         system_prompt,
         &user_prompt,
+        max_tokens,
+    )
+    .await
+}
+
+async fn request_raw_with_prompts(
+    settings: &AppSettings,
+    api_key: Option<&str>,
+    system_prompt: &str,
+    user_prompt: &str,
+    max_tokens: u16,
+) -> Result<(String, String), String> {
+    let preset = resolve_model_preset(&settings.selected_model_preset);
+    let fallback_models = if preset.provider_kind == ProviderKind::OpenRouter {
+        preset.fallback_models
+    } else {
+        &[]
+    };
+
+    openai_compatible::request_card_raw_text(
+        &settings.llm_base_url,
+        &settings.llm_model,
+        fallback_models,
+        api_key,
+        system_prompt,
+        user_prompt,
         max_tokens,
     )
     .await

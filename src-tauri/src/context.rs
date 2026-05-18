@@ -54,6 +54,11 @@ impl ConversationContext {
         self.last_card = Some(card);
     }
 
+    pub fn last_card(&mut self) -> Option<AnalysisCardDto> {
+        self.clear_if_expired();
+        self.last_card.clone()
+    }
+
     pub fn formatted_context(&mut self) -> String {
         self.clear_if_expired();
         self.entries

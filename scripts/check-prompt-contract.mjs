@@ -11,6 +11,8 @@ import {
 const fixturePath = new URL("../fixtures/ru-work-snippets.json", import.meta.url);
 const llmPath = new URL("../src-tauri/src/llm.rs", import.meta.url);
 const cardV3Path = new URL("../src-tauri/src/card_v3.rs", import.meta.url);
+const interviewCardV1Path = new URL("../src-tauri/src/interview_card_v1.rs", import.meta.url);
+const llmProviderPath = new URL("../src-tauri/src/providers/llm_provider.rs", import.meta.url);
 
 function fail(message) {
   throw new Error(message);
@@ -22,10 +24,12 @@ function assertIncludes(haystack, needle, message) {
   }
 }
 
-const [fixtureRaw, llmRaw, cardV3Raw] = await Promise.all([
+const [fixtureRaw, llmRaw, cardV3Raw, interviewCardRaw, llmProviderRaw] = await Promise.all([
   readFile(fixturePath, "utf8"),
   readFile(llmPath, "utf8"),
   readFile(cardV3Path, "utf8"),
+  readFile(interviewCardV1Path, "utf8"),
+  readFile(llmProviderPath, "utf8"),
 ]);
 
 const fixtures = JSON.parse(fixtureRaw);
@@ -77,6 +81,26 @@ assertIncludes(
   llmRaw,
   "const RETRY_MAX_TOKENS: u16 = 300;",
   "Retry LLM max token budget should be 300.",
+);
+assertIncludes(
+  llmProviderRaw,
+  "enum AnalysisMode",
+  "llm_provider.rs must declare explicit analysis mode switch.",
+);
+assertIncludes(
+  llmProviderRaw,
+  "AnalysisMode::Interview",
+  "llm_provider.rs must implement interview analysis branch.",
+);
+assertIncludes(
+  interviewCardRaw,
+  "You generate InterviewCardSchemaV1 JSON only.",
+  "interview_card_v1.rs must enforce InterviewCardSchemaV1-only output prompt.",
+);
+assertIncludes(
+  interviewCardRaw,
+  "pub struct InterviewCardDto",
+  "interview_card_v1.rs must define InterviewCardDto contract.",
 );
 
 for (const fixture of fixtures) {
