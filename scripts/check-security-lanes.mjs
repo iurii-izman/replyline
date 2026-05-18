@@ -8,7 +8,8 @@ const repoRoot = resolve(__dirname, "..");
 
 // ============================================================================
 // Privacy lane: check Rust source for dangerous logging patterns.
-// This is a static best-effort check; redaction helpers provide runtime defense.
+// Blocking for high-risk patterns unless explicitly allowlisted with an inline
+// comment marker: `privacy-lane: allow`.
 // ============================================================================
 
 const DANGEROUS_LOG_PATTERNS = [
@@ -27,12 +28,16 @@ const DANGEROUS_LOG_PATTERNS = [
     patterns: [
       // Detects append_event("...", transcript) or append_event("...", &transcript)
       /append_event\s*\([^,]+,\s*&?transcript\b/i,
+      /log_diag\s*\([^,]+,[^,]+,[^,]+,\s*&?transcript\b/i,
     ],
     excludeFiles: ["src-tauri/src/privacy.rs"],
   },
   {
     label: "logging LLM prompt variable directly",
-    patterns: [/append_event\s*\([^,]+,\s*&?prompt\b/i],
+    patterns: [
+      /append_event\s*\([^,]+,\s*&?prompt\b/i,
+      /log_diag\s*\([^,]+,[^,]+,[^,]+,\s*&?prompt\b/i,
+    ],
     excludeFiles: ["src-tauri/src/privacy.rs"],
   },
   {
@@ -97,6 +102,7 @@ function checkDangerousLogPatterns() {
         // Skip comment-only lines
         const codeOnly = line.replace(/\/\/.*$/, "").trim();
         if (!codeOnly) continue;
+        if (line.includes("privacy-lane: allow")) continue;
 
         for (const pattern of rule.patterns) {
           if (pattern.test(codeOnly)) {
@@ -170,11 +176,12 @@ function checkCspDecision() {
 // Main
 // ============================================================================
 
-// 1. Privacy lane (non-blocking warnings in v1)
+// 1. Privacy lane (blocking)
 console.log("\n[privacy-lane] checking for dangerous log patterns...");
 const privacyOk = checkDangerousLogPatterns();
 if (!privacyOk) {
-  console.error("[privacy-lane] warnings found (non-blocking in v1, will escalate in v2)\n");
+  console.error("[privacy-lane] dangerous patterns found (blocking)\n");
+  process.exit(1);
 }
 
 const cspOk = checkCspDecision();

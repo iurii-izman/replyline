@@ -25,20 +25,42 @@ pub(crate) fn log_llm_failure(
     extra_detail: &str,
 ) -> CommandError {
     let (event, code) = classify_llm_error(&err);
+    let error_chars = err.chars().count();
     // R3 safe_preview: prevent raw LLM response text from leaking into app_log.
     // The err may contain parse failures with partial LLM output — truncate to 200 chars.
-    let log_detail = format!("{log_prefix}: {}", privacy::safe_preview(&err, 200));
+    let log_detail = format!(
+        "{log_prefix}: llm_error_chars={error_chars} err_preview={}",
+        privacy::safe_preview(&err, 80)
+    );
     let _ = app_log::append_event(event, log_detail);
-    let invalid_reason = err
-        .split("Card output invalid:")
-        .nth(1)
-        .map(str::trim)
-        .unwrap_or("-");
     let _ = log_diag(
         stage,
         "fail",
         code,
-        format!("invalid_reason={invalid_reason}{extra_detail}"),
+        format!("llm_error_chars={error_chars}{extra_detail}"),
     );
     CommandError::Pipeline(err)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::classify_llm_error;
+    use crate::types::CommandError;
+
+    #[test]
+    fn classify_card_invalid_path() {
+        let (event, code) = classify_llm_error("Card output invalid: raw prompt dump");
+        assert_eq!(event, "analysis_card_invalid");
+        assert_eq!(code, crate::diag_contract::RL_CARD_INVALID);
+    }
+
+    #[test]
+    fn log_llm_failure_returns_pipeline_error_without_mutating_message() {
+        let raw = "Card output invalid: transcript: very sensitive line api_key=secret";
+        let err = super::log_llm_failure("llm", raw.to_string(), "llm", " chars_band=short");
+        match err {
+            CommandError::Pipeline(message) => assert_eq!(message, raw),
+            other => panic!("unexpected error variant: {other:?}"),
+        }
+    }
 }

@@ -212,4 +212,12 @@ mod tests {
         assert!(!sanitized.contains("sk-test-123"));
         assert!(!sanitized.contains("live-secret"));
     }
+
+    #[test]
+    fn sanitize_does_not_treat_hotkey_as_secret() {
+        let value = "settings_save hotkey=Ctrl+Alt+Space model=gpt-4o-mini";
+        let sanitized = sanitize(value);
+        assert!(sanitized.contains("hotkey=Ctrl+Alt+Space"));
+        assert!(sanitized.contains("model=gpt-4o-mini"));
+    }
 }

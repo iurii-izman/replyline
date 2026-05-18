@@ -20,6 +20,9 @@
 - Отдельные runtime/evidence команды могут сохранять локальные диагностические артефакты в `reports/` (включая transcript в отчётах), если вы запускаете эти команды вручную.
 - Это часть верификации, а не фонового продуктового хранения.
 - Локальный `app.log` и диагностический bundle проходят санитизацию/редакцию (секреты, токены, потенциальные PII маскируются).
+- Interview reports хранятся только локально в профиле пользователя (`%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json`).
+- Interview report может включать raw transcript content как часть explicit Interview Session flow.
+- Markdown export отчёта создаётся только по явному действию пользователя (`Export markdown`), не автоматически.
 
 ### Redaction v1 (Privacy)
 
@@ -63,6 +66,7 @@ connect-src 'self' ipc: http://ipc.localhost http://localhost:* ws://localhost:*
 
 - После отпускания hotkey фрагмент отправляется в Deepgram для распознавания речи (STT).
 - Текстовый контекст/фрагмент отправляется во внешний LLM-провайдер, который вы настроили.
+- Какие cloud STT/LLM провайдеры получают audio/text, определяется вашей конфигурацией в Settings.
 - Политики хранения/логирования у этих провайдеров определяются их условиями, а не Replyline.
 
 ### Local vs Cloud URL policy

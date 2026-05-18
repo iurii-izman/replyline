@@ -264,6 +264,12 @@ mod tests {
         InterviewAnswer, InterviewAnswerStructure, InterviewClarifier, InterviewConfidence,
         InterviewMode, InterviewQuestion, InterviewQuestionType, InterviewRisks, InterviewSignals,
     };
+    use std::sync::{Mutex, OnceLock};
+
+    fn env_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
 
     #[test]
     fn score_is_bounded() {
@@ -286,6 +292,7 @@ mod tests {
 
     #[test]
     fn report_flow_generates_markdown_and_clears() {
+        let _guard = env_lock().lock().expect("lock");
         let temp = std::env::temp_dir().join(format!(
             "replyline-report-test-{}",
             Utc::now().timestamp_nanos_opt().unwrap_or_default()
@@ -338,6 +345,80 @@ mod tests {
         assert!(raw.contains("I owned the delivery"));
         clear_reports().expect("clear");
         assert!(get_latest_report().expect("get").is_none());
+        let _ = fs::remove_dir_all(temp);
+        std::env::remove_var("REPLYLINE_TEST_DATA_DIR");
+    }
+
+    #[test]
+    fn markdown_export_happens_only_on_explicit_export_call() {
+        let _guard = env_lock().lock().expect("lock");
+        let temp = std::env::temp_dir().join(format!(
+            "replyline-report-export-explicit-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir_all(&temp).expect("create temp");
+        std::env::set_var("REPLYLINE_TEST_DATA_DIR", temp.display().to_string());
+
+        let mut session = InterviewSessionState::default();
+        start_session(&mut session, "en");
+        append_question(
+            &mut session,
+            "question transcript",
+            &sample_interview_card(),
+        );
+        let report = end_session(&mut session).expect("end").expect("has report");
+        let md_path = reports_dir()
+            .expect("reports dir")
+            .join(format!("interview-report-{}.md", report.session_id));
+
+        assert!(
+            !md_path.is_file(),
+            "markdown must not exist before explicit export"
+        );
+
+        let exported = export_latest_report_markdown()
+            .expect("export")
+            .expect("export path");
+        assert_eq!(std::path::PathBuf::from(exported), md_path);
+        assert!(
+            md_path.is_file(),
+            "markdown file must exist after explicit export"
+        );
+
+        let _ = fs::remove_dir_all(temp);
+        std::env::remove_var("REPLYLINE_TEST_DATA_DIR");
+    }
+
+    #[test]
+    fn clear_reports_removes_local_store_file() {
+        let _guard = env_lock().lock().expect("lock");
+        let temp = std::env::temp_dir().join(format!(
+            "replyline-report-clear-local-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir_all(&temp).expect("create temp");
+        std::env::set_var("REPLYLINE_TEST_DATA_DIR", temp.display().to_string());
+
+        let mut session = InterviewSessionState::default();
+        start_session(&mut session, "en");
+        append_question(
+            &mut session,
+            "question transcript",
+            &sample_interview_card(),
+        );
+        end_session(&mut session).expect("end").expect("has report");
+
+        let store_path = reports_path().expect("store path");
+        assert!(
+            store_path.is_file(),
+            "local report store must exist before clear"
+        );
+        clear_reports().expect("clear");
+        assert!(
+            !store_path.is_file(),
+            "local report store must be deleted by clear"
+        );
+
         let _ = fs::remove_dir_all(temp);
         std::env::remove_var("REPLYLINE_TEST_DATA_DIR");
     }

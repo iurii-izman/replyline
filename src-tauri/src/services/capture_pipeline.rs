@@ -32,6 +32,23 @@ fn next_retry_run_id() -> String {
     format!("retry-{}-{}", ts, seq)
 }
 
+fn classify_stt_failure(err: &str) -> &'static str {
+    let lower = err.to_lowercase();
+    if lower.contains("timeout") {
+        "timeout"
+    } else if lower.contains("http") {
+        "http_error"
+    } else if lower.contains("unauthorized")
+        || lower.contains("forbidden")
+        || lower.contains("key")
+        || lower.contains("auth")
+    {
+        "auth_error"
+    } else {
+        "provider_error"
+    }
+}
+
 fn is_interview_session_active(state: &ReplylineState) -> Result<bool, CommandError> {
     let session = state
         .interview_session
@@ -146,10 +163,16 @@ pub async fn capture_stop_and_analyze(
         match stt_provider::transcribe(&settings, &deepgram_key, &pcm).await {
             Ok(value) => value,
             Err(err) => {
+                let failure_kind = classify_stt_failure(&err);
                 let event = "analysis_stt_failed";
-                let _ = app_log::append_event(event, &err);
+                let _ = app_log::append_event(event, format!("stt_failure_kind={failure_kind}"));
                 let code = RL_STT_FAILED;
-                let _ = log_diag("stt", "fail", code, &err);
+                let _ = log_diag(
+                    "stt",
+                    "fail",
+                    code,
+                    format!("stt_failure_kind={failure_kind}"),
+                );
                 return Err(CommandError::Pipeline(err));
             }
         };
