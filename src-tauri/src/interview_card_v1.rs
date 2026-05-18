@@ -5,6 +5,7 @@ use std::future::Future;
 use std::time::Instant;
 
 use crate::privacy;
+use crate::prompt_registry::{default_answer_profile, AnswerProfileConfig};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -142,6 +143,18 @@ impl Default for InterviewWordLimits {
     }
 }
 
+impl InterviewWordLimits {
+    pub fn from_profile(profile: &AnswerProfileConfig) -> Self {
+        Self {
+            main_min: profile.answer_word_min,
+            main_max: profile.answer_word_max,
+            short_max: profile.short_word_max,
+            strong_min: profile.answer_word_min,
+            strong_max: profile.strong_word_max,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InterviewQualityFailureReason {
     InvalidJsonAfterRepair,
@@ -187,19 +200,25 @@ pub fn parse_and_normalize_interview_card(
     input_context: &str,
 ) -> Result<InterviewCardDto, String> {
     let parsed = parse_interview_card_json(raw_text)?;
-    normalize_and_validate(parsed, input_context, InterviewWordLimits::default())
+    normalize_and_validate(
+        parsed,
+        input_context,
+        InterviewWordLimits::from_profile(default_answer_profile()),
+    )
 }
 
 pub async fn generate_interview_card_with_conditional_repair<F, Fut>(
     transcript: &str,
     context: &str,
     language: &str,
+    profile: &AnswerProfileConfig,
     mut request_fn: F,
 ) -> Result<InterviewGenerationOutcome, String>
 where
     F: FnMut(String, String, u16) -> Fut,
     Fut: Future<Output = Result<(String, String), String>>,
 {
+    let limits = InterviewWordLimits::from_profile(profile);
     let system_prompt = build_interview_system_prompt(language);
     let primary_prompt = build_interview_user_prompt(transcript, context, language);
     let mut telemetry = InterviewGenerationTelemetry::default();
@@ -216,8 +235,9 @@ where
         .duration_ms_per_attempt
         .push(start_first.elapsed().as_millis());
 
-    let first_attempt = parse_and_normalize_interview_card(&first_raw, transcript);
-    let first_gate = evaluate_quality_gate(first_attempt.as_ref(), transcript);
+    let first_attempt = parse_interview_card_json(&first_raw)
+        .and_then(|parsed| normalize_and_validate(parsed, transcript, limits));
+    let first_gate = evaluate_quality_gate(first_attempt.as_ref(), transcript, limits);
     if first_gate.passed {
         let card = first_attempt?;
         return Ok(InterviewGenerationOutcome {
@@ -261,8 +281,9 @@ where
         .duration_ms_per_attempt
         .push(start_second.elapsed().as_millis());
 
-    let second_attempt = parse_and_normalize_interview_card(&second_raw, transcript);
-    let second_gate = evaluate_quality_gate(second_attempt.as_ref(), transcript);
+    let second_attempt = parse_interview_card_json(&second_raw)
+        .and_then(|parsed| normalize_and_validate(parsed, transcript, limits));
+    let second_gate = evaluate_quality_gate(second_attempt.as_ref(), transcript, limits);
     if second_gate.passed {
         telemetry.interview_repair_success = true;
         return Ok(InterviewGenerationOutcome {
@@ -566,11 +587,12 @@ fn word_count(value: &str) -> usize {
 fn evaluate_quality_gate(
     normalized_attempt: Result<&InterviewCardDto, &String>,
     transcript: &str,
+    limits: InterviewWordLimits,
 ) -> InterviewQualityGate {
     let mut failed_reasons = Vec::new();
     match normalized_attempt {
         Ok(card) => {
-            if word_count(&card.answer.main) < InterviewWordLimits::default().main_min {
+            if word_count(&card.answer.main) < limits.main_min {
                 failed_reasons.push(InterviewQualityFailureReason::AnswerMainTooShort);
             }
             if ensure_no_generic_filler(&card.answer).is_err() {
@@ -785,9 +807,9 @@ mod tests {
   "followUps":[{{"question":"What was the result?","bridgeAnswer":"Result was measurable and tied to timeline."}}],
   "clarifier":{clarifier}
 }}"#,
-            main = format!("I {}", words("main", 99)),
+            main = format!("I {}", words("main", 60)),
             short = words("short", 30),
-            strong = words("strong", 150),
+            strong = words("strong", 70),
         )
     }
 
@@ -906,6 +928,7 @@ mod tests {
             "conflict with colleague",
             "interview context",
             "en",
+            default_answer_profile(),
             move |_system, _user, _max_tokens| {
                 let value = response.clone();
                 let calls = calls_ref.clone();
@@ -926,7 +949,7 @@ mod tests {
     async fn too_short_answer_triggers_second_pass() {
         let mut short = base_json("technical", r#"{"needed":false,"text":null}"#, "[]", "[]");
         short = short.replace(
-            &format!("I {}", words("main", 99)),
+            &format!("I {}", words("main", 60)),
             "I would answer directly.",
         );
         let valid = base_json("technical", r#"{"needed":false,"text":null}"#, "[]", "[]");
@@ -936,6 +959,7 @@ mod tests {
             "conflict with colleague",
             "interview context",
             "en",
+            default_answer_profile(),
             move |_system, _user, _max_tokens| {
                 let first = short.clone();
                 let second = valid.clone();
@@ -968,6 +992,7 @@ mod tests {
             "no numbers in transcript",
             "interview context",
             "en",
+            default_answer_profile(),
             move |_system, _user, _max_tokens| {
                 let value = bad.clone();
                 let calls = calls_ref.clone();
@@ -994,6 +1019,7 @@ mod tests {
             "ambiguous transcript",
             "context",
             "en",
+            default_answer_profile(),
             move |_system, _user, _max_tokens| {
                 let value = invalid.clone();
                 let calls = calls_ref.clone();
@@ -1015,6 +1041,7 @@ mod tests {
             "ambiguous transcript",
             "context",
             "en",
+            default_answer_profile(),
             move |_system, _user, _max_tokens| {
                 let value = invalid.clone();
                 async move { Ok((value, String::new())) }

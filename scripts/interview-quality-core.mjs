@@ -1,21 +1,9 @@
 import { readFile } from "node:fs/promises";
 
 const DATASET_PATH = new URL("../tests/fixtures/interview-quality/golden-dataset-v1.json", import.meta.url);
+const PROMPT_REGISTRY_PATH = new URL("../src-tauri/src/prompt_registry.rs", import.meta.url);
 
-const BEHAVIORAL_TYPES = new Set(["behavioral"]);
-const MAX_MAIN_CHARS = 560;
-const MAX_MAIN_WORDS = 90;
-const MIN_MAIN_WORDS = 14;
-
-const BANNED_COACHING = [
-  "you got this",
-  "crush this interview",
-  "be confident",
-  "smile more",
-  "manifest",
-  "just be yourself",
-];
-
+const BANNED_COACHING = ["you got this", "crush this interview", "smile more", "manifest", "just be yourself"];
 const STAR_TOKENS = ["situation", "task", "action", "result"];
 
 function normalize(text) {
@@ -39,13 +27,24 @@ function gatherEvidenceTokens(candidatePack) {
   if (!candidatePack || typeof candidatePack !== "object") return [];
   const values = [];
   for (const value of Object.values(candidatePack)) {
-    if (Array.isArray(value)) {
-      for (const item of value) values.push(String(item));
-    } else if (value != null) {
-      values.push(String(value));
-    }
+    if (Array.isArray(value)) values.push(...value.map(String));
+    else if (value != null) values.push(String(value));
   }
   return values.map(normalize);
+}
+
+function parseProfileLimits(promptRegistryRaw) {
+  const limits = new Map();
+  const blockRegex = /id:\s*"([^"]+)"[\s\S]*?answer_word_min:\s*(\d+),[\s\S]*?answer_word_max:\s*(\d+),[\s\S]*?short_word_max:\s*(\d+),[\s\S]*?strong_word_max:\s*(\d+),/g;
+  for (const m of promptRegistryRaw.matchAll(blockRegex)) {
+    limits.set(m[1], {
+      answerWordMin: Number(m[2]),
+      answerWordMax: Number(m[3]),
+      shortWordMax: Number(m[4]),
+      strongWordMax: Number(m[5]),
+    });
+  }
+  return limits;
 }
 
 function validateFixtureShape(fixture) {
@@ -53,39 +52,59 @@ function validateFixtureShape(fixture) {
   if (!fixture.id) errors.push("missing id");
   if (!fixture.transcript) errors.push("missing transcript");
   if (!fixture.expected || typeof fixture.expected !== "object") errors.push("missing expected");
-  if (!fixture.deterministicOutput || typeof fixture.deterministicOutput !== "object") {
-    errors.push("missing deterministicOutput");
-  }
+  if (!fixture.deterministicOutput || typeof fixture.deterministicOutput !== "object") errors.push("missing deterministicOutput");
   return errors;
 }
 
 function validateInterviewCardSchemaV1(output) {
   const errors = [];
-  const allowedTypes = new Set([
-    "intro",
-    "motivation",
-    "behavioral",
-    "ambiguous",
-    "compensation",
-    "technical",
-    "product",
-    "fit",
-    "resume",
-  ]);
+  const allowedQuestionTypes = new Set(["behavioral", "technical", "product", "system_design", "management", "hr", "salary", "culture_fit", "unknown"]);
+  const allowedConfidence = new Set(["low", "medium", "high"]);
+  const allowedStructure = new Set(["STAR", "CASE", "DIRECT", "CLARIFY"]);
 
-  if (!allowedTypes.has(output.questionType)) errors.push("questionType invalid");
+  if (output.mode !== "interview") errors.push("mode must be interview");
+  if (!output.question || typeof output.question !== "object") errors.push("question missing");
+  if (!allowedQuestionTypes.has(output?.question?.questionType)) errors.push("question.questionType invalid");
+  if (!allowedConfidence.has(output?.question?.confidence)) errors.push("question.confidence invalid");
+
   if (!output.answer || typeof output.answer !== "object") errors.push("answer missing");
+  if (!String(output?.answer?.main ?? "").trim()) errors.push("answer.main missing");
+  if (!String(output?.answer?.short ?? "").trim()) errors.push("answer.short missing");
+  if (!String(output?.answer?.strong ?? "").trim()) errors.push("answer.strong missing");
+  if (!allowedStructure.has(output?.answer?.structure)) errors.push("answer.structure invalid");
 
-  const main = String(output?.answer?.main ?? "").trim();
-  if (!main) errors.push("answer.main missing");
+  if (!output.signals || typeof output.signals !== "object") errors.push("signals missing");
+  if (!Array.isArray(output?.signals?.mustMention)) errors.push("signals.mustMention invalid");
+  if (!Array.isArray(output?.signals?.keywords)) errors.push("signals.keywords invalid");
+  if (!Array.isArray(output?.signals?.metrics)) errors.push("signals.metrics invalid");
+  if (!Array.isArray(output?.signals?.resumeAnchors)) errors.push("signals.resumeAnchors invalid");
 
-  if (!Array.isArray(output.hints) || output.hints.length === 0) errors.push("hints empty");
-  if (!Array.isArray(output.signals) || output.signals.length === 0) errors.push("signals empty");
+  if (!output.risks || typeof output.risks !== "object") errors.push("risks missing");
+  if (!Array.isArray(output?.risks?.weakPoints)) errors.push("risks.weakPoints invalid");
+  if (!Array.isArray(output?.risks?.avoid)) errors.push("risks.avoid invalid");
+  if (!String(output?.risks?.safeReframe ?? "").trim()) errors.push("risks.safeReframe missing");
 
-  return { errors, main };
+  if (!Array.isArray(output.followUps)) errors.push("followUps invalid");
+  else {
+    for (const [idx, row] of output.followUps.entries()) {
+      if (!String(row?.question ?? "").trim()) errors.push(`followUps[${idx}].question missing`);
+      if (!String(row?.bridgeAnswer ?? "").trim()) errors.push(`followUps[${idx}].bridgeAnswer missing`);
+    }
+  }
+
+  if (!output.clarifier || typeof output.clarifier !== "object") errors.push("clarifier missing");
+  if (typeof output?.clarifier?.needed !== "boolean") errors.push("clarifier.needed invalid");
+  if (output?.clarifier?.needed && !String(output?.clarifier?.text ?? "").trim()) errors.push("clarifier.text required when needed=true");
+
+  return {
+    errors,
+    main: String(output?.answer?.main ?? "").trim(),
+    short: String(output?.answer?.short ?? "").trim(),
+    strong: String(output?.answer?.strong ?? "").trim(),
+  };
 }
 
-function validateGates(fixture) {
+function validateGates(fixture, profileLimitsById) {
   const failures = [];
   const expected = fixture.expected;
   const output = fixture.deterministicOutput;
@@ -93,59 +112,64 @@ function validateGates(fixture) {
   const schema = validateInterviewCardSchemaV1(output);
   failures.push(...schema.errors.map((e) => `schema: ${e}`));
 
-  const main = schema.main;
+  const profileId = expected.profileId ?? "interview_default";
+  const limits = profileLimitsById.get(profileId);
+  if (!limits) failures.push(`gate: unknown profile limits (${profileId})`);
+
   const fullText = normalize([
-    main,
-    output.answer?.clarifier ?? "",
-    output.resumeAnchor ?? "",
-    ...(output.hints ?? []),
-    ...(output.signals ?? []),
+    schema.main,
+    schema.short,
+    schema.strong,
+    output.question?.cleanQuestion,
+    output.question?.interviewerIntent,
+    output.risks?.safeReframe,
+    ...(output.signals?.mustMention ?? []),
+    ...(output.signals?.keywords ?? []),
+    ...(output.signals?.metrics ?? []),
+    ...(output.signals?.resumeAnchors ?? []),
   ].join(" "));
 
-  if (main.length > MAX_MAIN_CHARS || wordCount(main) > MAX_MAIN_WORDS || wordCount(main) < MIN_MAIN_WORDS) {
-    failures.push("gate: answer.main profile limits");
+  if (limits) {
+    if (wordCount(schema.main) < limits.answerWordMin || wordCount(schema.main) > limits.answerWordMax) failures.push("gate: answer.main profile limits");
+    if (wordCount(schema.short) > limits.shortWordMax) failures.push("gate: answer.short profile limits");
+    if (wordCount(schema.strong) < limits.answerWordMin || wordCount(schema.strong) > limits.strongWordMax) failures.push("gate: answer.strong profile limits");
   }
 
   if (expected.requiresNoFabrication) {
     const transcriptAndEvidence = normalize(`${fixture.transcript} ${gatherEvidenceTokens(fixture.candidatePack).join(" ")}`);
-    const hasNumbersInEvidence = countDigits(transcriptAndEvidence) > 0;
-    const hasNumbersInOutput = countDigits(fullText) > 0;
-    if (!hasNumbersInEvidence && hasNumbersInOutput) {
-      failures.push("gate: fabricated metrics detected");
-    }
+    if (countDigits(transcriptAndEvidence) === 0 && countDigits(fullText) > 0) failures.push("gate: fabricated metrics detected");
 
-    const companyClaims = ["google", "megabank", "microsoft", "amazon", "replyline"];
-    const evidenceCompanies = companyClaims.filter((c) => transcriptAndEvidence.includes(c));
-    const outputCompanies = companyClaims.filter((c) => fullText.includes(c));
-    for (const company of outputCompanies) {
-      if (!evidenceCompanies.includes(company)) failures.push(`gate: fake company claim (${company})`);
+    for (const metric of output.signals?.metrics ?? []) {
+      if (!transcriptAndEvidence.includes(normalize(metric))) failures.push(`gate: fabricated metric token (${metric})`);
+    }
+    for (const anchor of output.signals?.resumeAnchors ?? []) {
+      if (!transcriptAndEvidence.includes(normalize(anchor))) failures.push(`gate: fabricated resume anchor (${anchor})`);
     }
   }
 
-  const clarifier = String(output.answer?.clarifier ?? "").trim();
-  if (!expected.allowClarifier && clarifier) {
-    failures.push("gate: clarifier present when not allowed");
-  }
+  if (!/\b(i|my|we)\b/i.test(schema.main) && !/\b(я|мы)\b/iu.test(schema.main)) failures.push("gate: no direct answer framing");
 
-  if (!/\b(i|my|we)\b/i.test(main) && !/\bwould\b/i.test(main)) {
-    failures.push("gate: no direct answer framing");
-  }
-
-  if (BEHAVIORAL_TYPES.has(output.questionType)) {
+  if (expected.starLikeRequired || output.question?.questionType === "behavioral") {
     const hasStar = STAR_TOKENS.every((token) => fullText.includes(token));
     if (!hasStar) failures.push("gate: missing STAR-like structure");
   }
 
-  const hintsOk = output.hints.every((h) => String(h).trim().length >= 8);
-  const signalsOk = output.signals.every((h) => String(h).trim().length >= 8);
-  if (!hintsOk || !signalsOk) failures.push("gate: hints/signals weak");
+  if (!expected.allowClarifier && output.clarifier?.needed) failures.push("gate: clarifier present when not allowed");
+  if (output.clarifier?.needed) {
+    const transcriptNorm = normalize(fixture.transcript);
+    const hasAmbiguousCue = /\b(unclear|ambiguous|not sure|уточни|непонятно|ambigu|noise|crosstalk)\b/iu.test(transcriptNorm);
+    const shortPrompt = wordCount(transcriptNorm) <= 8;
+    const asksHowWouldYou = /\b(how would you|how do you|как бы вы|что делать)\b/iu.test(transcriptNorm);
+    const allowedByScenario =
+      expected.allowClarifier &&
+      (shortPrompt || output.question?.questionType === "unknown" || asksHowWouldYou);
+    if (!hasAmbiguousCue && !allowedByScenario) failures.push("gate: clarifier not needed by transcript");
+  }
 
   if (containsAny(fullText, BANNED_COACHING)) failures.push("gate: coaching fluff detected");
 
   const transcriptNorm = normalize(fixture.transcript);
-  if (transcriptNorm.length > 40 && fullText.includes(transcriptNorm.slice(0, 40))) {
-    failures.push("gate: transcript retell detected");
-  }
+  if (transcriptNorm.length > 40 && fullText.includes(transcriptNorm.slice(0, 40))) failures.push("gate: transcript retell detected");
 
   for (const token of expected.mustMention ?? []) {
     if (!fullText.includes(normalize(token))) failures.push(`expectation: mustMention missing (${token})`);
@@ -155,28 +179,26 @@ function validateGates(fixture) {
     if (fullText.includes(normalize(token))) failures.push(`expectation: mustNotMention violated (${token})`);
   }
 
-  if (output.questionType !== expected.questionType) {
-    failures.push(`expectation: questionType mismatch (${output.questionType} != ${expected.questionType})`);
-  }
+  if (output.question?.questionType !== expected.questionType) failures.push(`expectation: questionType mismatch (${output.question?.questionType} != ${expected.questionType})`);
 
-  if (expected.requiresResumeAnchor) {
-    if (!String(output.resumeAnchor ?? "").trim()) failures.push("gate: resume anchor required");
-  }
+  if (expected.requiresResumeAnchor && (output.signals?.resumeAnchors?.length ?? 0) === 0) failures.push("gate: resume anchor required");
 
   return failures;
 }
 
 export async function runInterviewQuality() {
-  const raw = await readFile(DATASET_PATH, "utf8");
-  const dataset = JSON.parse(raw);
+  const [datasetRaw, promptRegistryRaw] = await Promise.all([
+    readFile(DATASET_PATH, "utf8"),
+    readFile(PROMPT_REGISTRY_PATH, "utf8"),
+  ]);
+  const dataset = JSON.parse(datasetRaw);
+  const profileLimitsById = parseProfileLimits(promptRegistryRaw);
 
-  if (!Array.isArray(dataset) || dataset.length < 30) {
-    throw new Error("Interview golden dataset must contain at least 30 scenarios.");
-  }
+  if (!Array.isArray(dataset) || dataset.length < 30) throw new Error("Interview golden dataset must contain at least 30 scenarios.");
 
   const results = dataset.map((fixture) => {
     const shapeErrors = validateFixtureShape(fixture);
-    const gateErrors = shapeErrors.length > 0 ? shapeErrors : validateGates(fixture);
+    const gateErrors = shapeErrors.length > 0 ? shapeErrors : validateGates(fixture, profileLimitsById);
     return {
       id: fixture.id,
       scenario: fixture.scenario,
@@ -196,14 +218,12 @@ export async function runInterviewQuality() {
     summaryByType.set(key, current);
   }
 
-  const totals = {
-    total: results.length,
-    pass: results.filter((r) => r.pass).length,
-    fail: results.filter((r) => !r.pass).length,
-  };
-
   return {
-    totals,
+    totals: {
+      total: results.length,
+      pass: results.filter((r) => r.pass).length,
+      fail: results.filter((r) => !r.pass).length,
+    },
     summaryByType: [...summaryByType.entries()].map(([questionType, value]) => ({ questionType, ...value })),
     results,
   };

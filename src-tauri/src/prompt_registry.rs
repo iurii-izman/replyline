@@ -191,7 +191,10 @@ pub fn default_answer_profile() -> &'static AnswerProfileConfig {
 
 #[cfg(test)]
 mod tests {
-    use super::{default_answer_profile, resolve_answer_profile, StructurePreference};
+    use super::{
+        default_answer_profile, resolve_answer_profile, StructurePreference,
+        DEFAULT_ANSWER_PROFILE_ID,
+    };
 
     #[test]
     fn default_profile_is_selected() {
@@ -216,5 +219,11 @@ mod tests {
     fn technical_profile_prefers_technical_structure() {
         let profile = resolve_answer_profile("interview_technical");
         assert_eq!(profile.structure_preference, StructurePreference::Technical);
+    }
+
+    #[test]
+    fn unknown_profile_falls_back_to_default() {
+        let fallback = resolve_answer_profile("unknown_profile");
+        assert_eq!(fallback.id, DEFAULT_ANSWER_PROFILE_ID);
     }
 }

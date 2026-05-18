@@ -13,6 +13,8 @@ const llmPath = new URL("../src-tauri/src/llm.rs", import.meta.url);
 const cardV3Path = new URL("../src-tauri/src/card_v3.rs", import.meta.url);
 const interviewCardV1Path = new URL("../src-tauri/src/interview_card_v1.rs", import.meta.url);
 const llmProviderPath = new URL("../src-tauri/src/providers/llm_provider.rs", import.meta.url);
+const promptRegistryPath = new URL("../src-tauri/src/prompt_registry.rs", import.meta.url);
+const answerProfilesPath = new URL("../src/app/answerProfiles.ts", import.meta.url);
 
 function fail(message) {
   throw new Error(message);
@@ -24,12 +26,14 @@ function assertIncludes(haystack, needle, message) {
   }
 }
 
-const [fixtureRaw, llmRaw, cardV3Raw, interviewCardRaw, llmProviderRaw] = await Promise.all([
+const [fixtureRaw, llmRaw, cardV3Raw, interviewCardRaw, llmProviderRaw, promptRegistryRaw, answerProfilesRaw] = await Promise.all([
   readFile(fixturePath, "utf8"),
   readFile(llmPath, "utf8"),
   readFile(cardV3Path, "utf8"),
   readFile(interviewCardV1Path, "utf8"),
   readFile(llmProviderPath, "utf8"),
+  readFile(promptRegistryPath, "utf8"),
+  readFile(answerProfilesPath, "utf8"),
 ]);
 
 const fixtures = JSON.parse(fixtureRaw);
@@ -102,6 +106,57 @@ assertIncludes(
   "pub struct InterviewCardDto",
   "interview_card_v1.rs must define InterviewCardDto contract.",
 );
+assertIncludes(
+  promptRegistryRaw,
+  "pub const DEFAULT_ANSWER_PROFILE_ID",
+  "prompt_registry.rs must define DEFAULT_ANSWER_PROFILE_ID.",
+);
+assertIncludes(
+  promptRegistryRaw,
+  "unwrap_or_else(|| default_answer_profile())",
+  "Unknown profile must safely fallback to interview_default.",
+);
+assertIncludes(
+  llmRaw,
+  "Active answer profile:",
+  "Prompt suffix must include active profile id.",
+);
+assertIncludes(
+  llmRaw,
+  "Structure preference:",
+  "Prompt suffix must include structure preference behavior.",
+);
+assertIncludes(
+  llmRaw,
+  "Clarifier policy:",
+  "Prompt suffix must include clarifier policy behavior.",
+);
+assertIncludes(
+  llmRaw,
+  "Do not fabricate facts",
+  "Prompt suffix must include anti-hallucination wording.",
+);
+assertIncludes(
+  promptRegistryRaw,
+  "INTERVIEW_SCHEMA_VERSION: &str = \"InterviewCardSchemaV1\"",
+  "InterviewCardSchemaV1 must stay explicit in prompt registry.",
+);
+
+const backendProfileIds = [...promptRegistryRaw.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
+const frontendProfileIds = [...answerProfilesRaw.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
+const frontendDefault = answerProfilesRaw.match(/DEFAULT_ANSWER_PROFILE:\s*AnswerProfileId\s*=\s*"([^"]+)"/)?.[1];
+const backendDefault = promptRegistryRaw.match(/DEFAULT_ANSWER_PROFILE_ID:\s*&str\s*=\s*"([^"]+)"/)?.[1];
+if (!frontendDefault || !backendDefault) {
+  fail("Cannot parse frontend/backend default profile ids.");
+}
+for (const id of frontendProfileIds) {
+  if (!backendProfileIds.includes(id)) {
+    fail(`Frontend profile id "${id}" is missing in backend prompt registry.`);
+  }
+}
+if (frontendDefault !== backendDefault) {
+  fail(`Default profile mismatch: frontend=${frontendDefault}, backend=${backendDefault}`);
+}
 
 for (const fixture of fixtures) {
   const legacy = deterministicCardFromSnippet(fixture.snippet);

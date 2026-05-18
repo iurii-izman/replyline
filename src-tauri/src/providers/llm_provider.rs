@@ -171,6 +171,7 @@ async fn analyze_interview(
         transcript,
         context,
         &language,
+        profile,
         |system_prompt, user_prompt, max_tokens| async move {
             request_raw_with_prompts(settings, api_key, &system_prompt, &user_prompt, max_tokens)
                 .await

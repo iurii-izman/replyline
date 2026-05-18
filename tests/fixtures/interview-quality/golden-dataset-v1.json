@@ -11,7 +11,7 @@
       "company": "Replyline"
     },
     "expected": {
-      "questionType": "intro",
+      "questionType": "hr",
       "mustMention": [
         "B2B SaaS"
       ],
@@ -20,20 +20,56 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "intro",
-      "answer": {
-        "main": "I have five years in B2B SaaS, mostly in product operations and customer onboarding. In my last role I led an onboarding redesign that reduced time-to-value, and I now focus on high-ambiguity execution with cross-functional teams."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Tell me about yourself and your background.",
+        "cleanQuestion": "Tell me about yourself",
+        "questionType": "hr",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Lead with role-relevant scope, not full biography."
+      "answer": {
+        "main": "I have five years in B2B SaaS, mostly in product operations and customer onboarding. In my last role I led an onboarding redesign that reduced time-to-value, and I now focus on high-ambiguity execution with cross-functional teams.",
+        "short": "I have five years in B2B SaaS, mostly in product operations and customer onboarding. In my last role I led an onboarding redesign that reduced time-to-value, and I now focus on high-ambiguity execution with cross-functional teams.",
+        "strong": "Situation: I have five years in B2B SaaS, mostly in product operations and customer onboarding. In my last role I led an onboarding redesign that reduced time-to-value, and I now focus on high-ambiguity execution with cross-functional teams. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "B2B SaaS"
+        ],
+        "keywords": [
+          "B2B SaaS"
+        ],
+        "metrics": [],
+        "resumeAnchors": [
+          "5 years in B2B SaaS"
+        ]
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Maps prior work to this interview context."
-      ],
-      "resumeAnchor": "5 years in B2B SaaS; led onboarding redesign"
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -49,7 +85,7 @@
       ]
     },
     "expected": {
-      "questionType": "motivation",
+      "questionType": "hr",
       "mustMention": [
         "Replyline"
       ],
@@ -58,20 +94,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "motivation",
-      "answer": {
-        "main": "I want to join Replyline because the product solves a real communication pain point, and your clarity-plus-craft culture matches how I work. I prefer teams that ship quickly with strong quality bars, which is exactly how your public engineering notes read."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Why do you want to work at Replyline?",
+        "cleanQuestion": "Why this company?",
+        "questionType": "hr",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Connect motivation to concrete company context."
+      "answer": {
+        "main": "I want to join Replyline because the product solves a real communication pain point, and your clarity-plus-craft culture matches how I work. I prefer teams that ship quickly with strong quality bars, which is exactly how your public engineering notes read.",
+        "short": "I want to join Replyline because the product solves a real communication pain point, and your clarity-plus-craft culture matches how I work. I prefer teams that ship quickly with strong quality bars, which is exactly how your public engineering notes",
+        "strong": "Situation: I want to join Replyline because the product solves a real communication pain point, and your clarity-plus-craft culture matches how I work. I prefer teams that ship quickly with strong quality bars, which is exactly how your public engineering notes read. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "Replyline"
+        ],
+        "keywords": [
+          "Replyline"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Shows informed intent, not generic enthusiasm."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -85,7 +155,7 @@
       ]
     },
     "expected": {
-      "questionType": "motivation",
+      "questionType": "hr",
       "mustMention": [
         "workflow automations"
       ],
@@ -94,20 +164,56 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "motivation",
-      "answer": {
-        "main": "This role is a fit because it combines operational rigor and product judgment, which I use daily in workflow automations and incident follow-through. I like roles where I can turn ambiguous problems into clear plans and measurable execution."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Why this role specifically?",
+        "cleanQuestion": "Why this role?",
+        "questionType": "hr",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Tie role scope to proven work patterns."
+      "answer": {
+        "main": "This role is a fit because it combines operational rigor and product judgment, which I use daily in workflow automations and incident follow-through. I like roles where I can turn ambiguous problems into clear plans and measurable execution.",
+        "short": "This role is a fit because it combines operational rigor and product judgment, which I use daily in workflow automations and incident follow-through. I like roles where I can turn ambiguous problems into clear plans and measurable execution.",
+        "strong": "Situation: This role is a fit because it combines operational rigor and product judgment, which I use daily in workflow automations and incident follow-through. I like roles where I can turn ambiguous problems into clear plans and measurable execution. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "workflow automations"
+        ],
+        "keywords": [
+          "workflow automations"
+        ],
+        "metrics": [],
+        "resumeAnchors": [
+          "shipped workflow automations"
+        ]
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Demonstrates intent aligned to role mechanics."
-      ],
-      "resumeAnchor": "shipped workflow automations"
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -131,20 +237,57 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "behavioral",
-      "answer": {
-        "main": "Situation: design and engineering disagreed on scope before release. Task: I needed alignment without slipping delivery. Action: I ran a decision session with tradeoff framing, agreed owner-level decisions, and documented acceptance criteria. Result: we shipped on time and reduced reopening in the next sprint."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Tell me about a conflict with a colleague.",
+        "cleanQuestion": "Conflict with colleague",
+        "questionType": "behavioral",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Use STAR explicitly for conflict prompts."
+      "answer": {
+        "main": "Situation: design and engineering disagreed on scope before release. Task: I needed alignment without slipping delivery. Action: I ran a decision session with tradeoff framing, agreed owner-level decisions, and documented acceptance criteria. Result: we shipped on time and reduced reopening in the next sprint.",
+        "short": "Situation: design and engineering disagreed on scope before release. Task: I needed alignment without slipping delivery. Action: I ran a decision session with tradeoff framing, agreed owner-level decisions, and documented acceptance criteria. Result: we shipped on time and reduced reopening",
+        "strong": "Situation: Situation: design and engineering disagreed on scope before release. Task: I needed alignment without slipping delivery. Action: I ran a decision session with tradeoff framing, agreed owner-level decisions, and documented acceptance criteria. Result: we shipped on time and reduced reopening in the next sprint. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "STAR"
+      },
+      "signals": {
+        "mustMention": [
+          "situation",
+          "action",
+          "result"
+        ],
+        "keywords": [
+          "situation",
+          "action"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Shows collaboration over blame."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -162,20 +305,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "behavioral",
-      "answer": {
-        "main": "Situation: I underestimated integration risk and missed a target date. Task: recover trust and deliver safely. Action: I communicated impact early, reset scope with stakeholders, and added risk checkpoints for future plans. Result: we recovered with a stable launch, and what I learned was to front-load dependency mapping."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Describe a time you missed a deadline.",
+        "cleanQuestion": "Missed deadline",
+        "questionType": "behavioral",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Own the miss and show control actions."
+      "answer": {
+        "main": "Situation: I underestimated integration risk and missed a target date. Task: recover trust and deliver safely. Action: I communicated impact early, reset scope with stakeholders, and added risk checkpoints for future plans. Result: we recovered with a stable launch, and what I learned was to front-load dependency mapping.",
+        "short": "Situation: I underestimated integration risk and missed a target date. Task: recover trust and deliver safely. Action: I communicated impact early, reset scope with stakeholders, and added risk checkpoints for future plans. Result: we recovered with a stable launch, and",
+        "strong": "Situation: Situation: I underestimated integration risk and missed a target date. Task: recover trust and deliver safely. Action: I communicated impact early, reset scope with stakeholders, and added risk checkpoints for future plans. Result: we recovered with a stable launch, and what I learned was to front-load dependency mapping. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "STAR"
+      },
+      "signals": {
+        "mustMention": [
+          "what I learned"
+        ],
+        "keywords": [
+          "what I learned"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Demonstrates accountability and process learning."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -198,20 +375,56 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "behavioral",
-      "answer": {
-        "main": "Situation: ownership was fragmented across two teams during a critical launch. Task: create alignment and clear execution. Action: I set a joint operating cadence, clarified owners, and mentored two newer PMs on decision framing. Result: we improved handoffs and delivered the launch with fewer cross-team blockers."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Give me an example of leadership.",
+        "cleanQuestion": "Leadership example",
+        "questionType": "behavioral",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Frame leadership as influence plus structure."
+      "answer": {
+        "main": "Situation: ownership was fragmented across two teams during a critical launch. Task: create alignment and clear execution. Action: I set a joint operating cadence, clarified owners, and mentored two newer PMs on decision framing. Result: we improved handoffs and delivered the launch with fewer cross-team blockers.",
+        "short": "Situation: ownership was fragmented across two teams during a critical launch. Task: create alignment and clear execution. Action: I set a joint operating cadence, clarified owners, and mentored two newer PMs on decision framing. Result: we improved handoffs and delivered",
+        "strong": "Situation: Situation: ownership was fragmented across two teams during a critical launch. Task: create alignment and clear execution. Action: I set a joint operating cadence, clarified owners, and mentored two newer PMs on decision framing. Result: we improved handoffs and delivered the launch with fewer cross-team blockers. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "STAR"
+      },
+      "signals": {
+        "mustMention": [
+          "action",
+          "result"
+        ],
+        "keywords": [
+          "action",
+          "result"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Balances team enablement with delivery outcomes."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -229,20 +442,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "behavioral",
-      "answer": {
-        "main": "Situation: I pushed a process change without enough stakeholder input. Task: repair trust and keep delivery moving. Action: I acknowledged the miss, reopened the decision with affected teams, and rebuilt the rollout plan with explicit review points. Result: adoption recovered, and I learned to validate assumptions earlier."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Tell me about a failure.",
+        "cleanQuestion": "Failure example",
+        "questionType": "behavioral",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Pick a real miss with concrete correction."
+      "answer": {
+        "main": "Situation: I pushed a process change without enough stakeholder input. Task: repair trust and keep delivery moving. Action: I acknowledged the miss, reopened the decision with affected teams, and rebuilt the rollout plan with explicit review points. Result: adoption recovered, and I learned to validate assumptions earlier.",
+        "short": "Situation: I pushed a process change without enough stakeholder input. Task: repair trust and keep delivery moving. Action: I acknowledged the miss, reopened the decision with affected teams, and rebuilt the rollout plan with explicit review points. Result: adoption recovered,",
+        "strong": "Situation: Situation: I pushed a process change without enough stakeholder input. Task: repair trust and keep delivery moving. Action: I acknowledged the miss, reopened the decision with affected teams, and rebuilt the rollout plan with explicit review points. Result: adoption recovered, and I learned to validate assumptions earlier. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "STAR"
+      },
+      "signals": {
+        "mustMention": [
+          "learned"
+        ],
+        "keywords": [
+          "learned"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Shows reflective improvement, not spin."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -253,7 +500,7 @@
       "company": "Replyline"
     },
     "expected": {
-      "questionType": "ambiguous",
+      "questionType": "unknown",
       "mustMention": [
         "clarify"
       ],
@@ -262,20 +509,54 @@
       ],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "ambiguous",
-      "answer": {
-        "main": "At a high level, I would start with problem framing, user impact, and delivery constraints before proposing changes. To make this useful, I would clarify whether you mean product outcomes, team process, or hiring quality."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: How would you improve things here?",
+        "cleanQuestion": "Ambiguous question",
+        "questionType": "unknown",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Use one targeted clarifier, then give provisional answer."
+      "answer": {
+        "main": "At a high level, I would start with problem framing, user impact, and delivery constraints before proposing changes. To make this useful, I would clarify whether you mean product outcomes, team process, or hiring quality.",
+        "short": "At a high level, I would start with problem framing, user impact, and delivery constraints before proposing changes. To make this useful, I would clarify whether you mean product outcomes, team process, or hiring quality.",
+        "strong": "Situation: At a high level, I would start with problem framing, user impact, and delivery constraints before proposing changes. To make this useful, I would clarify whether you mean product outcomes, team process, or hiring quality. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "CLARIFY"
+      },
+      "signals": {
+        "mustMention": [
+          "clarify"
+        ],
+        "keywords": [
+          "clarify"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Handles ambiguity without stalling."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": true,
+        "text": "Do you want a product, technical, or behavioral example?"
+      }
     }
   },
   {
@@ -284,7 +565,7 @@
     "transcript": "Interviewer: What are your salary expectations?",
     "candidatePack": null,
     "expected": {
-      "questionType": "compensation",
+      "questionType": "salary",
       "mustMention": [
         "range"
       ],
@@ -293,20 +574,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "compensation",
-      "answer": {
-        "main": "I am targeting a market-aligned range based on role scope, level, and total compensation mix. I am flexible within a fair band and would like to align on expectations for responsibilities before locking exact numbers."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: What are your salary expectations?",
+        "cleanQuestion": "Salary expectations",
+        "questionType": "salary",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Give principled range framing without cornering early."
+      "answer": {
+        "main": "I am targeting a market-aligned range based on role scope, level, and total compensation mix. I am flexible within a fair band and would like to align on expectations for responsibilities before locking exact numbers.",
+        "short": "I am targeting a market-aligned range based on role scope, level, and total compensation mix. I am flexible within a fair band and would like to align on expectations for responsibilities before locking exact numbers.",
+        "strong": "Situation: I am targeting a market-aligned range based on role scope, level, and total compensation mix. I am flexible within a fair band and would like to align on expectations for responsibilities before locking exact numbers. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "range"
+        ],
+        "keywords": [
+          "range"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Protects leverage while staying collaborative."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -328,20 +643,54 @@
       ],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "technical",
-      "answer": {
-        "main": "I have stronger depth in TypeScript than low-level Rust internals, but I can approach this systematically. I would reproduce the leak, profile allocations, isolate suspicious ownership paths, and validate fixes with targeted regression checks."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: How would you debug a Rust memory leak?",
+        "cleanQuestion": "Technical unknown",
+        "questionType": "technical",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Acknowledge boundary, then show method."
+      "answer": {
+        "main": "I have stronger depth in TypeScript than low-level Rust internals, but I can approach this systematically. I would reproduce the leak, profile allocations, isolate suspicious ownership paths, and validate fixes with targeted regression checks.",
+        "short": "I have stronger depth in TypeScript than low-level Rust internals, but I can approach this systematically. I would reproduce the leak, profile allocations, isolate suspicious ownership paths, and validate fixes with targeted regression checks.",
+        "strong": "Situation: I have stronger depth in TypeScript than low-level Rust internals, but I can approach this systematically. I would reproduce the leak, profile allocations, isolate suspicious ownership paths, and validate fixes with targeted regression checks. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "CLARIFY"
+      },
+      "signals": {
+        "mustMention": [
+          "approach"
+        ],
+        "keywords": [
+          "approach"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Honest competence signal without bluffing."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": true,
+        "text": "Do you want a product, technical, or behavioral example?"
+      }
     }
   },
   {
@@ -359,20 +708,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "technical",
-      "answer": {
-        "main": "I would split the system into capture, transcription, quality evaluation, and response generation layers with clear contracts. The main tradeoff is latency versus accuracy, so I would design for fast defaults plus deferred enrichment where needed."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Design a high-level system for interview assistant insights.",
+        "cleanQuestion": "System design high-level",
+        "questionType": "technical",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Start from components and interfaces."
+      "answer": {
+        "main": "I would split the system into capture, transcription, quality evaluation, and response generation layers with clear contracts. The main tradeoff is latency versus accuracy, so I would design for fast defaults plus deferred enrichment where needed.",
+        "short": "I would split the system into capture, transcription, quality evaluation, and response generation layers with clear contracts. The main tradeoff is latency versus accuracy, so I would design for fast defaults plus deferred enrichment where needed.",
+        "strong": "Situation: I would split the system into capture, transcription, quality evaluation, and response generation layers with clear contracts. The main tradeoff is latency versus accuracy, so I would design for fast defaults plus deferred enrichment where needed. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "tradeoff"
+        ],
+        "keywords": [
+          "tradeoff"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "States architecture and explicit tradeoff."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -390,20 +773,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "product",
-      "answer": {
-        "main": "I treat this as a context tradeoff, not a universal rule. For trust-sensitive features I bias to quality floors first, then iterate speed through smaller slices and tighter feedback loops."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Ship faster or improve quality first?",
+        "cleanQuestion": "Product tradeoff",
+        "questionType": "product",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Avoid absolutist framing in product tradeoffs."
+      "answer": {
+        "main": "I treat this as a context tradeoff, not a universal rule. For trust-sensitive features I bias to quality floors first, then iterate speed through smaller slices and tighter feedback loops.",
+        "short": "I treat this as a context tradeoff, not a universal rule. For trust-sensitive features I bias to quality floors first, then iterate speed through smaller slices and tighter feedback loops.",
+        "strong": "Situation: I treat this as a context tradeoff, not a universal rule. For trust-sensitive features I bias to quality floors first, then iterate speed through smaller slices and tighter feedback loops. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "tradeoff"
+        ],
+        "keywords": [
+          "tradeoff"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Applies decision criteria, not opinion only."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -421,20 +838,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "product",
-      "answer": {
-        "main": "I rank work by user impact, business risk, and reversibility, then align sequencing with delivery constraints. If everything feels urgent, I force explicit trade decisions with stakeholders and document what we are intentionally deferring."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: How do you prioritize when everything is urgent?",
+        "cleanQuestion": "Prioritization",
+        "questionType": "product",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Use explicit decision axes for prioritization."
+      "answer": {
+        "main": "I rank work by user impact, business risk, and reversibility, then align sequencing with delivery constraints. If everything feels urgent, I force explicit trade decisions with stakeholders and document what we are intentionally deferring.",
+        "short": "I rank work by user impact, business risk, and reversibility, then align sequencing with delivery constraints. If everything feels urgent, I force explicit trade decisions with stakeholders and document what we are intentionally deferring.",
+        "strong": "Situation: I rank work by user impact, business risk, and reversibility, then align sequencing with delivery constraints. If everything feels urgent, I force explicit trade decisions with stakeholders and document what we are intentionally deferring. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "impact"
+        ],
+        "keywords": [
+          "impact"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Shows disciplined triage under pressure."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -452,20 +903,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "behavioral",
-      "answer": {
-        "main": "Situation: conflicting stakeholder goals created churn in planning. Task: align expectations while preserving delivery confidence. Action: I translated goals into shared decision criteria and set a predictable update cadence. Result: escalations dropped and decisions became faster and clearer."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: How do you manage difficult stakeholders?",
+        "cleanQuestion": "Stakeholder management",
+        "questionType": "behavioral",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Focus on mechanism, not personality judgments."
+      "answer": {
+        "main": "Situation: conflicting stakeholder goals created churn in planning. Task: align expectations while preserving delivery confidence. Action: I translated goals into shared decision criteria and set a predictable update cadence. Result: escalations dropped and decisions became faster and clearer.",
+        "short": "Situation: conflicting stakeholder goals created churn in planning. Task: align expectations while preserving delivery confidence. Action: I translated goals into shared decision criteria and set a predictable update cadence. Result: escalations dropped and decisions became faster and clearer.",
+        "strong": "Situation: Situation: conflicting stakeholder goals created churn in planning. Task: align expectations while preserving delivery confidence. Action: I translated goals into shared decision criteria and set a predictable update cadence. Result: escalations dropped and decisions became faster and clearer. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "STAR"
+      },
+      "signals": {
+        "mustMention": [
+          "alignment"
+        ],
+        "keywords": [
+          "alignment"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Demonstrates structured stakeholder alignment."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -484,20 +969,56 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "behavioral",
-      "answer": {
-        "main": "Situation: a key customer escalated a blocking issue. Task: stabilize trust and resolve quickly. Action: I assign a single owner, confirm timeline checkpoints, and send concise status updates with decision points. Result: the customer sees control and we reduce repeated escalation loops."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: A key customer escalates an issue. What do you do?",
+        "cleanQuestion": "Customer escalation",
+        "questionType": "behavioral",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Name owner and timeline explicitly."
+      "answer": {
+        "main": "Situation: a key customer escalated a blocking issue. Task: stabilize trust and resolve quickly. Action: I assign a single owner, confirm timeline checkpoints, and send concise status updates with decision points. Result: the customer sees control and we reduce repeated escalation loops.",
+        "short": "Situation: a key customer escalated a blocking issue. Task: stabilize trust and resolve quickly. Action: I assign a single owner, confirm timeline checkpoints, and send concise status updates with decision points. Result: the customer sees control and we reduce repeated",
+        "strong": "Situation: Situation: a key customer escalated a blocking issue. Task: stabilize trust and resolve quickly. Action: I assign a single owner, confirm timeline checkpoints, and send concise status updates with decision points. Result: the customer sees control and we reduce repeated escalation loops. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "STAR"
+      },
+      "signals": {
+        "mustMention": [
+          "owner",
+          "timeline"
+        ],
+        "keywords": [
+          "owner",
+          "timeline"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Balances customer trust with execution control."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -510,7 +1031,7 @@
       ]
     },
     "expected": {
-      "questionType": "fit",
+      "questionType": "culture_fit",
       "mustMention": [
         "ambiguity"
       ],
@@ -519,20 +1040,56 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "fit",
-      "answer": {
-        "main": "My core strengths are structured problem solving, clear communication, and execution in ambiguous environments. I am most effective when converting unclear requests into plans with explicit owners and checkpoints."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: What are your strengths?",
+        "cleanQuestion": "Strengths",
+        "questionType": "culture_fit",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Use strengths with role relevance."
+      "answer": {
+        "main": "My core strengths are structured problem solving, clear communication, and execution in ambiguous environments. I am most effective when converting unclear requests into plans with explicit owners and checkpoints.",
+        "short": "My core strengths are structured problem solving, clear communication, and execution in ambiguous environments. I am most effective when converting unclear requests into plans with explicit owners and checkpoints.",
+        "strong": "Situation: My core strengths are structured problem solving, clear communication, and execution in ambiguous environments. I am most effective when converting unclear requests into plans with explicit owners and checkpoints. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "ambiguity"
+        ],
+        "keywords": [
+          "ambiguity"
+        ],
+        "metrics": [],
+        "resumeAnchors": [
+          "operates well in ambiguity"
+        ]
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Specific and grounded self-assessment."
-      ],
-      "resumeAnchor": "operates well in ambiguity"
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -541,7 +1098,7 @@
     "transcript": "Interviewer: What is your biggest weakness?",
     "candidatePack": null,
     "expected": {
-      "questionType": "fit",
+      "questionType": "culture_fit",
       "mustMention": [
         "improving"
       ],
@@ -550,20 +1107,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "fit",
-      "answer": {
-        "main": "One weakness is over-indexing on detail early, which can slow first drafts. I am improving this by time-boxing discovery and sharing rough options sooner for feedback."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: What is your biggest weakness?",
+        "cleanQuestion": "Weaknesses",
+        "questionType": "culture_fit",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Choose real weakness with active mitigation."
+      "answer": {
+        "main": "One weakness is over-indexing on detail early, which can slow first drafts. I am improving this by time-boxing discovery and sharing rough options sooner for feedback.",
+        "short": "One weakness is over-indexing on detail early, which can slow first drafts. I am improving this by time-boxing discovery and sharing rough options sooner for feedback.",
+        "strong": "Situation: One weakness is over-indexing on detail early, which can slow first drafts. I am improving this by time-boxing discovery and sharing rough options sooner for feedback. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "improving"
+        ],
+        "keywords": [
+          "improving"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Growth-oriented and credible."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -576,7 +1167,7 @@
       ]
     },
     "expected": {
-      "questionType": "resume",
+      "questionType": "hr",
       "mustMention": [
         "caregiving"
       ],
@@ -585,20 +1176,56 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "resume",
-      "answer": {
-        "main": "I took that period for family caregiving and then returned with a deliberate transition plan. During re-entry I focused on updating my workflow tooling and interview readiness to ramp quickly."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: I see a gap in your resume, can you explain?",
+        "cleanQuestion": "Gap in resume",
+        "questionType": "hr",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Address gap directly and calmly."
+      "answer": {
+        "main": "I took that period for family caregiving and then returned with a deliberate transition plan. During re-entry I focused on updating my workflow tooling and interview readiness to ramp quickly.",
+        "short": "I took that period for family caregiving and then returned with a deliberate transition plan. During re-entry I focused on updating my workflow tooling and interview readiness to ramp quickly.",
+        "strong": "Situation: I took that period for family caregiving and then returned with a deliberate transition plan. During re-entry I focused on updating my workflow tooling and interview readiness to ramp quickly. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "caregiving"
+        ],
+        "keywords": [
+          "caregiving"
+        ],
+        "metrics": [],
+        "resumeAnchors": [
+          "2022 caregiving break for family health"
+        ]
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Transparent explanation without over-detail."
-      ],
-      "resumeAnchor": "2022 caregiving break for family health"
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -607,7 +1234,7 @@
     "transcript": "Interviewer: Why are you leaving your previous job?",
     "candidatePack": null,
     "expected": {
-      "questionType": "fit",
+      "questionType": "culture_fit",
       "mustMention": [
         "growth"
       ],
@@ -616,20 +1243,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "fit",
-      "answer": {
-        "main": "I am leaving because I want broader ownership and a stronger product-technical collaboration environment. My decision is growth-driven, and I am looking for a team with high standards and faster learning loops."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Why are you leaving your previous job?",
+        "cleanQuestion": "Leaving previous job",
+        "questionType": "culture_fit",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Keep tone forward-looking and professional."
+      "answer": {
+        "main": "I am leaving because I want broader ownership and a stronger product-technical collaboration environment. My decision is growth-driven, and I am looking for a team with high standards and faster learning loops.",
+        "short": "I am leaving because I want broader ownership and a stronger product-technical collaboration environment. My decision is growth-driven, and I am looking for a team with high standards and faster learning loops.",
+        "strong": "Situation: I am leaving because I want broader ownership and a stronger product-technical collaboration environment. My decision is growth-driven, and I am looking for a team with high standards and faster learning loops. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "growth"
+        ],
+        "keywords": [
+          "growth"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Avoids negativity while staying concrete."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -638,7 +1299,7 @@
     "transcript": "Interviewer: How do you work remotely?",
     "candidatePack": null,
     "expected": {
-      "questionType": "fit",
+      "questionType": "culture_fit",
       "mustMention": [
         "async"
       ],
@@ -647,20 +1308,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "fit",
-      "answer": {
-        "main": "I work remotely through disciplined async updates, clear written decisions, and predictable sync rituals for blockers. This keeps teams aligned without requiring constant meetings."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: How do you work remotely?",
+        "cleanQuestion": "Remote work",
+        "questionType": "culture_fit",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Mention async and decision hygiene."
+      "answer": {
+        "main": "I work remotely through disciplined async updates, clear written decisions, and predictable sync rituals for blockers. This keeps teams aligned without requiring constant meetings.",
+        "short": "I work remotely through disciplined async updates, clear written decisions, and predictable sync rituals for blockers. This keeps teams aligned without requiring constant meetings.",
+        "strong": "Situation: I work remotely through disciplined async updates, clear written decisions, and predictable sync rituals for blockers. This keeps teams aligned without requiring constant meetings. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "async"
+        ],
+        "keywords": [
+          "async"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Remote maturity with concrete habits."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -674,7 +1369,7 @@
       ]
     },
     "expected": {
-      "questionType": "fit",
+      "questionType": "culture_fit",
       "mustMention": [
         "clarity",
         "ownership"
@@ -684,20 +1379,56 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "fit",
-      "answer": {
-        "main": "I thrive in cultures with clarity, ownership, and candid feedback loops. I do my best work where accountability is explicit and teams iterate quickly on evidence."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: What culture do you thrive in?",
+        "cleanQuestion": "Culture fit",
+        "questionType": "culture_fit",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Mirror values only when they match your style."
+      "answer": {
+        "main": "I thrive in cultures with clarity, ownership, and candid feedback loops. I do my best work where accountability is explicit and teams iterate quickly on evidence.",
+        "short": "I thrive in cultures with clarity, ownership, and candid feedback loops. I do my best work where accountability is explicit and teams iterate quickly on evidence.",
+        "strong": "Situation: I thrive in cultures with clarity, ownership, and candid feedback loops. I do my best work where accountability is explicit and teams iterate quickly on evidence. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "clarity",
+          "ownership"
+        ],
+        "keywords": [
+          "clarity",
+          "ownership"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Specific culture criteria tied to execution."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -715,20 +1446,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "behavioral",
-      "answer": {
-        "main": "Situation: deadlines compressed after a dependency slip. Task: protect critical outcomes under pressure. Action: I prioritize by impact, cut non-essential scope, and set tight communication checkpoints. Result: the team maintained delivery confidence and avoided reactive thrash."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: How do you handle pressure?",
+        "cleanQuestion": "Handling pressure",
+        "questionType": "behavioral",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Pressure answers should show method, not bravado."
+      "answer": {
+        "main": "Situation: deadlines compressed after a dependency slip. Task: protect critical outcomes under pressure. Action: I prioritize by impact, cut non-essential scope, and set tight communication checkpoints. Result: the team maintained delivery confidence and avoided reactive thrash.",
+        "short": "Situation: deadlines compressed after a dependency slip. Task: protect critical outcomes under pressure. Action: I prioritize by impact, cut non-essential scope, and set tight communication checkpoints. Result: the team maintained delivery confidence and avoided reactive thrash.",
+        "strong": "Situation: Situation: deadlines compressed after a dependency slip. Task: protect critical outcomes under pressure. Action: I prioritize by impact, cut non-essential scope, and set tight communication checkpoints. Result: the team maintained delivery confidence and avoided reactive thrash. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "STAR"
+      },
+      "signals": {
+        "mustMention": [
+          "prioritize"
+        ],
+        "keywords": [
+          "prioritize"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Demonstrates calm prioritization behavior."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -741,7 +1506,7 @@
       ]
     },
     "expected": {
-      "questionType": "resume",
+      "questionType": "hr",
       "mustMention": [
         "32",
         "21"
@@ -751,20 +1516,61 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "resume",
-      "answer": {
-        "main": "In my last role, I improved onboarding retention by reducing drop-off from 32 percent to 21 percent after redesigning early activation steps. I tracked this weekly with product and support to keep interventions focused."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: What metrics did you improve in your last role?",
+        "cleanQuestion": "Metrics question",
+        "questionType": "hr",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Use only metrics anchored in known evidence."
+      "answer": {
+        "main": "In my last role, I improved onboarding retention by reducing drop-off from 32 percent to 21 percent after redesigning early activation steps. I tracked this weekly with product and support to keep interventions focused.",
+        "short": "In my last role, I improved onboarding retention by reducing drop-off from 32 percent to 21 percent after redesigning early activation steps. I tracked this weekly with product and support to keep interventions focused.",
+        "strong": "Situation: In my last role, I improved onboarding retention by reducing drop-off from 32 percent to 21 percent after redesigning early activation steps. I tracked this weekly with product and support to keep interventions focused. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "32",
+          "21"
+        ],
+        "keywords": [
+          "32",
+          "21"
+        ],
+        "metrics": [
+          "32",
+          "21"
+        ],
+        "resumeAnchors": [
+          "reduced onboarding drop-off from 32 to 21 percent"
+        ]
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Quantitative and source-grounded response."
-      ],
-      "resumeAnchor": "reduced onboarding drop-off from 32 to 21 percent"
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -777,7 +1583,7 @@
       ]
     },
     "expected": {
-      "questionType": "resume",
+      "questionType": "hr",
       "mustMention": [
         "did not have robust analytics"
       ],
@@ -786,20 +1592,56 @@
       ],
       "allowClarifier": true,
       "requiresResumeAnchor": true,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "resume",
-      "answer": {
-        "main": "We did not have robust analytics in that startup stage, so I avoid inventing exact numbers. I can describe directional improvements in response speed and handoff quality, and clarify the measurement setup we used."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: What exact metrics did you improve?",
+        "cleanQuestion": "No metrics available",
+        "questionType": "hr",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Admit data limits and offer alternative evidence."
+      "answer": {
+        "main": "We did not have robust analytics in that startup stage, so I avoid inventing exact numbers. I can describe directional improvements in response speed and handoff quality, and clarify the measurement setup we used.",
+        "short": "We did not have robust analytics in that startup stage, so I avoid inventing exact numbers. I can describe directional improvements in response speed and handoff quality, and clarify the measurement setup we used.",
+        "strong": "Situation: We did not have robust analytics in that startup stage, so I avoid inventing exact numbers. I can describe directional improvements in response speed and handoff quality, and clarify the measurement setup we used. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "did not have robust analytics"
+        ],
+        "keywords": [
+          "did not have robust analytics"
+        ],
+        "metrics": [],
+        "resumeAnchors": [
+          "startup lacked robust analytics"
+        ]
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "No fabrication under metric pressure."
-      ],
-      "resumeAnchor": "startup lacked robust analytics"
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -812,7 +1654,7 @@
       ]
     },
     "expected": {
-      "questionType": "resume",
+      "questionType": "hr",
       "mustMention": [
         "owned"
       ],
@@ -821,20 +1663,56 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": true,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "resume",
-      "answer": {
-        "main": "I owned scope definition, experiment sequencing, and cross-team rollout for the onboarding redesign. I coordinated product, support, and engineering to keep decision turnaround and delivery sequencing clear."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: You mention onboarding redesign; what did you own?",
+        "cleanQuestion": "Resume fact present",
+        "questionType": "hr",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "State ownership boundaries explicitly."
+      "answer": {
+        "main": "I owned scope definition, experiment sequencing, and cross-team rollout for the onboarding redesign. I coordinated product, support, and engineering to keep decision turnaround and delivery sequencing clear.",
+        "short": "I owned scope definition, experiment sequencing, and cross-team rollout for the onboarding redesign. I coordinated product, support, and engineering to keep decision turnaround and delivery sequencing clear.",
+        "strong": "Situation: I owned scope definition, experiment sequencing, and cross-team rollout for the onboarding redesign. I coordinated product, support, and engineering to keep decision turnaround and delivery sequencing clear. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "owned"
+        ],
+        "keywords": [
+          "owned"
+        ],
+        "metrics": [],
+        "resumeAnchors": [
+          "led onboarding redesign"
+        ]
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Shows accountability and role clarity."
-      ],
-      "resumeAnchor": "led onboarding redesign"
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -847,7 +1725,7 @@
       ]
     },
     "expected": {
-      "questionType": "resume",
+      "questionType": "hr",
       "mustMention": [
         "not in my background"
       ],
@@ -856,20 +1734,54 @@
       ],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "resume",
-      "answer": {
-        "main": "That specific fraud-engine project is not in my background, so I would not claim ownership of it. If helpful, I can map a comparable example from my B2B SaaS operations work instead."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: I heard you built a fraud engine at MegaBank, true?",
+        "cleanQuestion": "Resume fact absent",
+        "questionType": "hr",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Decline false premise and redirect to truthful scope."
+      "answer": {
+        "main": "That specific fraud-engine project is not in my background, so I would not claim ownership of it. If helpful, I can map a comparable example from my B2B SaaS operations work instead.",
+        "short": "That specific fraud-engine project is not in my background, so I would not claim ownership of it. If helpful, I can map a comparable example from my B2B SaaS operations work instead.",
+        "strong": "Situation: That specific fraud-engine project is not in my background, so I would not claim ownership of it. If helpful, I can map a comparable example from my B2B SaaS operations work instead. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "not in my background"
+        ],
+        "keywords": [
+          "not in my background"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Integrity signal under resume-pressure prompt."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -885,7 +1797,7 @@
       ]
     },
     "expected": {
-      "questionType": "fit",
+      "questionType": "culture_fit",
       "mustMention": [
         "clarity"
       ],
@@ -894,20 +1806,54 @@
       ],
       "allowClarifier": false,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "fit",
-      "answer": {
-        "main": "I resonate most with clarity because it compounds execution quality across product, engineering, and customer communication. In teams like Replyline, clarity plus ownership usually drives both speed and better decisions."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Which of our values resonates most with you?",
+        "cleanQuestion": "Company values match",
+        "questionType": "culture_fit",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Pick one value and connect to behavior."
+      "answer": {
+        "main": "I resonate most with clarity because it compounds execution quality across product, engineering, and customer communication. In teams like Replyline, clarity plus ownership usually drives both speed and better decisions.",
+        "short": "I resonate most with clarity because it compounds execution quality across product, engineering, and customer communication. In teams like Replyline, clarity plus ownership usually drives both speed and better decisions.",
+        "strong": "Situation: I resonate most with clarity because it compounds execution quality across product, engineering, and customer communication. In teams like Replyline, clarity plus ownership usually drives both speed and better decisions. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "DIRECT"
+      },
+      "signals": {
+        "mustMention": [
+          "clarity"
+        ],
+        "keywords": [
+          "clarity"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Value alignment expressed through execution lens."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   },
   {
@@ -916,7 +1862,7 @@
     "transcript": "[noise] umm [crosstalk] tell me like maybe your biggest challenge ???",
     "candidatePack": null,
     "expected": {
-      "questionType": "ambiguous",
+      "questionType": "unknown",
       "mustMention": [
         "challenge"
       ],
@@ -925,20 +1871,54 @@
       ],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "ambiguous",
-      "answer": {
-        "main": "A strong way to answer is to pick one significant challenge, explain context, and show your action and outcome clearly. If you want, I can tailor this to a technical challenge or a stakeholder challenge."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "[noise] umm [crosstalk] tell me like maybe your biggest challenge ???",
+        "cleanQuestion": "Noisy transcript",
+        "questionType": "unknown",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Recover intent from noisy prompt and keep momentum."
+      "answer": {
+        "main": "A strong way to answer is to pick one significant challenge, explain context, and show your action and outcome clearly. If you want, I can tailor this to a technical challenge or a stakeholder challenge.",
+        "short": "A strong way to answer is to pick one significant challenge, explain context, and show your action and outcome clearly. If you want, I can tailor this to a technical challenge or a stakeholder challenge.",
+        "strong": "Situation: A strong way to answer is to pick one significant challenge, explain context, and show your action and outcome clearly. If you want, I can tailor this to a technical challenge or a stakeholder challenge. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "CLARIFY"
+      },
+      "signals": {
+        "mustMention": [
+          "challenge"
+        ],
+        "keywords": [
+          "challenge"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Graceful handling of imperfect transcript quality."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": true,
+        "text": "Do you want a product, technical, or behavioral example?"
+      }
     }
   },
   {
@@ -947,7 +1927,7 @@
     "transcript": "Interviewer: Why?",
     "candidatePack": null,
     "expected": {
-      "questionType": "ambiguous",
+      "questionType": "unknown",
       "mustMention": [
         "context"
       ],
@@ -956,20 +1936,54 @@
       ],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "ambiguous",
-      "answer": {
-        "main": "My short answer is that the choice aligns with impact and long-term fit, but context matters for precision. I would clarify whether you mean why this role, why this company, or why a specific decision."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Why?",
+        "cleanQuestion": "Very short question",
+        "questionType": "unknown",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "Use one concise answer plus context clarifier."
+      "answer": {
+        "main": "My short answer is that the choice aligns with impact and long-term fit, but context matters for precision. I would clarify whether you mean why this role, why this company, or why a specific decision.",
+        "short": "My short answer is that the choice aligns with impact and long-term fit, but context matters for precision. I would clarify whether you mean why this role, why this company, or why a specific decision.",
+        "strong": "Situation: My short answer is that the choice aligns with impact and long-term fit, but context matters for precision. I would clarify whether you mean why this role, why this company, or why a specific decision. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "CLARIFY"
+      },
+      "signals": {
+        "mustMention": [
+          "context"
+        ],
+        "keywords": [
+          "context"
+        ],
+        "metrics": [],
+        "resumeAnchors": []
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Avoids overfitting to underspecified prompt."
-      ],
-      "resumeAnchor": null
+      "clarifier": {
+        "needed": true,
+        "text": "Do you want a product, technical, or behavioral example?"
+      }
     }
   },
   {
@@ -992,20 +2006,58 @@
       ],
       "allowClarifier": true,
       "requiresResumeAnchor": false,
-      "requiresNoFabrication": true
+      "requiresNoFabrication": true,
+      "profileId": "interview_default"
     },
     "deterministicOutput": {
-      "questionType": "behavioral",
-      "answer": {
-        "main": "Situation: I made a leadership miss by delaying a hard scope call and caused team churn. Task: recover trust and still deliver. Action: I owned the miss, set explicit criteria to prioritize under pressure, and restored cadence through incident-style retrospectives. Result: delivery stabilized, and I learned to force earlier tradeoff decisions."
+      "mode": "interview",
+      "question": {
+        "rawTranscript": "Interviewer: Can you walk through a leadership failure, what you learned, how you prioritize under pressure, and why we should trust you with this role?",
+        "cleanQuestion": "Long compound question",
+        "questionType": "behavioral",
+        "interviewerIntent": "Provide a direct and grounded interview response.",
+        "confidence": "medium"
       },
-      "hints": [
-        "For compound prompts, answer core parts in one structured narrative."
+      "answer": {
+        "main": "Situation: I made a leadership miss by delaying a hard scope call and caused team churn. Task: recover trust and still deliver. Action: I owned the miss, set explicit criteria to prioritize under pressure, and restored cadence through incident-style retrospectives. Result: delivery stabilized, and I learned to force earlier tradeoff decisions.",
+        "short": "Situation: I made a leadership miss by delaying a hard scope call and caused team churn. Task: recover trust and still deliver. Action: I owned the miss, set explicit criteria to prioritize under pressure, and restored cadence through incident-style retrospectives.",
+        "strong": "Situation: Situation: I made a leadership miss by delaying a hard scope call and caused team churn. Task: recover trust and still deliver. Action: I owned the miss, set explicit criteria to prioritize under pressure, and restored cadence through incident-style retrospectives. Result: delivery stabilized, and I learned to force earlier tradeoff decisions. Task: answer directly. Action: provide concrete scope, ownership, and evidence. Result: credible and practical interview response grounded in known facts.",
+        "structure": "STAR"
+      },
+      "signals": {
+        "mustMention": [
+          "learned",
+          "prioritize"
+        ],
+        "keywords": [
+          "learned",
+          "prioritize"
+        ],
+        "metrics": [],
+        "resumeAnchors": [
+          "incident retrospectives owner"
+        ]
+      },
+      "risks": {
+        "weakPoints": [
+          "overly generic framing"
+        ],
+        "avoid": [
+          "fabrication",
+          "coaching fluff"
+        ],
+        "safeReframe": "Answer directly, stay factual, and state uncertainty when needed."
+      },
+      "followUps": [
+        {
+          "question": "Can you provide one concrete example?",
+          "bridgeAnswer": "I can give a scoped example anchored to known context and role responsibilities."
+        }
       ],
-      "signals": [
-        "Maintains coherence across multiple asked dimensions."
-      ],
-      "resumeAnchor": "incident retrospectives owner"
+      "clarifier": {
+        "needed": false,
+        "text": null
+      }
     }
   }
 ]
