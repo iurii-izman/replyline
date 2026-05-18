@@ -19,6 +19,7 @@ export type AppSettings = {
   activeAnswerProfile: string;
   windowOpacity: 100 | 90 | 80 | 70;
   interviewCompactMode: boolean;
+  interviewReportRetentionDays: 0 | 7 | 30 | 90;
 };
 
 export type CandidateFactStrength = "strong" | "medium" | "weak";
@@ -333,7 +334,7 @@ export type CandidatePackDraft = {
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  schemaVersion: 5,
+  schemaVersion: 6,
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
@@ -342,6 +343,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   activeAnswerProfile: "interview_default",
   windowOpacity: 100,
   interviewCompactMode: false,
+  interviewReportRetentionDays: 0,
 };
 
 export function isConfiguredLlmRoute(baseUrl: string, model: string): boolean {

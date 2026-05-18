@@ -30,6 +30,7 @@ function createController(strings: UiStrings) {
     endInterviewSession: vi.fn(),
     openInterviewReport: vi.fn(),
     exportInterviewReportMarkdown: vi.fn(),
+    exportInterviewReportRedactedMarkdown: vi.fn(),
     clearInterviewReports: vi.fn(),
     canCopySayNow: () => false,
     copyDisabledReason: () => strings.card.copyDisabledNoCard,
@@ -51,6 +52,7 @@ function createController(strings: UiStrings) {
       feedback: { strengths: [], improvements: [], missingExamples: [] },
     }),
     interviewReportMarkdownPath: () => null,
+    interviewReportRedactedMarkdownPath: () => null,
     phaseLabel: () => strings.phase.idleReady,
   };
 }
@@ -62,7 +64,8 @@ describe("MainSurface locale labels", () => {
     expect(screen.getByRole("button", { name: "Начать сессию" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Завершить сессию" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Открыть отчёт" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Экспортировать Markdown" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Экспортировать full Markdown (с transcript)" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Экспортировать redacted Markdown (без transcript)" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Очистить отчёты" })).toBeTruthy();
     expect(screen.getByText("Отчёт интервью")).toBeTruthy();
     expect(screen.queryByText("undefined")).toBeNull();
@@ -74,7 +77,8 @@ describe("MainSurface locale labels", () => {
     expect(screen.getByRole("button", { name: "Start session" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "End session" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Open report" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Export markdown" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Export full markdown (includes transcript)" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Export redacted markdown (no transcript)" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Clear reports" })).toBeTruthy();
     expect(screen.getByText("Interview report")).toBeTruthy();
     expect(screen.queryByText("undefined")).toBeNull();

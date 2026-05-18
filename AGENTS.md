@@ -22,6 +22,43 @@ These instructions apply to the whole repository.
 - `pnpm verify:full` is the release profile (fast + freeze + dependency/security gates).
 - `pnpm verify` is an alias to `pnpm verify:fast`.
 
+## Task Lifecycle (Mandatory)
+
+- Kickoff snapshot (before any code edits):
+  - run `git status --short --branch`
+  - run `git rev-parse HEAD`
+  - if the worktree is already dirty, list pre-existing changed files and avoid touching unrelated files
+- Scope before patch:
+  - reproduce or inspect the issue first
+  - if the requested issue is already fixed, prefer a no-op with evidence instead of speculative edits
+- Implementation:
+  - keep the patch minimal and task-scoped
+  - avoid cosmetic churn and opportunistic refactors unless explicitly requested
+  - never weaken or delete tests to force green checks
+- Verification:
+  - run required commands from the matrix below
+  - report commands with real pass/fail outcome; never present unexecuted checks as completed
+- Delivery summary must include:
+  - changed files
+  - validation matrix (command + status)
+  - residual risks / what was not validated
+  - next recommended work block
+
+## Validation Matrix
+
+- Docs-only edits:
+  - run targeted doc/policy checks when relevant (`pnpm test:consistency`, `pnpm test:doc-links`)
+- Any code behavior change (default):
+  - run `pnpm verify:fast`
+- Substantial code change before handoff:
+  - run `pnpm smoke` (already included in `verify:fast`)
+- If `package.json` or `pnpm-lock.yaml` changed:
+  - additionally run `pnpm audit:npm`
+- If `src-tauri/Cargo.toml` or Rust dependency graph changed:
+  - additionally run `pnpm rust:deps`
+- Release/handoff readiness checks:
+  - run `pnpm release:freeze:check` (or use `pnpm verify:full`)
+
 ## Architecture Boundaries
 
 - Keep frontend state and types in `src/app/model.ts`.
@@ -36,6 +73,12 @@ These instructions apply to the whole repository.
 - Follow `docs/copy-rules.md` for product/trust wording constraints.
 - Respect automated policy scripts in `scripts/check-consistency.mjs` and `scripts/check-prompt-contract.mjs`.
 - For multi-tool governance and precedence, follow `docs/ai-tooling-policy-matrix.md`.
+
+## Cursor/Codex Rule Hygiene
+
+- Keep this file high-signal and concise; avoid restating full docs when a file reference is enough.
+- If instructions become large or path-specific, split scoped guidance into `.cursor/rules` and keep `AGENTS.md` as canonical cross-tool summary.
+- Keep `AGENTS.md` and `CLAUDE.md` semantically aligned to avoid conflicting instructions across agent surfaces.
 
 ## Language / Язык общения
 
@@ -59,3 +102,54 @@ These instructions apply to the whole repository.
 - Current repository mode: single developer.
 - Default integration path is direct into `main` after local verification.
 - Feature branches remain optional for risky or long-running changes.
+
+## Next-Cycle Delivery Rules
+
+- Repository: `iurii-izman/replyline`.
+- Product direction is fixed for this cycle: quality, safety, reliability, beta readiness, local UX, and developer confidence.
+- Do not propose a new product direction unless explicitly requested.
+
+### Main-Only Execution
+
+- Work directly on `main`.
+- Do not open PRs for routine local delivery in this repository mode.
+- Do not create long-lived feature branches unless a temporary local safety backup is required.
+- Before changing code, run `git status` and record current `HEAD`.
+- Keep commits small and understandable; avoid splitting one coherent change into unrelated partial features.
+- Commit only after validation commands are green, or explicitly document why a command could not run locally.
+- Never hide or soften failures.
+- Never remove or weaken tests only to make validation green.
+- If a test is flaky, isolate it, explain the failure mode, and fix determinism.
+- Do not run destructive git/file cleanup commands unless explicitly requested by the user.
+
+### Stack and Platform Constraints
+
+- Keep the existing stack: Tauri v2 + Rust backend + Solid.js + TypeScript frontend + `pnpm`.
+- Preserve current provider boundaries for OpenAI-compatible/OpenRouter and Deepgram integrations.
+- Preserve current local storage/keyring/privacy approach.
+- Do not add cloud account/auth/billing flows, external DB/vector DB, or heavy new dependencies unless strictly necessary and explicitly justified.
+- Do not introduce stealth/cheating/screen-share bypass patterns, click-through overlays, or unrelated product directions.
+
+### Privacy and Data Handling
+
+- Never log API keys, bearer tokens, credential values, raw transcripts, full prompts, raw Candidate Pack values, raw resume/JD/company values, or provider response bodies.
+- Sensitive local transcript data may appear only where explicitly required by local feature design.
+- Any export of sensitive information must be explicit user action.
+- Redacted export must never include full transcript or raw Candidate Pack content.
+
+### Quality and Behavior Constraints
+
+- Preserve WorkConversation Mode behavior.
+- Preserve Interview Mode behavior.
+- Preserve RU-first UX with EN mirror.
+- Preserve existing smoke/verify gates and policy scripts.
+- Add tests before or together with behavior changes.
+- Update docs when behavior changes.
+
+### Done Criteria
+
+- For code changes: code compiles.
+- For code changes: UI tests pass.
+- For code changes: Rust tests pass.
+- Relevant contract/security/prompt/locale/docs checks pass for the touched scope.
+- Final delivery summary includes changed files, validation matrix, residual risks, and the next recommended work block.

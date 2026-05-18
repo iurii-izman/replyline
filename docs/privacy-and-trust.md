@@ -22,7 +22,13 @@
 - Локальный `app.log` и диагностический bundle проходят санитизацию/редакцию (секреты, токены, потенциальные PII маскируются).
 - Interview reports хранятся только локально в профиле пользователя (`%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json`).
 - Interview report может включать raw transcript content как часть explicit Interview Session flow.
-- Markdown export отчёта создаётся только по явному действию пользователя (`Export markdown`), не автоматически.
+- Retention policy для interview reports настраивается пользователем в Settings (`manual clear`, `7`, `30`, `90` дней).
+- Значение по умолчанию: `manual clear` (авто-очистка выключена до явного выбора).
+- Авто-очистка применяется только по явной retention policy; в режиме `manual clear` отчёты удаляются только через `Clear reports`.
+- Markdown export отчёта создаётся только по явному действию пользователя, не автоматически.
+- Есть два явных export-действия:
+  - `Export full markdown (includes transcript)` — включает raw/full transcript и считается sensitive.
+  - `Export redacted markdown (no transcript)` — safer share copy, исключает raw/full transcript.
 
 ### Redaction v1 (Privacy)
 

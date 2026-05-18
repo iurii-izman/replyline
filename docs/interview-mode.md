@@ -37,8 +37,12 @@ Session commands:
 - `start_interview_session` starts a new interview session state.
 - `end_interview_session` finalizes and saves report to local store.
 - `get_interview_report` returns latest stored report.
-- `export_interview_report_markdown` writes a markdown file only on explicit user action.
+- `export_interview_report_markdown` writes full markdown file (includes transcript) only on explicit user action.
+- `export_interview_report_redacted_markdown` writes redacted markdown file (no transcript) only on explicit user action.
 - `clear_interview_reports` removes local reports and resets in-memory interview session state.
+- `interviewReportRetentionDays` controls optional automatic purge (`0`, `7`, `30`, `90`):
+  - `0` means keep until explicit `clear_interview_reports`.
+  - purge runs only when retention policy explicitly requires it.
 
 Report structure (`InterviewReportDto`) includes:
 
@@ -47,6 +51,12 @@ Report structure (`InterviewReportDto`) includes:
 - `fullTranscript`
 - heuristic scores (`clarity`, `relevance`, `accuracy`)
 - feedback arrays
+
+Storage and export boundaries:
+
+- Report store is local-only (`%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json`).
+- Reports are never exported unless user explicitly calls `export_interview_report_markdown`.
+- Safer sharing path: prefer `export_interview_report_redacted_markdown` for external sharing.
 
 ## Prompt profiles
 

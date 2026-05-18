@@ -1,0 +1,13 @@
+---
+description: Solid frontend boundaries for Replyline
+globs:
+  - src/app/**
+alwaysApply: false
+---
+
+- Keep frontend state/types in `src/app/model.ts`.
+- Keep orchestration logic in `src/app/controller.ts` (do not move into component files).
+- Keep platform bridge usage in `src/app/platform.ts`.
+- Keep UI reactivity in Solid.js patterns, not React patterns.
+- Preserve RU-first UX with EN mirror for user-facing behavior.
+- Add/update tests with behavior changes (`*.test.ts`, `*.ui.test.tsx`).

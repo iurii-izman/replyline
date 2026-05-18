@@ -36,6 +36,7 @@ const REQUIRED = [
   "start_interview_session",
   "end_interview_session",
   "export_interview_report_markdown",
+  "export_interview_report_redacted_markdown",
   "save_prepared_candidate_pack",
   "save_candidate_pack",
   "save_secret",
@@ -74,12 +75,12 @@ if (missing.length || extra.length || !debugBlockHasGuard || !releaseBlockExclud
 const hasDebugOnly = DEBUG_ONLY.some((name) => found.has(name));
 const staticContractChecks = [
   {
-    ok: modelText.includes("schemaVersion: 5"),
-    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 5 in src/app/model.ts",
+    ok: modelText.includes("schemaVersion: 6"),
+    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 6 in src/app/model.ts",
   },
   {
-    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 5;"),
-    message: "Expected CURRENT_SCHEMA_VERSION = 5 in src-tauri/src/settings.rs",
+    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 6;"),
+    message: "Expected CURRENT_SCHEMA_VERSION = 6 in src-tauri/src/settings.rs",
   },
   {
     ok:

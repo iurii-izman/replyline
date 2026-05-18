@@ -1,0 +1,13 @@
+---
+description: Rust/Tauri backend boundaries and privacy guardrails
+globs:
+  - src-tauri/**
+alwaysApply: false
+---
+
+- Preserve Tauri v2 + Rust backend architecture.
+- Keep provider boundaries explicit (OpenAI-compatible/OpenRouter, Deepgram).
+- Preserve WorkConversation and Interview Mode behavior contracts.
+- Do not log API keys, bearer tokens, credential values, raw transcripts, raw prompts, or provider response bodies.
+- If `Cargo.toml` or Rust dependency graph changed, run `pnpm rust:deps`.
+- Keep schema and IPC changes backward-safe and covered by tests/checks.

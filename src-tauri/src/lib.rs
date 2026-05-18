@@ -158,6 +158,7 @@ pub fn run() {
         commands::end_interview_session,
         commands::get_interview_report,
         commands::export_interview_report_markdown,
+        commands::export_interview_report_redacted_markdown,
         commands::clear_interview_reports
     ]);
     #[cfg(not(any(debug_assertions, test)))]
@@ -189,6 +190,7 @@ pub fn run() {
         commands::end_interview_session,
         commands::get_interview_report,
         commands::export_interview_report_markdown,
+        commands::export_interview_report_redacted_markdown,
         commands::clear_interview_reports
     ]);
     builder

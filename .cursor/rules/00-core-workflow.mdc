@@ -1,0 +1,16 @@
+---
+description: Replyline core workflow and safety baseline
+globs:
+alwaysApply: true
+---
+
+- Work directly on `main`; do not open PRs in routine solo flow.
+- Before edits, run `git status --short --branch` and `git rev-parse HEAD`.
+- Keep changes minimal and task-scoped; avoid unrelated refactors.
+- Never weaken or remove tests to force green checks.
+- Never claim checks passed unless commands were actually run.
+- Never log secrets or raw sensitive transcript/prompt/provider payload data.
+- For behavior changes, run `pnpm verify:fast`.
+- If JS deps changed, also run `pnpm audit:npm`.
+- If Rust deps changed, also run `pnpm rust:deps`.
+- Final summary must include changed files, validation matrix, residual risks, and next recommended block.

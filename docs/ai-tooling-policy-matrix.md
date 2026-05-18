@@ -27,7 +27,7 @@ If rules conflict, higher precedence wins.
 | Tool                     | Role                       | Adapter / Config entry point               | Required checks                                |
 | ------------------------ | -------------------------- | ------------------------------------------ | ---------------------------------------------- |
 | Windsurf                 | Primary AI IDE             | `AGENTS.md`, `.windsurf/rules/*.md`        | `pnpm smoke`; dependency gates when applicable |
-| Cursor/Codex             | AI IDE/agent               | `AGENTS.md` + repo docs                    | `pnpm smoke`; dependency gates when applicable |
+| Cursor/Codex             | AI IDE/agent               | `AGENTS.md` + `.cursor/rules` + repo docs | `pnpm smoke`; dependency gates when applicable |
 | GitHub Copilot           | Assistant/completions/chat | `.github/copilot-instructions.md`          | `pnpm smoke` before merge                      |
 | Claude tooling           | Agent/chat surface         | `CLAUDE.md` + repo docs                    | `pnpm smoke` before merge                      |
 | Zed + AI/Agent Panel     | Core alternative IDE       | Repo policy files via adapter guidance     | `pnpm smoke` before merge                      |

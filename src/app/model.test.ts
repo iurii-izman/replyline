@@ -184,8 +184,8 @@ describe("model", () => {
   });
 
   describe("settings validation preflight rules", () => {
-    it("DEFAULT_SETTINGS schemaVersion is 5 (matches backend)", () => {
-      expect(DEFAULT_SETTINGS.schemaVersion).toBe(5);
+    it("DEFAULT_SETTINGS schemaVersion is 6 (matches backend)", () => {
+      expect(DEFAULT_SETTINGS.schemaVersion).toBe(6);
     });
 
     it("DEFAULT_SETTINGS hotkey is non-empty", () => {
@@ -203,6 +203,10 @@ describe("model", () => {
 
     it("DEFAULT_SETTINGS has model preset selected", () => {
       expect(DEFAULT_SETTINGS.selectedModelPreset).toBe("custom_openai_compatible");
+    });
+
+    it("DEFAULT_SETTINGS interview report retention is manual-clear mode", () => {
+      expect(DEFAULT_SETTINGS.interviewReportRetentionDays).toBe(0);
     });
   });
 

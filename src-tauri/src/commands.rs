@@ -57,6 +57,16 @@ impl From<crate::credentials::CredentialError> for CommandError {
 pub fn load_bootstrap(state: State<'_, ReplylineState>) -> Result<BootstrapDto, CommandError> {
     let _ = app_log::append_event("bootstrap_load_attempt", "-");
     let settings = settings::load()?;
+    let retention_policy = crate::interview_report::retention_policy_from_days(
+        settings.interview_report_retention_days,
+    );
+    let retention_result =
+        crate::interview_report::enforce_retention(chrono::Utc::now(), retention_policy)
+            .map_err(CommandError::Internal)?;
+    let _ = app_log::append_event(
+        "interview_report_retention_applied",
+        crate::interview_report::retention_log_detail(retention_policy, retention_result),
+    );
     let deepgram_key_present = credentials::present(SecretSlot::DeepgramApiKey)?;
     let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
     let (context_active, context_entry_count, last_transcript_preview, can_retry_last_transcript) = {
@@ -616,6 +626,17 @@ pub fn save_prepared_candidate_pack(draft: CandidatePackDraftDto) -> Result<(), 
 pub fn start_interview_session(
     state: State<'_, ReplylineState>,
 ) -> Result<crate::interview_report::InterviewSessionState, CommandError> {
+    let settings = settings::load()?;
+    let retention_policy = crate::interview_report::retention_policy_from_days(
+        settings.interview_report_retention_days,
+    );
+    let retention_result =
+        crate::interview_report::enforce_retention(chrono::Utc::now(), retention_policy)
+            .map_err(CommandError::Internal)?;
+    let _ = app_log::append_event(
+        "interview_report_retention_applied",
+        crate::interview_report::retention_log_detail(retention_policy, retention_result),
+    );
     let mut session = state
         .interview_session
         .lock()
@@ -630,21 +651,51 @@ pub fn start_interview_session(
 pub fn end_interview_session(
     state: State<'_, ReplylineState>,
 ) -> Result<Option<InterviewReportDto>, CommandError> {
+    let settings = settings::load()?;
+    let retention_policy = crate::interview_report::retention_policy_from_days(
+        settings.interview_report_retention_days,
+    );
     let mut session = state
         .interview_session
         .lock()
         .map_err(|_| CommandError::Internal("Interview session lock poisoned".to_string()))?;
-    crate::interview_report::end_session(&mut session).map_err(CommandError::Internal)
+    let report =
+        crate::interview_report::end_session(&mut session).map_err(CommandError::Internal)?;
+    let retention_result =
+        crate::interview_report::enforce_retention(chrono::Utc::now(), retention_policy)
+            .map_err(CommandError::Internal)?;
+    let _ = app_log::append_event(
+        "interview_report_retention_applied",
+        crate::interview_report::retention_log_detail(retention_policy, retention_result),
+    );
+    Ok(report)
 }
 
 #[tauri::command]
 pub fn get_interview_report() -> Result<Option<InterviewReportDto>, CommandError> {
+    let settings = settings::load()?;
+    let retention_policy = crate::interview_report::retention_policy_from_days(
+        settings.interview_report_retention_days,
+    );
+    let retention_result =
+        crate::interview_report::enforce_retention(chrono::Utc::now(), retention_policy)
+            .map_err(CommandError::Internal)?;
+    let _ = app_log::append_event(
+        "interview_report_retention_applied",
+        crate::interview_report::retention_log_detail(retention_policy, retention_result),
+    );
     crate::interview_report::get_latest_report().map_err(CommandError::Internal)
 }
 
 #[tauri::command]
 pub fn export_interview_report_markdown() -> Result<Option<String>, CommandError> {
     crate::interview_report::export_latest_report_markdown().map_err(CommandError::Internal)
+}
+
+#[tauri::command]
+pub fn export_interview_report_redacted_markdown() -> Result<Option<String>, CommandError> {
+    crate::interview_report::export_latest_report_redacted_markdown()
+        .map_err(CommandError::Internal)
 }
 
 #[tauri::command]

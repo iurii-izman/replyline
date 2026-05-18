@@ -319,6 +319,9 @@ export function MainSurface(props: { controller: ReplylineController }) {
           <button class="btn-ghost" type="button" onClick={() => void controller().exportInterviewReportMarkdown()}>
             {st().card.interview.sessionActions.exportMarkdown}
           </button>
+          <button class="btn-ghost" type="button" onClick={() => void controller().exportInterviewReportRedactedMarkdown()}>
+            {st().card.interview.sessionActions.exportMarkdownRedacted}
+          </button>
           <button class="btn-ghost" type="button" onClick={() => void controller().clearInterviewReports()}>
             {st().card.interview.sessionActions.clearReports}
           </button>
@@ -357,6 +360,9 @@ export function MainSurface(props: { controller: ReplylineController }) {
             </p>
             <Show when={controller().interviewReportMarkdownPath()}>
               <p class="result-text">{st().card.interview.report.markdown}: {valueOrDash(controller().interviewReportMarkdownPath())}</p>
+            </Show>
+            <Show when={controller().interviewReportRedactedMarkdownPath()}>
+              <p class="result-text">{st().card.interview.report.markdownRedacted}: {valueOrDash(controller().interviewReportRedactedMarkdownPath())}</p>
             </Show>
           </section>
         </Show>

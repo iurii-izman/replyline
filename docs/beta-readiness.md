@@ -32,7 +32,7 @@ Supported provider/runtime path for stable beta:
 
 ## 3) Runtime contracts to verify in docs/code review
 
-- Settings schema: `schemaVersion = 5` (`src/app/model.ts`, `src-tauri/src/settings.rs`)
+- Settings schema: `schemaVersion = 6` (`src/app/model.ts`, `src-tauri/src/settings.rs`)
 - Work card path: `CardSchemaV3` (`src-tauri/src/card_v3.rs`)
 - Interview card path: `InterviewCardSchemaV1` (`src-tauri/src/interview_card_v1.rs`)
 - Interview session/report commands:
@@ -40,6 +40,7 @@ Supported provider/runtime path for stable beta:
   - `end_interview_session`
   - `get_interview_report`
   - `export_interview_report_markdown`
+  - `export_interview_report_redacted_markdown`
   - `clear_interview_reports`
 - Model presets:
   - OpenRouter presets can send fallback `models` ladder
@@ -79,7 +80,9 @@ Additional conditional gates:
 2. Do not export/share raw `settings.json` if it contains sensitive runtime values.
 3. Treat `reports/` as sensitive review material:
    - runtime/evidence artifacts may contain transcript/card content
-   - interview report store and markdown export may contain transcript content
+   - interview report store and full markdown export may contain transcript content
+   - for external sharing prefer redacted markdown export (`export_interview_report_redacted_markdown`)
+   - verify `interviewReportRetentionDays` is explicitly set (`0`, `7`, `30`, or `90`) and `Clear reports` remains available
 4. Keep trust language factual:
    - do not claim all processing is local-only when cloud providers are enabled
    - do not claim that nothing is ever stored anywhere

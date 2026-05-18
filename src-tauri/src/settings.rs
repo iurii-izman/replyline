@@ -13,6 +13,7 @@ use crate::types::AppSettings;
 
 const SETTINGS_DIR: &str = "com.replyline.app";
 const SETTINGS_FILE: &str = "settings.json";
+const ALLOWED_INTERVIEW_REPORT_RETENTION_DAYS: [u16; 4] = [0, 7, 30, 90];
 
 #[derive(Debug, thiserror::Error)]
 pub enum SettingsError {
@@ -34,6 +35,8 @@ pub enum SettingsError {
     CaptureRangeInvalid,
     #[error("PARTIAL_CONFIG_INVALID")]
     PartialConfigInvalid,
+    #[error("RETENTION_POLICY_INVALID")]
+    RetentionPolicyInvalid,
 }
 
 pub fn settings_path() -> Result<PathBuf, SettingsError> {
@@ -81,7 +84,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     }
 }
 
-const CURRENT_SCHEMA_VERSION: u32 = 5;
+const CURRENT_SCHEMA_VERSION: u32 = 6;
 
 fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     let version = value
@@ -100,6 +103,9 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     }
     if version < 5 {
         migrate_v4_to_v5(&mut value);
+    }
+    if version < 6 {
+        migrate_v5_to_v6(&mut value);
     }
 
     value
@@ -141,6 +147,14 @@ fn migrate_v4_to_v5(value: &mut serde_json::Value) {
     }
 }
 
+fn migrate_v5_to_v6(value: &mut serde_json::Value) {
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("schemaVersion".to_string(), serde_json::json!(6));
+        obj.entry("interviewReportRetentionDays")
+            .or_insert(serde_json::json!(0));
+    }
+}
+
 pub fn save(settings: &AppSettings) -> Result<AppSettings, SettingsError> {
     validate(settings)?;
     let path = settings_path()?;
@@ -173,6 +187,10 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     if ![70u8, 80u8, 90u8, 100u8].contains(&settings.window_opacity) {
         return Err(SettingsError::PartialConfigInvalid);
     }
+    if !ALLOWED_INTERVIEW_REPORT_RETENTION_DAYS.contains(&settings.interview_report_retention_days)
+    {
+        return Err(SettingsError::RetentionPolicyInvalid);
+    }
     Ok(())
 }
 
@@ -190,6 +208,7 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "activeAnswerProfile",
         "windowOpacity",
         "interviewCompactMode",
+        "interviewReportRetentionDays",
     ] {
         if !obj.contains_key(key) {
             return Err(SettingsError::PartialConfigInvalid);
@@ -351,7 +370,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v1_settings_to_v5_with_default_profile_and_preset() {
+    fn migrates_v1_settings_to_v6_with_default_profile_and_preset() {
         let v1 = serde_json::json!({
             "schemaVersion": 1,
             "hotkey": "Ctrl+Alt+Space",
@@ -360,7 +379,7 @@ mod tests {
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
-        assert_eq!(migrated["schemaVersion"], 5);
+        assert_eq!(migrated["schemaVersion"], 6);
         assert_eq!(
             migrated["activeAnswerProfile"],
             crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
@@ -368,14 +387,15 @@ mod tests {
         assert_eq!(migrated["selectedModelPreset"], "custom_openai_compatible");
         assert_eq!(migrated["windowOpacity"], 100);
         assert_eq!(migrated["interviewCompactMode"], false);
+        assert_eq!(migrated["interviewReportRetentionDays"], 0);
         // llmTemperature must NOT be injected — the field is not part of the current schema.
         assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
-    fn v5_settings_pass_through_unchanged() {
-        let v5 = serde_json::json!({
-            "schemaVersion": 5,
+    fn v6_settings_pass_through_unchanged() {
+        let v6 = serde_json::json!({
+            "schemaVersion": 6,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
@@ -383,10 +403,11 @@ mod tests {
             "captureMaxSeconds": 30,
             "activeAnswerProfile": "interview_concise",
             "windowOpacity": 90,
-            "interviewCompactMode": true
+            "interviewCompactMode": true,
+            "interviewReportRetentionDays": 30
         });
-        let migrated = super::migrate_settings(v5);
-        assert_eq!(migrated["schemaVersion"], 5);
+        let migrated = super::migrate_settings(v6);
+        assert_eq!(migrated["schemaVersion"], 6);
         assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
         assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
         assert_eq!(migrated["llmModel"], "gpt-4o-mini");
@@ -395,6 +416,7 @@ mod tests {
         assert_eq!(migrated["activeAnswerProfile"], "interview_concise");
         assert_eq!(migrated["windowOpacity"], 90);
         assert_eq!(migrated["interviewCompactMode"], true);
+        assert_eq!(migrated["interviewReportRetentionDays"], 30);
         // Schema-defined fields must remain; no phantom fields should appear.
         assert!(migrated.get("llmTemperature").is_none());
     }
@@ -410,6 +432,16 @@ mod tests {
         assert!(matches!(
             ensure_required_fields(&value),
             Err(SettingsError::PartialConfigInvalid)
+        ));
+    }
+
+    #[test]
+    fn rejects_unsupported_retention_policy() {
+        let mut settings = AppSettings::default();
+        settings.interview_report_retention_days = 15;
+        assert!(matches!(
+            validate(&settings),
+            Err(SettingsError::RetentionPolicyInvalid)
         ));
     }
 }

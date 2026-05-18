@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use chrono::Utc;
+use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::candidate_pack;
@@ -178,6 +178,45 @@ struct ReportsStore {
     reports: Vec<InterviewReportDto>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InterviewReportRetentionPolicy {
+    KeepUntilManualClear,
+    KeepForDays(u16),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RetentionPurgeResult {
+    pub removed_reports: usize,
+    pub remaining_reports: usize,
+}
+
+pub fn retention_policy_from_days(days: u16) -> InterviewReportRetentionPolicy {
+    if days == 0 {
+        InterviewReportRetentionPolicy::KeepUntilManualClear
+    } else {
+        InterviewReportRetentionPolicy::KeepForDays(days)
+    }
+}
+
+pub fn retention_log_detail(
+    policy: InterviewReportRetentionPolicy,
+    result: RetentionPurgeResult,
+) -> String {
+    let policy_label = match policy {
+        InterviewReportRetentionPolicy::KeepUntilManualClear => "manual",
+        InterviewReportRetentionPolicy::KeepForDays(days) => {
+            return format!(
+                "policy_days={days} removed={} remaining={}",
+                result.removed_reports, result.remaining_reports
+            )
+        }
+    };
+    format!(
+        "policy={} removed={} remaining={}",
+        policy_label, result.removed_reports, result.remaining_reports
+    )
+}
+
 pub fn get_latest_report() -> Result<Option<InterviewReportDto>, String> {
     Ok(load_store()?.reports.into_iter().last())
 }
@@ -195,8 +234,22 @@ pub fn export_latest_report_markdown() -> Result<Option<String>, String> {
         Some(value) => value,
         None => return Ok(None),
     };
-    let path = reports_dir()?.join(format!("interview-report-{}.md", report.session_id));
+    let path = reports_dir()?.join(format!("interview-report-full-{}.md", report.session_id));
     let markdown = to_markdown(&report);
+    fs_atomic::write_bytes_atomically(&path, markdown.as_bytes()).map_err(|e| e.to_string())?;
+    Ok(Some(path.display().to_string()))
+}
+
+pub fn export_latest_report_redacted_markdown() -> Result<Option<String>, String> {
+    let report = match get_latest_report()? {
+        Some(value) => value,
+        None => return Ok(None),
+    };
+    let path = reports_dir()?.join(format!(
+        "interview-report-redacted-{}.md",
+        report.session_id
+    ));
+    let markdown = to_redacted_markdown(&report);
     fs_atomic::write_bytes_atomically(&path, markdown.as_bytes()).map_err(|e| e.to_string())?;
     Ok(Some(path.display().to_string()))
 }
@@ -225,6 +278,39 @@ fn to_markdown(report: &InterviewReportDto) -> String {
     out.join("\n")
 }
 
+fn to_redacted_markdown(report: &InterviewReportDto) -> String {
+    let mut out = vec![
+        format!("# Post-Interview Report (Redacted) {}", report.session_id),
+        format!("Session: {}", report.session_id),
+        format!("Started: {}", report.started_at),
+        format!("Ended: {}", report.ended_at),
+        format!("Language: {}", report.language),
+        format!("Question count: {}", report.questions.len()),
+        String::new(),
+        "## Scores".to_string(),
+        format!("- Clarity: {}", report.scores.clarity),
+        format!("- Relevance: {}", report.scores.relevance),
+        format!("- Accuracy: {}", report.scores.accuracy),
+        String::new(),
+        "## Feedback".to_string(),
+        format!("- Strengths: {}", report.feedback.strengths.len()),
+        format!("- Improvements: {}", report.feedback.improvements.len()),
+        format!(
+            "- Missing examples: {}",
+            report.feedback.missing_examples.len()
+        ),
+        String::new(),
+        "## Questions".to_string(),
+    ];
+    for (idx, q) in report.questions.iter().enumerate() {
+        out.push(format!("### {}. {}", idx + 1, q.clean_question));
+        out.push(format!("- Timestamp: {}", q.timestamp));
+        out.push(format!("- Question type: {}", q.question_type));
+        out.push(format!("- Answer: {}", q.answer_main));
+    }
+    out.join("\n")
+}
+
 fn save_report(report: &InterviewReportDto) -> Result<(), String> {
     let mut store = load_store()?;
     store.reports.push(report.clone());
@@ -233,6 +319,37 @@ fn save_report(report: &InterviewReportDto) -> Result<(), String> {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
     fs_atomic::write_json_atomically(&path, &store).map_err(|e| e.to_string())
+}
+
+pub fn enforce_retention(
+    now: DateTime<Utc>,
+    policy: InterviewReportRetentionPolicy,
+) -> Result<RetentionPurgeResult, String> {
+    let mut store = load_store()?;
+    let before = store.reports.len();
+
+    if let InterviewReportRetentionPolicy::KeepForDays(days) = policy {
+        let threshold = now - Duration::days(i64::from(days));
+        store.reports.retain(|report| {
+            let ended_at = chrono::DateTime::parse_from_rfc3339(&report.ended_at)
+                .map(|value| value.with_timezone(&Utc))
+                .ok();
+            match ended_at {
+                Some(value) => value >= threshold,
+                None => true,
+            }
+        });
+    }
+
+    let removed = before.saturating_sub(store.reports.len());
+    if removed > 0 {
+        let path = reports_path()?;
+        fs_atomic::write_json_atomically(&path, &store).map_err(|e| e.to_string())?;
+    }
+    Ok(RetentionPurgeResult {
+        removed_reports: removed,
+        remaining_reports: store.reports.len(),
+    })
 }
 
 fn load_store() -> Result<ReportsStore, String> {
@@ -369,7 +486,7 @@ mod tests {
         let report = end_session(&mut session).expect("end").expect("has report");
         let md_path = reports_dir()
             .expect("reports dir")
-            .join(format!("interview-report-{}.md", report.session_id));
+            .join(format!("interview-report-full-{}.md", report.session_id));
 
         assert!(
             !md_path.is_file(),
@@ -387,6 +504,76 @@ mod tests {
 
         let _ = fs::remove_dir_all(temp);
         std::env::remove_var("REPLYLINE_TEST_DATA_DIR");
+    }
+
+    #[test]
+    fn redacted_markdown_excludes_raw_transcript_and_full_transcript() {
+        let report = InterviewReportDto {
+            session_id: "is-redacted-1".to_string(),
+            started_at: "2026-05-18T10:00:00Z".to_string(),
+            ended_at: "2026-05-18T10:30:00Z".to_string(),
+            language: "en".to_string(),
+            questions: vec![InterviewQuestionReportDto {
+                timestamp: "2026-05-18T10:01:00Z".to_string(),
+                raw_transcript: "RAW_TRANSCRIPT_SECRET_TEXT".to_string(),
+                clean_question: "Tell me about ownership".to_string(),
+                question_type: "behavioral".to_string(),
+                answer_main: "I owned delivery and gave status updates.".to_string(),
+                hints: vec![],
+                signals: vec![],
+            }],
+            full_transcript: "FULL_TRANSCRIPT_SECRET_TEXT".to_string(),
+            scores: InterviewReportScoresDto {
+                clarity: 80,
+                relevance: 77,
+                accuracy: 70,
+            },
+            feedback: InterviewReportFeedbackDto {
+                strengths: vec!["Structured".to_string()],
+                improvements: vec![],
+                missing_examples: vec![],
+            },
+        };
+
+        let markdown = to_redacted_markdown(&report);
+        assert!(!markdown.contains("RAW_TRANSCRIPT_SECRET_TEXT"));
+        assert!(!markdown.contains("FULL_TRANSCRIPT_SECRET_TEXT"));
+        assert!(!markdown.contains("Raw transcript:"));
+        assert!(markdown.contains("Tell me about ownership"));
+        assert!(markdown.contains("I owned delivery and gave status updates."));
+    }
+
+    #[test]
+    fn full_markdown_includes_raw_transcript_when_intentionally_exported() {
+        let report = InterviewReportDto {
+            session_id: "is-full-1".to_string(),
+            started_at: "2026-05-18T10:00:00Z".to_string(),
+            ended_at: "2026-05-18T10:30:00Z".to_string(),
+            language: "en".to_string(),
+            questions: vec![InterviewQuestionReportDto {
+                timestamp: "2026-05-18T10:01:00Z".to_string(),
+                raw_transcript: "RAW_TRANSCRIPT_VISIBLE_TEXT".to_string(),
+                clean_question: "Tell me about ownership".to_string(),
+                question_type: "behavioral".to_string(),
+                answer_main: "I owned delivery.".to_string(),
+                hints: vec![],
+                signals: vec![],
+            }],
+            full_transcript: "FULL_TRANSCRIPT_VISIBLE_TEXT".to_string(),
+            scores: InterviewReportScoresDto {
+                clarity: 80,
+                relevance: 77,
+                accuracy: 70,
+            },
+            feedback: InterviewReportFeedbackDto {
+                strengths: vec![],
+                improvements: vec![],
+                missing_examples: vec![],
+            },
+        };
+        let markdown = to_markdown(&report);
+        assert!(markdown.contains("RAW_TRANSCRIPT_VISIBLE_TEXT"));
+        assert!(markdown.contains("Tell me about ownership"));
     }
 
     #[test]
@@ -472,5 +659,104 @@ mod tests {
             session.questions[0].clean_question,
             "Tell me about ownership and deadline"
         );
+    }
+
+    fn make_report(session_id: &str, ended_at: &str) -> InterviewReportDto {
+        InterviewReportDto {
+            session_id: session_id.to_string(),
+            started_at: ended_at.to_string(),
+            ended_at: ended_at.to_string(),
+            language: "en".to_string(),
+            questions: vec![],
+            full_transcript: format!("raw-{session_id}"),
+            scores: InterviewReportScoresDto {
+                clarity: 1,
+                relevance: 1,
+                accuracy: 1,
+            },
+            feedback: InterviewReportFeedbackDto {
+                strengths: vec![],
+                improvements: vec![],
+                missing_examples: vec![],
+            },
+        }
+    }
+
+    #[test]
+    fn retention_keep_forever_does_not_purge() {
+        let _guard = env_lock().lock().expect("lock");
+        let temp = std::env::temp_dir().join(format!(
+            "replyline-report-retention-manual-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir_all(&temp).expect("create temp");
+        std::env::set_var("REPLYLINE_TEST_DATA_DIR", temp.display().to_string());
+
+        let path = reports_path().expect("store path");
+        let store = ReportsStore {
+            reports: vec![make_report("s1", "2026-04-01T00:00:00Z")],
+        };
+        fs_atomic::write_json_atomically(&path, &store).expect("write");
+
+        let result = enforce_retention(
+            Utc::now(),
+            InterviewReportRetentionPolicy::KeepUntilManualClear,
+        )
+        .expect("retention");
+        assert_eq!(result.removed_reports, 0);
+        assert_eq!(result.remaining_reports, 1);
+
+        let _ = fs::remove_dir_all(temp);
+        std::env::remove_var("REPLYLINE_TEST_DATA_DIR");
+    }
+
+    #[test]
+    fn retention_purges_only_reports_older_than_policy() {
+        let _guard = env_lock().lock().expect("lock");
+        let temp = std::env::temp_dir().join(format!(
+            "replyline-report-retention-auto-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir_all(&temp).expect("create temp");
+        std::env::set_var("REPLYLINE_TEST_DATA_DIR", temp.display().to_string());
+
+        let path = reports_path().expect("store path");
+        let store = ReportsStore {
+            reports: vec![
+                make_report("old", "2026-01-01T00:00:00Z"),
+                make_report("new", "2026-05-15T00:00:00Z"),
+            ],
+        };
+        fs_atomic::write_json_atomically(&path, &store).expect("write");
+
+        let now = DateTime::parse_from_rfc3339("2026-05-18T00:00:00Z")
+            .expect("parse now")
+            .with_timezone(&Utc);
+        let result = enforce_retention(now, InterviewReportRetentionPolicy::KeepForDays(7))
+            .expect("retention");
+        assert_eq!(result.removed_reports, 1);
+        assert_eq!(result.remaining_reports, 1);
+
+        let persisted = load_store().expect("load");
+        assert_eq!(persisted.reports.len(), 1);
+        assert_eq!(persisted.reports[0].session_id, "new");
+
+        let _ = fs::remove_dir_all(temp);
+        std::env::remove_var("REPLYLINE_TEST_DATA_DIR");
+    }
+
+    #[test]
+    fn retention_log_contains_only_policy_and_counts() {
+        let detail = retention_log_detail(
+            InterviewReportRetentionPolicy::KeepForDays(30),
+            RetentionPurgeResult {
+                removed_reports: 2,
+                remaining_reports: 5,
+            },
+        );
+        assert!(detail.contains("policy_days=30"));
+        assert!(detail.contains("removed=2"));
+        assert!(detail.contains("remaining=5"));
+        assert!(!detail.contains("transcript"));
     }
 }

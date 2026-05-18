@@ -36,12 +36,13 @@ pub struct AppSettings {
     pub active_answer_profile: String,
     pub window_opacity: u8,
     pub interview_compact_mode: bool,
+    pub interview_report_retention_days: u16,
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 5,
+            schema_version: 6,
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
@@ -50,6 +51,7 @@ impl Default for AppSettings {
             active_answer_profile: crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID.to_string(),
             window_opacity: 100,
             interview_compact_mode: false,
+            interview_report_retention_days: 0,
         }
     }
 }

@@ -235,6 +235,26 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 onInput={(event) => controller().setCompactMode(event.currentTarget.checked)}
               />
             </label>
+
+            <label class="field">
+              <span class="field-label">{st().settings.interviewReportRetentionLabel}</span>
+              <select
+                class="field-input"
+                value={String(controller().settings.interviewReportRetentionDays)}
+                onInput={(event) =>
+                  controller().setInterviewReportRetentionDays(
+                    Number.parseInt(event.currentTarget.value, 10) as 0 | 7 | 30 | 90,
+                  )
+                }
+              >
+                <option value="0">{st().settings.interviewReportRetentionOptionManual}</option>
+                <option value="7">{st().settings.interviewReportRetentionOption7d}</option>
+                <option value="30">{st().settings.interviewReportRetentionOption30d}</option>
+                <option value="90">{st().settings.interviewReportRetentionOption90d}</option>
+              </select>
+              <span class="field-help">{st().settings.interviewReportRetentionHint}</span>
+              <span class="field-help">{st().settings.interviewReportClearHint}</span>
+            </label>
           </fieldset>
 
           {/* ── 3. Горячая клавиша / Hotkey ─────────────────────── */}

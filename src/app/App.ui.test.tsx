@@ -23,7 +23,7 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     if (command === "load_bootstrap") {
       return {
         settings: {
-          schemaVersion: 5,
+          schemaVersion: 6,
           hotkey: "Ctrl+Alt+Space",
           llmBaseUrl: "https://api.example/v1",
           llmModel: "gpt-4o-mini",
@@ -32,6 +32,7 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
           activeAnswerProfile: "interview_default",
           windowOpacity: 100,
           interviewCompactMode: false,
+          interviewReportRetentionDays: 0,
         },
         deepgramKeyPresent: true,
         llmKeyPresent: true,
@@ -104,7 +105,10 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
       };
     }
     if (command === "export_interview_report_markdown") {
-      return "C:\\reports\\interview-report-is-1.md";
+      return "C:\\reports\\interview-report-full-is-1.md";
+    }
+    if (command === "export_interview_report_redacted_markdown") {
+      return "C:\\reports\\interview-report-redacted-is-1.md";
     }
     if (command === "clear_interview_reports") {
       return null;
@@ -256,6 +260,8 @@ describe("App UX stabilization", () => {
     expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
     expect(screen.getByText("Профиль ответа")).toBeTruthy();
     expect(screen.getByText("Профиль модели")).toBeTruthy();
+    expect(screen.getByText("Срок хранения interview reports")).toBeTruthy();
+    expect(screen.getByText("Только ручная очистка")).toBeTruthy();
     expect(screen.getByTestId("answer-profile-field")).toBeTruthy();
     expect(screen.queryByText(/raw prompt/i)).toBeNull();
   });
@@ -416,8 +422,10 @@ describe("App UX stabilization", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Начать сессию" }));
     fireEvent.click(screen.getByRole("button", { name: "Завершить сессию" }));
     await waitFor(() => expect(screen.getByTestId("interview-report-summary")).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Экспортировать Markdown" }));
-    await waitFor(() => expect(screen.getByText(/interview-report-is-1\.md/)).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Экспортировать full Markdown (с transcript)" }));
+    await waitFor(() => expect(screen.getByText(/interview-report-full-is-1\.md/)).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Экспортировать redacted Markdown (без transcript)" }));
+    await waitFor(() => expect(screen.getByText(/interview-report-redacted-is-1\.md/)).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: "Очистить отчёты" }));
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "clear_interview_reports")).toBe(true),
@@ -763,7 +771,7 @@ describe("Setup wizard (first-run guidance)", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 5,
+            schemaVersion: 6,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: overrides.llmBaseUrl ?? "",
             llmModel: overrides.llmModel ?? "gpt-4o-mini",
@@ -772,6 +780,7 @@ describe("Setup wizard (first-run guidance)", () => {
             activeAnswerProfile: "interview_default",
             windowOpacity: 100,
             interviewCompactMode: false,
+          interviewReportRetentionDays: 0,
           },
           deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
           llmKeyPresent: overrides.llmKeyPresent ?? false,
@@ -786,7 +795,7 @@ describe("Setup wizard (first-run guidance)", () => {
         const input = (args as Record<string, unknown> | undefined)?.input as
           | Record<string, unknown>
           | undefined;
-        return { ...input, schemaVersion: 5 };
+        return { ...input, schemaVersion: 6 };
       }
       if (command === "save_secret") {
         return null;
@@ -957,3 +966,4 @@ describe("Setup wizard (first-run guidance)", () => {
     expect(Object.prototype.hasOwnProperty.call(input, "deepgramApiKey")).toBe(false);
   });
 });
+

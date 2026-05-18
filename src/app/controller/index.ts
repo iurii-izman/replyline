@@ -89,6 +89,7 @@ export function useReplylineController(platform: AppPlatform) {
   const [interviewSession, setInterviewSession] = createSignal<InterviewSessionStateDto | null>(null);
   const [interviewReport, setInterviewReport] = createSignal<InterviewReportDto | null>(null);
   const [interviewReportMarkdownPath, setInterviewReportMarkdownPath] = createSignal<string | null>(null);
+  const [interviewReportRedactedMarkdownPath, setInterviewReportRedactedMarkdownPath] = createSignal<string | null>(null);
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -474,6 +475,7 @@ export function useReplylineController(platform: AppPlatform) {
     setInterviewSession(session);
     setInterviewReport(null);
     setInterviewReportMarkdownPath(null);
+    setInterviewReportRedactedMarkdownPath(null);
   }
   async function endInterviewSession() {
     const report = await platform.invoke<InterviewReportDto | null>("end_interview_session");
@@ -488,10 +490,15 @@ export function useReplylineController(platform: AppPlatform) {
     const path = await platform.invoke<string | null>("export_interview_report_markdown");
     setInterviewReportMarkdownPath(path);
   }
+  async function exportInterviewReportRedactedMarkdown() {
+    const path = await platform.invoke<string | null>("export_interview_report_redacted_markdown");
+    setInterviewReportRedactedMarkdownPath(path);
+  }
   async function clearInterviewReports() {
     await platform.invoke("clear_interview_reports");
     setInterviewReport(null);
     setInterviewReportMarkdownPath(null);
+    setInterviewReportRedactedMarkdownPath(null);
     setInterviewSession(null);
   }
 
@@ -534,6 +541,7 @@ export function useReplylineController(platform: AppPlatform) {
     interviewSession,
     interviewReport,
     interviewReportMarkdownPath,
+    interviewReportRedactedMarkdownPath,
     compactMode,
     checkRuntimeConfig: async () => {
       setRuntimeCheckRunning(true);
@@ -578,6 +586,8 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmModel: (value: string) => setSettings("llmModel", value),
     setWindowOpacity,
     setCompactMode: (value: boolean) => setSettings("interviewCompactMode", value),
+    setInterviewReportRetentionDays: (value: AppSettings["interviewReportRetentionDays"]) =>
+      setSettings("interviewReportRetentionDays", value),
     selectInterviewCardIndex: (index: number) => setActiveInterviewCardIndex(clampInterviewCardIndex(index)),
     nextInterviewCard: () => setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current + 1)),
     prevInterviewCard: () => setActiveInterviewCardIndex((current) => clampInterviewCardIndex(current - 1)),
@@ -586,6 +596,7 @@ export function useReplylineController(platform: AppPlatform) {
     endInterviewSession,
     openInterviewReport,
     exportInterviewReportMarkdown,
+    exportInterviewReportRedactedMarkdown,
     clearInterviewReports,
     setSelectedModelPreset: (value: string) => {
       const preset = resolveModelPreset(value);
