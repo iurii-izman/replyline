@@ -308,19 +308,19 @@ export function MainSurface(props: { controller: ReplylineController }) {
 
         <div class="result-actions" data-testid="action-row">
           <button class="btn-ghost" type="button" onClick={() => void controller().startInterviewSession()}>
-            Start session
+            {st().card.interview.sessionActions.start}
           </button>
           <button class="btn-ghost" type="button" onClick={() => void controller().endInterviewSession()}>
-            End session
+            {st().card.interview.sessionActions.end}
           </button>
           <button class="btn-ghost" type="button" onClick={() => void controller().openInterviewReport()}>
-            Open report
+            {st().card.interview.sessionActions.openReport}
           </button>
           <button class="btn-ghost" type="button" onClick={() => void controller().exportInterviewReportMarkdown()}>
-            Export markdown
+            {st().card.interview.sessionActions.exportMarkdown}
           </button>
           <button class="btn-ghost" type="button" onClick={() => void controller().clearInterviewReports()}>
-            Clear reports
+            {st().card.interview.sessionActions.clearReports}
           </button>
           <button
             class="btn-primary"

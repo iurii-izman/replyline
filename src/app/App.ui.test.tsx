@@ -52,7 +52,7 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     }
     if (command === "prepare_candidate_pack") {
       return {
-        packQualityScore: 84,
+        packQualityОценка: 84,
         missingDataWarnings: ["add metrics"],
         suggestedMissingInfo: ["add leadership example"],
         candidateFacts: [{ fact: "Fact", evidence: "Resume line", strength: "strong", metrics: [] }],
@@ -370,12 +370,12 @@ describe("App UX stabilization", () => {
 
   it("manages interview report actions", async () => {
     render(() => <App platform={mock.platform} />);
-    fireEvent.click(await screen.findByRole("button", { name: "Start session" }));
-    fireEvent.click(screen.getByRole("button", { name: "End session" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Начать сессию" }));
+    fireEvent.click(screen.getByRole("button", { name: "Завершить сессию" }));
     await waitFor(() => expect(screen.getByTestId("interview-report-summary")).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Export markdown" }));
+    fireEvent.click(screen.getByRole("button", { name: "Экспортировать Markdown" }));
     await waitFor(() => expect(screen.getByText(/interview-report-is-1\.md/)).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Clear reports" }));
+    fireEvent.click(screen.getByRole("button", { name: "Очистить отчёты" }));
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "clear_interview_reports")).toBe(true),
     );
@@ -683,7 +683,7 @@ describe("Interview card rendering", () => {
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "prepare_candidate_pack")).toBe(true),
     );
-    expect(screen.getByText("Score:")).toBeTruthy();
+    expect(screen.getByText("Оценка:")).toBeTruthy();
     expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(
       false,
     );

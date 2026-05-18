@@ -153,7 +153,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               <span class="field-label">{st().settings.llmBaseUrlLabel}</span>
               <input
                 class="field-input"
-                placeholder="https://api.example.com/v1"
+                placeholder={st().settings.llmBaseUrlPlaceholder}
                 value={controller().settings.llmBaseUrl}
                 onInput={(event) => controller().setLlmBaseUrl(event.currentTarget.value)}
               />
@@ -397,11 +397,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 <Show when={controller().candidatePackPreview()} fallback={<p>{st().settings.noPreview}</p>}>
                   <div class="preview-grid">
                     <p>
-                      Score: <strong>{controller().candidatePackPreview()!.packQualityScore}</strong>
+                      {st().settings.candidatePackPreview.score}: <strong>{controller().candidatePackPreview()!.packQualityScore}</strong>
                     </p>
-                    <p>Facts: {controller().candidatePackPreview()!.candidateFacts.length}</p>
-                    <p>Role keywords: {controller().candidatePackPreview()!.roleKeywords.join(", ")}</p>
-                    <p>Company values: {controller().candidatePackPreview()!.companyValues.join(", ")}</p>
+                    <p>{st().settings.candidatePackPreview.facts}: {controller().candidatePackPreview()!.candidateFacts.length}</p>
+                    <p>{st().settings.candidatePackPreview.roleKeywords}: {controller().candidatePackPreview()!.roleKeywords.join(", ")}</p>
+                    <p>{st().settings.candidatePackPreview.companyValues}: {controller().candidatePackPreview()!.companyValues.join(", ")}</p>
                   </div>
                 </Show>
               </div>
