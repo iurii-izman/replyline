@@ -9,7 +9,7 @@ export function ShellChrome(props: { controller: ReplylineController }) {
   return (
     <div class="shell-chrome">
       <header class="shell-header app-header">
-        <div class="shell-header-drag" onMouseDown={() => void controller().startDragging()}>
+        <div class="shell-header-drag">
           <div class="app-name">{st().appName}</div>
           <div class="app-subtitle">{st().appSubtitle}</div>
         </div>
@@ -29,14 +29,6 @@ export function ShellChrome(props: { controller: ReplylineController }) {
             onClick={() => void controller().hideWindow()}
           >
             ⤓
-          </button>
-          <button
-            class="icon-btn"
-            type="button"
-            title={st().chrome.closeApp}
-            onClick={() => void controller().quitApp()}
-          >
-            ×
           </button>
         </div>
       </header>

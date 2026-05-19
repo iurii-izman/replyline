@@ -7,6 +7,8 @@
 - Стадия: внутренняя русскоязычная stable beta.
 - Фокус: Windows-first (Tauri + Rust + Solid).
 - Публичный binary release не является целью текущего этапа.
+- Main window работает как обычное Windows desktop window (taskbar + Alt+Tab + native titlebar controls).
+- Полный выход остаётся через tray action `Quit`; native close скрывает окно в tray.
 
 ## Product scope boundaries
 

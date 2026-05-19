@@ -54,8 +54,9 @@
   --focus-ring: 2px solid var(--accent);
   --focus-shadow: 0 0 0 3px rgba(29, 91, 80, 0.16);
 
-  --content-max: 1240px;
-  --content-wide: 1580px;
+  --workspace-max: 1540px;
+  --settings-max: 1400px;
+  --studio-max: 1560px;
   --content-ultra-cap: 1680px;
   --side-panel-width: 340px;
 
@@ -100,48 +101,64 @@ textarea {
   color: inherit;
 }
 
-.shell {
+.app-root {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  padding: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
   gap: var(--space-2);
-  background: var(--surface-base);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
 
-.app-shell { width: 100%; max-width: var(--content-wide); margin-inline: auto; }
 .shell-chrome { flex: 0 0 auto; display: flex; flex-direction: column; gap: var(--space-1); }
 
-.shell-body {
+.app-workarea {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-right: var(--space-1);
 }
 
-.app-body { padding-inline: var(--space-1); }
-.app-content { width: 100%; max-width: var(--content-max); margin-inline: auto; }
-.app-content-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); min-height: 0; }
-.app-main-column { min-width: 0; }
-.app-side-column { min-width: 0; display: none; }
+.app-view {
+  width: 100%;
+  max-width: var(--workspace-max);
+  margin-inline: auto;
+  min-height: 0;
+}
+
+.app-view--settings { max-width: var(--settings-max); }
+.app-view--main { max-width: var(--workspace-max); }
+.app-view-inner { display: grid; min-width: 0; }
+
+.app-page {
+  min-height: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-raised);
+}
+
+.app-page-header { min-width: 0; }
+.app-page-body { min-width: 0; }
+.app-page-main { min-width: 0; }
+.app-page-aside { min-width: 0; }
+.app-sidebar { min-width: 0; }
+.app-sticky-footer { min-width: 0; }
+.app-root > .app-sticky-footer:empty { display: none; }
 
 .surface-card,
 .surface-panel {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-raised);
 }
-
-.shell-body .main-card,
-.shell-body .settings-card { flex: 1 1 auto; min-height: 0; }
 
 .shell-header {
   display: flex;
@@ -152,7 +169,7 @@ textarea {
 }
 
 .app-header { min-height: 48px; }
-.shell-header-drag { flex: 1 1 auto; min-width: 0; cursor: grab; }
+.shell-header-drag { flex: 1 1 auto; min-width: 0; }
 
 .app-name { font-size: var(--text-title); font-weight: 700; letter-spacing: 0.01em; }
 .app-subtitle { font-size: var(--text-caption); color: var(--text-secondary); text-transform: lowercase; }
@@ -185,6 +202,8 @@ textarea {
   line-height: var(--leading-tight);
   max-width: 100%;
 }
+
+.status-badge { display: inline-flex; }
 
 .status-pill {
   background: rgba(23, 36, 34, 0.08);
@@ -220,6 +239,13 @@ textarea {
 }
 
 .saved-badge.is-muted { opacity: 0.72; }
+
+.section-card {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: rgba(255, 255, 255, 0.68);
+}
 
 .main-card,
 .settings-card {
@@ -720,6 +746,7 @@ textarea.field-input {
 .candidate-pack-studio,
 .candidate-pack-studio-grid { display: grid; gap: var(--space-3); }
 .settings-content { width: 100%; max-width: 980px; min-width: 0; }
+.candidate-pack-studio { width: 100%; max-width: var(--studio-max); }
 
 .settings-nav-mobile {
   display: flex;
@@ -766,10 +793,6 @@ textarea.field-input {
 
 .settings-section-card {
   scroll-margin-top: var(--space-3);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
-  background: rgba(255, 255, 255, 0.68);
 }
 
 .settings-section-title {
@@ -830,33 +853,35 @@ textarea.field-input {
 
 /* Breakpoints:
    compact  : < 760px
-   normal   : 760px - 1180px
-   wide     : > 1180px
-   ultra cap: > 1700px (max content width cap) */
+   normal   : 760px - 1279px
+   wide     : >= 1280px
+   ultra cap: >= 1680px (max content width cap) */
 @media (max-width: 759px) {
-  .shell { padding: var(--space-2); }
-  .app-body { padding-inline: 0; }
-  .app-content-grid { grid-template-columns: minmax(0, 1fr); }
-  .app-side-column { display: none; }
+  .app-root { padding: var(--space-2); }
+  .app-workarea { padding-right: 0; }
+  .app-view,
+  .app-view--main,
+  .app-view--settings { max-width: 100%; }
   .main-card { padding: var(--space-3); min-height: 320px; }
   .main-status-row { min-height: 22px; }
   .result-actions,
   .action-bar,
   .settings-sticky-footer { padding-top: var(--space-2); }
+  .main-cockpit-layout.is-wide { grid-template-columns: minmax(0, 1fr); }
+  .cockpit-side { display: none; }
+  .settings-grid { grid-template-columns: minmax(0, 1fr); }
+  .settings-sidebar { display: none; }
 }
 
-@media (min-width: 760px) and (max-width: 1180px) {
-  .app-content-grid { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) and (max-width: 1279px) {
   .settings-content { max-width: 920px; }
   .main-cockpit-layout.is-wide { grid-template-columns: minmax(0, 1fr); }
   .cockpit-side { display: none; }
+  .settings-grid { grid-template-columns: minmax(0, 1fr); }
+  .settings-sidebar { display: none; }
 }
 
-@media (min-width: 1181px) {
-  .app-shell { padding-inline: var(--space-4); }
-  .app-content { max-width: var(--content-wide); }
-  .app-content-grid { grid-template-columns: minmax(0, 1fr) minmax(0, var(--side-panel-width)); align-items: start; }
-  .app-side-column { display: block; }
+@media (min-width: 1280px) {
   .main-cockpit-layout.is-wide { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); }
   .cockpit-side { display: grid; }
   .settings-grid { grid-template-columns: minmax(200px, 240px) minmax(0, 1fr); align-items: start; }
@@ -865,9 +890,9 @@ textarea.field-input {
   .candidate-pack-studio-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 }
 
-@media (min-width: 1700px) {
-  .app-shell { max-width: var(--content-ultra-cap); }
-  .app-content { max-width: 1520px; }
+@media (min-width: 1680px) {
+  .app-view--main { max-width: var(--workspace-max); }
+  .app-view--settings { max-width: var(--settings-max); }
   .settings-content { max-width: 1060px; }
 }
 

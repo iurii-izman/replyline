@@ -101,12 +101,12 @@ export function MainSurface(props: { controller: ReplylineController }) {
   return (
     <Show when={controller().panel() === "main"}>
       <section
-        class={`main-card surface-card app-main-column main-card--${controller().mainUiState()} ${compactInterview() ? "main-card--compact" : ""}`}
+        class={`main-card surface-card app-page app-page--workspace main-card--${controller().mainUiState()} ${compactInterview() ? "main-card--compact" : ""}`}
         data-testid="main-surface"
       >
-        <div class="main-card-top" data-testid="main-card-top">
+        <div class="main-card-top app-page-header" data-testid="main-card-top">
           <div class="main-status-row">
-            <div class={`status-pill ${statusTone()}`}>{controller().phaseLabel()}</div>
+            <div class={`status-pill status-badge ${statusTone()}`}>{controller().phaseLabel()}</div>
           </div>
           <Show when={!compactInterview()}>
             <ol class="pipeline-timeline pipeline-timeline--compact" aria-label={st().pipeline.label} data-testid="pipeline-timeline">
@@ -148,9 +148,9 @@ export function MainSurface(props: { controller: ReplylineController }) {
           </Show>
         </div>
 
-        <div class="main-card-body" data-testid="main-card-body">
+        <div class="main-card-body app-page-body" data-testid="main-card-body">
           <div class={`main-cockpit-layout ${compactLayout() ? "is-compact" : "is-wide"}`}>
-            <article class="result-card cockpit-main" data-testid="main-card-shell">
+            <article class="result-card cockpit-main app-page-main" data-testid="main-card-shell">
               <Show
                 when={controller().card()?.mode === "interview"}
                 fallback={
@@ -298,7 +298,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
               </Show>
             </article>
 
-            <aside class="cockpit-side" data-testid="main-side-panel">
+            <aside class="cockpit-side app-page-aside app-sidebar" data-testid="main-side-panel">
               <section class="result-section result-section--compact" data-testid="session-panel">
                 <div class="result-label">{st().card.interview.report.session}</div>
                 <div class="action-group side-panel-actions">
@@ -388,7 +388,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
           </div>
         </div>
 
-        <div class="action-bar sticky-action-footer" data-testid="action-row">
+        <div class="action-bar sticky-action-footer app-sticky-footer" data-testid="action-row">
           <button
             class="btn-primary"
             disabled={!controller().canCopySayNow()}

@@ -133,8 +133,10 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
 
   return (
     <Show when={controller().panel() === "settings"}>
-      <section class="settings-card surface-panel app-main-column settings-layout" data-testid="settings-surface">
-        <h2 class="section-title">{st().settings.title}</h2>
+      <section class="settings-card surface-panel app-page app-page--settings settings-layout" data-testid="settings-surface">
+        <div class="app-page-header">
+          <h2 class="section-title">{st().settings.title}</h2>
+        </div>
 
         <div class="settings-nav-mobile" data-testid="settings-nav-mobile">
           <For each={sections}>
@@ -146,8 +148,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
           </For>
         </div>
 
-        <div class="settings-grid">
-          <aside class="settings-sidebar" data-testid="settings-sidebar">
+        <div class="settings-grid app-page-body">
+          <aside class="settings-sidebar app-page-aside app-sidebar" data-testid="settings-sidebar">
             <div class="settings-sidebar-inner">
               <For each={sections}>
                 {(section) => (
@@ -160,17 +162,17 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
           </aside>
 
           <form
-            class="settings-content"
+            class="settings-content app-page-main"
             onSubmit={(event) => {
               event.preventDefault();
               if (!controller().saving()) void controller().persistSettings();
             }}
           >
-            <article id="settings-overview" class="settings-section-card" data-testid="settings-section-overview">
+            <article id="settings-overview" class="settings-section-card section-card" data-testid="settings-section-overview">
               <h3 class="settings-section-title">
                 {st().settings.overviewTitle}
                 <Show when={sectionStatus("overview")}>
-                  {(status) => <span class={`saved-badge section-status section-status-${status().tone}`}>{status().label}</span>}
+                  {(status) => <span class={`saved-badge status-badge section-status section-status-${status().tone}`}>{status().label}</span>}
                 </Show>
               </h3>
               <p class="settings-section-hint" data-testid="setup-overall-hint">
@@ -202,11 +204,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </Show>
             </article>
 
-            <article id="settings-speech" class="settings-section-card" data-testid="settings-section-speech">
+            <article id="settings-speech" class="settings-section-card section-card" data-testid="settings-section-speech">
               <h3 class="settings-section-title">
                 {st().settings.navSpeech}
                 <Show when={sectionStatus("speech")}>
-                  {(status) => <span class={`saved-badge section-status section-status-${status().tone}`}>{status().label}</span>}
+                  {(status) => <span class={`saved-badge status-badge section-status section-status-${status().tone}`}>{status().label}</span>}
                 </Show>
               </h3>
               <p class="settings-section-hint">{st().settings.speechHint}</p>
@@ -226,11 +228,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </label>
             </article>
 
-            <article id="settings-reply" class="settings-section-card" data-testid="settings-section-reply">
+            <article id="settings-reply" class="settings-section-card section-card" data-testid="settings-section-reply">
               <h3 class="settings-section-title">
                 {st().settings.navReply}
                 <Show when={sectionStatus("reply")}>
-                  {(status) => <span class={`saved-badge section-status section-status-${status().tone}`}>{status().label}</span>}
+                  {(status) => <span class={`saved-badge status-badge section-status section-status-${status().tone}`}>{status().label}</span>}
                 </Show>
               </h3>
               <p class="field-help">{st().setup.llmHint}</p>
@@ -304,11 +306,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </label>
             </article>
 
-            <article id="settings-hotkey" class="settings-section-card" data-testid="settings-section-hotkey">
+            <article id="settings-hotkey" class="settings-section-card section-card" data-testid="settings-section-hotkey">
               <h3 class="settings-section-title">
                 {st().settings.navHotkey}
                 <Show when={sectionStatus("hotkey")}>
-                  {(status) => <span class={`saved-badge section-status section-status-${status().tone}`}>{status().label}</span>}
+                  {(status) => <span class={`saved-badge status-badge section-status section-status-${status().tone}`}>{status().label}</span>}
                 </Show>
               </h3>
               <p class="field-help">{st().setup.hotkeyHint}</p>
@@ -363,7 +365,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </label>
             </article>
 
-            <article id="settings-reports" class="settings-section-card" data-testid="settings-section-reports">
+            <article id="settings-reports" class="settings-section-card section-card" data-testid="settings-section-reports">
               <h3 class="settings-section-title">{st().settings.navReports}</h3>
               <label class="field">
                 <span class="field-label">{st().settings.interviewReportRetentionLabel}</span>
@@ -382,7 +384,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </label>
             </article>
 
-            <article id="settings-candidate-pack" class="settings-section-card" data-testid="settings-section-candidate-pack">
+            <article id="settings-candidate-pack" class="settings-section-card section-card" data-testid="settings-section-candidate-pack">
               <h3 class="settings-section-title">{st().settings.navCandidatePack}</h3>
               <p class="settings-section-hint" data-testid="candidate-pack-summary">{st().settings.candidatePackStudioHint}</p>
 
@@ -457,7 +459,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               </Show>
             </div>
 
-            <div class="action-bar sticky-action-footer settings-sticky-footer" data-testid="settings-sticky-footer">
+            <div class="action-bar sticky-action-footer app-sticky-footer settings-sticky-footer" data-testid="settings-sticky-footer">
               <button class="btn-primary" type="submit" disabled={controller().saving()}>
                 {controller().saving() ? st().settings.saving : st().settings.save}
               </button>

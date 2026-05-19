@@ -8,6 +8,7 @@ type MockPlatform = {
   platform: AppPlatform;
   invoke: ReturnType<typeof vi.fn>;
   emitShortcut: (event: ShortcutEvent) => Promise<void>;
+  emitCloseRequest: () => Promise<void>;
 };
 
 type MockPlatformOptions = {
@@ -45,6 +46,7 @@ type MockPlatformOptions = {
 function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
   const listeners = new Map<string, ((event: ListenerPayload<unknown>) => void)[]>();
   const shortcuts: ((event: ShortcutEvent) => void | Promise<void>)[] = [];
+  let closeHandler: ((event: { preventDefault(): void }) => void | Promise<void>) | null = null;
 
   const invoke = vi.fn(async (command: string) => {
     if (command === "load_bootstrap") {
@@ -170,7 +172,10 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
       hide: vi.fn(async () => undefined),
       startDragging: vi.fn(async () => undefined),
       setOpacity: vi.fn(async () => undefined),
-      onCloseRequested: vi.fn(async () => (() => undefined) as Unlisten),
+      onCloseRequested: vi.fn(async (handler) => {
+        closeHandler = handler;
+        return (() => undefined) as Unlisten;
+      }),
     },
   };
 
@@ -181,6 +186,10 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
       for (const handler of shortcuts) {
         await handler(event);
       }
+    },
+    emitCloseRequest: async () => {
+      if (!closeHandler) return;
+      await closeHandler({ preventDefault: vi.fn() });
     },
   };
 }
@@ -290,10 +299,25 @@ describe("App UX stabilization", () => {
     mock = createMockPlatform(uiStateFixtures.defaultEmpty());
     render(() => <App platform={mock.platform} />);
 
-    expect(await screen.findByTestId("app-shell")).toBeTruthy();
-    expect(screen.getByTestId("main-surface").className).toContain("app-main-column");
+    const appRoot = await screen.findByTestId("app-root");
+    const appWorkarea = screen.getByTestId("app-workarea");
+    const appView = screen.getByTestId("app-view");
+    expect(appRoot).toBeTruthy();
+    expect(appWorkarea).toBeTruthy();
+    expect(appView).toBeTruthy();
+    expect(appView.contains(screen.getByTestId("main-surface"))).toBe(true);
     expect(screen.getByTestId("main-card-body")).toBeTruthy();
     expect(screen.getByTestId("action-row")).toBeTruthy();
+    expect(screen.queryByTitle("Выход")).toBeNull();
+  });
+
+  it("native close request hides window to tray", async () => {
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => expect(mock.platform.window.onCloseRequested).toHaveBeenCalled());
+    await mock.emitCloseRequest();
+
+    await waitFor(() => expect(mock.platform.window.hide).toHaveBeenCalled());
   });
 
   it("renders wide cockpit layout landmarks in work-ready fixture", async () => {
@@ -407,14 +431,17 @@ describe("App UX stabilization", () => {
     render(() => <App platform={mock.platform} />);
 
     const mainSurface = await screen.findByTestId("main-surface");
+    const appView = screen.getByTestId("app-view");
     const mainLayout = screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout");
     const sidePanel = screen.getByTestId("main-side-panel");
-    expect(mainSurface.className).toContain("app-main-column");
+    expect(mainSurface.className).toContain("app-page");
+    expect(appView.contains(mainSurface)).toBe(true);
     expect(mainLayout?.className).toContain("is-wide");
     expect(sidePanel.className).toContain("cockpit-side");
 
     fireEvent.click(screen.getByTitle("Настройки"));
     await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
+    expect(appView.contains(screen.getByTestId("settings-surface"))).toBe(true);
     expect(screen.getByTestId("settings-sidebar").className).toContain("settings-sidebar");
     expect(screen.getByTestId("settings-nav-mobile").className).toContain("settings-nav-mobile");
 

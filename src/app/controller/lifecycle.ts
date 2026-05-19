@@ -73,6 +73,13 @@ export function setupLifecycle(deps: LifecycleDeps): void {
           });
         }),
       );
+      cleanups.push(
+        await deps.platform.window.onCloseRequested(async (event) => {
+          // Keep desktop semantics tray-first: native close hides the main window.
+          event.preventDefault();
+          await deps.platform.window.hide();
+        }),
+      );
     })();
   });
 }

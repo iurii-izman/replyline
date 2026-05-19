@@ -29,6 +29,8 @@ Supported provider/runtime path for stable beta:
 - STT: Deepgram integration (configured by user)
 - LLM: OpenAI-compatible endpoint (configured by user)
 - app stack: Tauri (Rust backend) + Solid.js frontend
+- main window shell: normal Windows desktop window (`decorations=true`, taskbar visible, Alt+Tab visible, native min/max/close)
+- close semantics: native window close hides to tray; explicit tray `Quit` fully exits app
 
 ## 3) Runtime contracts to verify in docs/code review
 

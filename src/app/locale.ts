@@ -134,7 +134,6 @@ export const ui_ru = {
   },
   chrome: {
     hideToTray: "Скрыть",
-    closeApp: "Выход",
   },
   notices: {
     contextCleared: "Карточка очищена.",
@@ -410,7 +409,6 @@ export const ui_en: UiStrings = {
   },
   chrome: {
     hideToTray: "Hide",
-    closeApp: "Quit",
   },
   notices: {
     contextCleared: "Card cleared.",
