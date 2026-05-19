@@ -1,5 +1,33 @@
 :root {
-  /* — Design tokens — */
+  /* Layout + color tokens */
+  --app-bg: linear-gradient(180deg, #f4efe7 0%, #ebe7de 100%);
+  --surface-1: rgba(252, 249, 244, 0.92);
+  --surface-2: rgba(255, 255, 255, 0.82);
+  --surface-muted: rgba(242, 238, 231, 0.85);
+  --border-subtle: rgba(20, 35, 33, 0.14);
+  --text-primary: #142321;
+  --text-secondary: rgba(20, 35, 33, 0.62);
+  --accent: #173f38;
+  --accent-soft: rgba(34, 116, 98, 0.14);
+  --danger: #8d2020;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --shadow-soft: 0 14px 35px rgba(28, 49, 45, 0.08);
+  --content-max: 1280px;
+  --content-wide: 1440px;
+  --side-panel-width: 340px;
+
+  /* Legacy aliases used by existing components */
   --color-text: #142321;
   --color-text-accent: #17322f;
   --color-text-subtle: rgba(20, 35, 33, 0.62);
@@ -14,10 +42,10 @@
   --color-say-now-bg: linear-gradient(135deg, rgba(246, 226, 202, 0.96), rgba(255, 244, 231, 0.96));
   --color-say-now-border: rgba(199, 135, 70, 0.22);
 
-  color: var(--color-text);
+  color: var(--text-primary);
   background:
     radial-gradient(circle at top left, rgba(255, 236, 213, 0.82), transparent 42%),
-    linear-gradient(180deg, #f4efe7 0%, #ebe7de 100%);
+    var(--app-bg);
   font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
   line-height: 1.4;
   font-weight: 400;
@@ -52,11 +80,16 @@ input {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  padding: var(--density-pad, 10px);
-  gap: var(--density-gap, 8px);
-  background: rgba(252, 249, 244, 0.92);
+  padding: var(--space-3);
+  gap: var(--space-2);
+  background: var(--surface-1);
   border: 1px solid rgba(27, 54, 51, 0.18);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
+}
+.app-shell {
+  width: 100%;
+  max-width: var(--content-wide);
+  margin-inline: auto;
 }
 
 .shell-chrome {
@@ -76,6 +109,37 @@ input {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+.app-body {
+  padding-inline: var(--space-1);
+}
+
+.app-content {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.app-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  min-height: 0;
+}
+
+.app-main-column {
+  min-width: 0;
+}
+
+.app-side-column {
+  min-width: 0;
+  display: none;
+}
+
+.surface-card,
+.surface-panel {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+}
 
 .shell-body .main-card,
 .shell-body .settings-card {
@@ -85,10 +149,13 @@ input {
 
 .shell-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 2px 0 0;
+}
+.app-header {
+  min-height: 48px;
 }
 
 .shell-header-drag {
@@ -105,7 +172,7 @@ input {
 
 .app-subtitle {
   font-size: 0.72rem;
-  color: rgba(20, 35, 33, 0.72);
+  color: var(--text-secondary);
   text-transform: lowercase;
 }
 
@@ -202,7 +269,7 @@ input {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-card);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62));
-  box-shadow: 0 14px 35px rgba(28, 49, 45, 0.08);
+  box-shadow: var(--shadow-soft);
   transition: opacity 0.2s ease;
 }
 
@@ -287,6 +354,7 @@ input {
 .settings-card {
   padding: 14px 16px 16px;
   overflow: visible;
+  max-width: 100%;
 }
 
 .section-title {
@@ -762,4 +830,48 @@ input {
   padding: 6px 8px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 759px) {
+  .shell {
+    padding: var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .app-body {
+    padding-inline: 0;
+  }
+
+  .app-content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-side-column {
+    display: none;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1180px) {
+  .app-content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1181px) {
+  .app-shell {
+    padding-inline: var(--space-4);
+  }
+
+  .app-content {
+    max-width: var(--content-wide);
+  }
+
+  .app-content-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, var(--side-panel-width));
+    align-items: start;
+  }
+
+  .app-side-column {
+    display: block;
+  }
 }

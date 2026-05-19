@@ -71,8 +71,47 @@ export type AppPlatform = {
 
 let defaultPlatform: AppPlatform | null = null;
 
+function createBrowserFallbackPlatform(): AppPlatform {
+  const unsupported = async <T>(command: string): Promise<T> => {
+    throw new Error(
+      `Tauri runtime is not available in browser preview. Command '${command}' is unsupported.`,
+    );
+  };
+
+  return {
+    invoke: (command) => unsupported(command),
+    listen: async () => () => {},
+    shortcuts: {
+      unregisterAll: async () => {},
+      isRegistered: async () => false,
+      register: async () => {},
+    },
+    clipboard: {
+      writeText: async (value: string) => navigator.clipboard.writeText(value),
+    },
+    window: {
+      show: async () => {},
+      setFocus: async () => {},
+      hide: async () => {},
+      startDragging: async () => {},
+      setOpacity: async () => {},
+      onCloseRequested: async () => () => {},
+    },
+  };
+}
+
 export function getDefaultPlatform(): AppPlatform {
   if (defaultPlatform) {
+    return defaultPlatform;
+  }
+
+  const hasTauriRuntime =
+    typeof window !== "undefined" &&
+    typeof (window as typeof window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__ !==
+      "undefined";
+
+  if (!hasTauriRuntime) {
+    defaultPlatform = createBrowserFallbackPlatform();
     return defaultPlatform;
   }
 

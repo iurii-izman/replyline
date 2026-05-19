@@ -88,7 +88,7 @@ export function MainSurface(props: { controller: ReplylineController }) {
   return (
     <Show when={controller().panel() === "main"}>
       <section
-        class={`main-card main-card--${controller().mainUiState()} ${compactInterview() ? "main-card--compact" : ""}`}
+        class={`main-card surface-card app-main-column main-card--${controller().mainUiState()} ${compactInterview() ? "main-card--compact" : ""}`}
         data-testid="main-surface"
       >
         <div class="main-card-top" data-testid="main-card-top">

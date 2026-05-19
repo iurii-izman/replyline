@@ -60,7 +60,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
 
   return (
     <Show when={controller().panel() === "settings"}>
-      <section class="settings-card">
+      <section class="settings-card surface-panel app-main-column">
         <h2 class="section-title">{st().settings.title}</h2>
 
         {/* ── Setup progress ─────────────────────────────────────── */}
