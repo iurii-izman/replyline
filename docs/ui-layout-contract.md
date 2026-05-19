@@ -77,3 +77,24 @@ A page can use both classes on the same element when both semantics apply.
 - No outer rounded shadow shell that makes the app look like a window inside another window.
 - No custom close/minimize/maximize controls replacing native window controls.
 - No infinite full-width forms on wide displays.
+
+## Native Window Semantics
+
+- Keep native decorations enabled (`decorations=true`) for the main window.
+- Keep default shell behavior as a normal desktop window:
+  - `alwaysOnTop=false`
+  - `skipTaskbar=false`
+- Main window must remain visible in both Alt+Tab and taskbar when open.
+- Native minimize/maximize/close controls are the source of truth for window lifecycle.
+- If hide-to-tray is enabled, native close may hide the window; explicit tray `Quit` must still perform full app exit.
+
+## Regression Rules
+
+The `test:ui-shell-contract` gate is required to catch shell/layout regressions early. It must fail on:
+
+- default window shell drift (`decorations=false`, `alwaysOnTop=true`, `skipTaskbar=true`)
+- custom close action in `ChromeSurface` that competes with native close semantics
+- missing app layout landmarks (`app-root`, `app-workarea`, `app-view`, sticky footer host)
+- missing Settings section navigation mode (all sections rendered as one always-visible giant form)
+- Candidate Pack Studio no longer being a separate panel/surface from Settings summary
+- missing width-cap tokens/classes and sticky-footer bottom padding compensation
