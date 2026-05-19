@@ -1,12 +1,12 @@
 import { For, Show } from "solid-js";
 import { ANSWER_PROFILE_OPTIONS, resolveAnswerProfileOption } from "./answerProfiles";
+import { CandidatePackStudio } from "./CandidatePackStudio";
 import type { ReplylineController } from "./controller";
 import { MODEL_PRESETS, resolveModelPreset } from "./modelPresets";
 import type { CheckItemDto } from "./model";
 import type { UiStrings } from "./locale";
 
 function checkItemLabel(item: CheckItemDto, st: UiStrings): string {
-  // Explicit key access so locale-key checker can trace all code branches.
   switch (item.code) {
     case "ok":
       return st.checks.code.ok;
@@ -33,12 +33,20 @@ function checkItemClass(item: CheckItemDto): string {
   return item.ok ? "check-item is-ok" : "check-item is-fail";
 }
 
+type SettingsSectionId =
+  | "overview"
+  | "speech"
+  | "reply"
+  | "hotkey"
+  | "reports"
+  | "candidate-pack";
+
+type SetupStatusTone = "missing" | "saved" | "ready";
+
 export function SettingsSurface(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
   const st = () => controller().strings();
 
-  // Force locale-key checker to see check code keys via st() signal access.
-  // The keys are used dynamically in checkItemLabel via UiStrings parameter.
   void st().checks.code.ok;
   void st().checks.code.missing_key;
   void st().checks.code.config_error;
@@ -48,564 +56,417 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
   void st().checks.code.skipped;
   void st().checks.code.error;
 
-  const stepStatusClass = (ready: boolean) =>
-    ready ? "setup-step-status is-done" : "setup-step-status is-pending";
-
   const overallHint = () => {
     if (controller().allSetupReady()) return st().setup.ready;
     if (controller().setupRequired()) return st().setup.notReady;
     return st().setup.body;
   };
+
   const selectedPreset = () => resolveModelPreset(controller().settings.selectedModelPreset);
+  const setupSteps = () => controller().setupSteps();
+
+  const firstMissingSection = (): SettingsSectionId | null => {
+    const firstMissingIndex = setupSteps().findIndex((step) => !step.ready);
+    if (firstMissingIndex === 0) return "speech";
+    if (firstMissingIndex === 1) return "reply";
+    if (firstMissingIndex === 2) return "hotkey";
+    return null;
+  };
+
+  const firstMissingHref = () => {
+    const target = firstMissingSection();
+    return target ? `#settings-${target}` : "#settings-overview";
+  };
+  const sectionStatus = (id: SettingsSectionId): { tone: SetupStatusTone; label: string } | null => {
+    const allReady = controller().allSetupReady();
+    if (id === "overview") {
+      return {
+        tone: allReady ? "ready" : "missing",
+        label: allReady ? st().setup.statusReady : st().setup.statusMissing,
+      };
+    }
+    if (id === "speech") {
+      const ready = setupSteps()[0]?.ready ?? false;
+      return {
+        tone: ready ? "saved" : "missing",
+        label: ready ? st().setup.statusSaved : st().setup.statusMissing,
+      };
+    }
+    if (id === "reply") {
+      const ready = setupSteps()[1]?.ready ?? false;
+      return {
+        tone: ready ? "saved" : "missing",
+        label: ready ? st().setup.statusSaved : st().setup.statusMissing,
+      };
+    }
+    if (id === "hotkey") {
+      const ready = setupSteps()[2]?.ready ?? false;
+      return {
+        tone: ready ? "ready" : "missing",
+        label: ready ? st().setup.statusReady : st().setup.statusMissing,
+      };
+    }
+    return null;
+  };
+  const stepHrefFromIndex = (index: number) => {
+    if (index === 0) return "#settings-speech";
+    if (index === 1) return "#settings-reply";
+    if (index === 2) return "#settings-hotkey";
+    return "#settings-overview";
+  };
+  const runtimeSummary = () => {
+    const result = controller().runtimeCheckResult();
+    if (!result) return null;
+    if (result.runtimeReady) return { ok: true, text: st().settings.runtimeSummaryReady };
+    const firstErrorIndex = [result.stt, result.llm, result.settings].findIndex((item) => !item.ok);
+    return { ok: false, text: st().settings.runtimeSummaryNeedsFix, href: stepHrefFromIndex(firstErrorIndex) };
+  };
+
+  const sections: Array<{ id: SettingsSectionId; label: string }> = [
+    { id: "overview", label: st().settings.navOverview },
+    { id: "speech", label: st().settings.navSpeech },
+    { id: "reply", label: st().settings.navReply },
+    { id: "hotkey", label: st().settings.navHotkey },
+    { id: "reports", label: st().settings.navReports },
+    { id: "candidate-pack", label: st().settings.navCandidatePack },
+  ];
 
   return (
     <Show when={controller().panel() === "settings"}>
-      <section class="settings-card surface-panel app-main-column">
+      <section class="settings-card surface-panel app-main-column settings-layout" data-testid="settings-surface">
         <h2 class="section-title">{st().settings.title}</h2>
 
-        {/* ── Setup progress ─────────────────────────────────────── */}
-        <div class="setup-progress" aria-label={st().setup.progress}>
-          <For each={controller().setupSteps()}>
-            {(step) => (
-              <div class="setup-step">
-                <span class={stepStatusClass(step.ready)} aria-hidden="true">
-                  {step.ready ? "✓" : "○"}
-                </span>
-                <span class="setup-step-label">{step.label}</span>
-                <span class="setup-step-hint">
-                  {step.ready ? step.readyLabel : step.missingLabel}
-                </span>
-              </div>
+        <div class="settings-nav-mobile" data-testid="settings-nav-mobile">
+          <For each={sections}>
+            {(section) => (
+              <a class="settings-nav-chip" href={`#settings-${section.id}`}>
+                {section.label}
+              </a>
             )}
           </For>
-          <p class="setup-overall-hint" data-testid="setup-overall-hint">
-            {overallHint()}
-          </p>
         </div>
 
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!controller().saving()) void controller().persistSettings();
-          }}
-        >
-          {/* ── 1. Речь / Speech ─────────────────────────────────── */}
-          <fieldset class="setup-fieldset" data-testid="setup-section-speech">
-            <legend class="setup-legend">{st().setup.stepSpeech}</legend>
-            <label class="field">
-              <span class="field-label">
-                {st().settings.deepgramKeyLabel}{" "}
-                {controller().deepgramSaved() ? (
-                  <span class="saved-badge">{st().settings.savedBadge}</span>
-                ) : null}
-              </span>
-              <input
-                class="field-input"
-                type="password"
-                placeholder={
-                  controller().deepgramSaved() ? st().setup.sttReady : st().setup.sttMissing
-                }
-                value={controller().draftSecrets.deepgramApiKey}
-                onInput={(event) => controller().setDeepgramApiKeyDraft(event.currentTarget.value)}
-              />
-            </label>
-          </fieldset>
-
-          {/* ── 2. Ответ / Reply ─────────────────────────────────── */}
-          <fieldset class="setup-fieldset" data-testid="setup-section-reply">
-            <legend class="setup-legend">{st().setup.stepReply}</legend>
-            <label class="field">
-              <span class="field-label">{st().settings.modelPresetLabel}</span>
-              <select
-                class="field-input"
-                value={controller().settings.selectedModelPreset}
-                onInput={(event) => controller().setSelectedModelPreset(event.currentTarget.value)}
-              >
-                <For each={MODEL_PRESETS}>
-                  {(preset) => <option value={preset.id}>{preset.title}</option>}
-                </For>
-              </select>
-            </label>
-            <div class="field-help">
-              {st().settings.modelPresetProvider}: {selectedPreset().providerKind}
-              {" · "}
-              {st().settings.modelPresetCost}: {selectedPreset().costTier}
-              {" · "}
-              {st().settings.modelPresetLatency}: {selectedPreset().latencyTier}
+        <div class="settings-grid">
+          <aside class="settings-sidebar" data-testid="settings-sidebar">
+            <div class="settings-sidebar-inner">
+              <For each={sections}>
+                {(section) => (
+                  <a class="settings-sidebar-link" href={`#settings-${section.id}`}>
+                    {section.label}
+                  </a>
+                )}
+              </For>
             </div>
-            <div class="field-help">
-              {st().settings.modelPresetBaseUrl}: {selectedPreset().baseUrl || "manual"}
-            </div>
-            <div class="field-help">
-              {st().settings.modelPresetPrimary}: {selectedPreset().primaryModel || "manual"}
-            </div>
-            <div class="field-help">
-              {st().settings.modelPresetFallback}:{" "}
-              {selectedPreset().fallbackModels.length
-                ? selectedPreset().fallbackModels.join(" → ")
-                : st().settings.modelPresetNoFallback}
-            </div>
-            <Show when={selectedPreset().freeTierCaveats}>
-              <div class="field-help">{selectedPreset().freeTierCaveats}</div>
-            </Show>
-            <Show when={selectedPreset().requiresCredits}>
-              <div class="field-help">{st().settings.modelPresetCreditsCaveat}</div>
-            </Show>
-            <div class="field-help">
-              {st().settings.modelPresetSnapshotPrefix} {selectedPreset().lastReviewedAt}.
-              Availability and rate limits can change.
-            </div>
+          </aside>
 
-            <label class="field">
-              <span class="field-label">{st().settings.llmBaseUrlLabel}</span>
-              <input
-                class="field-input"
-                placeholder={st().settings.llmBaseUrlPlaceholder}
-                value={controller().settings.llmBaseUrl}
-                onInput={(event) => controller().setLlmBaseUrl(event.currentTarget.value)}
-              />
-            </label>
-
-            <label class="field">
-              <span class="field-label">{st().settings.llmModelLabel}</span>
-              <input
-                class="field-input"
-                value={controller().settings.llmModel}
-                onInput={(event) => controller().setLlmModel(event.currentTarget.value)}
-              />
-            </label>
-
-            <label class="field" data-testid="answer-profile-field">
-              <span class="field-label">{st().settings.answerProfileLabel}</span>
-              <select
-                class="field-input"
-                value={controller().settings.activeAnswerProfile}
-                onInput={(event) => controller().setActiveAnswerProfile(event.currentTarget.value)}
-              >
-                <For each={ANSWER_PROFILE_OPTIONS}>
-                  {(profile) => <option value={profile.id}>{profile.title}</option>}
-                </For>
-              </select>
-              <span class="field-help">
-                {resolveAnswerProfileOption(controller().settings.activeAnswerProfile).description}
-              </span>
-            </label>
-
-            <label class="field">
-              <span class="field-label">
-                {st().settings.llmKeyLabel}{" "}
-                {controller().llmKeySaved() ? (
-                  <span class="saved-badge">{st().settings.savedBadge}</span>
-                ) : null}
-              </span>
-              <input
-                class="field-input"
-                type="password"
-                value={controller().draftSecrets.llmApiKey}
-                onInput={(event) => controller().setLlmApiKeyDraft(event.currentTarget.value)}
-              />
-            </label>
-
-            <label class="field">
-              <span class="field-label">{st().settings.windowOpacityLabel}</span>
-              <select
-                class="field-input"
-                value={String(controller().settings.windowOpacity)}
-                onInput={(event) =>
-                  void controller().setWindowOpacity(
-                    Number.parseInt(event.currentTarget.value, 10) as 100 | 90 | 80 | 70,
-                  )
-                }
-              >
-                <option value="100">100%</option>
-                <option value="90">90%</option>
-                <option value="80">80%</option>
-                <option value="70">70%</option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span class="field-label">{st().settings.compactModeLabel}</span>
-              <input
-                type="checkbox"
-                aria-label={st().settings.compactModeLabel}
-                checked={controller().settings.interviewCompactMode}
-                onInput={(event) => controller().setCompactMode(event.currentTarget.checked)}
-              />
-            </label>
-
-            <label class="field">
-              <span class="field-label">{st().settings.interviewReportRetentionLabel}</span>
-              <select
-                class="field-input"
-                value={String(controller().settings.interviewReportRetentionDays)}
-                onInput={(event) =>
-                  controller().setInterviewReportRetentionDays(
-                    Number.parseInt(event.currentTarget.value, 10) as 0 | 7 | 30 | 90,
-                  )
-                }
-              >
-                <option value="0">{st().settings.interviewReportRetentionOptionManual}</option>
-                <option value="7">{st().settings.interviewReportRetentionOption7d}</option>
-                <option value="30">{st().settings.interviewReportRetentionOption30d}</option>
-                <option value="90">{st().settings.interviewReportRetentionOption90d}</option>
-              </select>
-              <span class="field-help">{st().settings.interviewReportRetentionHint}</span>
-              <span class="field-help">{st().settings.interviewReportClearHint}</span>
-            </label>
-          </fieldset>
-
-          {/* ── 3. Горячая клавиша / Hotkey ─────────────────────── */}
-          <fieldset class="setup-fieldset" data-testid="setup-section-hotkey">
-            <legend class="setup-legend">{st().setup.stepHotkey}</legend>
-            <label class="field">
-              <span class="field-label">{st().settings.hotkeyLabel}</span>
-              <input
-                class="field-input"
-                value={controller().settings.hotkey}
-                onKeyDown={(event) => controller().captureHotkeyInput(event as KeyboardEvent)}
-                onInput={(event) => controller().setHotkeyFromInput(event.currentTarget.value)}
-              />
-            </label>
-
-            <label class="field">
-              <span class="field-label">{st().settings.captureMaxLabel}</span>
-              <input
-                class="field-input"
-                type="number"
-                min="5"
-                max="180"
-                value={String(controller().settings.captureMaxSeconds)}
-                onInput={(event) =>
-                  controller().setCaptureMaxSecondsFromInput(event.currentTarget.value)
-                }
-              />
-            </label>
-          </fieldset>
-
-          <Show when={controller().settingsFormHint()}>
-            <div class="settings-form-hint" role="alert">
-              {controller().settingsFormHint()}
-            </div>
-          </Show>
-
-          {/* ── Runtime preflight check ────────────────────────── */}
-          <div class="runtime-check-section" data-testid="runtime-check-section">
-            <button
-              class="btn-ghost"
-              type="button"
-              disabled={controller().runtimeCheckRunning()}
-              onClick={() => void controller().checkRuntimeConfig()}
-              data-testid="check-settings-btn"
-            >
-              {controller().runtimeCheckRunning()
-                ? st().settings.checking
-                : st().settings.checkSettings}
-            </button>
-
-            <Show when={controller().runtimeCheckResult()}>
-              <div class="check-results" data-testid="check-results">
-                <h3 class="check-results-title">{st().checks.title}</h3>
-                <div class={checkItemClass(controller().runtimeCheckResult()!.stt)}>
-                  <span class="check-item-icon" aria-hidden="true">
-                    {controller().runtimeCheckResult()!.stt.ok ? "\u2713" : "\u2717"}
-                  </span>
-                  <span class="check-item-label">{st().setup.stepSpeech}</span>
-                  <span class="check-item-status">
-                    {checkItemLabel(controller().runtimeCheckResult()!.stt, st())}
-                  </span>
-                  <span class="check-item-msg">
-                    {controller().runtimeCheckResult()!.stt.message}
-                  </span>
-                  <Show when={controller().runtimeCheckResult()!.stt.action}>
-                    <span class="check-item-action">
-                      {controller().runtimeCheckResult()!.stt.action}
-                    </span>
-                  </Show>
-                </div>
-                <div class={checkItemClass(controller().runtimeCheckResult()!.llm)}>
-                  <span class="check-item-icon" aria-hidden="true">
-                    {controller().runtimeCheckResult()!.llm.ok ? "\u2713" : "\u2717"}
-                  </span>
-                  <span class="check-item-label">{st().setup.stepReply}</span>
-                  <span class="check-item-status">
-                    {checkItemLabel(controller().runtimeCheckResult()!.llm, st())}
-                  </span>
-                  <span class="check-item-msg">
-                    {controller().runtimeCheckResult()!.llm.message}
-                  </span>
-                  <Show when={controller().runtimeCheckResult()!.llm.action}>
-                    <span class="check-item-action">
-                      {controller().runtimeCheckResult()!.llm.action}
-                    </span>
-                  </Show>
-                </div>
-                <div class={checkItemClass(controller().runtimeCheckResult()!.settings)}>
-                  <span class="check-item-icon" aria-hidden="true">
-                    {controller().runtimeCheckResult()!.settings.ok ? "\u2713" : "\u2717"}
-                  </span>
-                  <span class="check-item-label">{st().setup.stepHotkey}</span>
-                  <span class="check-item-status">
-                    {checkItemLabel(controller().runtimeCheckResult()!.settings, st())}
-                  </span>
-                  <span class="check-item-msg">
-                    {controller().runtimeCheckResult()!.settings.message}
-                  </span>
-                  <Show when={controller().runtimeCheckResult()!.settings.action}>
-                    <span class="check-item-action">
-                      {controller().runtimeCheckResult()!.settings.action}
-                    </span>
-                  </Show>
-                </div>
-                <p class="check-overall" data-testid="check-overall">
-                  {controller().runtimeCheckResult()!.runtimeReady
-                    ? st().setup.ready
-                    : st().setup.notReady}
-                </p>
-              </div>
-            </Show>
-          </div>
-
-          <div class="settings-actions">
-            <fieldset class="setup-fieldset" data-testid="candidate-pack-ai-section">
-              <legend class="setup-legend">{st().settings.prepTitle}</legend>
-              <label class="field">
-                <span class="field-label">{st().settings.resumeLabel}</span>
-                <textarea
-                  class="field-input field-textarea"
-                  value={controller().candidateRawResume()}
-                  onInput={(event) => controller().setCandidateRawResume(event.currentTarget.value)}
-                />
-              </label>
-              <label class="field">
-                <span class="field-label">{st().settings.jdLabel}</span>
-                <textarea
-                  class="field-input field-textarea"
-                  value={controller().candidateJobDescription()}
-                  onInput={(event) =>
-                    controller().setCandidateJobDescription(event.currentTarget.value)
-                  }
-                />
-              </label>
-              <label class="field">
-                <span class="field-label">{st().settings.valuesLabel}</span>
-                <textarea
-                  class="field-input field-textarea"
-                  value={controller().candidateCompanyValues()}
-                  onInput={(event) =>
-                    controller().setCandidateCompanyValues(event.currentTarget.value)
-                  }
-                />
-              </label>
-              <div class="settings-actions">
-                <button
-                  class="btn-secondary"
-                  type="button"
-                  disabled={controller().candidatePackPreparing()}
-                  onClick={() => void controller().prepareCandidatePack()}
-                >
-                  {controller().candidatePackPreparing()
-                    ? st().settings.preparing
-                    : st().settings.prepare}
-                </button>
-                <button
-                  class="btn-primary"
-                  type="button"
-                  disabled={
-                    !controller().candidatePackPreview() || controller().candidatePackSaving()
-                  }
-                  onClick={() => void controller().savePreparedCandidatePack()}
-                >
-                  {st().settings.savePack}
-                </button>
-              </div>
-              <div class="candidate-pack-preview" data-testid="candidate-pack-preview">
-                <div class="field-label">{st().settings.previewTitle}</div>
-                <Show
-                  when={controller().candidatePackPreview()}
-                  fallback={<p>{st().settings.noPreview}</p>}
-                >
-                  <div class="preview-grid">
-                    <p>
-                      {st().settings.candidatePackPreview.score}:{" "}
-                      <strong>{controller().candidatePackPreview()!.packQualityScore}</strong>
-                    </p>
-                    <p>
-                      {st().settings.candidatePackPreview.facts}:{" "}
-                      {controller().candidatePackPreview()!.candidateFacts.length}
-                    </p>
-                    <p>
-                      {st().settings.candidatePackPreview.roleKeywords}:{" "}
-                      {controller().candidatePackPreview()!.roleKeywords.join(", ")}
-                    </p>
-                    <p>
-                      {st().settings.candidatePackPreview.companyValues}:{" "}
-                      {controller().candidatePackPreview()!.companyValues.join(", ")}
-                    </p>
-                  </div>
+          <form
+            class="settings-content"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!controller().saving()) void controller().persistSettings();
+            }}
+          >
+            <article id="settings-overview" class="settings-section-card" data-testid="settings-section-overview">
+              <h3 class="settings-section-title">
+                {st().settings.overviewTitle}
+                <Show when={sectionStatus("overview")}>
+                  {(status) => <span class={`saved-badge section-status section-status-${status().tone}`}>{status().label}</span>}
                 </Show>
+              </h3>
+              <p class="settings-section-hint" data-testid="setup-overall-hint">
+                {overallHint()}
+              </p>
+              <p class="settings-section-hint">{st().setup.progressiveOverviewHint}</p>
+
+              <div class="setup-progress" aria-label={st().setup.progress}>
+                <For each={setupSteps()}>
+                  {(step, index) => (
+                    <div class="setup-step">
+                      <span class={step.ready ? "setup-step-status is-done" : "setup-step-status is-pending"} aria-hidden="true">
+                        {step.ready ? "✓" : "○"}
+                      </span>
+                      <span class="setup-step-label">{step.label}</span>
+                      <span class="setup-step-hint">{step.ready ? step.readyLabel : step.missingLabel}</span>
+                      <Show when={!step.ready}>
+                        <a class="setup-step-action" href={stepHrefFromIndex(index())}>{st().settings.openStep}</a>
+                      </Show>
+                    </div>
+                  )}
+                </For>
               </div>
-            </fieldset>
-            <button class="btn-primary" type="submit" disabled={controller().saving()}>
-              {controller().saving() ? st().settings.saving : st().settings.save}
-            </button>
-            <button class="btn-ghost" type="button" onClick={() => controller().openMainPanel()}>
-              {st().settings.back}
-            </button>
-          </div>
-        </form>
-        <fieldset class="setup-fieldset" data-testid="candidate-pack-section">
-          <legend class="setup-legend">{st().settings.candidatePackTitle}</legend>
-          <p class="setup-overall-hint">
-            {st().settings.candidatePackStatus}:{" "}
-            {controller().candidatePackStatus().exists
-              ? `${controller().candidatePackStatus().factCount} / weak ${controller().candidatePackStatus().weakFactCount}`
-              : st().settings.candidatePackEmpty}
-          </p>
-          <label class="field">
-            <span class="field-label">{st().settings.candidateSummaryLabel}</span>
-            <textarea
-              class="field-input"
-              value={controller().candidatePackDraft.candidateSummary}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("candidateSummary", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.targetRoleLabel}</span>
-            <input
-              class="field-input"
-              value={controller().candidatePackDraft.targetRole}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("targetRole", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.factsLabel}</span>
-            <textarea
-              class="field-input"
-              placeholder={st().settings.factsHint}
-              value={controller().candidatePackDraft.factsText}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("factsText", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.jobTitleLabel}</span>
-            <input
-              class="field-input"
-              value={controller().candidatePackDraft.jobTitle}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("jobTitle", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.jobCompanyLabel}</span>
-            <input
-              class="field-input"
-              value={controller().candidatePackDraft.jobCompany}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("jobCompany", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.requirementsLabel}</span>
-            <textarea
-              class="field-input"
-              value={controller().candidatePackDraft.requirementsText}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("requirementsText", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.responsibilitiesLabel}</span>
-            <textarea
-              class="field-input"
-              value={controller().candidatePackDraft.responsibilitiesText}
-              onInput={(event) =>
-                controller().setCandidatePackDraft(
-                  "responsibilitiesText",
-                  event.currentTarget.value,
-                )
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.keywordsLabel}</span>
-            <textarea
-              class="field-input"
-              value={controller().candidatePackDraft.keywordsText}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("keywordsText", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.companyValuesLabel}</span>
-            <textarea
-              class="field-input"
-              value={controller().candidatePackDraft.companyValuesText}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("companyValuesText", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.avoidClaimsLabel}</span>
-            <textarea
-              class="field-input"
-              value={controller().candidatePackDraft.avoidClaimsText}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("avoidClaimsText", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.preferredExamplesLabel}</span>
-            <textarea
-              class="field-input"
-              value={controller().candidatePackDraft.preferredExamplesText}
-              onInput={(event) =>
-                controller().setCandidatePackDraft(
-                  "preferredExamplesText",
-                  event.currentTarget.value,
-                )
-              }
-            />
-          </label>
-          <label class="field">
-            <span class="field-label">{st().settings.profileLanguageLabel}</span>
-            <input
-              class="field-input"
-              value={controller().candidatePackDraft.language}
-              onInput={(event) =>
-                controller().setCandidatePackDraft("language", event.currentTarget.value)
-              }
-            />
-          </label>
-          <div class="settings-actions">
-            <button
-              class="btn-primary"
-              type="button"
-              onClick={() => void controller().saveCandidatePack()}
-            >
-              {st().settings.saveCandidatePack}
-            </button>
-            <button
-              class="btn-ghost"
-              type="button"
-              onClick={() => void controller().clearCandidatePack()}
-            >
-              {st().settings.clearCandidatePack}
-            </button>
-          </div>
-        </fieldset>
+
+              <Show when={firstMissingSection()}>
+                <a class="btn-secondary settings-cta" href={firstMissingHref()} data-testid="setup-first-missing-cta">
+                  {st().settings.openFirstMissing}
+                </a>
+              </Show>
+            </article>
+
+            <article id="settings-speech" class="settings-section-card" data-testid="settings-section-speech">
+              <h3 class="settings-section-title">
+                {st().settings.navSpeech}
+                <Show when={sectionStatus("speech")}>
+                  {(status) => <span class={`saved-badge section-status section-status-${status().tone}`}>{status().label}</span>}
+                </Show>
+              </h3>
+              <p class="settings-section-hint">{st().settings.speechHint}</p>
+              <p class="field-help">{st().setup.deepgramHint}</p>
+              <label class="field">
+                <span class="field-label">
+                  {st().settings.deepgramKeyLabel}{" "}
+                  {controller().deepgramSaved() ? <span class="saved-badge">{st().settings.savedBadge}</span> : null}
+                </span>
+                <input
+                  class="field-input"
+                  type="password"
+                  placeholder={controller().deepgramSaved() ? st().setup.sttReady : st().setup.sttMissing}
+                  value={controller().draftSecrets.deepgramApiKey}
+                  onInput={(event) => controller().setDeepgramApiKeyDraft(event.currentTarget.value)}
+                />
+              </label>
+            </article>
+
+            <article id="settings-reply" class="settings-section-card" data-testid="settings-section-reply">
+              <h3 class="settings-section-title">
+                {st().settings.navReply}
+                <Show when={sectionStatus("reply")}>
+                  {(status) => <span class={`saved-badge section-status section-status-${status().tone}`}>{status().label}</span>}
+                </Show>
+              </h3>
+              <p class="field-help">{st().setup.llmHint}</p>
+
+              <label class="field">
+                <span class="field-label">{st().settings.modelPresetLabel}</span>
+                <select
+                  class="field-input"
+                  value={controller().settings.selectedModelPreset}
+                  onInput={(event) => controller().setSelectedModelPreset(event.currentTarget.value)}
+                >
+                  <For each={MODEL_PRESETS}>{(preset) => <option value={preset.id}>{preset.title}</option>}</For>
+                </select>
+              </label>
+
+              <details class="settings-collapsible">
+                <summary>{st().settings.providerNotesTitle}</summary>
+                <div class="settings-collapsible-body">
+                  <div class="field-help">{st().settings.modelPresetProvider}: {selectedPreset().providerKind} · {st().settings.modelPresetCost}: {selectedPreset().costTier} · {st().settings.modelPresetLatency}: {selectedPreset().latencyTier}</div>
+                  <div class="field-help">{st().settings.modelPresetBaseUrl}: {selectedPreset().baseUrl || "manual"}</div>
+                  <div class="field-help">{st().settings.modelPresetPrimary}: {selectedPreset().primaryModel || "manual"}</div>
+                  <div class="field-help">{st().settings.modelPresetFallback}: {selectedPreset().fallbackModels.length ? selectedPreset().fallbackModels.join(" → ") : st().settings.modelPresetNoFallback}</div>
+                  <Show when={selectedPreset().freeTierCaveats}><div class="field-help">{selectedPreset().freeTierCaveats}</div></Show>
+                  <Show when={selectedPreset().requiresCredits}><div class="field-help">{st().settings.modelPresetCreditsCaveat}</div></Show>
+                  <div class="field-help">{st().settings.modelPresetSnapshotPrefix} {selectedPreset().lastReviewedAt}. Availability and rate limits can change.</div>
+                </div>
+              </details>
+
+              <label class="field">
+                <span class="field-label">{st().settings.llmBaseUrlLabel}</span>
+                <input
+                  class="field-input"
+                  placeholder={st().settings.llmBaseUrlPlaceholder}
+                  value={controller().settings.llmBaseUrl}
+                  onInput={(event) => controller().setLlmBaseUrl(event.currentTarget.value)}
+                />
+              </label>
+
+              <label class="field">
+                <span class="field-label">{st().settings.llmModelLabel}</span>
+                <input
+                  class="field-input"
+                  value={controller().settings.llmModel}
+                  onInput={(event) => controller().setLlmModel(event.currentTarget.value)}
+                />
+              </label>
+
+              <label class="field" data-testid="answer-profile-field">
+                <span class="field-label">{st().settings.answerProfileLabel}</span>
+                <select
+                  class="field-input"
+                  value={controller().settings.activeAnswerProfile}
+                  onInput={(event) => controller().setActiveAnswerProfile(event.currentTarget.value)}
+                >
+                  <For each={ANSWER_PROFILE_OPTIONS}>{(profile) => <option value={profile.id}>{profile.title}</option>}</For>
+                </select>
+                <span class="field-help">{resolveAnswerProfileOption(controller().settings.activeAnswerProfile).description}</span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">
+                  {st().settings.llmKeyLabel}{" "}
+                  {controller().llmKeySaved() ? <span class="saved-badge">{st().settings.savedBadge}</span> : null}
+                </span>
+                <input
+                  class="field-input"
+                  type="password"
+                  value={controller().draftSecrets.llmApiKey}
+                  onInput={(event) => controller().setLlmApiKeyDraft(event.currentTarget.value)}
+                />
+              </label>
+            </article>
+
+            <article id="settings-hotkey" class="settings-section-card" data-testid="settings-section-hotkey">
+              <h3 class="settings-section-title">
+                {st().settings.navHotkey}
+                <Show when={sectionStatus("hotkey")}>
+                  {(status) => <span class={`saved-badge section-status section-status-${status().tone}`}>{status().label}</span>}
+                </Show>
+              </h3>
+              <p class="field-help">{st().setup.hotkeyHint}</p>
+              <label class="field">
+                <span class="field-label">{st().settings.hotkeyLabel}</span>
+                <input
+                  class="field-input"
+                  value={controller().settings.hotkey}
+                  onKeyDown={(event) => controller().captureHotkeyInput(event as KeyboardEvent)}
+                  onInput={(event) => controller().setHotkeyFromInput(event.currentTarget.value)}
+                />
+              </label>
+
+              <label class="field">
+                <span class="field-label">{st().settings.captureMaxLabel}</span>
+                <input
+                  class="field-input"
+                  type="number"
+                  min="5"
+                  max="180"
+                  value={String(controller().settings.captureMaxSeconds)}
+                  onInput={(event) => controller().setCaptureMaxSecondsFromInput(event.currentTarget.value)}
+                />
+              </label>
+
+              <label class="field">
+                <span class="field-label">{st().settings.compactModeLabel}</span>
+                <input
+                  type="checkbox"
+                  aria-label={st().settings.compactModeLabel}
+                  checked={controller().settings.interviewCompactMode}
+                  onInput={(event) => controller().setCompactMode(event.currentTarget.checked)}
+                />
+              </label>
+
+              <label class="field">
+                <span class="field-label">{st().settings.windowOpacityLabel}</span>
+                <select
+                  class="field-input"
+                  value={String(controller().settings.windowOpacity)}
+                  onInput={(event) =>
+                    void controller().setWindowOpacity(
+                      Number.parseInt(event.currentTarget.value, 10) as 100 | 90 | 80 | 70,
+                    )
+                  }
+                >
+                  <option value="100">100%</option>
+                  <option value="90">90%</option>
+                  <option value="80">80%</option>
+                  <option value="70">70%</option>
+                </select>
+              </label>
+            </article>
+
+            <article id="settings-reports" class="settings-section-card" data-testid="settings-section-reports">
+              <h3 class="settings-section-title">{st().settings.navReports}</h3>
+              <label class="field">
+                <span class="field-label">{st().settings.interviewReportRetentionLabel}</span>
+                <select
+                  class="field-input"
+                  value={String(controller().settings.interviewReportRetentionDays)}
+                  onInput={(event) => controller().setInterviewReportRetentionDays(Number.parseInt(event.currentTarget.value, 10) as 0 | 7 | 30 | 90)}
+                >
+                  <option value="0">{st().settings.interviewReportRetentionOptionManual}</option>
+                  <option value="7">{st().settings.interviewReportRetentionOption7d}</option>
+                  <option value="30">{st().settings.interviewReportRetentionOption30d}</option>
+                  <option value="90">{st().settings.interviewReportRetentionOption90d}</option>
+                </select>
+                <span class="field-help">{st().settings.interviewReportRetentionHint}</span>
+                <span class="field-help">{st().settings.interviewReportClearHint}</span>
+              </label>
+            </article>
+
+            <article id="settings-candidate-pack" class="settings-section-card" data-testid="settings-section-candidate-pack">
+              <h3 class="settings-section-title">{st().settings.navCandidatePack}</h3>
+              <p class="settings-section-hint" data-testid="candidate-pack-summary">{st().settings.candidatePackStudioHint}</p>
+
+              <details class="settings-candidate-pack-details" data-testid="candidate-pack-details">
+                <summary>{st().settings.openCandidatePackStudio}</summary>
+                <div class="settings-candidate-pack-body">
+                  <CandidatePackStudio controller={controller()} st={st()} />
+                </div>
+              </details>
+            </article>
+
+            <Show when={controller().settingsFormHint()}>
+              <div class="settings-form-hint" role="alert">
+                {controller().settingsFormHint()}
+              </div>
+            </Show>
+
+            <div class="runtime-check-section" data-testid="runtime-check-section">
+              <button
+                class="btn-secondary"
+                type="button"
+                disabled={controller().runtimeCheckRunning()}
+                title={st().settings.checkSettingsHint}
+                onClick={() => void controller().checkRuntimeConfig()}
+                data-testid="check-settings-btn"
+              >
+                {controller().runtimeCheckRunning() ? st().settings.checking : st().settings.checkSettings}
+              </button>
+
+              <Show when={controller().runtimeCheckResult()}>
+                <div class="check-results" data-testid="check-results">
+                  <h3 class="check-results-title">{st().checks.title}</h3>
+                  <div class={checkItemClass(controller().runtimeCheckResult()!.stt)}>
+                    <span class="check-item-icon" aria-hidden="true">{controller().runtimeCheckResult()!.stt.ok ? "✓" : "✗"}</span>
+                    <span class="check-item-label">{st().setup.stepSpeech}</span>
+                    <span class="check-item-status">{checkItemLabel(controller().runtimeCheckResult()!.stt, st())}</span>
+                    <span class="check-item-msg">{controller().runtimeCheckResult()!.stt.message}</span>
+                    <Show when={!controller().runtimeCheckResult()!.stt.ok}>
+                      <a class="check-item-action" href="#settings-speech">{controller().runtimeCheckResult()!.stt.action ?? st().settings.openStep}</a>
+                    </Show>
+                  </div>
+                  <div class={checkItemClass(controller().runtimeCheckResult()!.llm)}>
+                    <span class="check-item-icon" aria-hidden="true">{controller().runtimeCheckResult()!.llm.ok ? "✓" : "✗"}</span>
+                    <span class="check-item-label">{st().setup.stepReply}</span>
+                    <span class="check-item-status">{checkItemLabel(controller().runtimeCheckResult()!.llm, st())}</span>
+                    <span class="check-item-msg">{controller().runtimeCheckResult()!.llm.message}</span>
+                    <Show when={!controller().runtimeCheckResult()!.llm.ok}>
+                      <a class="check-item-action" href="#settings-reply">{controller().runtimeCheckResult()!.llm.action ?? st().settings.openStep}</a>
+                    </Show>
+                  </div>
+                  <div class={checkItemClass(controller().runtimeCheckResult()!.settings)}>
+                    <span class="check-item-icon" aria-hidden="true">{controller().runtimeCheckResult()!.settings.ok ? "✓" : "✗"}</span>
+                    <span class="check-item-label">{st().setup.stepHotkey}</span>
+                    <span class="check-item-status">{checkItemLabel(controller().runtimeCheckResult()!.settings, st())}</span>
+                    <span class="check-item-msg">{controller().runtimeCheckResult()!.settings.message}</span>
+                    <Show when={!controller().runtimeCheckResult()!.settings.ok}>
+                      <a class="check-item-action" href="#settings-hotkey">{controller().runtimeCheckResult()!.settings.action ?? st().settings.openStep}</a>
+                    </Show>
+                  </div>
+                  <p class="check-overall" data-testid="check-overall">{controller().runtimeCheckResult()!.runtimeReady ? st().setup.ready : st().setup.notReady}</p>
+                  <Show when={runtimeSummary()}>
+                    {(summary) => (
+                      <p class={`check-summary ${summary().ok ? "is-ok" : "is-fail"}`} data-testid="runtime-check-summary">
+                        {summary().text}{" "}
+                        <Show when={summary().href}>
+                          <a href={summary().href!}>{st().settings.openStep}</a>
+                        </Show>
+                      </p>
+                    )}
+                  </Show>
+                </div>
+              </Show>
+            </div>
+
+            <div class="action-bar sticky-action-footer settings-sticky-footer" data-testid="settings-sticky-footer">
+              <button class="btn-primary" type="submit" disabled={controller().saving()}>
+                {controller().saving() ? st().settings.saving : st().settings.save}
+              </button>
+              <button class="btn-secondary" type="button" onClick={() => controller().openMainPanel()}>
+                {st().settings.back}
+              </button>
+            </div>
+          </form>
+        </div>
       </section>
     </Show>
   );

@@ -13,6 +13,7 @@ export interface LifecycleDeps {
   setStatusDetail: Setter<string | null>;
   setContextActive: Setter<boolean>;
   setContextEntryCount: Setter<number>;
+  setLastTranscriptPreview: Setter<string | null>;
   setCard: (card: AnalysisCard | null) => void;
   notices: NoticeApi;
   settingsActions: SettingsActions;
@@ -63,6 +64,7 @@ export function setupLifecycle(deps: LifecycleDeps): void {
         await deps.platform.listen("replyline://context-cleared", () => {
           deps.setContextActive(false);
           deps.setContextEntryCount(0);
+          deps.setLastTranscriptPreview(null);
           deps.setCard(null);
           deps.setPhase("idle");
           deps.notices.pushNotice({

@@ -45,6 +45,7 @@ export function useReplylineController(platform: AppPlatform) {
   const [llmKeySaved, setLlmKeySaved] = createSignal(false);
   const [contextActive, setContextActive] = createSignal(false);
   const [contextEntryCount, setContextEntryCount] = createSignal(0);
+  const [lastTranscriptPreview, setLastTranscriptPreview] = createSignal<string | null>(null);
   const [saving, setSaving] = createSignal(false);
   const [notice, setNotice] = createSignal<{
     tone: "info" | "error";
@@ -212,6 +213,7 @@ export function useReplylineController(platform: AppPlatform) {
   function applyContextStatus(status: ContextStatusDto) {
     setContextActive(status.contextActive);
     setContextEntryCount(status.entryCount);
+    setLastTranscriptPreview(status.lastTranscriptPreview ?? null);
   }
 
   async function showWindow(panelName?: Panel) {
@@ -292,6 +294,7 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmKeySaved,
     setContextActive,
     setContextEntryCount,
+    setLastTranscriptPreview,
     setSaving,
     setSettingsFormHint,
     setHotkeyFailed,
@@ -310,6 +313,7 @@ export function useReplylineController(platform: AppPlatform) {
     setStatusDetail,
     setContextActive,
     setContextEntryCount,
+    setLastTranscriptPreview,
     setCard: applyIncomingCard,
     notices,
     settingsActions,
@@ -454,6 +458,7 @@ export function useReplylineController(platform: AppPlatform) {
     setError(null);
     try {
       await platform.invoke("save_prepared_candidate_pack", { draft });
+      await loadCandidatePack();
       notices.pushNotice({ tone: "info", message: strings().notices.candidatePackSaved });
     } catch (err) {
       setError(invokeErrorMessage(err));
@@ -522,6 +527,7 @@ export function useReplylineController(platform: AppPlatform) {
     llmKeySaved,
     contextActive,
     contextEntryCount,
+    lastTranscriptPreview,
     saving,
     notice,
     hotkeyFailed,

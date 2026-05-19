@@ -31,6 +31,7 @@ export interface SettingsActionDeps {
   setLlmKeySaved: Setter<boolean>;
   setContextActive: Setter<boolean>;
   setContextEntryCount: Setter<number>;
+  setLastTranscriptPreview: Setter<string | null>;
   setSaving: Setter<boolean>;
   setSettingsFormHint: Setter<string | null>;
   setHotkeyFailed: Setter<boolean>;
@@ -56,6 +57,7 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
       deps.setLlmKeySaved(boot.llmKeyPresent);
       deps.setContextActive(boot.contextActive);
       deps.setContextEntryCount(boot.contextEntryCount);
+      deps.setLastTranscriptPreview(boot.lastTranscriptPreview ?? null);
       deps.setPanel(boot.runtimeReady ? "main" : "settings");
       await deps.loadCandidatePack();
       await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
