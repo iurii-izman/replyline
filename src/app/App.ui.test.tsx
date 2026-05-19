@@ -13,6 +13,33 @@ type MockPlatform = {
 type MockPlatformOptions = {
   analysisError?: unknown;
   analysisCard?: Record<string, unknown>;
+  candidatePackStatus?: { exists: boolean; factCount: number; weakFactCount: number };
+  candidatePack?: {
+    candidateSummary: string;
+    targetRole: string;
+    resumeFacts: Array<{ id: string; title: string; claim: string; evidence: string }>;
+    jobDescription: {
+      title: string;
+      company: string;
+      requirements: string[];
+      responsibilities: string[];
+      keywords: string[];
+    };
+    companyValues: string[];
+    answerConstraints: {
+      avoidClaims: string[];
+      preferredExamples: string[];
+      language: string;
+    };
+  } | null;
+  candidatePackPreview?: {
+    packQualityScore: number;
+    missingDataWarnings: string[];
+    suggestedMissingInfo: string[];
+    candidateFacts: Array<{ fact: string; evidence: string; strength: "strong" | "medium" | "weak"; metrics: string[] }>;
+    roleKeywords: string[];
+    companyValues: string[];
+  } | null;
 };
 
 function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
@@ -52,22 +79,23 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
       return { contextActive: false, entryCount: 0, canRetryLastTranscript: false };
     }
     if (command === "prepare_candidate_pack") {
-      return {
-        packQualityОценка: 84,
+      return options.candidatePackPreview ?? {
+        packQualityScore: 84,
         missingDataWarnings: ["add metrics"],
         suggestedMissingInfo: ["add leadership example"],
         candidateFacts: [
           { fact: "Fact", evidence: "Resume line", strength: "strong", metrics: [] },
+          { fact: "Weak fact", evidence: "No metric", strength: "weak", metrics: [] },
         ],
         roleKeywords: ["rust", "ownership"],
         companyValues: ["customer obsession"],
       };
     }
     if (command === "load_candidate_pack") {
-      return null;
+      return options.candidatePack ?? null;
     }
     if (command === "get_candidate_pack_status") {
-      return { exists: false, factCount: 0, weakFactCount: 0 };
+      return options.candidatePackStatus ?? { exists: false, factCount: 0, weakFactCount: 0 };
     }
     if (command === "save_candidate_pack") {
       return null;
@@ -164,6 +192,200 @@ describe("App UX stabilization", () => {
     mock = createMockPlatform();
   });
 
+  function createSetupStatePlatform(
+    overrides: {
+      deepgramKeyPresent?: boolean;
+      llmKeyPresent?: boolean;
+      llmBaseUrl?: string;
+      llmModel?: string;
+      runtimeReady?: boolean;
+    } = {},
+  ): MockPlatform {
+    const base = createMockPlatform();
+    const origInvoke = base.platform.invoke;
+    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "load_bootstrap") {
+        return {
+          settings: {
+            schemaVersion: 6,
+            hotkey: "Ctrl+Alt+Space",
+            llmBaseUrl: overrides.llmBaseUrl ?? "",
+            llmModel: overrides.llmModel ?? "gpt-4o-mini",
+            selectedModelPreset: "custom_openai_compatible",
+            captureMaxSeconds: 45,
+            activeAnswerProfile: "interview_default",
+            windowOpacity: 100,
+            interviewCompactMode: false,
+            interviewReportRetentionDays: 0,
+          },
+          deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
+          llmKeyPresent: overrides.llmKeyPresent ?? false,
+          contextActive: false,
+          contextEntryCount: 0,
+          runtimeReady: overrides.runtimeReady ?? false,
+          logStatus: { logPath: "", lastLine: null },
+          canRetryLastTranscript: false,
+        };
+      }
+      if (command === "save_settings") {
+        const input = (args as Record<string, unknown> | undefined)?.input as
+          | Record<string, unknown>
+          | undefined;
+        return { ...input, schemaVersion: 6 };
+      }
+      if (command === "save_secret") return null;
+      return origInvoke(command, args);
+    });
+    base.platform.invoke = patchedInvoke;
+    base.invoke = patchedInvoke;
+    return base;
+  }
+
+  const uiStateFixtures = {
+    defaultEmpty: (): MockPlatformOptions => ({}),
+    setupRequired: (): MockPlatformOptions => ({
+      analysisCard: { gist: "g", sayNow: "say", nextMove: "next" },
+    }),
+    workCardReady: (): MockPlatformOptions => ({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    }),
+    interviewCardReady: (): MockPlatformOptions => ({
+      analysisCard: {
+        gist: "g",
+        sayNow: "say",
+        nextMove: "next",
+        interviewCardSchemaV1: {
+          mode: "interview",
+          answer: { main: "Main", short: "Short", strong: "Strong", structure: "STAR" },
+          question: {
+            rawTranscript: "raw",
+            cleanQuestion: "clean",
+            interviewerIntent: "intent",
+            questionType: "behavioral",
+            confidence: "high",
+          },
+          signals: { mustMention: ["ownership"], keywords: ["impact"] },
+          risks: { weakPoints: ["wp"], avoid: ["avoid"], safeReframe: "safe" },
+          followUps: [{ question: "q", bridgeAnswer: "a" }],
+          clarifier: { needed: false, text: null },
+        },
+      },
+    }),
+    reportAvailable: (): MockPlatformOptions => ({}),
+    settingsIncomplete: (): MockPlatformOptions => ({}),
+    settingsReady: (): MockPlatformOptions => ({}),
+    candidatePackEmpty: (): MockPlatformOptions => ({
+      candidatePackStatus: { exists: false, factCount: 0, weakFactCount: 0 },
+      candidatePackPreview: null,
+    }),
+    candidatePackPreview: (): MockPlatformOptions => ({
+      candidatePackStatus: { exists: true, factCount: 7, weakFactCount: 1 },
+    }),
+    errorState: (): MockPlatformOptions => ({
+      analysisError: { kind: "Pipeline", message: "LLM timeout" },
+    }),
+  };
+
+  it("renders app shell and main landmarks in default fixture", async () => {
+    mock = createMockPlatform(uiStateFixtures.defaultEmpty());
+    render(() => <App platform={mock.platform} />);
+
+    expect(await screen.findByTestId("app-shell")).toBeTruthy();
+    expect(screen.getByTestId("main-surface").className).toContain("app-main-column");
+    expect(screen.getByTestId("main-card-body")).toBeTruthy();
+    expect(screen.getByTestId("action-row")).toBeTruthy();
+  });
+
+  it("renders wide cockpit layout landmarks in work-ready fixture", async () => {
+    mock = createMockPlatform(uiStateFixtures.workCardReady());
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    const mainLayout = screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout");
+    expect(mainLayout?.className).toContain("is-wide");
+    expect(screen.getByTestId("main-side-panel")).toBeTruthy();
+  });
+
+  it("renders compact interview layout fixture after enabling compact mode", async () => {
+    mock = createMockPlatform(uiStateFixtures.interviewCardReady());
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    fireEvent.click(await screen.findByLabelText("Компактный режим интервью"));
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
+
+    await waitFor(() => expect(screen.getByTestId("main-surface").className).toContain("main-card--compact"));
+    const mainLayout = screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout");
+    expect(mainLayout?.className).toContain("is-compact");
+  });
+
+  it("renders setup-required fixture with settings nav landmarks", async () => {
+    const setupMock = createSetupStatePlatform({
+      deepgramKeyPresent: false,
+      llmBaseUrl: "",
+      runtimeReady: false,
+    });
+    render(() => <App platform={setupMock.platform} />);
+
+    await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
+    expect(screen.getByTestId("settings-nav-mobile")).toBeTruthy();
+    expect(screen.getByTestId("settings-sidebar")).toBeTruthy();
+  });
+
+  it("renders candidate studio empty fixture", async () => {
+    mock = createMockPlatform(uiStateFixtures.candidatePackEmpty());
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    fireEvent.click(screen.getByText("Открыть Candidate Pack Studio"));
+    expect(screen.getByTestId("candidate-pack-studio")).toBeTruthy();
+    expect(screen.getByTestId("candidate-pack-ai-section")).toBeTruthy();
+    expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("пусто");
+  });
+
+  it("renders candidate studio preview fixture", async () => {
+    mock = createMockPlatform(uiStateFixtures.candidatePackPreview());
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    fireEvent.click(screen.getByText("Открыть Candidate Pack Studio"));
+    await waitFor(() => expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("7 / weak 1"));
+  });
+
+  it("renders interview session active and report available states", async () => {
+    mock = createMockPlatform(uiStateFixtures.reportAvailable());
+    render(() => <App platform={mock.platform} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Начать сессию" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "start_interview_session")).toBe(true),
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Завершить сессию" })[0]);
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "end_interview_session")).toBe(true),
+    );
+    expect(screen.getByTestId("interview-report-summary")).toBeTruthy();
+  });
+
+  it("renders pipeline error fixture and keeps action bar landmark", async () => {
+    mock = createMockPlatform(uiStateFixtures.errorState());
+    render(() => <App platform={mock.platform} />);
+
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    expect(await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ.")).toBeTruthy();
+    expect(screen.getByTestId("action-row")).toBeTruthy();
+  });
+
   it("shows card shell and action row in idle", async () => {
     render(() => <App platform={mock.platform} />);
 
@@ -181,6 +403,27 @@ describe("App UX stabilization", () => {
     expect(screen.getByRole("list", { name: "Статус цепочки" })).toBeTruthy();
   });
 
+  it("keeps responsive layout class contracts for main/settings/candidate pack", async () => {
+    render(() => <App platform={mock.platform} />);
+
+    const mainSurface = await screen.findByTestId("main-surface");
+    const mainLayout = screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout");
+    const sidePanel = screen.getByTestId("main-side-panel");
+    expect(mainSurface.className).toContain("app-main-column");
+    expect(mainLayout?.className).toContain("is-wide");
+    expect(sidePanel.className).toContain("cockpit-side");
+
+    fireEvent.click(screen.getByTitle("Настройки"));
+    await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
+    expect(screen.getByTestId("settings-sidebar").className).toContain("settings-sidebar");
+    expect(screen.getByTestId("settings-nav-mobile").className).toContain("settings-nav-mobile");
+
+    fireEvent.click(screen.getByText("Открыть Candidate Pack Studio"));
+    expect(screen.getByTestId("candidate-pack-studio")).toBeTruthy();
+    expect(screen.getByTestId("candidate-pack-ai-section")).toBeTruthy();
+    expect(screen.getByTestId("candidate-pack-preview")).toBeTruthy();
+  });
+
   it("keeps actions disabled in idle without card", async () => {
     render(() => <App platform={mock.platform} />);
 
@@ -189,7 +432,7 @@ describe("App UX stabilization", () => {
 
     expect(copy).toHaveProperty("disabled", true);
     expect(retry).toHaveProperty("disabled", true);
-    expect(copy.getAttribute("title")).toBe("Сначала получите карточку.");
+    expect(copy.getAttribute("title")).toBe("Копирование недоступно: готового ответа пока нет.");
   });
 
   it("keeps action buttons fixed-height and out of the scroll body", async () => {
@@ -258,11 +501,16 @@ describe("App UX stabilization", () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
     await waitFor(() => expect(screen.getByText("Настройки")).toBeTruthy());
-    expect(screen.getByRole("button", { name: "Сохранить" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
+    const save = screen.getByRole("button", { name: "Сохранить" });
+    const back = screen.getByRole("button", { name: "Назад" });
+    expect(save).toBeTruthy();
+    expect(back).toBeTruthy();
+    expect(save.className).toContain("btn-primary");
+    expect(back.className).toContain("btn-secondary");
+    expect(screen.getByTestId("settings-sticky-footer").className).toContain("sticky-action-footer");
     expect(screen.getByText("Профиль ответа")).toBeTruthy();
     expect(screen.getByText("Профиль модели")).toBeTruthy();
-    expect(screen.getByText("Срок хранения interview reports")).toBeTruthy();
+    expect(screen.getByText("Срок хранения отчётов интервью")).toBeTruthy();
     expect(screen.getByText("Только ручная очистка")).toBeTruthy();
     expect(screen.getByTestId("answer-profile-field")).toBeTruthy();
     expect(screen.queryByText(/raw prompt/i)).toBeNull();
@@ -371,7 +619,7 @@ describe("App UX stabilization", () => {
     await mock.emitShortcut({ state: "Released" });
 
     fireEvent.click(await screen.findByTitle("Настройки"));
-    const compactToggle = await screen.findByLabelText("Compact interview mode");
+    const compactToggle = await screen.findByLabelText("Компактный режим интервью");
     fireEvent.click(compactToggle);
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
     fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
@@ -410,7 +658,7 @@ describe("App UX stabilization", () => {
     await mock.emitShortcut({ state: "Released" });
 
     fireEvent.click(await screen.findByTitle("Настройки"));
-    const compactToggle = await screen.findByLabelText("Compact interview mode");
+    const compactToggle = await screen.findByLabelText("Компактный режим интервью");
     fireEvent.click(compactToggle);
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
     fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
@@ -423,8 +671,19 @@ describe("App UX stabilization", () => {
 
   it("manages interview report actions", async () => {
     render(() => <App platform={mock.platform} />);
+    const fullExportBefore = screen.getByRole("button", {
+      name: "Экспортировать full Markdown (с transcript)",
+    });
+    const redactedBefore = screen.getByRole("button", {
+      name: "Экспортировать redacted Markdown (без transcript)",
+    });
+    expect(fullExportBefore).toHaveProperty("disabled", true);
+    expect(redactedBefore).toHaveProperty("disabled", true);
+    expect(fullExportBefore.className).toContain("btn-warning");
+    expect(redactedBefore.className).toContain("btn-secondary");
+
     fireEvent.click(await screen.findByRole("button", { name: "Начать сессию" }));
-    fireEvent.click(screen.getByRole("button", { name: "Завершить сессию" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Завершить сессию" })[0]!);
     await waitFor(() => expect(screen.getByTestId("interview-report-summary")).toBeTruthy());
     fireEvent.click(
       screen.getByRole("button", { name: "Экспортировать full Markdown (с transcript)" }),
@@ -436,7 +695,9 @@ describe("App UX stabilization", () => {
     await waitFor(() =>
       expect(screen.getByText(/interview-report-redacted-is-1\.md/)).toBeTruthy(),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Очистить отчёты" }));
+    const clearReports = screen.getByRole("button", { name: "Очистить отчёты" });
+    expect(clearReports.className).toContain("btn-danger");
+    fireEvent.click(clearReports);
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "clear_interview_reports")).toBe(true),
     );
@@ -730,11 +991,28 @@ describe("Interview card rendering", () => {
     expect(screen.getByTestId("section-next-move")).toBeTruthy();
   });
 
-  it("prepares candidate pack on explicit action and saves only after explicit confirmation", async () => {
+  it("shows empty candidate pack preview state and disabled save before prepare", async () => {
     const mock = createMockPlatform();
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    await waitFor(() => expect(screen.getByText("AI Candidate Pack")).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId("settings-section-candidate-pack")).toBeTruthy());
+    fireEvent.click(screen.getByText("Открыть Candidate Pack Studio"));
+
+    expect(screen.getByText("Сначала подготовьте профиль.")).toBeTruthy();
+    const savePack = screen.getByRole("button", { name: "Сохранить Candidate Pack" });
+    expect(savePack.hasAttribute("disabled")).toBe(true);
+    expect(savePack.className).toContain("btn-primary");
+    const clearProfile = screen.getByRole("button", { name: "Очистить профиль" });
+    expect(clearProfile).toBeTruthy();
+    expect(clearProfile.className).toContain("btn-danger");
+  });
+
+  it("renders preview metrics after prepare and saves only after explicit confirmation", async () => {
+    const mock = createMockPlatform();
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    await waitFor(() => expect(screen.getByTestId("settings-section-candidate-pack")).toBeTruthy());
+    fireEvent.click(screen.getByText("Открыть Candidate Pack Studio"));
 
     const section = screen.getByTestId("candidate-pack-ai-section");
     const textareas = within(section).getAllByRole("textbox");
@@ -747,6 +1025,7 @@ describe("Interview card rendering", () => {
       expect(mock.invoke.mock.calls.some((c) => c[0] === "prepare_candidate_pack")).toBe(true),
     );
     expect(screen.getByText("Оценка:")).toBeTruthy();
+    expect(screen.getByText("Слабые факты: 1")).toBeTruthy();
     expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(false);
 
     fireEvent.click(screen.getByRole("button", { name: "Сохранить Candidate Pack" }));
@@ -755,6 +1034,21 @@ describe("Interview card rendering", () => {
         true,
       ),
     );
+  });
+
+  it("shows saved status state after saving candidate pack", async () => {
+    const mock = createMockPlatform({
+      candidatePackStatus: { exists: true, factCount: 9, weakFactCount: 2 },
+    });
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    await waitFor(() => expect(screen.getByTestId("settings-section-candidate-pack")).toBeTruthy());
+    fireEvent.click(screen.getByText("Открыть Candidate Pack Studio"));
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить профиль" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "save_candidate_pack")).toBe(true),
+    );
+    expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("9 / weak 2");
   });
 });
 
@@ -863,6 +1157,7 @@ describe("Setup wizard (first-run guidance)", () => {
     const mock = createSetupMockPlatform({
       deepgramKeyPresent: true,
       llmBaseUrl: "",
+      llmModel: "",
       runtimeReady: false,
     });
 
@@ -871,6 +1166,8 @@ describe("Setup wizard (first-run guidance)", () => {
     await waitFor(() => {
       expect(screen.getByText("Укажите URL и модель LLM-шлюза.")).toBeTruthy();
     });
+    const cta = screen.getByTestId("setup-first-missing-cta");
+    expect(cta.getAttribute("href")).toBe("#settings-reply");
   });
 
   it("shows saved badge when Deepgram key is present", async () => {
@@ -923,6 +1220,8 @@ describe("Setup wizard (first-run guidance)", () => {
     expect(screen.getByTestId("setup-overall-hint").textContent).toContain(
       "Приложение готово к работе",
     );
+    expect(screen.getByText("Горячая клавиша задана.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Проверить настройки" })).toBeTruthy();
   });
 
   it("renders three fieldset sections in settings", async () => {
@@ -935,10 +1234,25 @@ describe("Setup wizard (first-run guidance)", () => {
     render(() => <App platform={mock.platform} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("setup-section-speech")).toBeTruthy();
-      expect(screen.getByTestId("setup-section-reply")).toBeTruthy();
-      expect(screen.getByTestId("setup-section-hotkey")).toBeTruthy();
+      expect(screen.getByTestId("settings-section-overview")).toBeTruthy();
+      expect(screen.getByTestId("settings-section-speech")).toBeTruthy();
+      expect(screen.getByTestId("settings-section-reply")).toBeTruthy();
+      expect(screen.getByTestId("settings-section-hotkey")).toBeTruthy();
+      expect(screen.getByTestId("settings-section-reports")).toBeTruthy();
+      expect(screen.getByTestId("settings-section-candidate-pack")).toBeTruthy();
+      expect(screen.getByTestId("settings-sticky-footer")).toBeTruthy();
     });
+  });
+
+  it("shows CTA to first missing setup section", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmBaseUrl: "",
+      runtimeReady: false,
+    });
+    render(() => <App platform={mock.platform} />);
+    const cta = await screen.findByTestId("setup-first-missing-cta");
+    expect(cta.getAttribute("href")).toBe("#settings-speech");
   });
 
   it("returns to main after successful save when all fields are ready", async () => {

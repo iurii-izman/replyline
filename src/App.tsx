@@ -14,11 +14,11 @@ function App(props: AppProps) {
   const controller = useReplylineController(props.platform ?? getDefaultPlatform());
 
   return (
-    <main class="shell app-shell">
+    <main class="shell app-shell" data-testid="app-shell">
       <ShellChrome controller={controller} />
-      <div class="shell-body app-body">
-        <div class="app-content">
-          <div class="app-content-grid">
+      <div class="shell-body app-body" data-testid="app-body">
+        <div class="app-content" data-testid="app-content">
+          <div class="app-content-grid" data-testid="app-content-grid">
             <MainSurface controller={controller} />
             <SettingsSurface controller={controller} />
             <aside class="app-side-column" aria-hidden="true" />

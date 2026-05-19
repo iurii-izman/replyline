@@ -69,6 +69,7 @@ Supported provider/runtime path for stable beta:
 6. Beta preflight lane: `pnpm beta:preflight`
 7. Interview quality report artifact: `pnpm report:interview-quality`
 8. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
+9. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
 
 Additional conditional gates:
 
