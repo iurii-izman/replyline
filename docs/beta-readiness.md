@@ -72,7 +72,7 @@ Supported provider/runtime path for stable beta:
 7. Interview quality report artifact: `pnpm report:interview-quality`
 8. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
 9. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
-10. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md)
+10. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
 
 Additional conditional gates:
 

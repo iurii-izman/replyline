@@ -423,19 +423,19 @@ describe("App UX stabilization", () => {
     mock = createMockPlatform(uiStateFixtures.candidatePackEmpty());
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /Candidate Pack/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Открыть Candidate Pack Studio" }));
+    fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
     expect(screen.getByTestId("candidate-pack-studio")).toBeTruthy();
     expect(screen.getByTestId("candidate-pack-ai-section")).toBeTruthy();
-    expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("пусто");
+    expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("Пусто");
   });
 
   it("renders candidate studio preview fixture", async () => {
     mock = createMockPlatform(uiStateFixtures.candidatePackPreview());
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /Candidate Pack/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Открыть Candidate Pack Studio" }));
+    fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
     await waitFor(() =>
       expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("7 / weak 1"),
     );
@@ -504,8 +504,8 @@ describe("App UX stabilization", () => {
     await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
     expect(appView.contains(screen.getByTestId("settings-surface"))).toBe(true);
     expect(screen.getByTestId("settings-sidebar").className).toContain("settings-sidebar");
-    fireEvent.click(screen.getByRole("tab", { name: /Candidate Pack/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Открыть Candidate Pack Studio" }));
+    fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
     expect(screen.getByTestId("candidate-pack-studio")).toBeTruthy();
     expect(screen.getByTestId("candidate-pack-ai-section")).toBeTruthy();
     expect(screen.getByTestId("candidate-pack-preview")).toBeTruthy();
@@ -519,7 +519,7 @@ describe("App UX stabilization", () => {
 
     expect(copy).toHaveProperty("disabled", true);
     expect(retry).toHaveProperty("disabled", true);
-    expect(copy.getAttribute("title")).toBe("Копирование недоступно: готового ответа пока нет.");
+    expect(copy.getAttribute("title")).toBe("Ответ ещё не готов.");
   });
 
   it("keeps action buttons fixed-height and out of the scroll body", async () => {
@@ -597,7 +597,7 @@ describe("App UX stabilization", () => {
     expect(screen.getByTestId("settings-sticky-footer").className).toContain(
       "sticky-action-footer",
     );
-    fireEvent.click(screen.getByRole("tab", { name: /LLM/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Ответ \/ LLM/i }));
     expect(screen.getByText("Профиль ответа")).toBeTruthy();
     expect(screen.getByText("Профиль модели")).toBeTruthy();
     expect(screen.getByTestId("answer-profile-field")).toBeTruthy();
@@ -610,7 +610,7 @@ describe("App UX stabilization", () => {
   it("allows selecting OpenRouter Free / Dev profile", async () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /LLM/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Ответ \/ LLM/i }));
     const preset = await screen.findByDisplayValue("Custom OpenAI-compatible");
     fireEvent.input(preset, { target: { value: "openrouter_free_dev" } });
     expect(await screen.findByDisplayValue("OpenRouter Free / Dev")).toBeTruthy();
@@ -620,7 +620,7 @@ describe("App UX stabilization", () => {
   it("syncs base URL and model for non-custom preset", async () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /LLM/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Ответ \/ LLM/i }));
     const preset = await screen.findByDisplayValue("Custom OpenAI-compatible");
     fireEvent.input(preset, { target: { value: "openrouter_balanced_paid" } });
     expect(await screen.findByDisplayValue("OpenRouter Balanced Paid")).toBeTruthy();
@@ -631,7 +631,7 @@ describe("App UX stabilization", () => {
   it("saves selectedModelPreset with synced route values", async () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /LLM/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Ответ \/ LLM/i }));
     const preset = await screen.findByDisplayValue("Custom OpenAI-compatible");
     fireEvent.input(preset, { target: { value: "openrouter_quality_paid" } });
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
@@ -649,7 +649,7 @@ describe("App UX stabilization", () => {
   it("does not overwrite manual route fields when custom preset is selected", async () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /LLM/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Ответ \/ LLM/i }));
     const baseUrl = await screen.findByDisplayValue("https://api.example/v1");
     const model = screen.getByDisplayValue("gpt-4o-mini");
     fireEvent.input(baseUrl, { target: { value: "https://custom.gateway/v1" } });
@@ -770,10 +770,10 @@ describe("App UX stabilization", () => {
   it("manages interview report actions", async () => {
     render(() => <App platform={mock.platform} />);
     const fullExportBefore = screen.getByRole("button", {
-      name: "Экспортировать full Markdown (с transcript)",
+      name: "Экспортировать Full Markdown с transcript",
     });
     const redactedBefore = screen.getByRole("button", {
-      name: "Экспортировать redacted Markdown (без transcript)",
+      name: "Экспортировать Redacted Markdown без transcript",
     });
     expect(fullExportBefore).toHaveProperty("disabled", true);
     expect(redactedBefore).toHaveProperty("disabled", true);
@@ -784,11 +784,11 @@ describe("App UX stabilization", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Завершить сессию" })[0]!);
     await waitFor(() => expect(screen.getByTestId("interview-report-summary")).toBeTruthy());
     fireEvent.click(
-      screen.getByRole("button", { name: "Экспортировать full Markdown (с transcript)" }),
+      screen.getByRole("button", { name: "Экспортировать Full Markdown с transcript" }),
     );
     await waitFor(() => expect(screen.getByText(/interview-report-full-is-1\.md/)).toBeTruthy());
     fireEvent.click(
-      screen.getByRole("button", { name: "Экспортировать redacted Markdown (без transcript)" }),
+      screen.getByRole("button", { name: "Экспортировать Redacted Markdown без transcript" }),
     );
     await waitFor(() =>
       expect(screen.getByText(/interview-report-redacted-is-1\.md/)).toBeTruthy(),
@@ -1093,12 +1093,13 @@ describe("Interview card rendering", () => {
     const mock = createMockPlatform();
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /Candidate Pack/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
     await waitFor(() => expect(screen.getByTestId("settings-section-candidate-pack")).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Открыть Candidate Pack Studio" }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
 
-    expect(screen.getByText("Сначала подготовьте профиль.")).toBeTruthy();
-    const savePack = screen.getByRole("button", { name: "Сохранить Candidate Pack" });
+    expect(screen.getByTestId("candidate-pack-empty-state")).toBeTruthy();
+    expect(screen.getByText("Профиль ещё не подготовлен")).toBeTruthy();
+    const savePack = screen.getByRole("button", { name: "Сохранить профиль" });
     expect(savePack.hasAttribute("disabled")).toBe(true);
     expect(savePack.className).toContain("btn-secondary");
     const clearProfile = screen.getByRole("button", { name: "Очистить профиль" });
@@ -1110,9 +1111,9 @@ describe("Interview card rendering", () => {
     const mock = createMockPlatform();
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /Candidate Pack/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
     await waitFor(() => expect(screen.getByTestId("settings-section-candidate-pack")).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Открыть Candidate Pack Studio" }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
 
     const section = screen.getByTestId("candidate-pack-ai-section");
     const textareas = within(section).getAllByRole("textbox");
@@ -1124,11 +1125,12 @@ describe("Interview card rendering", () => {
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "prepare_candidate_pack")).toBe(true),
     );
+    expect(screen.getByTestId("candidate-pack-quality-card")).toBeTruthy();
     expect(screen.getByText("Оценка:")).toBeTruthy();
     expect(screen.getByText("Слабые факты: 1")).toBeTruthy();
     expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(false);
 
-    fireEvent.click(screen.getByRole("button", { name: "Сохранить Candidate Pack" }));
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить профиль" }));
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(
         true,
@@ -1142,14 +1144,134 @@ describe("Interview card rendering", () => {
     });
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    fireEvent.click(screen.getByRole("tab", { name: /Candidate Pack/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
     await waitFor(() => expect(screen.getByTestId("settings-section-candidate-pack")).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Открыть Candidate Pack Studio" }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
+    const section = screen.getByTestId("candidate-pack-ai-section");
+    const textareas = within(section).getAllByRole("textbox");
+    fireEvent.input(textareas[0], { target: { value: "resume raw text" } });
+    fireEvent.click(screen.getByRole("button", { name: "Подготовить профиль" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "prepare_candidate_pack")).toBe(true),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Сохранить профиль" }));
     await waitFor(() =>
-      expect(mock.invoke.mock.calls.some((c) => c[0] === "save_candidate_pack")).toBe(true),
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(
+        true,
+      ),
     );
     expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("9 / weak 2");
+  });
+
+  it("renders styled check results and open-step action class", async () => {
+    const setupMock = createMockPlatform();
+    const invoke = setupMock.platform.invoke;
+    setupMock.platform.invoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "load_bootstrap") {
+        return {
+          settings: {
+            schemaVersion: 7,
+            hotkey: "Ctrl+Alt+Space",
+            llmBaseUrl: "",
+            llmModel: "gpt-4o-mini",
+            selectedModelPreset: "custom_openai_compatible",
+            captureMaxSeconds: 45,
+            activeAnswerProfile: "interview_default",
+            windowOpacity: 100,
+            hideToTrayOnClose: true,
+            keepOnTopDuringCapture: false,
+            interviewCompactMode: false,
+            interviewReportRetentionDays: 0,
+          },
+          deepgramKeyPresent: false,
+          llmKeyPresent: false,
+          contextActive: false,
+          contextEntryCount: 0,
+          runtimeReady: false,
+        };
+      }
+      if (command === "check_runtime_config") {
+        return {
+          runtimeReady: false,
+          stt: { ok: false, code: "missing_key", message: "Deepgram key missing" },
+          llm: { ok: true, code: "ok", message: "OK" },
+          settings: { ok: false, code: "config_error", message: "Hotkey invalid" },
+        };
+      }
+      return invoke(command, args);
+    });
+    render(() => <App platform={setupMock.platform} />);
+    await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Проверить настройки" }));
+    const checks = await screen.findByTestId("check-results");
+    expect(checks.className).toContain("check-results-card");
+    const openStep = within(checks).getByRole("button", { name: "Открыть шаг" });
+    expect(openStep.className).toContain("btn-secondary");
+  });
+
+  it("renders localized sidebar status badges", async () => {
+    const setupMock = createMockPlatform();
+    const invoke = setupMock.platform.invoke;
+    setupMock.platform.invoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "load_bootstrap") {
+        return {
+          settings: {
+            schemaVersion: 7,
+            hotkey: "Ctrl+Alt+Space",
+            llmBaseUrl: "",
+            llmModel: "gpt-4o-mini",
+            selectedModelPreset: "custom_openai_compatible",
+            captureMaxSeconds: 45,
+            activeAnswerProfile: "interview_default",
+            windowOpacity: 100,
+            hideToTrayOnClose: true,
+            keepOnTopDuringCapture: false,
+            interviewCompactMode: false,
+            interviewReportRetentionDays: 0,
+          },
+          deepgramKeyPresent: false,
+          llmKeyPresent: false,
+          contextActive: false,
+          contextEntryCount: 0,
+          runtimeReady: false,
+        };
+      }
+      return invoke(command, args);
+    });
+    render(() => <App platform={setupMock.platform} />);
+    await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
+    const badges = screen.getAllByText(/Не заполнено|Сохранено|Готово|Опционально/);
+    expect(badges.length).toBeGreaterThan(0);
+  });
+
+  it("candidate studio uses styled accordions instead of details", async () => {
+    const studioMock = createMockPlatform({
+      candidatePackStatus: { exists: false, factCount: 0, weakFactCount: 0 },
+      candidatePackPreview: null,
+    });
+    render(() => <App platform={studioMock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
+    expect(screen.getByTestId("studio-accordion-root")).toBeTruthy();
+    expect(screen.getByTestId("studio-accordion-summary")).toBeTruthy();
+  });
+
+  it("candidate studio keeps localized heading and sticky footer actions", async () => {
+    const studioMock = createMockPlatform({
+      candidatePackStatus: { exists: false, factCount: 0, weakFactCount: 0 },
+      candidatePackPreview: null,
+    });
+    render(() => <App platform={studioMock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
+
+    expect(screen.getByRole("heading", { name: /Студия профиля кандидата/i })).toBeTruthy();
+    const footer = screen.getByTestId("candidate-pack-studio-footer");
+    expect(footer.className).toContain("app-sticky-footer");
+    expect(within(footer).getByRole("button", { name: "Подготовить профиль" })).toBeTruthy();
+    expect(within(footer).getByRole("button", { name: "Назад в настройки" })).toBeTruthy();
   });
 });
 
@@ -1368,11 +1490,11 @@ describe("Setup wizard (first-run guidance)", () => {
     });
 
     // Fill in the missing fields
-    fireEvent.click(screen.getByRole("tab", { name: /Speech/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Речь/i }));
     const deepgramInput = screen.getByPlaceholderText("Добавьте ключ Deepgram API.");
     fireEvent.input(deepgramInput, { target: { value: "dg-key-123" } });
 
-    fireEvent.click(screen.getByRole("tab", { name: /LLM/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Ответ \/ LLM/i }));
     const urlInput = screen.getByPlaceholderText("https://api.example.com/v1");
     fireEvent.input(urlInput, { target: { value: "https://api.example.com/v1" } });
 

@@ -37,6 +37,12 @@ function assertRegex(content, regex, label, details) {
   }
 }
 
+function assertNoRegex(content, regex, label, details) {
+  if (regex.test(content)) {
+    fail(`${label}: ${details}`);
+  }
+}
+
 const tauriConfigText = readText("src-tauri/tauri.conf.json");
 if (tauriConfigText) {
   const config = JSON.parse(tauriConfigText);
@@ -75,6 +81,25 @@ if (chromeSurface) {
   );
 }
 
+const mainSurface = readText("src/app/MainSurface.tsx");
+if (mainSurface) {
+  assertIncludes(mainSurface, 'data-testid="workspace-layout"', "src/app/MainSurface.tsx");
+  assertIncludes(mainSurface, "main-cockpit-layout", "src/app/MainSurface.tsx");
+  assertIncludes(mainSurface, "app-page-main", "src/app/MainSurface.tsx");
+  assertIncludes(mainSurface, "app-page-aside app-sidebar", "src/app/MainSurface.tsx");
+  assertIncludes(mainSurface, 'data-testid="action-row"', "src/app/MainSurface.tsx");
+  const actionRowMatch = mainSurface.match(
+    /<div class="action-bar sticky-action-footer app-sticky-footer" data-testid="action-row">([\s\S]*?)<\/div>/u,
+  );
+  if (!actionRowMatch) {
+    fail("src/app/MainSurface.tsx: action row block missing");
+  } else if (/sessionActions\./u.test(actionRowMatch[1] ?? "")) {
+    fail(
+      "src/app/MainSurface.tsx: main bottom action bar must not include session/report/export actions",
+    );
+  }
+}
+
 const appTsx = readText("src/App.tsx");
 if (appTsx) {
   assertIncludes(appTsx, 'class="app-root"', "src/App.tsx");
@@ -106,6 +131,14 @@ if (settingsSurface) {
     'data-testid="candidate-pack-summary"',
     "src/app/SettingsSurface.tsx",
   );
+  assertIncludes(settingsSurface, 'role="tablist"', "src/app/SettingsSurface.tsx");
+  assertIncludes(settingsSurface, 'role="tab"', "src/app/SettingsSurface.tsx");
+  assertNoRegex(
+    settingsSurface,
+    /class="settings-content[\s\S]*?(?:w-full|max-w-none)/u,
+    "src/app/SettingsSurface.tsx",
+    "settings form must keep capped width classes and avoid full-width infinite form patterns",
+  );
 }
 
 const candidatePackStudioSurface = readText("src/app/CandidatePackStudioSurface.tsx");
@@ -127,6 +160,21 @@ if (candidatePackStudioSurface) {
   );
 }
 
+const candidatePackStudio = readText("src/app/CandidatePackStudio.tsx");
+if (candidatePackStudio) {
+  assertIncludes(
+    candidatePackStudio,
+    'data-testid="candidate-pack-studio-grid"',
+    "src/app/CandidatePackStudio.tsx",
+  );
+  assertNoRegex(
+    candidatePackStudio,
+    /class="candidate-pack-studio[\s\S]*?(?:w-full|max-w-none)/u,
+    "src/app/CandidatePackStudio.tsx",
+    "candidate studio must keep capped width classes and avoid full-width infinite form patterns",
+  );
+}
+
 const appCss = readText("src/App.css");
 if (appCss) {
   assertIncludes(appCss, "--workspace-max", "src/App.css");
@@ -141,6 +189,72 @@ if (appCss) {
     /\.settings-content\s*,\s*\.candidate-pack-studio\s*\{[^}]*padding-bottom\s*:\s*88px;/su,
     "src/App.css",
     "expected sticky-footer bottom padding compensation for settings and studio content",
+  );
+  assertRegex(
+    appCss,
+    /\.settings-content\s*\{[^}]*max-width\s*:\s*var\(--settings-content-max\)/su,
+    "src/App.css",
+    "settings content should keep max-width cap token",
+  );
+  assertRegex(
+    appCss,
+    /\.candidate-pack-studio\s*\{[^}]*max-width\s*:\s*var\(--studio-max\)/su,
+    "src/App.css",
+    "candidate studio should keep max-width cap token",
+  );
+}
+
+const userFacingTsxFiles = [
+  "src/app/MainSurface.tsx",
+  "src/app/SettingsSurface.tsx",
+  "src/app/CandidatePackStudio.tsx",
+  "src/app/CandidatePackStudioSurface.tsx",
+  "src/app/ChromeSurface.tsx",
+];
+
+for (const path of userFacingTsxFiles) {
+  const source = readText(path);
+  if (!source) continue;
+
+  assertNoRegex(
+    source,
+    />\s*(missing|ready|optional)\s*</giu,
+    path,
+    'raw EN setup labels in user-facing JSX are forbidden ("missing/ready/optional")',
+  );
+  assertNoRegex(source, /Статус setup/gu, path, 'forbidden copy "Статус setup"');
+}
+
+if (mainSurface) {
+  assertRegex(
+    mainSurface,
+    /<button[\s\S]*class="btn-primary"[\s\S]*\{st\(\)\.card\.copySayNow\}/u,
+    "src/app/MainSurface.tsx",
+    "critical copy action must use Replyline button class",
+  );
+  assertRegex(
+    mainSurface,
+    /<button[\s\S]*class="btn-secondary"[\s\S]*\{st\(\)\.card\.retryCard\}/u,
+    "src/app/MainSurface.tsx",
+    "critical retry action must use Replyline button class",
+  );
+}
+
+if (settingsSurface) {
+  assertRegex(
+    settingsSurface,
+    /<button[\s\S]*class="btn-primary"[\s\S]*\{controller\(\)\.saving\(\)\s*\?\s*st\(\)\.settings\.saving\s*:\s*st\(\)\.settings\.save\}/u,
+    "src/app/SettingsSurface.tsx",
+    "critical save settings action must use Replyline button class",
+  );
+}
+
+if (candidatePackStudio) {
+  assertRegex(
+    candidatePackStudio,
+    /<button[\s\S]*class="btn-primary"[\s\S]*st\(\)\.settings\.prepare/u,
+    "src/app/CandidatePackStudio.tsx",
+    "critical prepare candidate pack action must use Replyline button class",
   );
 }
 

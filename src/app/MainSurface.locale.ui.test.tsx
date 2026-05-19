@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen, within } from "@solidjs/testing-library";
 import { describe, expect, it, vi } from "vitest";
 
 import { MainSurface } from "./MainSurface";
@@ -59,10 +59,10 @@ describe("MainSurface locale labels", () => {
     expect(screen.getAllByRole("button", { name: "Завершить сессию" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Открыть отчёт" })).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Экспортировать full Markdown (с transcript)" }),
+      screen.getByRole("button", { name: "Экспортировать Full Markdown с transcript" }),
     ).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Экспортировать redacted Markdown (без transcript)" }),
+      screen.getByRole("button", { name: "Экспортировать Redacted Markdown без transcript" }),
     ).toBeTruthy();
     const clearReports = screen.getByRole("button", { name: "Очистить отчёты" });
     expect(clearReports).toBeTruthy();
@@ -113,6 +113,18 @@ describe("MainSurface cockpit states", () => {
     expect(
       screen.getAllByText("Зажмите Ctrl+Alt+Space, чтобы записать фрагмент.").length,
     ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("После записи вы получите суть, ответ и следующий шаг.").length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("Скопировать пока недоступно.")).toBeTruthy();
+  });
+
+  it("keeps idle status without loading copy", () => {
+    render(() => <MainSurface controller={createController(ui_ru) as never} />);
+
+    const phase = screen.getByTestId("status-strip-phase");
+    expect(phase.textContent).toContain("Готово");
+    expect(phase.textContent?.toLowerCase()).not.toContain("загружа");
   });
 
   it("shows setup required state", () => {
@@ -133,7 +145,10 @@ describe("MainSurface cockpit states", () => {
 
     expect(screen.getByTestId("main-empty-state-setup")).toBeTruthy();
     expect(screen.getByText("Нужно завершить настройку")).toBeTruthy();
-    expect(screen.getByText("Сначала заполните Speech и LLM.")).toBeTruthy();
+    expect(screen.getByText("Сначала заполните «Речь» и «Ответ / LLM».")).toBeTruthy();
+    const chips = screen.getByTestId("setup-banner-missing-steps").children;
+    expect(chips.length).toBe(2);
+    expect(screen.queryByText("3. Горячая клавиша")).toBeNull();
     expect(
       screen.getByRole("button", { name: "Перейти к первому незаполненному шагу" }),
     ).toBeTruthy();
@@ -184,6 +199,7 @@ describe("MainSurface cockpit states", () => {
     ));
 
     expect(screen.getByTestId("main-side-panel")).toBeTruthy();
+    expect(screen.getByTestId("workspace-aside-stack")).toBeTruthy();
     expect(screen.getByTestId("session-panel")).toBeTruthy();
     expect(screen.getByTestId("report-panel")).toBeTruthy();
     expect(screen.getByTestId("export-panel")).toBeTruthy();
@@ -198,18 +214,22 @@ describe("MainSurface cockpit states", () => {
     expect(actionRow.className).toContain("sticky-action-footer");
 
     const fullExport = screen.getByRole("button", {
-      name: "Экспортировать full Markdown (с transcript)",
+      name: "Экспортировать Full Markdown с transcript",
     });
     const redactedExport = screen.getByRole("button", {
-      name: "Экспортировать redacted Markdown (без transcript)",
+      name: "Экспортировать Redacted Markdown без transcript",
     });
 
     expect(fullExport).toHaveProperty("disabled", true);
     expect(redactedExport).toHaveProperty("disabled", true);
-    expect(fullExport.getAttribute("title")).toBe("Сначала завершите сессию и сформируйте отчёт.");
-    expect(redactedExport.getAttribute("title")).toBe(
-      "Сначала завершите сессию и сформируйте отчёт.",
-    );
+    expect(within(actionRow).queryByRole("button", { name: "Начать сессию" })).toBeNull();
+    expect(
+      within(actionRow).queryByRole("button", {
+        name: "Экспортировать Full Markdown с transcript",
+      }),
+    ).toBeNull();
+    expect(fullExport.getAttribute("title")).toBe("Отчёт ещё не сформирован.");
+    expect(redactedExport.getAttribute("title")).toBe("Отчёт ещё не сформирован.");
     expect(
       screen.getByText("Завершите сессию, чтобы получить отчёт и включить экспорт."),
     ).toBeTruthy();
@@ -234,5 +254,87 @@ describe("MainSurface cockpit states", () => {
     ));
 
     expect(screen.getByText(/Короткий фрагмент: запишите 5-10 секунд/)).toBeTruthy();
+  });
+
+  it("keeps session/report/export buttons wired", () => {
+    const startInterviewSession = vi.fn();
+    const endInterviewSession = vi.fn();
+    const openInterviewReport = vi.fn();
+    const exportInterviewReportMarkdown = vi.fn();
+    const exportInterviewReportRedactedMarkdown = vi.fn();
+    const clearInterviewReports = vi.fn();
+    render(() => (
+      <MainSurface
+        controller={
+          createController(ui_ru, {
+            interviewReport: () => ({
+              questions: [],
+              scores: { clarity: 0, relevance: 0, accuracy: 0 },
+            }),
+            startInterviewSession,
+            endInterviewSession,
+            openInterviewReport,
+            exportInterviewReportMarkdown,
+            exportInterviewReportRedactedMarkdown,
+            clearInterviewReports,
+          }) as never
+        }
+      />
+    ));
+
+    fireEvent.click(screen.getByRole("button", { name: "Начать сессию" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Завершить сессию" })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Открыть отчёт" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Экспортировать Full Markdown с transcript" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Экспортировать Redacted Markdown без transcript" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Очистить отчёты" }));
+
+    expect(startInterviewSession).toHaveBeenCalled();
+    expect(endInterviewSession).toHaveBeenCalled();
+    expect(openInterviewReport).toHaveBeenCalled();
+    expect(exportInterviewReportMarkdown).toHaveBeenCalled();
+    expect(exportInterviewReportRedactedMarkdown).toHaveBeenCalled();
+    expect(clearInterviewReports).toHaveBeenCalled();
+  });
+
+  it("preserves copy/retry/clear behavior", () => {
+    const copyCurrentCard = vi.fn();
+    const retryAnalysis = vi.fn();
+    const clearContext = vi.fn();
+    render(() => (
+      <MainSurface
+        controller={
+          createController(ui_ru, {
+            card: () => ({
+              mode: "work",
+              gist: "g",
+              sayNow: "say",
+              nextMove: "next",
+              charsBand: "normal",
+            }),
+            canCopySayNow: () => true,
+            canRetry: () => true,
+            canClear: () => true,
+            copyDisabledReason: () => null,
+            retryDisabledReason: () => null,
+            clearDisabledReason: () => null,
+            copyCurrentCard,
+            retryAnalysis,
+            clearContext,
+          }) as never
+        }
+      />
+    ));
+
+    fireEvent.click(screen.getByRole("button", { name: "Скопировать ответ" }));
+    fireEvent.click(screen.getByRole("button", { name: "Пересобрать" }));
+    fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
+    expect(copyCurrentCard).toHaveBeenCalled();
+    expect(retryAnalysis).toHaveBeenCalled();
+    expect(clearContext).toHaveBeenCalled();
   });
 });

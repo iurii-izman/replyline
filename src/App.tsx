@@ -32,7 +32,9 @@ function App(props: AppProps) {
         </div>
       </div>
       <div class="app-sticky-footer">
-        <MessagesAndFooter controller={controller} />
+        <div class="app-notice-area">
+          <MessagesAndFooter controller={controller} />
+        </div>
       </div>
     </main>
   );

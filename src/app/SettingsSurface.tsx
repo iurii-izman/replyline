@@ -251,7 +251,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                           </span>
                           <Show when={!step.ready}>
                             <button
-                              class="setup-step-action"
+                              class="btn-ghost btn-compact setup-step-action"
                               type="button"
                               onClick={() => controller().setSettingsActiveSection(targetSection)}
                             >
@@ -282,12 +282,12 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             <Show when={activeSection() === "speech"}>
               <article
                 id="settings-panel-speech"
-                class="settings-section-card section-card"
+                class="settings-section-card section-card settings-section-card--compact"
                 data-testid="settings-section-speech"
               >
                 <h3 class="settings-section-title">{st().settings.navSpeech}</h3>
                 <p class="settings-section-hint">{st().settings.speechHint}</p>
-                <p class="field-help">{st().setup.deepgramHint}</p>
+                <p class="settings-section-helper">{st().setup.deepgramHint}</p>
                 <label class="field">
                   <span class="field-label">
                     {st().settings.deepgramKeyLabel}{" "}
@@ -317,111 +317,114 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 data-testid="settings-section-llm"
               >
                 <h3 class="settings-section-title">{st().settings.navLlm}</h3>
-                <p class="field-help">{st().setup.llmHint}</p>
+                <p class="settings-section-hint">{st().settings.llmSectionHint}</p>
+                <p class="settings-section-helper">{st().setup.llmHint}</p>
 
-                <label class="field">
-                  <span class="field-label">{st().settings.modelPresetLabel}</span>
-                  <select
-                    class="field-input"
-                    value={controller().settings.selectedModelPreset}
-                    onInput={(event) =>
-                      controller().setSelectedModelPreset(event.currentTarget.value)
-                    }
-                  >
-                    <For each={MODEL_PRESETS}>
-                      {(preset) => <option value={preset.id}>{preset.title}</option>}
-                    </For>
-                  </select>
-                </label>
+                <div class="settings-form-stack">
+                  <label class="field">
+                    <span class="field-label">{st().settings.modelPresetLabel}</span>
+                    <select
+                      class="field-input"
+                      value={controller().settings.selectedModelPreset}
+                      onInput={(event) =>
+                        controller().setSelectedModelPreset(event.currentTarget.value)
+                      }
+                    >
+                      <For each={MODEL_PRESETS}>
+                        {(preset) => <option value={preset.id}>{preset.title}</option>}
+                      </For>
+                    </select>
+                  </label>
 
-                <details class="settings-collapsible">
-                  <summary>{st().settings.providerNotesTitle}</summary>
-                  <div class="settings-collapsible-body">
-                    <div class="field-help">
-                      {st().settings.modelPresetProvider}: {selectedPreset().providerKind} ·{" "}
-                      {st().settings.modelPresetCost}: {selectedPreset().costTier} ·{" "}
-                      {st().settings.modelPresetLatency}: {selectedPreset().latencyTier}
+                  <details class="settings-collapsible settings-collapsible--caveats" open>
+                    <summary>{st().settings.providerNotesTitle}</summary>
+                    <div class="settings-collapsible-body">
+                      <div class="field-help">
+                        {st().settings.modelPresetProvider}: {selectedPreset().providerKind} ·{" "}
+                        {st().settings.modelPresetCost}: {selectedPreset().costTier} ·{" "}
+                        {st().settings.modelPresetLatency}: {selectedPreset().latencyTier}
+                      </div>
+                      <div class="field-help">
+                        {st().settings.modelPresetBaseUrl}: {selectedPreset().baseUrl || "manual"}
+                      </div>
+                      <div class="field-help">
+                        {st().settings.modelPresetPrimary}:{" "}
+                        {selectedPreset().primaryModel || "manual"}
+                      </div>
+                      <div class="field-help">
+                        {st().settings.modelPresetFallback}:{" "}
+                        {selectedPreset().fallbackModels.length
+                          ? selectedPreset().fallbackModels.join(" -> ")
+                          : st().settings.modelPresetNoFallback}
+                      </div>
+                      <Show when={selectedPreset().freeTierCaveats}>
+                        <div class="field-help">{selectedPreset().freeTierCaveats}</div>
+                      </Show>
+                      <Show when={selectedPreset().requiresCredits}>
+                        <div class="field-help">{st().settings.modelPresetCreditsCaveat}</div>
+                      </Show>
+                      <div class="field-help">
+                        {st().settings.modelPresetSnapshotPrefix} {selectedPreset().lastReviewedAt}.{" "}
+                        {st().settings.modelPresetSnapshotNote}
+                      </div>
                     </div>
-                    <div class="field-help">
-                      {st().settings.modelPresetBaseUrl}: {selectedPreset().baseUrl || "manual"}
-                    </div>
-                    <div class="field-help">
-                      {st().settings.modelPresetPrimary}:{" "}
-                      {selectedPreset().primaryModel || "manual"}
-                    </div>
-                    <div class="field-help">
-                      {st().settings.modelPresetFallback}:{" "}
-                      {selectedPreset().fallbackModels.length
-                        ? selectedPreset().fallbackModels.join(" -> ")
-                        : st().settings.modelPresetNoFallback}
-                    </div>
-                    <Show when={selectedPreset().freeTierCaveats}>
-                      <div class="field-help">{selectedPreset().freeTierCaveats}</div>
-                    </Show>
-                    <Show when={selectedPreset().requiresCredits}>
-                      <div class="field-help">{st().settings.modelPresetCreditsCaveat}</div>
-                    </Show>
-                    <div class="field-help">
-                      {st().settings.modelPresetSnapshotPrefix} {selectedPreset().lastReviewedAt}.{" "}
-                      {st().settings.modelPresetSnapshotNote}
-                    </div>
-                  </div>
-                </details>
+                  </details>
 
-                <label class="field">
-                  <span class="field-label">{st().settings.llmBaseUrlLabel}</span>
-                  <input
-                    class="field-input"
-                    placeholder={st().settings.llmBaseUrlPlaceholder}
-                    value={controller().settings.llmBaseUrl}
-                    onInput={(event) => controller().setLlmBaseUrl(event.currentTarget.value)}
-                  />
-                </label>
+                  <label class="field">
+                    <span class="field-label">{st().settings.llmBaseUrlLabel}</span>
+                    <input
+                      class="field-input"
+                      placeholder={st().settings.llmBaseUrlPlaceholder}
+                      value={controller().settings.llmBaseUrl}
+                      onInput={(event) => controller().setLlmBaseUrl(event.currentTarget.value)}
+                    />
+                  </label>
 
-                <label class="field">
-                  <span class="field-label">{st().settings.llmModelLabel}</span>
-                  <input
-                    class="field-input"
-                    value={controller().settings.llmModel}
-                    onInput={(event) => controller().setLlmModel(event.currentTarget.value)}
-                  />
-                </label>
+                  <label class="field">
+                    <span class="field-label">{st().settings.llmModelLabel}</span>
+                    <input
+                      class="field-input"
+                      value={controller().settings.llmModel}
+                      onInput={(event) => controller().setLlmModel(event.currentTarget.value)}
+                    />
+                  </label>
 
-                <label class="field" data-testid="answer-profile-field">
-                  <span class="field-label">{st().settings.answerProfileLabel}</span>
-                  <select
-                    class="field-input"
-                    value={controller().settings.activeAnswerProfile}
-                    onInput={(event) =>
-                      controller().setActiveAnswerProfile(event.currentTarget.value)
-                    }
-                  >
-                    <For each={ANSWER_PROFILE_OPTIONS}>
-                      {(profile) => <option value={profile.id}>{profile.title}</option>}
-                    </For>
-                  </select>
-                  <span class="field-help">
-                    {
-                      resolveAnswerProfileOption(controller().settings.activeAnswerProfile)
-                        .description
-                    }
-                  </span>
-                </label>
+                  <label class="field" data-testid="answer-profile-field">
+                    <span class="field-label">{st().settings.answerProfileLabel}</span>
+                    <select
+                      class="field-input"
+                      value={controller().settings.activeAnswerProfile}
+                      onInput={(event) =>
+                        controller().setActiveAnswerProfile(event.currentTarget.value)
+                      }
+                    >
+                      <For each={ANSWER_PROFILE_OPTIONS}>
+                        {(profile) => <option value={profile.id}>{profile.title}</option>}
+                      </For>
+                    </select>
+                    <span class="field-help">
+                      {
+                        resolveAnswerProfileOption(controller().settings.activeAnswerProfile)
+                          .description
+                      }
+                    </span>
+                  </label>
 
-                <label class="field">
-                  <span class="field-label">
-                    {st().settings.llmKeyLabel}{" "}
-                    {controller().llmKeySaved() ? (
-                      <span class="saved-badge">{st().settings.savedBadge}</span>
-                    ) : null}
-                  </span>
-                  <input
-                    class="field-input"
-                    type="password"
-                    value={controller().draftSecrets.llmApiKey}
-                    onInput={(event) => controller().setLlmApiKeyDraft(event.currentTarget.value)}
-                  />
-                </label>
+                  <label class="field">
+                    <span class="field-label">
+                      {st().settings.llmKeyLabel}{" "}
+                      {controller().llmKeySaved() ? (
+                        <span class="saved-badge">{st().settings.savedBadge}</span>
+                      ) : null}
+                    </span>
+                    <input
+                      class="field-input"
+                      type="password"
+                      value={controller().draftSecrets.llmApiKey}
+                      onInput={(event) => controller().setLlmApiKeyDraft(event.currentTarget.value)}
+                    />
+                  </label>
+                </div>
               </article>
             </Show>
 
@@ -432,7 +435,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 data-testid="settings-section-hotkey"
               >
                 <h3 class="settings-section-title">{st().settings.navHotkey}</h3>
-                <p class="field-help">{st().setup.hotkeyHint}</p>
+                <p class="settings-section-hint">{st().settings.hotkeySectionHint}</p>
+                <p class="settings-section-helper">{st().setup.hotkeyHint}</p>
                 <label class="field">
                   <span class="field-label">{st().settings.hotkeyLabel}</span>
                   <input
@@ -457,7 +461,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                   />
                 </label>
 
-                <label class="field">
+                <label class="field field-checkbox-row">
                   <span class="field-label">{st().settings.compactModeLabel}</span>
                   <input
                     type="checkbox"
@@ -485,11 +489,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                   </select>
                 </label>
 
-                <section class="setup-fieldset">
+                <section class="setup-fieldset settings-window-card">
                   <h4 class="setup-legend">{st().settings.windowBehaviorTitle}</h4>
                   <p class="field-help">{st().settings.windowBehaviorHint}</p>
 
-                  <label class="field">
+                  <label class="field field-checkbox-row">
                     <span class="field-label">{st().settings.hideToTrayOnCloseLabel}</span>
                     <input
                       type="checkbox"
@@ -502,7 +506,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                     <span class="field-help">{st().settings.hideToTrayOnCloseHint}</span>
                   </label>
 
-                  <label class="field">
+                  <label class="field field-checkbox-row">
                     <span class="field-label">{st().settings.keepOnTopDuringCaptureLabel}</span>
                     <input
                       type="checkbox"
@@ -521,10 +525,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             <Show when={activeSection() === "reports"}>
               <article
                 id="settings-panel-reports"
-                class="settings-section-card section-card"
+                class="settings-section-card section-card settings-section-card--compact"
                 data-testid="settings-section-reports"
               >
                 <h3 class="settings-section-title">{st().settings.navReports}</h3>
+                <p class="settings-section-hint">{st().settings.reportsSectionHint}</p>
                 <label class="field">
                   <span class="field-label">{st().settings.interviewReportRetentionLabel}</span>
                   <select
@@ -587,7 +592,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             </Show>
 
             <Show when={controller().runtimeCheckResult()}>
-              <div class="check-results" data-testid="check-results">
+              <div class="check-results check-results-card" data-testid="check-results">
                 <h3 class="check-results-title">{st().checks.title}</h3>
                 <div class={checkItemClass(controller().runtimeCheckResult()!.stt)}>
                   <span class="check-item-icon" aria-hidden="true">
@@ -639,7 +644,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                       {summary().text}{" "}
                       <Show when={summary().section}>
                         <button
-                          class="setup-step-action"
+                          class="btn-secondary btn-compact setup-step-action"
                           type="button"
                           onClick={() => controller().setSettingsActiveSection(summary().section!)}
                         >

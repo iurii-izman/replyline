@@ -26,13 +26,16 @@ function nextActionText(controller: ReplylineController): string {
   return st.card.nextActionCopy;
 }
 
-function phaseStateKey(controller: ReplylineController): string {
-  if (controller.mainUiState() === "error") return "error";
-  if (controller.phase() === "capturing") return "recording";
-  if (controller.phase() === "transcribing") return "transcribing";
-  if (controller.phase() === "analyzing") return "analyzing";
-  if (controller.phase() === "ready") return "ready";
-  return "idle";
+function phaseStateText(controller: ReplylineController): string {
+  const st = controller.strings();
+  if (controller.mainUiState() === "error") return st.phase.error;
+  if (controller.setupRequired()) return st.phase.setupNeeded;
+  if (controller.phase() === "capturing") return st.phase.capturing;
+  if (controller.phase() === "transcribing") return st.phase.transcribing;
+  if (controller.phase() === "analyzing") return st.phase.analyzing;
+  if (controller.phase() === "ready") return st.phase.ready;
+  if (controller.phase() === "booting") return st.phase.booting;
+  return st.phase.idleReady;
 }
 
 function statusHint(controller: ReplylineController): string {
@@ -52,7 +55,7 @@ function MainStatusStrip(props: { controller: ReplylineController }) {
         {controller().phaseLabel()}
       </div>
       <span class="status-strip-phase" data-testid="status-strip-phase">
-        {st().card.phasePrefix}: {phaseStateKey(controller())}
+        {st().card.phasePrefix}: {phaseStateText(controller())}
       </span>
       <span class="status-strip-next" data-testid="status-strip-next">
         {st().card.nextActionLabel}: {nextActionText(controller())}
@@ -118,7 +121,8 @@ function AnswerHeroCard(props: { controller: ReplylineController }) {
             <div class="answer-empty-state" data-testid="answer-empty-state">
               <p class="result-text result-text--placeholder">{st().card.emptySayNow}</p>
               <p class="empty-flow-hint">{st().card.idleRecordHint}</p>
-              <p class="empty-flow-hint">{st().card.emptyFlow}</p>
+              <p class="empty-flow-hint">{st().card.idlePipelineHint}</p>
+              <p class="empty-flow-hint">{st().card.copyUnavailableHint}</p>
               <p class="empty-flow-hint">{copyReason()}</p>
             </div>
           }
@@ -188,156 +192,158 @@ function WorkspaceSidePanel(props: { controller: ReplylineController }) {
 
   return (
     <aside class="cockpit-side app-page-aside app-sidebar" data-testid="main-side-panel">
-      <section class="result-section result-section--compact" data-testid="session-panel">
-        <div class="result-label">{st().card.interview.report.session}</div>
-        <div class="action-group side-panel-actions">
-          <button
-            class="btn-secondary"
-            type="button"
-            onClick={() => void controller().startInterviewSession()}
-          >
-            {st().card.interview.sessionActions.start}
-          </button>
-          <button
-            class="btn-secondary"
-            type="button"
-            onClick={() => void controller().endInterviewSession()}
-          >
-            {st().card.interview.sessionActions.end}
-          </button>
-          <button
-            class="btn-ghost"
-            type="button"
-            disabled={!hasInterviewReport()}
-            title={exportDisabledReason()}
-            aria-label={st().card.interview.sessionActions.openReport}
-            onClick={() => void controller().openInterviewReport()}
-          >
-            {st().card.interview.sessionActions.openReport}
-          </button>
-        </div>
-      </section>
+      <div class="workspace-aside-stack" data-testid="workspace-aside-stack">
+        <section class="result-section result-section--compact" data-testid="session-panel">
+          <div class="result-label">{st().card.interview.report.session}</div>
+          <div class="action-group side-panel-actions">
+            <button
+              class="btn-secondary"
+              type="button"
+              onClick={() => void controller().startInterviewSession()}
+            >
+              {st().card.interview.sessionActions.start}
+            </button>
+            <button
+              class="btn-secondary"
+              type="button"
+              onClick={() => void controller().endInterviewSession()}
+            >
+              {st().card.interview.sessionActions.end}
+            </button>
+            <button
+              class="btn-ghost"
+              type="button"
+              disabled={!hasInterviewReport()}
+              title={exportDisabledReason()}
+              aria-label={st().card.interview.sessionActions.openReport}
+              onClick={() => void controller().openInterviewReport()}
+            >
+              {st().card.interview.sessionActions.openReport}
+            </button>
+          </div>
+        </section>
 
-      <section class="result-section result-section--compact" data-testid="report-panel">
-        <div class="result-label">{st().card.interview.report.title}</div>
-        <Show
-          when={controller().interviewReport()}
-          fallback={
-            <p class="result-text result-text--placeholder">
-              {st().card.interview.sessionActions.noReportHint}
+        <section class="result-section result-section--compact" data-testid="report-panel">
+          <div class="result-label">{st().card.interview.report.title}</div>
+          <Show
+            when={controller().interviewReport()}
+            fallback={
+              <p class="result-text result-text--placeholder">
+                {st().card.interview.sessionActions.noReportHint}
+              </p>
+            }
+          >
+            <p class="result-text">
+              {st().card.interview.report.questions}:{" "}
+              {controller().interviewReport()?.questions.length ?? 0}
             </p>
-          }
-        >
-          <p class="result-text">
-            {st().card.interview.report.questions}:{" "}
-            {controller().interviewReport()?.questions.length ?? 0}
-          </p>
-          <p class="result-text">
-            {st().card.interview.report.scores}: {st().card.interview.report.clarity}{" "}
-            {controller().interviewReport()?.scores?.clarity ?? 0},{" "}
-            {st().card.interview.report.relevance}{" "}
-            {controller().interviewReport()?.scores?.relevance ?? 0},{" "}
-            {st().card.interview.report.accuracy}{" "}
-            {controller().interviewReport()?.scores?.accuracy ?? 0}
-          </p>
+            <p class="result-text">
+              {st().card.interview.report.scores}: {st().card.interview.report.clarity}{" "}
+              {controller().interviewReport()?.scores?.clarity ?? 0},{" "}
+              {st().card.interview.report.relevance}{" "}
+              {controller().interviewReport()?.scores?.relevance ?? 0},{" "}
+              {st().card.interview.report.accuracy}{" "}
+              {controller().interviewReport()?.scores?.accuracy ?? 0}
+            </p>
+          </Show>
+        </section>
+        <Show when={controller().interviewReport()}>
+          <section
+            class="result-section result-section--compact"
+            data-testid="interview-report-summary"
+          >
+            <p class="result-text">
+              {st().card.interview.report.session}:{" "}
+              {valueOrDash(
+                controller().interviewReport()?.sessionId,
+                st().card.interview.notAvailable,
+              )}
+            </p>
+          </section>
         </Show>
-      </section>
-      <Show when={controller().interviewReport()}>
-        <section
-          class="result-section result-section--compact"
-          data-testid="interview-report-summary"
-        >
-          <p class="result-text">
-            {st().card.interview.report.session}:{" "}
-            {valueOrDash(
-              controller().interviewReport()?.sessionId,
-              st().card.interview.notAvailable,
-            )}
-          </p>
-        </section>
-      </Show>
 
-      <section class="result-section result-section--compact" data-testid="export-panel">
-        <div class="result-label">{st().card.interview.report.markdown}</div>
-        <div class="action-group side-panel-actions">
-          <button
-            class="btn-warning"
-            type="button"
-            disabled={!hasInterviewReport()}
-            title={
-              hasInterviewReport()
-                ? st().card.interview.sessionActions.exportFullWarning
-                : exportDisabledReason()
-            }
-            aria-label={st().card.interview.sessionActions.exportMarkdown}
-            onClick={() => void controller().exportInterviewReportMarkdown()}
-          >
-            {st().card.interview.sessionActions.exportMarkdown}
-          </button>
-          <button
-            class="btn-secondary"
-            type="button"
-            disabled={!hasInterviewReport()}
-            title={
-              hasInterviewReport()
-                ? st().card.interview.sessionActions.exportRedactedRecommended
-                : exportDisabledReason()
-            }
-            aria-label={st().card.interview.sessionActions.exportMarkdownRedacted}
-            onClick={() => void controller().exportInterviewReportRedactedMarkdown()}
-          >
-            {st().card.interview.sessionActions.exportMarkdownRedacted}
-          </button>
-          <button
-            class="btn-danger btn-ghost"
-            type="button"
-            title={st().card.interview.sessionActions.clearReportsDanger}
-            onClick={() => void controller().clearInterviewReports()}
-          >
-            {st().card.interview.sessionActions.clearReports}
-          </button>
-        </div>
-      </section>
-
-      <Show when={controller().lastTranscriptPreview?.() ?? false}>
-        <section
-          class="result-section result-section--compact"
-          data-testid="transcript-preview-panel"
-        >
-          <div class="result-label">{st().card.lastTranscriptLabel}</div>
-          <p class="result-text">{controller().lastTranscriptPreview?.()}</p>
-        </section>
-      </Show>
-
-      <Show when={controller().interviewReportMarkdownPath()}>
-        <section
-          class="result-section result-section--compact"
-          data-testid="export-full-path-panel"
-        >
+        <section class="result-section result-section--compact" data-testid="export-panel">
           <div class="result-label">{st().card.interview.report.markdown}</div>
-          <p class="result-text">
-            {valueOrDash(
-              controller().interviewReportMarkdownPath(),
-              st().card.interview.notAvailable,
-            )}
-          </p>
+          <div class="action-group side-panel-actions">
+            <button
+              class="btn-warning"
+              type="button"
+              disabled={!hasInterviewReport()}
+              title={
+                hasInterviewReport()
+                  ? st().card.interview.sessionActions.exportFullWarning
+                  : exportDisabledReason()
+              }
+              aria-label={st().card.interview.sessionActions.exportMarkdown}
+              onClick={() => void controller().exportInterviewReportMarkdown()}
+            >
+              {st().card.interview.sessionActions.exportMarkdown}
+            </button>
+            <button
+              class="btn-secondary"
+              type="button"
+              disabled={!hasInterviewReport()}
+              title={
+                hasInterviewReport()
+                  ? st().card.interview.sessionActions.exportRedactedRecommended
+                  : exportDisabledReason()
+              }
+              aria-label={st().card.interview.sessionActions.exportMarkdownRedacted}
+              onClick={() => void controller().exportInterviewReportRedactedMarkdown()}
+            >
+              {st().card.interview.sessionActions.exportMarkdownRedacted}
+            </button>
+            <button
+              class="btn-danger btn-ghost"
+              type="button"
+              title={st().card.interview.sessionActions.clearReportsDanger}
+              onClick={() => void controller().clearInterviewReports()}
+            >
+              {st().card.interview.sessionActions.clearReports}
+            </button>
+          </div>
         </section>
-      </Show>
 
-      <Show when={controller().interviewReportRedactedMarkdownPath()}>
-        <section
-          class="result-section result-section--compact"
-          data-testid="export-redacted-path-panel"
-        >
-          <div class="result-label">{st().card.interview.report.markdownRedacted}</div>
-          <p class="result-text">
-            {valueOrDash(
-              controller().interviewReportRedactedMarkdownPath(),
-              st().card.interview.notAvailable,
-            )}
-          </p>
-        </section>
-      </Show>
+        <Show when={controller().lastTranscriptPreview?.() ?? false}>
+          <section
+            class="result-section result-section--compact"
+            data-testid="transcript-preview-panel"
+          >
+            <div class="result-label">{st().card.lastTranscriptLabel}</div>
+            <p class="result-text">{controller().lastTranscriptPreview?.()}</p>
+          </section>
+        </Show>
+
+        <Show when={controller().interviewReportMarkdownPath()}>
+          <section
+            class="result-section result-section--compact"
+            data-testid="export-full-path-panel"
+          >
+            <div class="result-label">{st().card.interview.report.markdown}</div>
+            <p class="result-text">
+              {valueOrDash(
+                controller().interviewReportMarkdownPath(),
+                st().card.interview.notAvailable,
+              )}
+            </p>
+          </section>
+        </Show>
+
+        <Show when={controller().interviewReportRedactedMarkdownPath()}>
+          <section
+            class="result-section result-section--compact"
+            data-testid="export-redacted-path-panel"
+          >
+            <div class="result-label">{st().card.interview.report.markdownRedacted}</div>
+            <p class="result-text">
+              {valueOrDash(
+                controller().interviewReportRedactedMarkdownPath(),
+                st().card.interview.notAvailable,
+              )}
+            </p>
+          </section>
+        </Show>
+      </div>
     </aside>
   );
 }
@@ -395,12 +401,18 @@ export function MainSurface(props: { controller: ReplylineController }) {
   const localeCoverage = createMemo(() => [
     st().card.errorHint,
     st().card.readyHint,
+    st().card.emptyFlow,
     st().card.starEvidenceLabel,
     st().card.nextActionSetup,
     st().card.nextActionCapture,
     st().card.nextActionWait,
     st().card.nextActionCopy,
     st().card.nextActionFix,
+    st().card.phaseStatusIdle,
+    st().card.phaseStatusCapturing,
+    st().card.phaseStatusTranscribing,
+    st().card.phaseStatusAnalyzing,
+    st().card.phaseStatusReady,
     st().card.interview.answerShort,
     st().card.interview.answerStrong,
     st().card.interview.question,

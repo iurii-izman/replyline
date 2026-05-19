@@ -1,4 +1,4 @@
-import { For, Show, createMemo } from "solid-js";
+import { For, Show, createMemo, createSignal } from "solid-js";
 import type { ReplylineController } from "./controller";
 import type { UiStrings } from "./locale";
 
@@ -6,6 +6,14 @@ type CandidatePackStudioProps = {
   controller: ReplylineController;
   st: UiStrings;
 };
+
+type StudioSectionId =
+  | "summary"
+  | "roleCompany"
+  | "resumeFacts"
+  | "requirements"
+  | "constraints"
+  | "preferredExamples";
 
 export function CandidatePackStudio(props: CandidatePackStudioProps) {
   const controller = () => props.controller;
@@ -34,6 +42,11 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
     if (!controller().candidatePackPreview()) return st().settings.candidatePackDisabledNoPreview;
     return "";
   });
+
+  const [openSection, setOpenSection] = createSignal<StudioSectionId>("summary");
+  const toggleSection = (id: StudioSectionId) => {
+    setOpenSection((current) => (current === id ? "summary" : id));
+  };
 
   return (
     <div class="candidate-pack-studio" data-testid="candidate-pack-studio">
@@ -80,9 +93,22 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
           </p>
           <Show
             when={controller().candidatePackPreview()}
-            fallback={<p>{st().settings.noPreview}</p>}
+            fallback={
+              <div class="candidate-pack-empty-state" data-testid="candidate-pack-empty-state">
+                <p class="candidate-pack-empty-title">{st().settings.noPreviewTitle}</p>
+                <p class="field-help">{st().settings.noPreview}</p>
+                <ul class="candidate-pack-empty-list">
+                  <li>{st().settings.noPreviewStepInput}</li>
+                  <li>{st().settings.noPreviewStepPrepare}</li>
+                  <li>{st().settings.noPreviewStepResult}</li>
+                </ul>
+              </div>
+            }
           >
-            <div class="preview-grid">
+            <div
+              class="preview-grid candidate-pack-quality-card"
+              data-testid="candidate-pack-quality-card"
+            >
               <p>
                 {st().settings.candidatePackPreview.score}:{" "}
                 <strong>{controller().candidatePackPreview()!.packQualityScore}</strong>
@@ -127,172 +153,254 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
 
         <section class="candidate-pack-saved" data-testid="candidate-pack-section">
           <h4 class="candidate-pack-panel-title">{st().settings.savedProfileTitle}</h4>
-          <details class="settings-collapsible" open>
-            <summary>{st().settings.savedSections.summary}</summary>
-            <div class="settings-collapsible-body">
-              <label class="field">
-                <span class="field-label">{st().settings.candidateSummaryLabel}</span>
-                <textarea
-                  class="field-input candidate-pack-input-md"
-                  value={controller().candidatePackDraft.candidateSummary}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft(
-                      "candidateSummary",
-                      event.currentTarget.value,
-                    )
-                  }
-                />
-              </label>
-            </div>
-          </details>
-          <details class="settings-collapsible">
-            <summary>{st().settings.savedSections.roleCompany}</summary>
-            <div class="settings-collapsible-body">
-              <label class="field">
-                <span class="field-label">{st().settings.targetRoleLabel}</span>
-                <input
-                  class="field-input"
-                  value={controller().candidatePackDraft.targetRole}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft("targetRole", event.currentTarget.value)
-                  }
-                />
-              </label>
-              <label class="field">
-                <span class="field-label">{st().settings.jobTitleLabel}</span>
-                <input
-                  class="field-input"
-                  value={controller().candidatePackDraft.jobTitle}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft("jobTitle", event.currentTarget.value)
-                  }
-                />
-              </label>
-              <label class="field">
-                <span class="field-label">{st().settings.jobCompanyLabel}</span>
-                <input
-                  class="field-input"
-                  value={controller().candidatePackDraft.jobCompany}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft("jobCompany", event.currentTarget.value)
-                  }
-                />
-              </label>
-              <label class="field">
-                <span class="field-label">{st().settings.companyValuesLabel}</span>
-                <textarea
-                  class="field-input candidate-pack-input-sm"
-                  value={controller().candidatePackDraft.companyValuesText}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft(
-                      "companyValuesText",
-                      event.currentTarget.value,
-                    )
-                  }
-                />
-              </label>
-              <label class="field">
-                <span class="field-label">{st().settings.profileLanguageLabel}</span>
-                <input
-                  class="field-input"
-                  value={controller().candidatePackDraft.language}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft("language", event.currentTarget.value)
-                  }
-                />
-              </label>
-            </div>
-          </details>
-          <details class="settings-collapsible">
-            <summary>{st().settings.savedSections.resumeFacts}</summary>
-            <div class="settings-collapsible-body">
-              <label class="field">
-                <span class="field-label">{st().settings.factsLabel}</span>
-                <textarea
-                  class="field-input candidate-pack-input-md candidate-pack-facts"
-                  placeholder={st().settings.factsHint}
-                  value={controller().candidatePackDraft.factsText}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft("factsText", event.currentTarget.value)
-                  }
-                />
-              </label>
-            </div>
-          </details>
-          <details class="settings-collapsible">
-            <summary>{st().settings.savedSections.requirements}</summary>
-            <div class="settings-collapsible-body">
-              <label class="field">
-                <span class="field-label">{st().settings.requirementsLabel}</span>
-                <textarea
-                  class="field-input candidate-pack-input-sm"
-                  value={controller().candidatePackDraft.requirementsText}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft(
-                      "requirementsText",
-                      event.currentTarget.value,
-                    )
-                  }
-                />
-              </label>
-              <label class="field">
-                <span class="field-label">{st().settings.responsibilitiesLabel}</span>
-                <textarea
-                  class="field-input candidate-pack-input-sm"
-                  value={controller().candidatePackDraft.responsibilitiesText}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft(
-                      "responsibilitiesText",
-                      event.currentTarget.value,
-                    )
-                  }
-                />
-              </label>
-              <label class="field">
-                <span class="field-label">{st().settings.keywordsLabel}</span>
-                <textarea
-                  class="field-input candidate-pack-input-sm"
-                  value={controller().candidatePackDraft.keywordsText}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft("keywordsText", event.currentTarget.value)
-                  }
-                />
-              </label>
-            </div>
-          </details>
-          <details class="settings-collapsible">
-            <summary>{st().settings.savedSections.constraints}</summary>
-            <div class="settings-collapsible-body">
-              <label class="field">
-                <span class="field-label">{st().settings.avoidClaimsLabel}</span>
-                <textarea
-                  class="field-input candidate-pack-input-sm"
-                  value={controller().candidatePackDraft.avoidClaimsText}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft("avoidClaimsText", event.currentTarget.value)
-                  }
-                />
-              </label>
-            </div>
-          </details>
-          <details class="settings-collapsible">
-            <summary>{st().settings.savedSections.preferredExamples}</summary>
-            <div class="settings-collapsible-body">
-              <label class="field">
-                <span class="field-label">{st().settings.preferredExamplesLabel}</span>
-                <textarea
-                  class="field-input candidate-pack-input-sm"
-                  value={controller().candidatePackDraft.preferredExamplesText}
-                  onInput={(event) =>
-                    controller().setCandidatePackDraft(
-                      "preferredExamplesText",
-                      event.currentTarget.value,
-                    )
-                  }
-                />
-              </label>
-            </div>
-          </details>
+          <div class="studio-accordion" data-testid="studio-accordion-root">
+            <section
+              class={`studio-accordion-item ${openSection() === "summary" ? "is-open" : ""}`}
+              data-testid="studio-accordion-summary"
+            >
+              <button
+                class="studio-accordion-trigger"
+                type="button"
+                onClick={() => toggleSection("summary")}
+                aria-expanded={openSection() === "summary"}
+              >
+                {st().settings.savedSections.summary}
+              </button>
+              <Show when={openSection() === "summary"}>
+                <div class="studio-accordion-body">
+                  <label class="field">
+                    <span class="field-label">{st().settings.candidateSummaryLabel}</span>
+                    <textarea
+                      class="field-input candidate-pack-input-md"
+                      value={controller().candidatePackDraft.candidateSummary}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft(
+                          "candidateSummary",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </Show>
+            </section>
+
+            <section
+              class={`studio-accordion-item ${openSection() === "roleCompany" ? "is-open" : ""}`}
+              data-testid="studio-accordion-role-company"
+            >
+              <button
+                class="studio-accordion-trigger"
+                type="button"
+                onClick={() => toggleSection("roleCompany")}
+                aria-expanded={openSection() === "roleCompany"}
+              >
+                {st().settings.savedSections.roleCompany}
+              </button>
+              <Show when={openSection() === "roleCompany"}>
+                <div class="studio-accordion-body">
+                  <label class="field">
+                    <span class="field-label">{st().settings.targetRoleLabel}</span>
+                    <input
+                      class="field-input"
+                      value={controller().candidatePackDraft.targetRole}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft("targetRole", event.currentTarget.value)
+                      }
+                    />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">{st().settings.jobTitleLabel}</span>
+                    <input
+                      class="field-input"
+                      value={controller().candidatePackDraft.jobTitle}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft("jobTitle", event.currentTarget.value)
+                      }
+                    />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">{st().settings.jobCompanyLabel}</span>
+                    <input
+                      class="field-input"
+                      value={controller().candidatePackDraft.jobCompany}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft("jobCompany", event.currentTarget.value)
+                      }
+                    />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">{st().settings.companyValuesLabel}</span>
+                    <textarea
+                      class="field-input candidate-pack-input-sm"
+                      value={controller().candidatePackDraft.companyValuesText}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft(
+                          "companyValuesText",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">{st().settings.profileLanguageLabel}</span>
+                    <input
+                      class="field-input"
+                      value={controller().candidatePackDraft.language}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft("language", event.currentTarget.value)
+                      }
+                    />
+                  </label>
+                </div>
+              </Show>
+            </section>
+
+            <section
+              class={`studio-accordion-item ${openSection() === "resumeFacts" ? "is-open" : ""}`}
+            >
+              <button
+                class="studio-accordion-trigger"
+                type="button"
+                onClick={() => toggleSection("resumeFacts")}
+                aria-expanded={openSection() === "resumeFacts"}
+              >
+                {st().settings.savedSections.resumeFacts}
+              </button>
+              <Show when={openSection() === "resumeFacts"}>
+                <div class="studio-accordion-body">
+                  <label class="field">
+                    <span class="field-label">{st().settings.factsLabel}</span>
+                    <textarea
+                      class="field-input candidate-pack-input-md candidate-pack-facts"
+                      placeholder={st().settings.factsHint}
+                      value={controller().candidatePackDraft.factsText}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft("factsText", event.currentTarget.value)
+                      }
+                    />
+                  </label>
+                </div>
+              </Show>
+            </section>
+
+            <section
+              class={`studio-accordion-item ${openSection() === "requirements" ? "is-open" : ""}`}
+            >
+              <button
+                class="studio-accordion-trigger"
+                type="button"
+                onClick={() => toggleSection("requirements")}
+                aria-expanded={openSection() === "requirements"}
+              >
+                {st().settings.savedSections.requirements}
+              </button>
+              <Show when={openSection() === "requirements"}>
+                <div class="studio-accordion-body">
+                  <label class="field">
+                    <span class="field-label">{st().settings.requirementsLabel}</span>
+                    <textarea
+                      class="field-input candidate-pack-input-sm"
+                      value={controller().candidatePackDraft.requirementsText}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft(
+                          "requirementsText",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">{st().settings.responsibilitiesLabel}</span>
+                    <textarea
+                      class="field-input candidate-pack-input-sm"
+                      value={controller().candidatePackDraft.responsibilitiesText}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft(
+                          "responsibilitiesText",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">{st().settings.keywordsLabel}</span>
+                    <textarea
+                      class="field-input candidate-pack-input-sm"
+                      value={controller().candidatePackDraft.keywordsText}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft(
+                          "keywordsText",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </Show>
+            </section>
+
+            <section
+              class={`studio-accordion-item ${openSection() === "constraints" ? "is-open" : ""}`}
+            >
+              <button
+                class="studio-accordion-trigger"
+                type="button"
+                onClick={() => toggleSection("constraints")}
+                aria-expanded={openSection() === "constraints"}
+              >
+                {st().settings.savedSections.constraints}
+              </button>
+              <Show when={openSection() === "constraints"}>
+                <div class="studio-accordion-body">
+                  <label class="field">
+                    <span class="field-label">{st().settings.avoidClaimsLabel}</span>
+                    <textarea
+                      class="field-input candidate-pack-input-sm"
+                      value={controller().candidatePackDraft.avoidClaimsText}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft(
+                          "avoidClaimsText",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </Show>
+            </section>
+
+            <section
+              class={`studio-accordion-item ${openSection() === "preferredExamples" ? "is-open" : ""}`}
+              data-testid="studio-accordion-preferred-examples"
+            >
+              <button
+                class="studio-accordion-trigger"
+                type="button"
+                onClick={() => toggleSection("preferredExamples")}
+                aria-expanded={openSection() === "preferredExamples"}
+              >
+                {st().settings.savedSections.preferredExamples}
+              </button>
+              <Show when={openSection() === "preferredExamples"}>
+                <div class="studio-accordion-body">
+                  <label class="field">
+                    <span class="field-label">{st().settings.preferredExamplesLabel}</span>
+                    <textarea
+                      class="field-input candidate-pack-input-sm"
+                      value={controller().candidatePackDraft.preferredExamplesText}
+                      onInput={(event) =>
+                        controller().setCandidatePackDraft(
+                          "preferredExamplesText",
+                          event.currentTarget.value,
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </Show>
+            </section>
+          </div>
         </section>
       </div>
 
@@ -315,13 +423,6 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
           disabled={!canSavePrepared()}
           title={savePreparedDisabledReason() || st().settings.savePackDisabled}
           onClick={() => void controller().savePreparedCandidatePack()}
-        >
-          {st().settings.savePack}
-        </button>
-        <button
-          class="btn-secondary"
-          type="button"
-          onClick={() => void controller().saveCandidatePack()}
         >
           {st().settings.saveCandidatePack}
         </button>
