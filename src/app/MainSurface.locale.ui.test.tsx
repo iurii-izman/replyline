@@ -88,76 +88,83 @@ describe("MainSurface locale labels", () => {
 
 describe("MainSurface cockpit states", () => {
   it("shows loading state copy for transcribing", () => {
-    render(
-      () =>
-        <MainSurface
-          controller={
-            createController(ui_ru, {
-              phase: () => "transcribing",
-              mainUiState: () => "transcribing",
-              pipelineActive: () => true,
-              statusDetail: () => "Распознаем речь: 40%",
-              phaseLabel: () => ui_ru.phase.transcribing,
-            }) as never
-          }
-        />,
-    );
+    render(() => (
+      <MainSurface
+        controller={
+          createController(ui_ru, {
+            phase: () => "transcribing",
+            mainUiState: () => "transcribing",
+            pipelineActive: () => true,
+            statusDetail: () => "Распознаем речь: 40%",
+            phaseLabel: () => ui_ru.phase.transcribing,
+          }) as never
+        }
+      />
+    ));
 
     expect(screen.getByText("Распознаем речь")).toBeTruthy();
-    expect(screen.getByText("Распознаем речь: 40%")).toBeTruthy();
+    expect(screen.getAllByText("Распознаем речь: 40%").length).toBeGreaterThan(0);
   });
 
   it("shows work empty state guidance", () => {
     render(() => <MainSurface controller={createController(ui_ru) as never} />);
 
     expect(screen.getByTestId("main-empty-state-work")).toBeTruthy();
-    expect(screen.getByText("Зажмите Ctrl+Alt+Space, чтобы записать фрагмент.")).toBeTruthy();
+    expect(
+      screen.getAllByText("Зажмите Ctrl+Alt+Space, чтобы записать фрагмент.").length,
+    ).toBeGreaterThan(0);
   });
 
   it("shows setup required state", () => {
-    render(
-      () =>
-        <MainSurface
-          controller={
-            createController(ui_ru, {
-              setupRequired: () => true,
-              setupSteps: () => [
-                { label: "1. Речь", readyLabel: "", missingLabel: "", ready: false },
-                { label: "2. Ответ", readyLabel: "", missingLabel: "", ready: false },
-                { label: "3. Горячая клавиша", readyLabel: "", missingLabel: "", ready: true },
-              ],
-            }) as never
-          }
-        />,
-    );
+    render(() => (
+      <MainSurface
+        controller={
+          createController(ui_ru, {
+            setupRequired: () => true,
+            setupSteps: () => [
+              { label: "1. Речь", readyLabel: "", missingLabel: "", ready: false },
+              { label: "2. Ответ", readyLabel: "", missingLabel: "", ready: false },
+              { label: "3. Горячая клавиша", readyLabel: "", missingLabel: "", ready: true },
+            ],
+          }) as never
+        }
+      />
+    ));
 
     expect(screen.getByTestId("main-empty-state-setup")).toBeTruthy();
     expect(screen.getByText("Нужно завершить настройку")).toBeTruthy();
     expect(screen.getByText("Сначала заполните Speech и LLM.")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Продолжить настройку" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Перейти к первому незаполненному шагу" }),
+    ).toBeTruthy();
   });
 
   it("shows ready card with copy action enabled", () => {
     const copyCurrentCard = vi.fn();
-    render(
-      () =>
-        <MainSurface
-          controller={
-            createController(ui_ru, {
-              card: () => ({ mode: "work", gist: "g", sayNow: "say", nextMove: "next", charsBand: "normal" }),
-              mainUiState: () => "ready",
-              phase: () => "ready",
-              canCopySayNow: () => true,
-              canRetry: () => true,
-              canClear: () => true,
-              copyDisabledReason: () => null,
-              retryDisabledReason: () => null,
-              clearDisabledReason: () => null,
-              copyCurrentCard,
-            }) as never
-          }
-        />,
-    );
+    render(() => (
+      <MainSurface
+        controller={
+          createController(ui_ru, {
+            card: () => ({
+              mode: "work",
+              gist: "g",
+              sayNow: "say",
+              nextMove: "next",
+              charsBand: "normal",
+            }),
+            mainUiState: () => "ready",
+            phase: () => "ready",
+            canCopySayNow: () => true,
+            canRetry: () => true,
+            canClear: () => true,
+            copyDisabledReason: () => null,
+            retryDisabledReason: () => null,
+            clearDisabledReason: () => null,
+            copyCurrentCard,
+          }) as never
+        }
+      />
+    ));
 
     const copy = screen.getByRole("button", { name: "Скопировать ответ" });
     expect(copy).toHaveProperty("disabled", false);
@@ -166,20 +173,20 @@ describe("MainSurface cockpit states", () => {
   });
 
   it("shows side panel and transcript preview", () => {
-    render(
-      () =>
-        <MainSurface
-          controller={
-            createController(ui_ru, {
-              lastTranscriptPreview: () => "last snippet",
-            }) as never
-          }
-        />,
-    );
+    render(() => (
+      <MainSurface
+        controller={
+          createController(ui_ru, {
+            lastTranscriptPreview: () => "last snippet",
+          }) as never
+        }
+      />
+    ));
 
     expect(screen.getByTestId("main-side-panel")).toBeTruthy();
     expect(screen.getByTestId("session-panel")).toBeTruthy();
     expect(screen.getByTestId("report-panel")).toBeTruthy();
+    expect(screen.getByTestId("export-panel")).toBeTruthy();
     expect(screen.getByTestId("transcript-preview-panel")).toBeTruthy();
   });
 
@@ -190,29 +197,41 @@ describe("MainSurface cockpit states", () => {
     expect(actionRow.className).toContain("action-bar");
     expect(actionRow.className).toContain("sticky-action-footer");
 
-    const fullExport = screen.getByRole("button", { name: "Экспортировать full Markdown (с transcript)" });
-    const redactedExport = screen.getByRole("button", { name: "Экспортировать redacted Markdown (без transcript)" });
+    const fullExport = screen.getByRole("button", {
+      name: "Экспортировать full Markdown (с transcript)",
+    });
+    const redactedExport = screen.getByRole("button", {
+      name: "Экспортировать redacted Markdown (без transcript)",
+    });
 
     expect(fullExport).toHaveProperty("disabled", true);
     expect(redactedExport).toHaveProperty("disabled", true);
     expect(fullExport.getAttribute("title")).toBe("Сначала завершите сессию и сформируйте отчёт.");
-    expect(redactedExport.getAttribute("title")).toBe("Сначала завершите сессию и сформируйте отчёт.");
-    expect(screen.getByTestId("interview-report-empty")).toBeTruthy();
-    expect(screen.getByText("Отчёт пока не сформирован")).toBeTruthy();
+    expect(redactedExport.getAttribute("title")).toBe(
+      "Сначала завершите сессию и сформируйте отчёт.",
+    );
+    expect(
+      screen.getByText("Завершите сессию, чтобы получить отчёт и включить экспорт."),
+    ).toBeTruthy();
   });
 
   it("shows short capture quality hint", () => {
-    render(
-      () =>
-        <MainSurface
-          controller={
-            createController(ui_ru, {
-              card: () => ({ mode: "work", gist: "g", sayNow: "say", nextMove: "next", charsBand: "short" }),
-              captureQuality: () => "short",
-            }) as never
-          }
-        />,
-    );
+    render(() => (
+      <MainSurface
+        controller={
+          createController(ui_ru, {
+            card: () => ({
+              mode: "work",
+              gist: "g",
+              sayNow: "say",
+              nextMove: "next",
+              charsBand: "short",
+            }),
+            captureQuality: () => "short",
+          }) as never
+        }
+      />
+    ));
 
     expect(screen.getByText(/Короткий фрагмент: запишите 5-10 секунд/)).toBeTruthy();
   });

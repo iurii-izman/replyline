@@ -16,7 +16,10 @@ const expectedConfiguredFields = [
   "captureMaxSeconds",
   "activeAnswerProfile",
   "windowOpacity",
+  "hideToTrayOnClose",
+  "keepOnTopDuringCapture",
   "interviewCompactMode",
+  "interviewReportRetentionDays",
 ];
 
 const secretPatterns = [

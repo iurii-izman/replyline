@@ -84,7 +84,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     }
 }
 
-const CURRENT_SCHEMA_VERSION: u32 = 6;
+const CURRENT_SCHEMA_VERSION: u32 = 7;
 
 fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     let version = value
@@ -106,6 +106,9 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     }
     if version < 6 {
         migrate_v5_to_v6(&mut value);
+    }
+    if version < 7 {
+        migrate_v6_to_v7(&mut value);
     }
 
     value
@@ -152,6 +155,16 @@ fn migrate_v5_to_v6(value: &mut serde_json::Value) {
         obj.insert("schemaVersion".to_string(), serde_json::json!(6));
         obj.entry("interviewReportRetentionDays")
             .or_insert(serde_json::json!(0));
+    }
+}
+
+fn migrate_v6_to_v7(value: &mut serde_json::Value) {
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("schemaVersion".to_string(), serde_json::json!(7));
+        obj.entry("hideToTrayOnClose")
+            .or_insert(serde_json::json!(true));
+        obj.entry("keepOnTopDuringCapture")
+            .or_insert(serde_json::json!(false));
     }
 }
 
@@ -207,6 +220,8 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "captureMaxSeconds",
         "activeAnswerProfile",
         "windowOpacity",
+        "hideToTrayOnClose",
+        "keepOnTopDuringCapture",
         "interviewCompactMode",
         "interviewReportRetentionDays",
     ] {
@@ -370,7 +385,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v1_settings_to_v6_with_default_profile_and_preset() {
+    fn migrates_v1_settings_to_v7_with_default_profile_and_preset() {
         let v1 = serde_json::json!({
             "schemaVersion": 1,
             "hotkey": "Ctrl+Alt+Space",
@@ -379,13 +394,15 @@ mod tests {
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
-        assert_eq!(migrated["schemaVersion"], 6);
+        assert_eq!(migrated["schemaVersion"], 7);
         assert_eq!(
             migrated["activeAnswerProfile"],
             crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
         );
         assert_eq!(migrated["selectedModelPreset"], "custom_openai_compatible");
         assert_eq!(migrated["windowOpacity"], 100);
+        assert_eq!(migrated["hideToTrayOnClose"], true);
+        assert_eq!(migrated["keepOnTopDuringCapture"], false);
         assert_eq!(migrated["interviewCompactMode"], false);
         assert_eq!(migrated["interviewReportRetentionDays"], 0);
         // llmTemperature must NOT be injected — the field is not part of the current schema.
@@ -393,9 +410,9 @@ mod tests {
     }
 
     #[test]
-    fn v6_settings_pass_through_unchanged() {
-        let v6 = serde_json::json!({
-            "schemaVersion": 6,
+    fn v7_settings_pass_through_unchanged() {
+        let v7 = serde_json::json!({
+            "schemaVersion": 7,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
@@ -403,11 +420,13 @@ mod tests {
             "captureMaxSeconds": 30,
             "activeAnswerProfile": "interview_concise",
             "windowOpacity": 90,
+            "hideToTrayOnClose": false,
+            "keepOnTopDuringCapture": true,
             "interviewCompactMode": true,
             "interviewReportRetentionDays": 30
         });
-        let migrated = super::migrate_settings(v6);
-        assert_eq!(migrated["schemaVersion"], 6);
+        let migrated = super::migrate_settings(v7);
+        assert_eq!(migrated["schemaVersion"], 7);
         assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
         assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
         assert_eq!(migrated["llmModel"], "gpt-4o-mini");
@@ -415,6 +434,8 @@ mod tests {
         assert_eq!(migrated["captureMaxSeconds"], 30);
         assert_eq!(migrated["activeAnswerProfile"], "interview_concise");
         assert_eq!(migrated["windowOpacity"], 90);
+        assert_eq!(migrated["hideToTrayOnClose"], false);
+        assert_eq!(migrated["keepOnTopDuringCapture"], true);
         assert_eq!(migrated["interviewCompactMode"], true);
         assert_eq!(migrated["interviewReportRetentionDays"], 30);
         // Schema-defined fields must remain; no phantom fields should appear.

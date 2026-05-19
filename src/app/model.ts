@@ -7,10 +7,18 @@ export type Phase =
   | "ready"
   | "error";
 
-export type Panel = "main" | "settings";
+export type SettingsSectionId =
+  | "overview"
+  | "speech"
+  | "llm"
+  | "hotkey"
+  | "reports"
+  | "candidatePack";
+
+export type Panel = "main" | "settings" | "candidatePackStudio";
 
 export type AppSettings = {
-  schemaVersion: number;
+  schemaVersion: 7;
   hotkey: string;
   llmBaseUrl: string;
   llmModel: string;
@@ -18,6 +26,8 @@ export type AppSettings = {
   captureMaxSeconds: number;
   activeAnswerProfile: string;
   windowOpacity: 100 | 90 | 80 | 70;
+  hideToTrayOnClose: boolean;
+  keepOnTopDuringCapture: boolean;
   interviewCompactMode: boolean;
   interviewReportRetentionDays: 0 | 7 | 30 | 90;
 };
@@ -334,7 +344,7 @@ export type CandidatePackDraft = {
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  schemaVersion: 6,
+  schemaVersion: 7,
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
@@ -342,6 +352,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   captureMaxSeconds: 45,
   activeAnswerProfile: "interview_default",
   windowOpacity: 100,
+  hideToTrayOnClose: true,
+  keepOnTopDuringCapture: false,
   interviewCompactMode: false,
   interviewReportRetentionDays: 0,
 };

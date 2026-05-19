@@ -1,5 +1,5 @@
 import { onCleanup, onMount, type Accessor, type Setter } from "solid-js";
-import type { Phase, Panel, AnalysisCard, StatusEvent } from "../model";
+import type { Phase, Panel, AnalysisCard, StatusEvent, AppSettings } from "../model";
 import type { UiStrings } from "../locale";
 import type { AppPlatform } from "../platform";
 import type { NoticeApi } from "./notices";
@@ -17,6 +17,7 @@ export interface LifecycleDeps {
   setCard: (card: AnalysisCard | null) => void;
   notices: NoticeApi;
   settingsActions: SettingsActions;
+  settings: Accessor<AppSettings>;
   showWindow: (panelName?: Panel) => Promise<void>;
 }
 
@@ -75,9 +76,10 @@ export function setupLifecycle(deps: LifecycleDeps): void {
       );
       cleanups.push(
         await deps.platform.window.onCloseRequested(async (event) => {
-          // Keep desktop semantics tray-first: native close hides the main window.
-          event.preventDefault();
-          await deps.platform.window.hide();
+          if (deps.settings().hideToTrayOnClose) {
+            event.preventDefault();
+            await deps.platform.window.hide();
+          }
         }),
       );
     })();

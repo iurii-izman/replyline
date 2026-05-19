@@ -100,7 +100,10 @@ $expectedSettingsFields = @(
   "captureMaxSeconds",
   "activeAnswerProfile",
   "windowOpacity",
-  "interviewCompactMode"
+  "hideToTrayOnClose",
+  "keepOnTopDuringCapture",
+  "interviewCompactMode",
+  "interviewReportRetentionDays"
 )
 
 $settingsFieldNames = @()
@@ -138,7 +141,10 @@ $report = [ordered]@{
       captureMaxSeconds = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "captureMaxSeconds"
       activeAnswerProfile = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "activeAnswerProfile"
       windowOpacity = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "windowOpacity"
+      hideToTrayOnClose = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "hideToTrayOnClose"
+      keepOnTopDuringCapture = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "keepOnTopDuringCapture"
       interviewCompactMode = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "interviewCompactMode"
+      interviewReportRetentionDays = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "interviewReportRetentionDays"
     }
     schema = [ordered]@{
       schemaVersion = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "schemaVersion"

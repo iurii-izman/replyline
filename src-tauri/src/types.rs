@@ -35,6 +35,8 @@ pub struct AppSettings {
     pub capture_max_seconds: u16,
     pub active_answer_profile: String,
     pub window_opacity: u8,
+    pub hide_to_tray_on_close: bool,
+    pub keep_on_top_during_capture: bool,
     pub interview_compact_mode: bool,
     pub interview_report_retention_days: u16,
 }
@@ -42,7 +44,7 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 6,
+            schema_version: 7,
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
@@ -50,6 +52,8 @@ impl Default for AppSettings {
             capture_max_seconds: 45,
             active_answer_profile: crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID.to_string(),
             window_opacity: 100,
+            hide_to_tray_on_close: true,
+            keep_on_top_during_capture: false,
             interview_compact_mode: false,
             interview_report_retention_days: 0,
         }

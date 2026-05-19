@@ -75,12 +75,12 @@ if (missing.length || extra.length || !debugBlockHasGuard || !releaseBlockExclud
 const hasDebugOnly = DEBUG_ONLY.some((name) => found.has(name));
 const staticContractChecks = [
   {
-    ok: modelText.includes("schemaVersion: 6"),
-    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 6 in src/app/model.ts",
+    ok: modelText.includes("schemaVersion: 7"),
+    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 7 in src/app/model.ts",
   },
   {
-    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 6;"),
-    message: "Expected CURRENT_SCHEMA_VERSION = 6 in src-tauri/src/settings.rs",
+    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 7;"),
+    message: "Expected CURRENT_SCHEMA_VERSION = 7 in src-tauri/src/settings.rs",
   },
   {
     ok: interviewRustText.includes("pub short: String") && modelText.includes("short: string;"),

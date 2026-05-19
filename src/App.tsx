@@ -1,6 +1,7 @@
 import "./App.css";
 
 import { ShellChrome, MessagesAndFooter } from "./app/ChromeSurface";
+import { CandidatePackStudioSurface } from "./app/CandidatePackStudioSurface";
 import { useReplylineController } from "./app/controller";
 import { MainSurface } from "./app/MainSurface";
 import { getDefaultPlatform, type AppPlatform } from "./app/platform";
@@ -12,7 +13,11 @@ type AppProps = {
 
 function App(props: AppProps) {
   const controller = useReplylineController(props.platform ?? getDefaultPlatform());
-  const panelClass = () => (controller.panel() === "settings" ? "app-view app-view--settings" : "app-view app-view--main");
+  const panelClass = () => {
+    if (controller.panel() === "main") return "app-view app-view--main";
+    if (controller.panel() === "candidatePackStudio") return "app-view app-view--studio";
+    return "app-view app-view--settings";
+  };
 
   return (
     <main class="app-root" data-testid="app-root">
@@ -22,6 +27,7 @@ function App(props: AppProps) {
           <div class="app-view-inner">
             <MainSurface controller={controller} />
             <SettingsSurface controller={controller} />
+            <CandidatePackStudioSurface controller={controller} />
           </div>
         </div>
       </div>

@@ -184,8 +184,8 @@ describe("model", () => {
   });
 
   describe("settings validation preflight rules", () => {
-    it("DEFAULT_SETTINGS schemaVersion is 6 (matches backend)", () => {
-      expect(DEFAULT_SETTINGS.schemaVersion).toBe(6);
+    it("DEFAULT_SETTINGS schemaVersion is 7 (matches backend)", () => {
+      expect(DEFAULT_SETTINGS.schemaVersion).toBe(7);
     });
 
     it("DEFAULT_SETTINGS hotkey is non-empty", () => {
@@ -207,6 +207,11 @@ describe("model", () => {
 
     it("DEFAULT_SETTINGS interview report retention is manual-clear mode", () => {
       expect(DEFAULT_SETTINGS.interviewReportRetentionDays).toBe(0);
+    });
+
+    it("DEFAULT_SETTINGS keeps normal window behavior defaults", () => {
+      expect(DEFAULT_SETTINGS.hideToTrayOnClose).toBe(true);
+      expect(DEFAULT_SETTINGS.keepOnTopDuringCapture).toBe(false);
     });
   });
 

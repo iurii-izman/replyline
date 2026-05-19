@@ -33,6 +33,7 @@ export interface HotkeyDeps {
   setCard: (card: AnalysisCard | null) => void;
   setCaptureQuality: Setter<"short" | "normal" | "long">;
   setContextActive: Setter<boolean>;
+  settings: Accessor<AppSettings>;
   setSettings: SetStoreFunction<AppSettings>;
   setHotkeyFailed: Setter<boolean>;
   setLastCommandErrorKind: Setter<CommandErrorKind | null>;
@@ -48,6 +49,12 @@ export interface HotkeyApi {
 }
 
 export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
+  const clearCaptureAlwaysOnTop = async () => {
+    if (deps.platform.window.setAlwaysOnTop && deps.settings().keepOnTopDuringCapture) {
+      await deps.platform.window.setAlwaysOnTop(false);
+    }
+  };
+
   async function registerCurrentHotkey(hotkey: string) {
     await deps.platform.shortcuts.unregisterAll();
     const alreadyRegistered = await deps.platform.shortcuts.isRegistered(hotkey);
@@ -66,11 +73,15 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         }
         deps.setPhase("capturing");
         try {
+          if (deps.platform.window.setAlwaysOnTop && deps.settings().keepOnTopDuringCapture) {
+            await deps.platform.window.setAlwaysOnTop(true);
+          }
           const runId = await deps.platform.invoke<string>("capture_start");
           deps.setActiveRunId(runId || null);
           armed = true;
           deps.setCard(null);
         } catch (err) {
+          await clearCaptureAlwaysOnTop();
           armed = false;
           deps.setActiveRunId(null);
           deps.setError(userSafeCaptureStartError());
@@ -98,6 +109,7 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
           deps.applyContextStatus(status);
           deps.setPhase("ready");
           deps.setActiveRunId(null);
+          await clearCaptureAlwaysOnTop();
         } catch (err) {
           deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
           deps.setError(userSafePipelineError(err));
@@ -108,6 +120,7 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
           });
           deps.setPhase("idle");
           deps.setActiveRunId(null);
+          await clearCaptureAlwaysOnTop();
         }
       }
     });

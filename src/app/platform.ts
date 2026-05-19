@@ -63,6 +63,7 @@ export type AppPlatform = {
     hide(): Promise<void>;
     startDragging(): Promise<void>;
     setOpacity?(value: number): Promise<void>;
+    setAlwaysOnTop?(value: boolean): Promise<void>;
     onCloseRequested(
       handler: (event: CloseRequestEvent) => void | Promise<void>,
     ): Promise<Unlisten>;
@@ -95,6 +96,7 @@ function createBrowserFallbackPlatform(): AppPlatform {
       hide: async () => {},
       startDragging: async () => {},
       setOpacity: async () => {},
+      setAlwaysOnTop: async () => {},
       onCloseRequested: async () => () => {},
     },
   };
@@ -133,6 +135,7 @@ export function getDefaultPlatform(): AppPlatform {
       hide: () => windowRef.hide(),
       startDragging: () => windowRef.startDragging(),
       setOpacity: (value) => windowRef.setOpacity(value),
+      setAlwaysOnTop: (value) => windowRef.setAlwaysOnTop(value),
       onCloseRequested: (handler) => windowRef.onCloseRequested(handler),
     },
   };

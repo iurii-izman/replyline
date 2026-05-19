@@ -21,22 +21,28 @@ For each size, check layout landmarks:
 ## Scenarios
 
 1. first launch
+
 - Expected: settings opens with setup hints and setup progress visible.
 
 2. setup incomplete
+
 - Expected: missing setup steps are marked and CTA to first missing section is visible.
 
 3. card ready
+
 - Expected: work card sections render and copy/retry actions are enabled after successful capture.
 
 4. interview session active
+
 - Expected: session controls work, interview state is visible, and end session remains available.
 
 5. reports full/redacted
+
 - Expected: report summary appears after ending session.
 - Expected: both export actions are enabled and produce paths for full/redacted markdown.
 
 6. candidate pack
+
 - Expected (empty): preview shows empty status, save prepared profile is disabled.
 - Expected (preview/saved): preview metrics/chips render and saved status counters update.
 

@@ -14,6 +14,7 @@ import {
   type Panel,
   type Phase,
   type RuntimeCheckDto,
+  type SettingsSectionId,
   invokeErrorMessage,
 } from "../model";
 import { getUi, type UiStrings } from "../locale";
@@ -36,6 +37,8 @@ export function useReplylineController(platform: AppPlatform) {
   // ── State ──────────────────────────────────────────────────────────────
   const [phase, setPhase] = createSignal<Phase>("booting");
   const [panel, setPanel] = createSignal<Panel>("main");
+  const [settingsActiveSection, setSettingsActiveSection] =
+    createSignal<SettingsSectionId>("overview");
   const [card, setCard] = createSignal<AnalysisCard | null>(null);
   const [error, setError] = createSignal<string | null>(null);
   const [statusDetail, setStatusDetail] = createSignal<string | null>(null);
@@ -251,6 +254,7 @@ export function useReplylineController(platform: AppPlatform) {
     setCard: applyIncomingCard,
     setCaptureQuality,
     setContextActive,
+    settings: () => settings,
     setSettings,
     setHotkeyFailed,
     setLastCommandErrorKind,
@@ -317,6 +321,7 @@ export function useReplylineController(platform: AppPlatform) {
     setCard: applyIncomingCard,
     notices,
     settingsActions,
+    settings: () => settings,
     showWindow,
   });
 
@@ -578,9 +583,18 @@ export function useReplylineController(platform: AppPlatform) {
     clearContext: pipelineActions.clearContext,
     retryAnalysis: pipelineActions.retryAnalysis,
     copyCurrentCard: pipelineActions.copyCurrentCard,
+    settingsActiveSection,
     toggleSettingsPanel: () => setPanel(panel() === "settings" ? "main" : "settings"),
-    openSettingsPanel: () => setPanel("settings"),
+    openSettingsPanel: (section?: SettingsSectionId) => {
+      if (section) setSettingsActiveSection(section);
+      setPanel("settings");
+    },
+    openCandidatePackStudioPanel: () => {
+      setSettingsActiveSection("candidatePack");
+      setPanel("candidatePackStudio");
+    },
     openMainPanel: () => setPanel("main"),
+    setSettingsActiveSection,
     hideWindow: () => platform.window.hide(),
     quitApp: () => platform.invoke("quit_app"),
     startDragging: () => platform.window.startDragging(),
@@ -599,6 +613,8 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmModel: (value: string) => setSettings("llmModel", value),
     setWindowOpacity,
     setCompactMode: (value: boolean) => setSettings("interviewCompactMode", value),
+    setHideToTrayOnClose: (value: boolean) => setSettings("hideToTrayOnClose", value),
+    setKeepOnTopDuringCapture: (value: boolean) => setSettings("keepOnTopDuringCapture", value),
     setInterviewReportRetentionDays: (value: AppSettings["interviewReportRetentionDays"]) =>
       setSettings("interviewReportRetentionDays", value),
     selectInterviewCardIndex: (index: number) =>
