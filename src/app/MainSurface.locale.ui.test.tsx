@@ -42,6 +42,7 @@ function createController(strings: UiStrings, overrides: Record<string, unknown>
     canClear: () => false,
     clearDisabledReason: () => strings.card.clearDisabledNoCard,
     clearContext: vi.fn(),
+    interviewSession: () => null,
     interviewReport: () => null,
     interviewReportMarkdownPath: () => null,
     interviewReportRedactedMarkdownPath: () => null,
@@ -110,13 +111,10 @@ describe("MainSurface cockpit states", () => {
     render(() => <MainSurface controller={createController(ui_ru) as never} />);
 
     expect(screen.getByTestId("main-empty-state-work")).toBeTruthy();
-    expect(
-      screen.getAllByText("Зажмите Ctrl+Alt+Space, чтобы записать фрагмент.").length,
-    ).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText("После записи вы получите суть, ответ и следующий шаг.").length,
-    ).toBeGreaterThan(0);
-    expect(screen.getByText("Скопировать пока недоступно.")).toBeTruthy();
+    expect(screen.getByTestId("readiness-instruction").textContent).toContain(
+      "Ctrl+Alt+Space — удержать и отпустить",
+    );
+    expect(screen.getByTestId("readiness-status-rail")).toBeTruthy();
   });
 
   it("keeps idle status without loading copy", () => {
@@ -145,7 +143,7 @@ describe("MainSurface cockpit states", () => {
 
     expect(screen.getByTestId("main-empty-state-setup")).toBeTruthy();
     expect(screen.getByText("Нужно завершить настройку")).toBeTruthy();
-    expect(screen.getByText("Сначала заполните «Речь» и «Ответ / LLM».")).toBeTruthy();
+    expect(screen.getByText("Настройка локальная, ключи не уходят в облако.")).toBeTruthy();
     const chips = screen.getByTestId("setup-banner-missing-steps").children;
     expect(chips.length).toBe(2);
     expect(screen.queryByText("3. Горячая клавиша")).toBeNull();
@@ -154,7 +152,7 @@ describe("MainSurface cockpit states", () => {
     ).toBeTruthy();
   });
 
-  it("shows ready card with copy action enabled", () => {
+  it("shows ready card with copy action inside hero card", () => {
     const copyCurrentCard = vi.fn();
     render(() => (
       <MainSurface
@@ -181,7 +179,8 @@ describe("MainSurface cockpit states", () => {
       />
     ));
 
-    const copy = screen.getByRole("button", { name: "Скопировать ответ" });
+    const heroCard = screen.getByTestId("answer-hero-card");
+    const copy = within(heroCard).getByRole("button", { name: "Скопировать ответ" });
     expect(copy).toHaveProperty("disabled", false);
     fireEvent.click(copy);
     expect(copyCurrentCard).toHaveBeenCalled();
@@ -201,7 +200,8 @@ describe("MainSurface cockpit states", () => {
     expect(screen.getByTestId("main-side-panel")).toBeTruthy();
     expect(screen.getByTestId("workspace-aside-stack")).toBeTruthy();
     expect(screen.getByTestId("session-panel")).toBeTruthy();
-    expect(screen.getByTestId("report-panel")).toBeTruthy();
+    expect(screen.getByTestId("session-metrics")).toBeTruthy();
+    expect(screen.getByTestId("session-active-chip").textContent).toContain("Не активна");
     expect(screen.getByTestId("export-panel")).toBeTruthy();
     expect(screen.getByTestId("transcript-preview-panel")).toBeTruthy();
   });
@@ -223,6 +223,7 @@ describe("MainSurface cockpit states", () => {
     expect(fullExport).toHaveProperty("disabled", true);
     expect(redactedExport).toHaveProperty("disabled", true);
     expect(within(actionRow).queryByRole("button", { name: "Начать сессию" })).toBeNull();
+    expect(within(actionRow).queryByRole("button", { name: "Скопировать ответ" })).toBeNull();
     expect(
       within(actionRow).queryByRole("button", {
         name: "Экспортировать Full Markdown с transcript",
@@ -233,27 +234,9 @@ describe("MainSurface cockpit states", () => {
     expect(
       screen.getByText("Завершите сессию, чтобы получить отчёт и включить экспорт."),
     ).toBeTruthy();
-  });
-
-  it("shows short capture quality hint", () => {
-    render(() => (
-      <MainSurface
-        controller={
-          createController(ui_ru, {
-            card: () => ({
-              mode: "work",
-              gist: "g",
-              sayNow: "say",
-              nextMove: "next",
-              charsBand: "short",
-            }),
-            captureQuality: () => "short",
-          }) as never
-        }
-      />
-    ));
-
-    expect(screen.getByText(/Короткий фрагмент: запишите 5-10 секунд/)).toBeTruthy();
+    expect(screen.getByTestId("report-panel-empty")).toBeTruthy();
+    expect(screen.getByText("Без полного transcript, безопаснее для передачи.")).toBeTruthy();
+    expect(fullExport.getAttribute("title")).toBe("Отчёт ещё не сформирован.");
   });
 
   it("keeps session/report/export buttons wired", () => {
@@ -268,8 +251,14 @@ describe("MainSurface cockpit states", () => {
         controller={
           createController(ui_ru, {
             interviewReport: () => ({
+              sessionId: "is-1",
+              startedAt: "2026-05-20T10:00:00Z",
+              endedAt: "2026-05-20T10:12:00Z",
+              language: "ru",
               questions: [],
+              fullTranscript: "",
               scores: { clarity: 0, relevance: 0, accuracy: 0 },
+              feedback: { strengths: [], improvements: [], missingExamples: [] },
             }),
             startInterviewSession,
             endInterviewSession,
@@ -284,7 +273,7 @@ describe("MainSurface cockpit states", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Начать сессию" }));
     fireEvent.click(screen.getAllByRole("button", { name: "Завершить сессию" })[0]);
-    fireEvent.click(screen.getByRole("button", { name: "Открыть отчёт" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Открыть отчёт" })[0]);
     fireEvent.click(
       screen.getByRole("button", { name: "Экспортировать Full Markdown с transcript" }),
     );
@@ -336,5 +325,10 @@ describe("MainSurface cockpit states", () => {
     expect(copyCurrentCard).toHaveBeenCalled();
     expect(retryAnalysis).toHaveBeenCalled();
     expect(clearContext).toHaveBeenCalled();
+  });
+
+  it("does not render legacy pipeline timeline", () => {
+    render(() => <MainSurface controller={createController(ui_ru) as never} />);
+    expect(screen.queryByTestId("pipeline-timeline")).toBeNull();
   });
 });

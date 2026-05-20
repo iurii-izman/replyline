@@ -1,6 +1,7 @@
 import { For, Show, createMemo, createSignal } from "solid-js";
 import type { ReplylineController } from "./controller";
 import type { UiStrings } from "./locale";
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "./ui/icons";
 
 type CandidatePackStudioProps = {
   controller: ReplylineController;
@@ -37,6 +38,34 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
   const canSavePrepared = createMemo(
     () => Boolean(controller().candidatePackPreview()) && !controller().candidatePackSaving(),
   );
+  const hasDraftContent = createMemo(() => {
+    const draft = controller().candidatePackDraft;
+    return Boolean(
+      draft.candidateSummary.trim() ||
+      draft.targetRole.trim() ||
+      draft.jobTitle.trim() ||
+      draft.jobCompany.trim() ||
+      draft.factsText.trim() ||
+      draft.requirementsText.trim() ||
+      draft.responsibilitiesText.trim() ||
+      draft.keywordsText.trim() ||
+      draft.companyValuesText.trim() ||
+      draft.avoidClaimsText.trim() ||
+      draft.preferredExamplesText.trim(),
+    );
+  });
+  const hasPreview = createMemo(() => Boolean(controller().candidatePackPreview()));
+  const stepIndex = createMemo(() => {
+    if (controller().candidatePackStatus().exists || hasDraftContent()) return 3;
+    if (hasPreview()) return 2;
+    return 1;
+  });
+  const canSaveDraft = createMemo(() => hasDraftContent() && !controller().candidatePackSaving());
+  const saveDraftDisabledReason = createMemo(() => {
+    if (controller().candidatePackSaving()) return st().settings.candidatePackDisabledSaving;
+    if (!hasDraftContent()) return st().settings.candidatePackDisabledNoDraft;
+    return "";
+  });
   const savePreparedDisabledReason = createMemo(() => {
     if (controller().candidatePackSaving()) return st().settings.candidatePackDisabledSaving;
     if (!controller().candidatePackPreview()) return st().settings.candidatePackDisabledNoPreview;
@@ -47,11 +76,47 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
   const toggleSection = (id: StudioSectionId) => {
     setOpenSection((current) => (current === id ? "summary" : id));
   };
+  const accordionIcon = (isOpen: boolean) => {
+    if (isOpen) return <ChevronDownIcon class="ui-icon--16" />;
+    return <ChevronRightIcon class="ui-icon--16" />;
+  };
 
   return (
     <div class="candidate-pack-studio" data-testid="candidate-pack-studio">
+      <nav
+        class="candidate-pack-stepper"
+        aria-label={st().settings.candidateStudioStepperLabel}
+        data-testid="candidate-pack-stepper"
+      >
+        <ol class="candidate-pack-stepper-list">
+          <For each={st().settings.candidateStudioSteps}>
+            {(step, index) => {
+              const stepNumber = index() + 1;
+              const isCurrent = stepIndex() === stepNumber;
+              const isComplete = stepIndex() > stepNumber;
+              return (
+                <li
+                  class={`candidate-pack-stepper-item ${isCurrent ? "is-current" : ""} ${isComplete ? "is-complete" : ""}`}
+                  data-testid={`candidate-pack-stepper-item-${stepNumber}`}
+                >
+                  <span class="candidate-pack-stepper-dot" aria-hidden="true">
+                    <Show when={isComplete} fallback={<span>{stepNumber}</span>}>
+                      <CheckIcon class="ui-icon--16" />
+                    </Show>
+                  </span>
+                  <span class="candidate-pack-stepper-text">{step}</span>
+                </li>
+              );
+            }}
+          </For>
+        </ol>
+      </nav>
+
       <div class="candidate-pack-studio-grid" data-testid="candidate-pack-studio-grid">
-        <section class="candidate-pack-panel" data-testid="candidate-pack-ai-section">
+        <section
+          class={`candidate-pack-panel ${stepIndex() === 1 ? "is-active" : ""}`}
+          data-testid="candidate-pack-ai-section"
+        >
           <h4 class="candidate-pack-panel-title">{st().settings.inputPanelTitle}</h4>
           <p class="field-help">{st().settings.inputPanelHint}</p>
           <label class="field">
@@ -83,7 +148,10 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
           <p class="candidate-pack-privacy-note">{st().settings.privacyNote}</p>
         </section>
 
-        <section class="candidate-pack-panel" data-testid="candidate-pack-preview">
+        <section
+          class={`candidate-pack-panel ${stepIndex() === 2 ? "is-active" : ""}`}
+          data-testid="candidate-pack-preview"
+        >
           <h4 class="candidate-pack-panel-title">{st().settings.previewPanelTitle}</h4>
           <p class="field-help">
             {st().settings.candidatePackStatus}:{" "}
@@ -151,8 +219,12 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
           </Show>
         </section>
 
-        <section class="candidate-pack-saved" data-testid="candidate-pack-section">
+        <section
+          class={`candidate-pack-saved ${stepIndex() === 3 ? "is-active" : ""}`}
+          data-testid="candidate-pack-section"
+        >
           <h4 class="candidate-pack-panel-title">{st().settings.savedProfileTitle}</h4>
+          <p class="field-help">{st().settings.savedProfileHint}</p>
           <div class="studio-accordion" data-testid="studio-accordion-root">
             <section
               class={`studio-accordion-item ${openSection() === "summary" ? "is-open" : ""}`}
@@ -164,7 +236,10 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
                 onClick={() => toggleSection("summary")}
                 aria-expanded={openSection() === "summary"}
               >
-                {st().settings.savedSections.summary}
+                <span>{st().settings.savedSections.summary}</span>
+                <span class="studio-accordion-icon" aria-hidden="true">
+                  {accordionIcon(openSection() === "summary")}
+                </span>
               </button>
               <Show when={openSection() === "summary"}>
                 <div class="studio-accordion-body">
@@ -195,7 +270,10 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
                 onClick={() => toggleSection("roleCompany")}
                 aria-expanded={openSection() === "roleCompany"}
               >
-                {st().settings.savedSections.roleCompany}
+                <span>{st().settings.savedSections.roleCompany}</span>
+                <span class="studio-accordion-icon" aria-hidden="true">
+                  {accordionIcon(openSection() === "roleCompany")}
+                </span>
               </button>
               <Show when={openSection() === "roleCompany"}>
                 <div class="studio-accordion-body">
@@ -265,7 +343,10 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
                 onClick={() => toggleSection("resumeFacts")}
                 aria-expanded={openSection() === "resumeFacts"}
               >
-                {st().settings.savedSections.resumeFacts}
+                <span>{st().settings.savedSections.resumeFacts}</span>
+                <span class="studio-accordion-icon" aria-hidden="true">
+                  {accordionIcon(openSection() === "resumeFacts")}
+                </span>
               </button>
               <Show when={openSection() === "resumeFacts"}>
                 <div class="studio-accordion-body">
@@ -293,7 +374,10 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
                 onClick={() => toggleSection("requirements")}
                 aria-expanded={openSection() === "requirements"}
               >
-                {st().settings.savedSections.requirements}
+                <span>{st().settings.savedSections.requirements}</span>
+                <span class="studio-accordion-icon" aria-hidden="true">
+                  {accordionIcon(openSection() === "requirements")}
+                </span>
               </button>
               <Show when={openSection() === "requirements"}>
                 <div class="studio-accordion-body">
@@ -349,7 +433,10 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
                 onClick={() => toggleSection("constraints")}
                 aria-expanded={openSection() === "constraints"}
               >
-                {st().settings.savedSections.constraints}
+                <span>{st().settings.savedSections.constraints}</span>
+                <span class="studio-accordion-icon" aria-hidden="true">
+                  {accordionIcon(openSection() === "constraints")}
+                </span>
               </button>
               <Show when={openSection() === "constraints"}>
                 <div class="studio-accordion-body">
@@ -380,7 +467,10 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
                 onClick={() => toggleSection("preferredExamples")}
                 aria-expanded={openSection() === "preferredExamples"}
               >
-                {st().settings.savedSections.preferredExamples}
+                <span>{st().settings.savedSections.preferredExamples}</span>
+                <span class="studio-accordion-icon" aria-hidden="true">
+                  {accordionIcon(openSection() === "preferredExamples")}
+                </span>
               </button>
               <Show when={openSection() === "preferredExamples"}>
                 <div class="studio-accordion-body">
@@ -411,20 +501,38 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
         <button
           class="btn-primary"
           type="button"
-          disabled={controller().candidatePackPreparing() || !hasSourceInputs()}
-          title={!hasSourceInputs() ? st().settings.candidatePackDisabledMissingInput : undefined}
-          onClick={() => void controller().prepareCandidatePack()}
+          disabled={
+            stepIndex() >= 2
+              ? !canSavePrepared()
+              : controller().candidatePackPreparing() || !hasSourceInputs()
+          }
+          title={
+            stepIndex() >= 2
+              ? savePreparedDisabledReason() || st().settings.savePackDisabled
+              : !hasSourceInputs()
+                ? st().settings.candidatePackDisabledMissingInput
+                : undefined
+          }
+          onClick={() =>
+            stepIndex() >= 2
+              ? void controller().savePreparedCandidatePack()
+              : void controller().prepareCandidatePack()
+          }
         >
-          {controller().candidatePackPreparing() ? st().settings.preparing : st().settings.prepare}
+          {stepIndex() >= 2
+            ? st().settings.saveCandidatePack
+            : controller().candidatePackPreparing()
+              ? st().settings.preparing
+              : st().settings.prepare}
         </button>
         <button
           class="btn-secondary"
           type="button"
-          disabled={!canSavePrepared()}
-          title={savePreparedDisabledReason() || st().settings.savePackDisabled}
-          onClick={() => void controller().savePreparedCandidatePack()}
+          disabled={!canSaveDraft()}
+          title={saveDraftDisabledReason() || st().settings.savePackDisabled}
+          onClick={() => void controller().saveCandidatePack()}
         >
-          {st().settings.saveCandidatePack}
+          {st().settings.saveDraftProfile}
         </button>
         <button
           class="btn-danger btn-ghost"

@@ -4,6 +4,7 @@ import type { ReplylineController } from "./controller";
 import { MODEL_PRESETS, resolveModelPreset } from "./modelPresets";
 import type { CheckItemDto, SettingsSectionId } from "./model";
 import type { UiStrings } from "./locale";
+import { CheckIcon, CircleIcon, XIcon } from "./ui/icons";
 
 function checkItemLabel(item: CheckItemDto, st: UiStrings): string {
   switch (item.code) {
@@ -32,7 +33,7 @@ function checkItemClass(item: CheckItemDto): string {
   return item.ok ? "check-item is-ok" : "check-item is-fail";
 }
 
-type SetupStatusTone = "missing" | "saved" | "ready" | "optional";
+type SetupStatusTone = "missing" | "ready" | "optional";
 
 export function SettingsSurface(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
@@ -46,12 +47,6 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
   void st().checks.code.skipped;
   void st().checks.code.error;
 
-  const overallHint = () => {
-    if (controller().allSetupReady()) return st().setup.ready;
-    if (controller().setupRequired()) return st().setup.notReady;
-    return st().setup.body;
-  };
-
   const selectedPreset = () => resolveModelPreset(controller().settings.selectedModelPreset);
   const setupSteps = () => controller().setupSteps();
 
@@ -63,39 +58,23 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
     return null;
   };
 
-  const sectionStatus = (id: SettingsSectionId): { tone: SetupStatusTone; label: string } => {
-    const allReady = controller().allSetupReady();
-    if (id === "overview") {
-      return {
-        tone: allReady ? "ready" : "missing",
-        label: allReady ? st().setup.statusReady : st().setup.statusMissing,
-      };
-    }
+  const sectionStatus = (id: SettingsSectionId): SetupStatusTone => {
     if (id === "speech") {
       const ready = setupSteps()[0]?.ready ?? false;
-      return {
-        tone: ready ? "saved" : "missing",
-        label: ready ? st().setup.statusSaved : st().setup.statusMissing,
-      };
+      return ready ? "ready" : "missing";
     }
     if (id === "llm") {
       const ready = setupSteps()[1]?.ready ?? false;
-      return {
-        tone: ready ? "saved" : "missing",
-        label: ready ? st().setup.statusSaved : st().setup.statusMissing,
-      };
+      return ready ? "ready" : "missing";
     }
     if (id === "hotkey") {
       const ready = setupSteps()[2]?.ready ?? false;
-      return {
-        tone: ready ? "ready" : "missing",
-        label: ready ? st().setup.statusReady : st().setup.statusMissing,
-      };
+      return ready ? "ready" : "missing";
     }
-    return {
-      tone: "optional",
-      label: st().setup.statusOptional,
-    };
+    if (id === "overview") {
+      return controller().allSetupReady() ? "ready" : "missing";
+    }
+    return "optional";
   };
 
   const stepSectionFromIndex = (index: number): SettingsSectionId => {
@@ -197,11 +176,25 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                         }
                       }}
                     >
-                      <span>{section.label}</span>
+                      <span class="settings-sidebar-label">{section.label}</span>
                       <span
-                        class={`saved-badge status-badge section-status section-status-${status().tone}`}
+                        class={`section-status-dot section-status-${status()}`}
+                        aria-label={
+                          status() === "ready"
+                            ? st().settings.statusReady
+                            : status() === "missing"
+                              ? st().settings.statusMissing
+                              : st().settings.statusOptional
+                        }
+                        title={
+                          status() === "ready"
+                            ? st().settings.statusReady
+                            : status() === "missing"
+                              ? st().settings.statusMissing
+                              : st().settings.statusOptional
+                        }
                       >
-                        {status().label}
+                        <span class="section-status-dot-inner" />
                       </span>
                     </button>
                   );
@@ -225,49 +218,39 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               >
                 <h3 class="settings-section-title">{st().settings.overviewTitle}</h3>
                 <p class="settings-section-hint" data-testid="setup-overall-hint">
-                  {overallHint()}
+                  {st().settings.overviewHint}
                 </p>
-                <p class="settings-section-hint">{st().setup.progressiveOverviewHint}</p>
-
-                <div class="setup-progress" aria-label={st().setup.progress}>
+                <div class="setup-progress setup-progress-compact" aria-label={st().setup.progress}>
                   <For each={setupSteps()}>
-                    {(step, index) => {
-                      const targetSection = stepSectionFromIndex(index());
-                      return (
-                        <div class="setup-step">
-                          <span
-                            class={
-                              step.ready
-                                ? "setup-step-status is-done"
-                                : "setup-step-status is-pending"
-                            }
-                            aria-hidden="true"
-                          >
-                            {step.ready ? "✓" : "○"}
-                          </span>
-                          <span class="setup-step-label">{step.label}</span>
-                          <span class="setup-step-hint">
-                            {step.ready ? step.readyLabel : step.missingLabel}
-                          </span>
-                          <Show when={!step.ready}>
-                            <button
-                              class="btn-ghost btn-compact setup-step-action"
-                              type="button"
-                              onClick={() => controller().setSettingsActiveSection(targetSection)}
-                            >
-                              {st().settings.openStep}
-                            </button>
-                          </Show>
-                        </div>
-                      );
-                    }}
+                    {(step) => (
+                      <div class="setup-step setup-step-compact">
+                        <span
+                          class={
+                            step.ready
+                              ? "setup-step-status is-done"
+                              : "setup-step-status is-pending"
+                          }
+                          aria-hidden="true"
+                        >
+                          {step.ready ? (
+                            <CheckIcon class="ui-icon--16" />
+                          ) : (
+                            <CircleIcon class="ui-icon--16" />
+                          )}
+                        </span>
+                        <span class="setup-step-label">{step.label}</span>
+                        <span class="setup-step-hint setup-step-hint-inline">
+                          {step.ready ? step.readyLabel : step.missingLabel}
+                        </span>
+                      </div>
+                    )}
                   </For>
                 </div>
 
                 <Show when={firstMissingSection()}>
                   {(firstMissing) => (
                     <button
-                      class="btn-secondary settings-cta"
+                      class="btn-secondary btn-compact settings-cta"
                       type="button"
                       data-testid="setup-first-missing-cta"
                       onClick={() => controller().setSettingsActiveSection(firstMissing())}
@@ -287,7 +270,9 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               >
                 <h3 class="settings-section-title">{st().settings.navSpeech}</h3>
                 <p class="settings-section-hint">{st().settings.speechHint}</p>
-                <p class="settings-section-helper">{st().setup.deepgramHint}</p>
+                <p class="settings-note" data-testid="speech-helper-note">
+                  {st().setup.deepgramHint}
+                </p>
                 <label class="field">
                   <span class="field-label">
                     {st().settings.deepgramKeyLabel}{" "}
@@ -318,7 +303,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               >
                 <h3 class="settings-section-title">{st().settings.navLlm}</h3>
                 <p class="settings-section-hint">{st().settings.llmSectionHint}</p>
-                <p class="settings-section-helper">{st().setup.llmHint}</p>
+                <p class="settings-note">{st().setup.llmHint}</p>
 
                 <div class="settings-form-stack">
                   <label class="field">
@@ -336,7 +321,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                     </select>
                   </label>
 
-                  <details class="settings-collapsible settings-collapsible--caveats" open>
+                  <details class="settings-collapsible settings-collapsible--caveats">
                     <summary>{st().settings.providerNotesTitle}</summary>
                     <div class="settings-collapsible-body">
                       <div class="field-help">
@@ -436,7 +421,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
               >
                 <h3 class="settings-section-title">{st().settings.navHotkey}</h3>
                 <p class="settings-section-hint">{st().settings.hotkeySectionHint}</p>
-                <p class="settings-section-helper">{st().setup.hotkeyHint}</p>
+                <p class="settings-note">{st().setup.hotkeyHint}</p>
                 <label class="field">
                   <span class="field-label">{st().settings.hotkeyLabel}</span>
                   <input
@@ -461,14 +446,17 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                   />
                 </label>
 
-                <label class="field field-checkbox-row">
-                  <span class="field-label">{st().settings.compactModeLabel}</span>
+                <label
+                  class="field field-checkbox-row settings-checkbox-row"
+                  data-testid="hotkey-compact-row"
+                >
                   <input
                     type="checkbox"
                     aria-label={st().settings.compactModeLabel}
                     checked={controller().settings.interviewCompactMode}
                     onInput={(event) => controller().setCompactMode(event.currentTarget.checked)}
                   />
+                  <span class="field-label">{st().settings.compactModeLabel}</span>
                 </label>
 
                 <label class="field">
@@ -493,8 +481,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                   <h4 class="setup-legend">{st().settings.windowBehaviorTitle}</h4>
                   <p class="field-help">{st().settings.windowBehaviorHint}</p>
 
-                  <label class="field field-checkbox-row">
-                    <span class="field-label">{st().settings.hideToTrayOnCloseLabel}</span>
+                  <label class="field field-checkbox-row settings-checkbox-row">
                     <input
                       type="checkbox"
                       aria-label={st().settings.hideToTrayOnCloseLabel}
@@ -503,11 +490,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                         controller().setHideToTrayOnClose(event.currentTarget.checked)
                       }
                     />
+                    <span class="field-label">{st().settings.hideToTrayOnCloseLabel}</span>
                     <span class="field-help">{st().settings.hideToTrayOnCloseHint}</span>
                   </label>
 
-                  <label class="field field-checkbox-row">
-                    <span class="field-label">{st().settings.keepOnTopDuringCaptureLabel}</span>
+                  <label class="field field-checkbox-row settings-checkbox-row">
                     <input
                       type="checkbox"
                       aria-label={st().settings.keepOnTopDuringCaptureLabel}
@@ -516,6 +503,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                         controller().setKeepOnTopDuringCapture(event.currentTarget.checked)
                       }
                     />
+                    <span class="field-label">{st().settings.keepOnTopDuringCaptureLabel}</span>
                     <span class="field-help">{st().settings.keepOnTopDuringCaptureHint}</span>
                   </label>
                 </section>
@@ -547,10 +535,12 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                     <option value="90">{st().settings.interviewReportRetentionOption90d}</option>
                   </select>
                   <span class="field-help">{st().settings.interviewReportRetentionHint}</span>
-                  <span class="field-help">{st().settings.interviewReportClearHint}</span>
                 </label>
+                <p class="settings-note settings-note-warning">
+                  {st().settings.interviewReportClearHint}
+                </p>
                 <button
-                  class="btn-danger btn-ghost"
+                  class="btn-danger btn-ghost btn-compact"
                   type="button"
                   onClick={() => void controller().clearInterviewReports()}
                 >
@@ -596,7 +586,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 <h3 class="check-results-title">{st().checks.title}</h3>
                 <div class={checkItemClass(controller().runtimeCheckResult()!.stt)}>
                   <span class="check-item-icon" aria-hidden="true">
-                    {controller().runtimeCheckResult()!.stt.ok ? "✓" : "✗"}
+                    {controller().runtimeCheckResult()!.stt.ok ? (
+                      <CheckIcon class="ui-icon--16" />
+                    ) : (
+                      <XIcon class="ui-icon--16" />
+                    )}
                   </span>
                   <span class="check-item-label">{st().setup.stepSpeech}</span>
                   <span class="check-item-status">
@@ -608,7 +602,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 </div>
                 <div class={checkItemClass(controller().runtimeCheckResult()!.llm)}>
                   <span class="check-item-icon" aria-hidden="true">
-                    {controller().runtimeCheckResult()!.llm.ok ? "✓" : "✗"}
+                    {controller().runtimeCheckResult()!.llm.ok ? (
+                      <CheckIcon class="ui-icon--16" />
+                    ) : (
+                      <XIcon class="ui-icon--16" />
+                    )}
                   </span>
                   <span class="check-item-label">{st().setup.stepReply}</span>
                   <span class="check-item-status">
@@ -620,7 +618,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 </div>
                 <div class={checkItemClass(controller().runtimeCheckResult()!.settings)}>
                   <span class="check-item-icon" aria-hidden="true">
-                    {controller().runtimeCheckResult()!.settings.ok ? "✓" : "✗"}
+                    {controller().runtimeCheckResult()!.settings.ok ? (
+                      <CheckIcon class="ui-icon--16" />
+                    ) : (
+                      <XIcon class="ui-icon--16" />
+                    )}
                   </span>
                   <span class="check-item-label">{st().setup.stepHotkey}</span>
                   <span class="check-item-status">
@@ -644,7 +646,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                       {summary().text}{" "}
                       <Show when={summary().section}>
                         <button
-                          class="btn-secondary btn-compact setup-step-action"
+                          class="btn-secondary btn-compact check-item-action"
                           type="button"
                           onClick={() => controller().setSettingsActiveSection(summary().section!)}
                         >
@@ -665,7 +667,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                 {controller().saving() ? st().settings.saving : st().settings.save}
               </button>
               <button
-                class="btn-secondary"
+                class="btn-secondary btn-compact"
                 type="button"
                 disabled={controller().runtimeCheckRunning()}
                 title={st().settings.checkSettingsHint}
@@ -677,7 +679,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                   : st().settings.checkSettings}
               </button>
               <button
-                class="btn-secondary"
+                class="btn-ghost btn-compact"
                 type="button"
                 onClick={() => controller().openMainPanel()}
               >

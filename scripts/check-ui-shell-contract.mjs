@@ -184,6 +184,18 @@ if (candidatePackStudio) {
     'data-testid="candidate-pack-studio-footer"',
     "src/app/CandidatePackStudio.tsx",
   );
+  assertIncludes(
+    candidatePackStudio,
+    'data-testid="candidate-pack-stepper"',
+    "src/app/CandidatePackStudio.tsx",
+  );
+  assertIncludes(candidatePackStudio, "candidateStudioSteps", "src/app/CandidatePackStudio.tsx");
+  assertNoRegex(
+    candidatePackStudio,
+    /[⚙⤓✓✗○▾]/u,
+    "src/app/CandidatePackStudio.tsx",
+    "critical studio controls must not rely on Unicode icon glyphs",
+  );
 }
 
 const appCss = readText("src/App.css");
@@ -259,6 +271,12 @@ if (localeSource) {
     /savedProfileTitle:\s*"Saved profile"/u,
     "src/app/locale.ts",
     'RU-first violation: avoid raw "Saved profile" in RU-facing labels',
+  );
+  assertNoRegex(
+    ruLocale,
+    /candidateStudioSteps:\s*\[[^\]]*Input[^\]]*\]/u,
+    "src/app/locale.ts",
+    'RU-first violation: avoid raw "Input" in RU stepper labels',
   );
 }
 

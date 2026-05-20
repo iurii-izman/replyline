@@ -77,12 +77,17 @@ A page can use both classes on the same element when both semantics apply.
 
 ## Header Policy
 
-- Header height target: `64px–76px`.
+- Header height target: `48px–56px`.
 - Header must include:
   - Brand (`Replyline`, `Slim Stable Beta`) on the left.
   - Current section + compact status context in the center.
   - Utility actions on the right (settings + hide-to-tray), without custom window control buttons.
 - On compact widths, center status context may collapse/hide.
+
+## Icon Policy
+
+- Critical UI controls must use SVG icon primitives (`.ui-icon`) with `currentColor` stroke.
+- Main controls must not rely on Unicode emoji/symbol glyphs (for example `⚙`, `⤓`, `✓`, `✗`, `○`, `▾`) because Windows rendering is not stable across fonts.
 
 ## Prohibitions
 
@@ -132,4 +137,17 @@ The `test:ui-shell-contract` gate is required to catch shell/layout regressions 
 ## Candidate Studio Contract
 
 - Candidate Pack Studio must remain a separate app view (`candidatePackStudio` panel), not an inline mega-section inside Settings.
-- Studio keeps three-column wide layout with separate input/preview/saved panels and dedicated sticky action footer.
+- Studio must present a clear workflow contract, not three unrelated forms:
+  - `1. Исходные данные`
+  - `2. Подготовка`
+  - `3. Профиль`
+- Stepper is mandatory and must expose current/completed/future states.
+- Empty preview state must be concise and guided (max 3 bullets), with no oversized blank panel.
+- Prepared preview state must show quality summary, facts/weak facts, keywords, and warnings (when present).
+- Saved profile editor must use a styled accordion (no default browser disclosure marker).
+- Sticky action dock must stay contextual:
+  - primary action switches by state (`Подготовить профиль` -> `Сохранить профиль`)
+  - secondary action supports draft/profile save when available
+  - danger action clears profile
+  - back action returns to settings
+- Privacy note must remain visible in Step 1 and must not be removed.
