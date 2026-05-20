@@ -658,7 +658,7 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
             </Show>
 
             <div
-              class="action-bar sticky-action-footer app-sticky-footer settings-sticky-footer"
+              class="action-bar sticky-action-footer app-sticky-footer settings-sticky-footer settings-sticky-footer--section"
               data-testid="settings-sticky-footer"
             >
               <button class="btn-primary" type="submit" disabled={controller().saving()}>

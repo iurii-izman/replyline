@@ -24,6 +24,8 @@ Use this checklist for manual Windows desktop UX validation before beta handoff.
 | resize to compact width         | Window can be resized down to compact width and layout remains usable (no broken overlap).                     | `<PASS/FAIL>` | `<notes>` |
 | maximize/fullscreen             | Maximize/fullscreen/restore keep layout landmarks and controls accessible.                                     | `<PASS/FAIL>` | `<notes>` |
 | fullscreen dead space           | Fullscreen does not show empty dead-space bands; workspace uses full height with readable capped content.      | `<PASS/FAIL>` | `<notes>` |
+| header status context           | Header shows current section and compact status (setup/ready/recording/analyzing/answer ready) in fullscreen.  | `<PASS/FAIL>` | `<notes>` |
+| no awkward floating footer      | Main/Settings/Studio footers stay attached to page context and do not look like detached full-width strips.    | `<PASS/FAIL>` | `<notes>` |
 | setup missing flow              | Missing setup state is clearly shown with actionable guidance to required sections.                            | `<PASS/FAIL>` | `<notes>` |
 | settings navigation             | Settings section navigation works (sidebar/chips + active section switching).                                  | `<PASS/FAIL>` | `<notes>` |
 | settings sidebar labels         | Sidebar statuses are localized and clear (`Не заполнено/Сохранено/Готово/Опционально`), no mixed raw EN text.  | `<PASS/FAIL>` | `<notes>` |
@@ -31,6 +33,7 @@ Use this checklist for manual Windows desktop UX validation before beta handoff.
 | check results card              | Check results render in dedicated card; status labels and open-step action are readable and styled.            | `<PASS/FAIL>` | `<notes>` |
 | Candidate Pack Studio open/back | Candidate Pack Studio opens as separate view and Back returns to expected previous surface.                    | `<PASS/FAIL>` | `<notes>` |
 | candidate studio layout         | Studio keeps split input/preview/saved layout and localized headings in fullscreen and wide states.            | `<PASS/FAIL>` | `<notes>` |
+| candidate studio columns        | Fullscreen Candidate Studio uses balanced 3-column composition without oversized blank areas.                  | `<PASS/FAIL>` | `<notes>` |
 | record/analyze/copy             | Core workflow actions (record/analyze/copy) are reachable and functional in UI flow.                           | `<PASS/FAIL>` | `<notes>` |
 | retry/clear                     | Retry and clear actions are available where expected and update UI state correctly.                            | `<PASS/FAIL>` | `<notes>` |
 | disabled critical buttons       | Disabled critical actions show clear disabled state/title (no raw default button look).                        | `<PASS/FAIL>` | `<notes>` |

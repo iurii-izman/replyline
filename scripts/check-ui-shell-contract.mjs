@@ -68,8 +68,13 @@ const chromeSurface = readText("src/app/ChromeSurface.tsx");
 if (chromeSurface) {
   assertIncludes(chromeSurface, "toggleSettingsPanel()", "src/app/ChromeSurface.tsx");
   assertIncludes(chromeSurface, "hideWindow()", "src/app/ChromeSurface.tsx");
+  assertIncludes(chromeSurface, "app-header-context", "src/app/ChromeSurface.tsx");
+  assertIncludes(chromeSurface, "headerStatus", "src/app/ChromeSurface.tsx");
+  assertIncludes(chromeSurface, "activeSection", "src/app/ChromeSurface.tsx");
 
   assertNotIncludes(chromeSurface, "closeWindow(", "src/app/ChromeSurface.tsx");
+  assertNotIncludes(chromeSurface, "minimizeWindow(", "src/app/ChromeSurface.tsx");
+  assertNotIncludes(chromeSurface, "maximizeWindow(", "src/app/ChromeSurface.tsx");
   assertNotIncludes(chromeSurface, "quitApp(", "src/app/ChromeSurface.tsx");
   assertNotIncludes(chromeSurface, "exitApp(", "src/app/ChromeSurface.tsx");
 
@@ -88,6 +93,7 @@ if (mainSurface) {
   assertIncludes(mainSurface, "app-page-main", "src/app/MainSurface.tsx");
   assertIncludes(mainSurface, "app-page-aside app-sidebar", "src/app/MainSurface.tsx");
   assertIncludes(mainSurface, 'data-testid="action-row"', "src/app/MainSurface.tsx");
+  assertIncludes(mainSurface, 'data-testid="main-status-strip"', "src/app/MainSurface.tsx");
   const actionRowMatch = mainSurface.match(
     /<div class="action-bar sticky-action-footer app-sticky-footer" data-testid="action-row">([\s\S]*?)<\/div>/u,
   );
@@ -173,6 +179,11 @@ if (candidatePackStudio) {
     "src/app/CandidatePackStudio.tsx",
     "candidate studio must keep capped width classes and avoid full-width infinite form patterns",
   );
+  assertIncludes(
+    candidatePackStudio,
+    'data-testid="candidate-pack-studio-footer"',
+    "src/app/CandidatePackStudio.tsx",
+  );
 }
 
 const appCss = readText("src/App.css");
@@ -183,10 +194,12 @@ if (appCss) {
 
   assertIncludes(appCss, ".app-sticky-footer", "src/App.css");
   assertIncludes(appCss, ".settings-sticky-footer", "src/App.css");
+  assertIncludes(appCss, ".settings-sticky-footer--section", "src/App.css");
+  assertIncludes(appCss, ".candidate-pack-footer", "src/App.css");
 
   assertRegex(
     appCss,
-    /\.settings-content\s*,\s*\.candidate-pack-studio\s*\{[^}]*padding-bottom\s*:\s*88px;/su,
+    /\.settings-content\s*,\s*\.candidate-pack-studio\s*\{[^}]*padding-bottom\s*:\s*(?:7[0-9]|8[0-9])px;/su,
     "src/App.css",
     "expected sticky-footer bottom padding compensation for settings and studio content",
   );
@@ -223,6 +236,30 @@ for (const path of userFacingTsxFiles) {
     'raw EN setup labels in user-facing JSX are forbidden ("missing/ready/optional")',
   );
   assertNoRegex(source, /Статус setup/gu, path, 'forbidden copy "Статус setup"');
+}
+
+const localeSource = readText("src/app/locale.ts");
+if (localeSource) {
+  const ruSectionEnd = localeSource.indexOf("export const ui_en");
+  const ruLocale = ruSectionEnd > -1 ? localeSource.slice(0, ruSectionEnd) : localeSource;
+  assertNoRegex(
+    ruLocale,
+    /inputPanelTitle:\s*"Input"/u,
+    "src/app/locale.ts",
+    'RU-first violation: avoid raw "Input" in RU-facing labels',
+  );
+  assertNoRegex(
+    ruLocale,
+    /previewPanelTitle:\s*"Preview and quality"/u,
+    "src/app/locale.ts",
+    'RU-first violation: avoid raw "Preview and quality" in RU-facing labels',
+  );
+  assertNoRegex(
+    ruLocale,
+    /savedProfileTitle:\s*"Saved profile"/u,
+    "src/app/locale.ts",
+    'RU-first violation: avoid raw "Saved profile" in RU-facing labels',
+  );
 }
 
 if (mainSurface) {

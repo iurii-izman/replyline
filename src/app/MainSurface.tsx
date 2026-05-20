@@ -34,7 +34,8 @@ function phaseStateText(controller: ReplylineController): string {
   if (controller.phase() === "transcribing") return st.phase.transcribing;
   if (controller.phase() === "analyzing") return st.phase.analyzing;
   if (controller.phase() === "ready") return st.phase.ready;
-  if (controller.phase() === "booting") return st.phase.booting;
+  if (controller.phase() === "booting")
+    return controller.pipelineActive() ? st.phase.booting : st.phase.idleReady;
   return st.phase.idleReady;
 }
 

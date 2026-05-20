@@ -587,7 +587,7 @@ describe("App UX stabilization", () => {
   it("renders localized settings CTA labels", async () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
-    await waitFor(() => expect(screen.getByText("Настройки")).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
     const save = screen.getByRole("button", { name: "Сохранить" });
     const back = screen.getByRole("button", { name: "Назад" });
     expect(save).toBeTruthy();
@@ -1350,7 +1350,7 @@ describe("Setup wizard (first-run guidance)", () => {
     render(() => <App platform={mock.platform} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Настройки")).toBeTruthy();
+      expect(screen.getByTestId("settings-surface")).toBeTruthy();
     });
 
     // Setup progress section is visible (text appears in both progress and legend)
@@ -1486,7 +1486,7 @@ describe("Setup wizard (first-run guidance)", () => {
     render(() => <App platform={mock.platform} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Настройки")).toBeTruthy();
+      expect(screen.getByTestId("settings-surface")).toBeTruthy();
     });
 
     // Fill in the missing fields

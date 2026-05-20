@@ -14,6 +14,7 @@ export function CandidatePackStudioSurface(props: { controller: ReplylineControl
       >
         <div class="app-page-header candidate-pack-studio-header">
           <h2 class="section-title">{st().settings.candidatePackStudioTitle}</h2>
+          <p class="settings-section-hint">{st().settings.candidatePackStudioSubtitle}</p>
         </div>
         <CandidatePackStudio controller={controller()} st={st()} />
       </section>

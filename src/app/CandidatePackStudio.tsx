@@ -405,7 +405,7 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
       </div>
 
       <div
-        class="action-bar sticky-action-footer app-sticky-footer settings-sticky-footer"
+        class="action-bar sticky-action-footer app-sticky-footer settings-sticky-footer candidate-pack-footer"
         data-testid="candidate-pack-studio-footer"
       >
         <button

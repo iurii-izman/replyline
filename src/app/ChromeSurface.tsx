@@ -5,13 +5,32 @@ import type { ReplylineController } from "./controller";
 export function ShellChrome(props: { controller: ReplylineController }) {
   const controller = () => props.controller;
   const st = () => controller().strings();
+  const activeSection = () => {
+    if (controller().panel() === "settings") return st().header.sectionSettings;
+    if (controller().panel() === "candidatePackStudio") return st().header.sectionStudio;
+    return st().header.sectionMain;
+  };
+  const headerStatus = () => {
+    if (controller().phase() === "capturing") return st().header.statusCapturing;
+    if (controller().pipelineActive()) return st().header.statusAnalyzing;
+    if (controller().card()?.sayNow?.trim()) return st().header.statusAnswerReady;
+    if (controller().setupRequired()) return st().header.statusSetup;
+    return st().header.statusReady;
+  };
 
   return (
     <div class="shell-chrome">
       <header class="shell-header app-header">
-        <div class="shell-header-drag">
+        <div class="shell-header-drag app-header-brand" data-testid="app-header-brand">
           <div class="app-name">{st().appName}</div>
           <div class="app-subtitle">{st().appSubtitle}</div>
+        </div>
+        <div class="app-header-context" data-testid="app-header-context">
+          <span class="app-header-section">{activeSection()}</span>
+          <span class="app-header-divider" aria-hidden="true">
+            ·
+          </span>
+          <span class="app-header-status">{headerStatus()}</span>
         </div>
         <div class="header-actions">
           <button

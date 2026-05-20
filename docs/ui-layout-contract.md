@@ -35,9 +35,9 @@ This document defines the baseline desktop layout contract for Replyline after n
 
 ## Width Caps
 
-- Workspace (`.app-view--main`): cap around `1480px–1560px` (current target: `1540px`).
-- Settings (`.app-view--settings`): cap around `1320px–1440px` (current target: `1400px`).
-- Candidate Studio sections: cap around `1560px`.
+- Workspace (`.app-view--main`): `1360px–1480px` (current target: `1440px`).
+- Settings (`.app-view--settings`): `1160px–1280px` (current target: `1240px`).
+- Candidate Studio sections: `1480px–1600px` (current target: `1580px`).
 - Ultra-wide screens (`1680px+`) must preserve capped readable layouts and avoid endlessly stretched forms.
 
 ## Breakpoints
@@ -72,6 +72,17 @@ A page can use both classes on the same element when both semantics apply.
 - Sticky footer should be tied to page context, not to an outer shell overlay.
 - Keep action bars compact and avoid covering interactive content.
 - Settings and Candidate Studio content must reserve bottom spacing for sticky actions (`padding-bottom` compensation), so footer never overlaps last interactive fields.
+- For short sections, footer follows content naturally inside the active section width.
+- For long sections, sticky footer uses soft/transparent background and compact width; never stretches as a detached full-screen stripe.
+
+## Header Policy
+
+- Header height target: `64px–76px`.
+- Header must include:
+  - Brand (`Replyline`, `Slim Stable Beta`) on the left.
+  - Current section + compact status context in the center.
+  - Utility actions on the right (settings + hide-to-tray), without custom window control buttons.
+- On compact widths, center status context may collapse/hide.
 
 ## Prohibitions
 
@@ -116,6 +127,7 @@ The `test:ui-shell-contract` gate is required to catch shell/layout regressions 
 
 - RU is the primary UX baseline for desktop verification.
 - Status badges and setup labels must be localized RU-first in default run; EN labels are allowed only in EN locale branch/tests.
+- Avoid raw EN user labels in RU UI (`missing`, `ready`, `optional`, `Input`, `Preview and quality`, `Saved profile`).
 
 ## Candidate Studio Contract
 

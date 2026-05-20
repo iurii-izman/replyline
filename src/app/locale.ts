@@ -1,6 +1,16 @@
 export const ui_ru = {
   appName: "Replyline",
   appSubtitle: "Slim Stable Beta",
+  header: {
+    sectionMain: "Рабочий экран",
+    sectionSettings: "Настройки",
+    sectionStudio: "Студия профиля кандидата",
+    statusSetup: "Нужно завершить настройку",
+    statusReady: "Готово к записи",
+    statusCapturing: "Идёт запись",
+    statusAnalyzing: "Идёт анализ",
+    statusAnswerReady: "Ответ готов",
+  },
   phase: {
     booting: "Загружаем настройки и проверяем доступы",
     capturing: "Запись",
@@ -170,6 +180,7 @@ export const ui_ru = {
     navReports: "Отчёты интервью",
     navCandidatePack: "Профиль кандидата",
     candidatePackStudioTitle: "Студия профиля кандидата (Candidate Pack)",
+    candidatePackStudioSubtitle: "Подготовьте профиль для интервью-ответов.",
     overviewTitle: "Статус настройки",
     openFirstMissing: "Перейти к первому незаполненному шагу",
     openStep: "Открыть шаг",
@@ -310,6 +321,16 @@ export type UiStrings = typeof ui_ru;
 export const ui_en: UiStrings = {
   appName: "Replyline",
   appSubtitle: "Slim Stable Beta",
+  header: {
+    sectionMain: "Workspace",
+    sectionSettings: "Settings",
+    sectionStudio: "Candidate Profile Studio",
+    statusSetup: "Setup required",
+    statusReady: "Ready to record",
+    statusCapturing: "Recording",
+    statusAnalyzing: "Analyzing",
+    statusAnswerReady: "Answer ready",
+  },
   phase: {
     booting: "Loading settings and checking access",
     capturing: "Recording",
@@ -479,6 +500,7 @@ export const ui_en: UiStrings = {
     navReports: "Interview Reports",
     navCandidatePack: "Candidate Pack",
     candidatePackStudioTitle: "Candidate Pack Studio",
+    candidatePackStudioSubtitle: "Prepare the profile used for interview replies.",
     overviewTitle: "Setup status",
     openFirstMissing: "Open first missing setup step",
     openStep: "Open step",
