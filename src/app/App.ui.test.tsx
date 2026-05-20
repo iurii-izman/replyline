@@ -945,7 +945,7 @@ describe("Interview card rendering", () => {
 
     fireEvent.keyDown(globalThis, { key: "3" });
     expect(await screen.findByTestId("section-interview-signals")).toBeTruthy();
-    fireEvent.keyDown(window, { key: "4" });
+    fireEvent.keyDown(globalThis, { key: "4" });
     expect(await screen.findByTestId("section-interview-risks")).toBeTruthy();
   });
 
@@ -973,7 +973,7 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "6" });
+    fireEvent.keyDown(globalThis, { key: "6" });
     expect(await screen.findByTestId("section-interview-clarifier")).toBeTruthy();
     expect(screen.getByText("Which timeframe?")).toBeTruthy();
   });
@@ -986,9 +986,9 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Released" });
 
     expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
-    fireEvent.keyDown(window, { key: "ArrowRight" });
+    fireEvent.keyDown(globalThis, { key: "ArrowRight" });
     expect(await screen.findByTestId("section-interview-question")).toBeTruthy();
-    fireEvent.keyDown(window, { key: "1" });
+    fireEvent.keyDown(globalThis, { key: "1" });
     expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
   });
 
@@ -999,9 +999,9 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "3" });
+    fireEvent.keyDown(globalThis, { key: "3" });
     fireEvent.click(await screen.findByRole("button", { name: "Закрепить" }));
-    fireEvent.keyDown(window, { key: "r" });
+    fireEvent.keyDown(globalThis, { key: "r" });
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "retry_last_analysis")).toBe(true),
     );
@@ -1015,8 +1015,8 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "2" });
-    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    fireEvent.keyDown(globalThis, { key: "2" });
+    fireEvent.keyDown(globalThis, { key: "c", ctrlKey: true });
     await waitFor(() =>
       expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith(
         "Tell me about a delivery incident.",
