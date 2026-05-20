@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const files = [".zed/settings.json", ".zed/tasks.json", ".zed/keymap.json"];
 

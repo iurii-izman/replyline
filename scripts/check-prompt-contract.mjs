@@ -147,6 +147,7 @@ assertIncludes(
 );
 
 const backendProfileIds = [...promptRegistryRaw.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
+const backendProfileIdsSet = new Set(backendProfileIds);
 const frontendProfileIds = [...answerProfilesRaw.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
 const frontendDefault = answerProfilesRaw.match(
   /DEFAULT_ANSWER_PROFILE:\s*AnswerProfileId\s*=\s*"([^"]+)"/,
@@ -158,7 +159,7 @@ if (!frontendDefault || !backendDefault) {
   fail("Cannot parse frontend/backend default profile ids.");
 }
 for (const id of frontendProfileIds) {
-  if (!backendProfileIds.includes(id)) {
+  if (!backendProfileIdsSet.has(id)) {
     fail(`Frontend profile id "${id}" is missing in backend prompt registry.`);
   }
 }

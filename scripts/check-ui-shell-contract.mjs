@@ -49,9 +49,7 @@ if (tauriConfigText) {
   const mainWindow =
     config?.app?.windows?.find((window) => window?.label === "main") ?? config?.app?.windows?.[0];
 
-  if (!mainWindow) {
-    fail("src-tauri/tauri.conf.json: app.windows[0] is missing");
-  } else {
+  if (mainWindow) {
     if (mainWindow.decorations === false) {
       fail("src-tauri/tauri.conf.json: main window decorations must stay enabled");
     }
@@ -61,6 +59,8 @@ if (tauriConfigText) {
     if (mainWindow.skipTaskbar === true) {
       fail("src-tauri/tauri.conf.json: main window skipTaskbar must not be true by default");
     }
+  } else {
+    fail("src-tauri/tauri.conf.json: app.windows[0] is missing");
   }
 }
 

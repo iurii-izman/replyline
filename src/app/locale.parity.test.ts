@@ -13,8 +13,8 @@ function collectKeys(value: unknown, prefix = ""): string[] {
 
 describe("locale parity", () => {
   it("keeps RU and EN locale keys in sync", () => {
-    const ruKeys = collectKeys(ui_ru).sort();
-    const enKeys = collectKeys(ui_en).sort();
+    const ruKeys = collectKeys(ui_ru).sort((a, b) => a.localeCompare(b));
+    const enKeys = collectKeys(ui_en).sort((a, b) => a.localeCompare(b));
     expect(enKeys).toEqual(ruKeys);
   });
 });

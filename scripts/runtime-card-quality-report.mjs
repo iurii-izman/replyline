@@ -40,7 +40,7 @@ const sorted = [...stats.transcript_chars].sort((a, b) => a - b);
 const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
 const avg = sorted.length ? sorted.reduce((a, b) => a + b, 0) / sorted.length : 0;
 const min = sorted.length ? sorted[0] : 0;
-const max = sorted.length ? sorted[sorted.length - 1] : 0;
+const max = sorted.length ? sorted.at(-1) : 0;
 const invalidRate = stats.analysis_start ? stats.analysis_card_invalid / stats.analysis_start : 0;
 const fallbackRate = stats.analysis_ok ? stats.fallback_used_true / stats.analysis_ok : 0;
 const repairRate = stats.analysis_ok ? stats.repair_used_true / stats.analysis_ok : 0;
