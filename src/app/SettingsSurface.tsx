@@ -35,7 +35,7 @@ function checkItemClass(item: CheckItemDto): string {
 
 type SetupStatusTone = "missing" | "ready" | "optional";
 
-export function SettingsSurface(props: { controller: ReplylineController }) {
+export function SettingsSurface(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   void st().checks.code.ok;
@@ -82,6 +82,11 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
     if (index === 1) return "llm";
     if (index === 2) return "hotkey";
     return "overview";
+  };
+  const setupStatusLabel = (tone: SetupStatusTone): string => {
+    if (tone === "ready") return st().settings.statusReady;
+    if (tone === "missing") return st().settings.statusMissing;
+    return st().settings.statusOptional;
   };
 
   const runtimeSummary = () => {
@@ -179,20 +184,8 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
                       <span class="settings-sidebar-label">{section.label}</span>
                       <span
                         class={`section-status-dot section-status-${status()}`}
-                        aria-label={
-                          status() === "ready"
-                            ? st().settings.statusReady
-                            : status() === "missing"
-                              ? st().settings.statusMissing
-                              : st().settings.statusOptional
-                        }
-                        title={
-                          status() === "ready"
-                            ? st().settings.statusReady
-                            : status() === "missing"
-                              ? st().settings.statusMissing
-                              : st().settings.statusOptional
-                        }
+                        aria-label={setupStatusLabel(status())}
+                        title={setupStatusLabel(status())}
                       >
                         <span class="section-status-dot-inner" />
                       </span>
@@ -692,3 +685,4 @@ export function SettingsSurface(props: { controller: ReplylineController }) {
     </Show>
   );
 }
+

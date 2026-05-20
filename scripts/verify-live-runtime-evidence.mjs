@@ -21,7 +21,7 @@ const requiredEvents = [
 
 const terminalEvents = ["analysis_ok", "ui_answer_ready"];
 const captureAltEvents = ["capture_start_ok", "capture_start_client_ok"];
-const forbiddenPatterns = [/\bsk-[A-Za-z0-9_-]+\b/i, /\bdg_[A-Za-z0-9_-]+\b/i, /\bBearer\s+\S+/i];
+const forbiddenPatterns = [/\bsk-[a-z0-9_-]+\b/i, /\bdg_[a-z0-9_-]+\b/i, /\bBearer\s+\S+/i];
 const maybeForbidden = [/api_key=/i];
 
 function parseEvents(logText) {
