@@ -50,7 +50,7 @@ jobs:
           components: clippy, rustfmt
 
       - name: Cache Cargo registry and build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/bin/
@@ -62,7 +62,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
 
       - name: Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
