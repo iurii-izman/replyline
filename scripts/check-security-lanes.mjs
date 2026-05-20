@@ -76,7 +76,7 @@ function walkRustFiles() {
     }
   }
   walk(basePath);
-  return results.sort();
+  return results.sort((a, b) => a.localeCompare(b));
 }
 
 function checkDangerousLogPatterns() {
@@ -86,7 +86,7 @@ function checkDangerousLogPatterns() {
   for (const rule of DANGEROUS_LOG_PATTERNS) {
     for (const fileRel of rustFiles) {
       // Skip excluded files
-      if (rule.excludeFiles.some((ex) => fileRel.replace(/\\/g, "/").includes(ex))) {
+      if (rule.excludeFiles.some((ex) => fileRel.replaceAll("\\", "/").includes(ex))) {
         continue;
       }
       const filePath = resolve(repoRoot, fileRel);
