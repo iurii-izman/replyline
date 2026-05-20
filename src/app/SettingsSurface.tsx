@@ -116,7 +116,8 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
     const currentIndex = sections.findIndex((section) => section.id === activeSection());
     const safeIndex = currentIndex < 0 ? 0 : currentIndex;
     const nextIndex = (safeIndex + delta + sections.length) % sections.length;
-    controller().setSettingsActiveSection(sections[nextIndex]!.id);
+    const nextSection = sections[nextIndex];
+    if (nextSection) controller().setSettingsActiveSection(nextSection.id);
   };
 
   return (
@@ -174,10 +175,12 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                           focusSectionByOffset(-1);
                         } else if (event.key === "Home") {
                           event.preventDefault();
-                          controller().setSettingsActiveSection(sections[0]!.id);
+                          const firstSection = sections[0];
+                          if (firstSection) controller().setSettingsActiveSection(firstSection.id);
                         } else if (event.key === "End") {
                           event.preventDefault();
-                          controller().setSettingsActiveSection(sections[sections.length - 1]!.id);
+                          const lastSection = sections.at(-1);
+                          if (lastSection) controller().setSettingsActiveSection(lastSection.id);
                         }
                       }}
                     >
@@ -641,7 +644,10 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                         <button
                           class="btn-secondary btn-compact check-item-action"
                           type="button"
-                          onClick={() => controller().setSettingsActiveSection(summary().section!)}
+                          onClick={() => {
+                            const section = summary().section;
+                            if (section) controller().setSettingsActiveSection(section);
+                          }}
                         >
                           {st().settings.openStep}
                         </button>
@@ -685,4 +691,3 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
     </Show>
   );
 }
-

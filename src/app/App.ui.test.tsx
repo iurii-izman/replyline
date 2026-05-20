@@ -1038,22 +1038,22 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "4" });
-    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    fireEvent.keyDown(globalThis, { key: "4" });
+    fireEvent.keyDown(globalThis, { key: "c", ctrlKey: true });
     await waitFor(() =>
       expect(mock.platform.clipboard.writeText).toHaveBeenLastCalledWith("focus on learning"),
     );
 
-    fireEvent.keyDown(window, { key: "5" });
-    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    fireEvent.keyDown(globalThis, { key: "5" });
+    fireEvent.keyDown(globalThis, { key: "c", ctrlKey: true });
     await waitFor(() =>
       expect(mock.platform.clipboard.writeText).toHaveBeenLastCalledWith(
         "What changed? (I introduced weekly review.)",
       ),
     );
 
-    fireEvent.keyDown(window, { key: "6" });
-    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    fireEvent.keyDown(globalThis, { key: "6" });
+    fireEvent.keyDown(globalThis, { key: "c", ctrlKey: true });
     await waitFor(() =>
       expect(mock.platform.clipboard.writeText).toHaveBeenLastCalledWith("Need scope?"),
     );
@@ -1085,9 +1085,9 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "6" });
+    fireEvent.keyDown(globalThis, { key: "6" });
     fireEvent.click(await screen.findByRole("button", { name: "Закрепить" }));
-    fireEvent.keyDown(window, { key: "r" });
+    fireEvent.keyDown(globalThis, { key: "r" });
     expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
   });
 
