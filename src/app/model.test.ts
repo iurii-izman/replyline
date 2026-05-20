@@ -166,11 +166,12 @@ describe("model", () => {
       const failItem: CheckItemDto = { ok: false, code: "config_error", message: "Bad" };
 
       // All ok => ready
-      expect({
+      const allReady: RuntimeCheckDto = {
         stt: okItem,
         llm: okItem,
         settings: okItem,
-      } as RuntimeCheckDto).toBeDefined();
+      };
+      expect(allReady).toBeDefined();
 
       // One fail => not ready
       const partial: RuntimeCheckDto = {

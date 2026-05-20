@@ -282,9 +282,7 @@ describe("App UX stabilization", () => {
         };
       }
       if (command === "save_settings") {
-        const input = (args as Record<string, unknown> | undefined)?.input as
-          | Record<string, unknown>
-          | undefined;
+        const input = args?.input as Record<string, unknown> | undefined;
         return { ...input, schemaVersion: 7 };
       }
       if (command === "save_secret") return null;
@@ -1408,9 +1406,7 @@ describe("Setup wizard (first-run guidance)", () => {
         };
       }
       if (command === "save_settings") {
-        const input = (args as Record<string, unknown> | undefined)?.input as
-          | Record<string, unknown>
-          | undefined;
+        const input = args?.input as Record<string, unknown> | undefined;
         settingsState = { ...settingsState, ...(input as typeof settingsState), schemaVersion: 7 };
         return settingsState;
       }
