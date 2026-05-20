@@ -1,0 +1,95 @@
+name: Auto Close Superseded Dependency PRs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "src-tauri/Cargo.toml"
+      - "src-tauri/Cargo.lock"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  close-superseded:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close superseded Dependabot PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${HEAD_SHA:-}" ]]; then
+            echo "No HEAD SHA available, exiting."
+            exit 0
+          fi
+
+          PRS=$(gh pr list \
+            --repo "$REPO" \
+            --state open \
+            --author "dependabot[bot]" \
+            --label "dependencies" \
+            --json number,title,headRefOid)
+
+          COUNT=$(echo "$PRS" | jq 'length')
+          if [[ "$COUNT" -eq 0 ]]; then
+            echo "No open dependency PRs from Dependabot."
+            exit 0
+          fi
+
+          echo "$PRS" | jq -c '.[]' | while read -r pr; do
+            NUMBER=$(echo "$pr" | jq -r '.number')
+            TITLE=$(echo "$pr" | jq -r '.title')
+            HEAD_REF_OID=$(echo "$pr" | jq -r '.headRefOid')
+
+            FILES_JSON=$(gh pr view "$NUMBER" --repo "$REPO" --json files --jq '.files[].path' | jq -R -s 'split("\n") | map(select(length>0))')
+            FILES_COUNT=$(echo "$FILES_JSON" | jq 'length')
+
+            if [[ "$FILES_COUNT" -eq 0 ]]; then
+              echo "PR #$NUMBER: no file list, skipping."
+              continue
+            fi
+
+            ONLY_DEP_FILES=$(echo "$FILES_JSON" | jq '
+              all(
+                .[]; . == "package.json" or
+                     . == "pnpm-lock.yaml" or
+                     . == "src-tauri/Cargo.toml" or
+                     . == "src-tauri/Cargo.lock"
+              )')
+
+            if [[ "$ONLY_DEP_FILES" != "true" ]]; then
+              echo "PR #$NUMBER: touches non-dependency files, skipping."
+              continue
+            fi
+
+            CHANGED_ON_MAIN=0
+            while IFS= read -r file; do
+              if gh api "repos/$REPO/commits/$HEAD_SHA" --jq '.files[].filename' | grep -Fxq "$file"; then
+                CHANGED_ON_MAIN=1
+                break
+              fi
+            done < <(echo "$FILES_JSON" | jq -r '.[]')
+
+            if [[ "$CHANGED_ON_MAIN" -ne 1 ]]; then
+              echo "PR #$NUMBER: current main commit does not overlap dependency files, skipping."
+              continue
+            fi
+
+            MERGED_BASE=$(gh api "repos/$REPO/compare/$HEAD_REF_OID...$HEAD_SHA" --jq '.merge_base_commit.sha // empty')
+            if [[ -z "$MERGED_BASE" || "$MERGED_BASE" != "$HEAD_REF_OID" ]]; then
+              echo "PR #$NUMBER: main is not clearly ahead of PR head, skipping."
+              continue
+            fi
+
+            gh pr comment "$NUMBER" --repo "$REPO" --body "Superseded by dependency updates merged into \`main\` at commit \`$HEAD_SHA\`. Closing automatically to avoid lockfile conflicts."
+            gh pr close "$NUMBER" --repo "$REPO"
+            echo "Closed PR #$NUMBER ($TITLE)"
+          done
