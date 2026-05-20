@@ -310,7 +310,19 @@ pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, Comman
     let deepgram_key_present = credentials::present(SecretSlot::DeepgramApiKey)?;
     let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
     let runtime_path_ready = settings.runtime_path_configured(deepgram_key_present);
+    let corrupt_backups = settings::list_corrupt_backups(&settings_path);
     let log_status = app_log::status().ok();
+    let (app_log_path, app_log_exists, last_log_event_time) = match log_status {
+        Some(status) => {
+            let exists = std::path::Path::new(&status.log_path).is_file();
+            let ts = status
+                .last_line
+                .as_deref()
+                .and_then(extract_log_timestamp_from_line);
+            (Some(status.log_path), exists, ts)
+        }
+        None => (None, false, None),
+    };
     Ok(PersistenceDiagnosticsDto {
         settings_path: settings_path.display().to_string(),
         settings_path_hash: hash_path_for_log(&settings_path),
@@ -327,13 +339,25 @@ pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, Comman
         active_answer_profile: settings.active_answer_profile,
         hotkey: settings.hotkey,
         capture_max_seconds: settings.capture_max_seconds,
-        corrupt_backups: settings::list_corrupt_backups(&settings_path),
+        corrupt_backups_count: corrupt_backups.len(),
+        corrupt_backups,
         keyring_service_name: credentials::SERVICE.to_string(),
         deepgram_key_present,
         llm_key_present,
         runtime_path_ready,
-        app_log_path: log_status.map(|status| status.log_path),
+        app_log_path,
+        app_log_exists,
+        last_log_event_time,
     })
+}
+
+fn extract_log_timestamp_from_line(line: &str) -> Option<String> {
+    let ts = line.split_whitespace().next()?.trim();
+    if ts.is_empty() {
+        None
+    } else {
+        Some(ts.to_string())
+    }
 }
 
 fn hash_path_for_log(path: &std::path::Path) -> String {

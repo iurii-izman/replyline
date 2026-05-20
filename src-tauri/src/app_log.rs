@@ -38,7 +38,7 @@ pub fn status() -> Result<LogStatusDto, String> {
 }
 
 pub fn log_file_path() -> Result<PathBuf, String> {
-    let base = dirs::data_local_dir().ok_or_else(|| "local_data_dir_unavailable".to_string())?;
+    let base = dirs::data_dir().ok_or_else(|| "data_dir_unavailable".to_string())?;
     Ok(base.join("com.replyline.app").join("logs").join("app.log"))
 }
 

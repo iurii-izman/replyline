@@ -312,11 +312,14 @@ export type PersistenceDiagnosticsDto = {
   hotkey: string;
   captureMaxSeconds: number;
   corruptBackups: string[];
+  corruptBackupsCount: number;
   keyringServiceName: string;
   deepgramKeyPresent: boolean;
   llmKeyPresent: boolean;
   runtimePathReady: boolean;
   appLogPath?: string | null;
+  appLogExists: boolean;
+  lastLogEventTime?: string | null;
 };
 
 export type InterviewQuestionReportDto = {

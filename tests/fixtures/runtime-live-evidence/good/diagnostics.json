@@ -1,0 +1,9 @@
+{
+  "settingsFileExists": true,
+  "settingsParseOk": true,
+  "settingsValidationOk": true,
+  "deepgramKeyPresent": true,
+  "llmKeyPresent": true,
+  "runtimePathReady": true,
+  "corruptBackupsCount": 0
+}

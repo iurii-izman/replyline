@@ -55,6 +55,7 @@ const matrix = {
     "check:slo",
     "parse:latency",
     "test:latency-parser",
+    "test:live-runtime-evidence",
     "report:card-quality",
     "docker:replyline:check",
     "docker:replyline:check:dry",

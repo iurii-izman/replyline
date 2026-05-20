@@ -236,12 +236,16 @@ pub struct PersistenceDiagnosticsDto {
     pub hotkey: String,
     pub capture_max_seconds: u16,
     pub corrupt_backups: Vec<String>,
+    pub corrupt_backups_count: usize,
     pub keyring_service_name: String,
     pub deepgram_key_present: bool,
     pub llm_key_present: bool,
     pub runtime_path_ready: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub app_log_path: Option<String>,
+    pub app_log_exists: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_log_event_time: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
