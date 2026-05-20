@@ -799,7 +799,7 @@ describe("App UX stabilization", () => {
     fireEvent.click(compactToggle);
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
     fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
-    fireEvent.keyDown(window, { key: "r" });
+    fireEvent.keyDown(globalThis, { key: "r" });
 
     expect(
       await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
@@ -878,7 +878,7 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    fireEvent.keyDown(globalThis, { key: "c", ctrlKey: true });
     await waitFor(() =>
       expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("Primary answer main"),
     );
@@ -891,7 +891,7 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "2" });
+    fireEvent.keyDown(globalThis, { key: "2" });
     expect(await screen.findByText(/Tell me about a delivery incident\./)).toBeTruthy();
   });
 
@@ -902,7 +902,7 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "3" });
+    fireEvent.keyDown(globalThis, { key: "3" });
     expect(screen.queryByText("Метрики:")).toBeNull();
   });
 
@@ -945,7 +945,7 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.keyDown(window, { key: "3" });
+    fireEvent.keyDown(globalThis, { key: "3" });
     expect(await screen.findByTestId("section-interview-signals")).toBeTruthy();
     fireEvent.keyDown(window, { key: "4" });
     expect(await screen.findByTestId("section-interview-risks")).toBeTruthy();
