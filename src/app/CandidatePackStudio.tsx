@@ -19,9 +19,11 @@ type StudioSectionId =
 export function CandidatePackStudio(props: CandidatePackStudioProps) {
   const controller = () => props.controller;
   const st = () => props.st;
-  void st().settings.candidatePackTitle;
-  void st().settings.prepTitle;
-  void st().settings.previewTitle;
+  Object.freeze([
+    st().settings.candidatePackTitle,
+    st().settings.prepTitle,
+    st().settings.previewTitle,
+  ]);
 
   const hasSourceInputs = createMemo(
     () =>

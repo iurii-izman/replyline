@@ -630,7 +630,7 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
     st().captureQuality.long,
     st().setup.continueSetup,
   ]);
-  void localeCoverage();
+  localeCoverage();
   const compactLayout = createMemo(() => controller().compactMode());
   const isSetup = createMemo(() => controller().setupRequired());
   const isProcessing = createMemo(
@@ -708,4 +708,3 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
     </Show>
   );
 }
-
