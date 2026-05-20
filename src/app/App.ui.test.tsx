@@ -359,6 +359,7 @@ describe("App UX stabilization", () => {
 
     expect(await screen.findByTestId("app-header-brand")).toBeTruthy();
     expect(screen.getByText("Replyline")).toBeTruthy();
+    expect(screen.getByTestId("app-header-hotkey").textContent).toContain("Ctrl+Alt+Space");
     expect(screen.getByTestId("app-header-settings-action")).toBeTruthy();
     expect(screen.getByTestId("app-header-hide-action")).toBeTruthy();
   });
@@ -381,16 +382,30 @@ describe("App UX stabilization", () => {
     });
     render(() => <App platform={setupMock.platform} />);
 
-    expect((await screen.findByTestId("app-header-phase")).textContent).toContain(
-      "Нужно завершить настройку",
-    );
+    const phase = await screen.findByTestId("app-header-phase");
+    expect(phase.textContent).toContain("Нужно завершить настройку");
+    expect(phase.className).toContain("app-header-phase--setup");
   });
 
   it("renders idle-ready phase label in header", async () => {
     render(() => <App platform={mock.platform} />);
-    expect((await screen.findByTestId("app-header-phase")).textContent).toContain(
-      "Готово к записи",
-    );
+    const phase = await screen.findByTestId("app-header-phase");
+    expect(phase.textContent).toContain("Готово к записи");
+    expect(phase.className).toContain("app-header-phase--idle");
+  });
+
+  it("header settings action opens settings panel", async () => {
+    render(() => <App platform={mock.platform} />);
+
+    fireEvent.click(await screen.findByTestId("app-header-settings-action"));
+    expect(await screen.findByTestId("settings-surface")).toBeTruthy();
+  });
+
+  it("header hide action calls hideWindow", async () => {
+    render(() => <App platform={mock.platform} />);
+
+    fireEvent.click(await screen.findByTestId("app-header-hide-action"));
+    await waitFor(() => expect(mock.platform.window.hide).toHaveBeenCalled());
   });
 
   it("native close request hides window to tray when enabled", async () => {

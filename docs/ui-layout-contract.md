@@ -40,6 +40,46 @@ This document defines the baseline desktop layout contract for Replyline after n
 - Candidate Studio sections: `1480px–1600px` (current target: `1580px`).
 - Ultra-wide screens (`1680px+`) must preserve capped readable layouts and avoid endlessly stretched forms.
 
+## Warm Precision Tokens
+
+- Visual direction: `Warm Precision AI Cockpit` (warm stone/sand canvas, pine-green primary accent, amber setup/recording, restrained blue analyzing, deep-red danger, near-white hero surfaces).
+- New UI styles must consume semantic tokens from `src/App.css` instead of hardcoded random colors.
+- Baseline semantic token groups:
+  - Backgrounds: `--color-bg-*`
+  - Text: `--color-text-*`
+  - Borders: `--color-border-*`
+  - Accent/intent: `--color-accent*`, `--color-success*`, `--color-warning*`, `--color-danger*`
+  - State/focus: `--color-state-*`, `--color-focus-*`
+- Backward-compatible aliases (`--canvas-*`, `--surface-*`, `--text-*`, `--accent`, `--warning`, `--danger`, `--success`, `--text-say-now`, `--color-say-now-*`) must remain valid for existing components.
+
+## Warm Precision AI Cockpit visual contract
+
+- Brand attributes:
+  - calm, confident, precise desktop cockpit;
+  - warm-neutral base with restrained professional contrast;
+  - clear hierarchy for setup -> run -> answer workflows.
+- Color/token rules:
+  - only semantic tokens from `src/App.css` for user-facing surfaces and controls;
+  - core palette must keep warm canvas + pine accent + amber recording/setup + restrained blue analyzing + deep red danger;
+  - avoid introducing one-off hardcoded colors for primary UX states.
+- Surface/elevation rules:
+  - near-white hero surfaces may use `--shadow-hero`;
+  - regular cards use restrained depth (`--shadow-xs|--shadow-sm|--shadow-md`) and tokenized borders;
+  - no detached floating "window inside window" shell.
+- Status state rules:
+  - setup, recording, analyzing, ready, error states must remain visually distinct and deterministic;
+  - status meaning is driven by semantic state tokens, not ad-hoc color hacks.
+- Icon rules:
+  - critical header/actions use SVG `.ui-icon` primitives with `currentColor`;
+  - no Unicode/emoji glyphs for critical controls or workflow actions.
+- Motion rules:
+  - transitions/animations use motion tokens (`--motion-fast`, `--motion-normal`) and easing tokens;
+  - `prefers-reduced-motion` must remain respected.
+- Accessibility rules:
+  - body text and actionable labels must avoid low-contrast gray-on-warm backgrounds;
+  - focus visibility must stay tokenized (`--color-focus-ring`, `--color-focus-shadow`);
+  - critical controls must not look disabled when actionable.
+
 ## Breakpoints
 
 - Compact: `< 760px`
@@ -96,6 +136,18 @@ A page can use both classes on the same element when both semantics apply.
 - No infinite full-width forms on wide displays.
 - No default browser-looking primary critical actions in main flows; critical actions must use Replyline button classes.
 - No raw mixed-language setup labels in user-facing JSX (`missing`, `ready`, `optional`, `Статус setup`).
+- No excessive beige / beige mush that destroys contrast and hierarchy.
+- No low-contrast gray text for primary/secondary content.
+- No random non-tokenized shadows.
+- No fake glass effects that do not belong to the warm precision direction.
+- No over-fragmented UI made of too many bordered cards.
+- No giant empty panels that consume screen space without actionable content.
+- No "disabled controls everywhere" visual impression in normal ready flow.
+- No unstyled browser-native controls in critical cockpit paths.
+- No Unicode/emoji icons in critical UI controls.
+- No overuse of accent color across large surfaces.
+- No dashboard clutter with competing highlights.
+- No generic admin-panel look that erodes product identity.
 
 ## Native Window Semantics
 
@@ -151,3 +203,9 @@ The `test:ui-shell-contract` gate is required to catch shell/layout regressions 
   - danger action clears profile
   - back action returns to settings
 - Privacy note must remain visible in Step 1 and must not be removed.
+
+## Stop Criteria for This Visual Cycle
+
+- Target visual score for this cycle: `80-88` (manual QA + contract checks).
+- Do not continue CSS polish when runtime correctness, latency behavior, or answer quality are not yet validated.
+- After visual pass is locked, next direction is real beta scenario quality (runtime reliability, latency, answer quality), not endless style iteration.

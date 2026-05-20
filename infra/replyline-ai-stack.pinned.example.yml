@@ -1,0 +1,15 @@
+services:
+  # Example pinning overlay for release hardening.
+  # Copy to a local untracked file and replace tags with versions/digests
+  # verified in your environment before enabling.
+  langfuse-clickhouse:
+    image: clickhouse/clickhouse-server:REPLACE_WITH_TESTED_TAG
+
+  langfuse-minio:
+    image: minio/minio:REPLACE_WITH_TESTED_TAG
+
+  langfuse-minio-init:
+    image: minio/mc:REPLACE_WITH_TESTED_TAG
+
+  qdrant:
+    image: qdrant/qdrant:REPLACE_WITH_TESTED_TAG

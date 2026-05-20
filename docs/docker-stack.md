@@ -38,6 +38,7 @@ Health check:
 ```powershell
 pnpm docker:replyline:check
 pnpm docker:replyline:check:dry
+pnpm docker:replyline:check:strict
 ```
 
 Auto-heal:
@@ -67,14 +68,14 @@ Current host mappings (replyline project):
 
 | Service               | Container      | Host                                 |
 | --------------------- | -------------- | ------------------------------------ |
-| `langfuse-web`        | `3000`         | `13000`                              |
+| `langfuse-web`        | `3000`         | `127.0.0.1:13000`                    |
 | `langfuse-db`         | `5432`         | `127.0.0.1:15433`                    |
 | `langfuse-redis`      | `6379`         | `127.0.0.1:16379`                    |
 | `langfuse-clickhouse` | `8123`, `9000` | `127.0.0.1:18123`, `127.0.0.1:19009` |
-| `langfuse-minio`      | `9000`, `9001` | `19090`, `127.0.0.1:19091`           |
-| `qdrant`              | `6333`, `6334` | `16333`, `16334`                     |
+| `langfuse-minio`      | `9000`, `9001` | `127.0.0.1:19090`, `127.0.0.1:19091` |
+| `qdrant`              | `6333`, `6334` | `127.0.0.1:16333`, `127.0.0.1:16334` |
 
-Recommendation: keep DB/cache/admin ports bound to `127.0.0.1`. Public host exposure should be intentional.
+Default policy: local-only binds for Langfuse/MinIO/Qdrant ports. If LAN/public access for `langfuse-web` is required, change mapping intentionally (for example `13000:3000`) and keep this decision documented.
 
 ## Volumes
 
@@ -87,19 +88,44 @@ Recommendation: keep DB/cache/admin ports bound to `127.0.0.1`. Public host expo
 
 Do not remove volumes without explicit backup and manual confirmation.
 
-## Secrets and env
+## Secrets and env contract
 
 - Do not commit runtime `.env` files.
 - Keep secret values outside repo (env files or Docker secret tooling).
 - `docker inspect` or audit reports must never include raw secret values.
-- `.env.example` template is currently absent in this repo; use external local env management and document required keys before sharing setup.
+- Sanitized template in repo: `.env.docker.example`.
+- Copy template to local non-committed file and set real values:
 
-## Safe update policy
+```powershell
+Copy-Item .env.docker.example .env.docker.local
+```
 
-1. Pin image tags for stable beta; avoid floating `latest`.
-2. Upgrade one service at a time.
-3. Run `pnpm docker:replyline:check` and `pnpm smoke` after image changes.
-4. Review migration notes before major upgrades (Langfuse/ClickHouse/Postgres/Qdrant/MinIO).
+- Rotate secrets by replacing local values and restarting stack (`pnpm docker:replyline:restore:ai`).
+
+## Image pinning policy
+
+1. Prefer exact tested tags/digests from currently running images.
+2. Never replace floating tags blindly.
+3. Use `infra/replyline-ai-stack.pinned.example.yml` as release-hardening overlay template.
+4. Keep external base compose updates manual when image definitions live outside repo.
+5. Upgrade one service at a time and validate with:
+   - `pnpm docker:replyline:check`
+   - `pnpm docker:replyline:check:strict`
+   - `pnpm smoke`
+
+`docker:replyline:check` reports warnings (floating tags, public binds, env template gap, expected stopped init containers).  
+`docker:replyline:check:strict` is a release gate and fails for:
+
+- floating/implicit-latest images;
+- public binds on `langfuse-minio`/`qdrant`;
+- missing env example template.
+
+Expected one-shot `langfuse-minio-init` with `exited(0)` remains allowed.
+
+## External compose responsibilities
+
+External base compose (`REPLYLINE_AI_STACK_COMPOSE`, default `C:\Users\iurii\ai-stack\docker-compose.yml`) is not versioned in this repo.  
+Repo can enforce override policy, checks, and templates; base-image pinning and inline secret cleanup in external file remain manual updates by environment owner.
 
 ## Danger zone (manual only)
 

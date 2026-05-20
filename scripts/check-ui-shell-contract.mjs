@@ -227,6 +227,65 @@ if (appCss) {
     "src/App.css",
     "candidate studio should keep max-width cap token",
   );
+
+  const requiredSemanticTokens = [
+    "--color-bg-app",
+    "--color-bg-canvas",
+    "--color-bg-surface",
+    "--color-bg-surface-raised",
+    "--color-bg-surface-muted",
+    "--color-bg-hero",
+    "--color-text-primary",
+    "--color-text-secondary",
+    "--color-text-muted",
+    "--color-text-accent",
+    "--color-border-subtle",
+    "--color-border-strong",
+    "--color-accent",
+    "--color-accent-hover",
+    "--color-accent-soft",
+    "--color-success",
+    "--color-success-soft",
+    "--color-warning",
+    "--color-warning-soft",
+    "--color-danger",
+    "--color-danger-soft",
+    "--color-state-recording",
+    "--color-state-analyzing",
+    "--color-state-copied",
+    "--color-focus-ring",
+    "--color-focus-shadow",
+    "--shadow-hero",
+    "--motion-fast",
+    "--motion-normal",
+  ];
+
+  for (const token of requiredSemanticTokens) {
+    assertIncludes(appCss, token, "src/App.css");
+  }
+
+  const requiredCompatAliases = [
+    "--canvas-bg",
+    "--canvas-wash",
+    "--surface-base",
+    "--surface-raised",
+    "--surface-muted",
+    "--text-primary",
+    "--text-secondary",
+    "--text-tertiary",
+    "--accent",
+    "--warning",
+    "--danger",
+    "--success",
+    "--radius-card",
+    "--text-say-now",
+    "--color-say-now-bg",
+    "--color-say-now-border",
+  ];
+
+  for (const aliasToken of requiredCompatAliases) {
+    assertIncludes(appCss, aliasToken, "src/App.css");
+  }
 }
 
 const userFacingTsxFiles = [
@@ -248,6 +307,24 @@ for (const path of userFacingTsxFiles) {
     'raw EN setup labels in user-facing JSX are forbidden ("missing/ready/optional")',
   );
   assertNoRegex(source, /Статус setup/gu, path, 'forbidden copy "Статус setup"');
+}
+
+const criticalIconFiles = [
+  "src/app/ChromeSurface.tsx",
+  "src/app/MainSurface.tsx",
+  "src/app/SettingsSurface.tsx",
+  "src/app/CandidatePackStudio.tsx",
+];
+
+for (const path of criticalIconFiles) {
+  const source = readText(path);
+  if (!source) continue;
+  assertNoRegex(
+    source,
+    /[⚙⤓✓✗○▾]/u,
+    path,
+    "critical header/actions must not rely on Unicode icon glyphs",
+  );
 }
 
 const localeSource = readText("src/app/locale.ts");

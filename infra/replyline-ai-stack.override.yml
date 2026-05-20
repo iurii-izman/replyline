@@ -6,7 +6,7 @@ services:
       com.replyline.project: "replyline"
       com.replyline.stack: "ai-bridge"
     ports:
-      - "13000:3000"
+      - "127.0.0.1:13000:3000"
 
   langfuse-worker:
     container_name: null
@@ -50,7 +50,7 @@ services:
       com.replyline.project: "replyline"
       com.replyline.stack: "ai-bridge"
     ports:
-      - "19090:9000"
+      - "127.0.0.1:19090:9000"
       - "127.0.0.1:19091:9001"
 
   langfuse-minio-init:
@@ -67,5 +67,5 @@ services:
       com.replyline.project: "replyline"
       com.replyline.stack: "ai-bridge"
     ports:
-      - "16333:6333"
-      - "16334:6334"
+      - "127.0.0.1:16333:6333"
+      - "127.0.0.1:16334:6334"

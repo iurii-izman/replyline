@@ -279,7 +279,11 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     ) : null}
                   </span>
                   <input
-                    class="field-input"
+                    class={`field-input ${
+                      controller().deepgramSaved() && !controller().draftSecrets.deepgramApiKey
+                        ? "field-input-secret-saved"
+                        : ""
+                    }`}
                     type="password"
                     placeholder={
                       controller().deepgramSaved() ? st().setup.sttReady : st().setup.sttMissing
@@ -401,7 +405,11 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                       ) : null}
                     </span>
                     <input
-                      class="field-input"
+                      class={`field-input ${
+                        controller().llmKeySaved() && !controller().draftSecrets.llmApiKey
+                          ? "field-input-secret-saved"
+                          : ""
+                      }`}
                       type="password"
                       value={controller().draftSecrets.llmApiKey}
                       onInput={(event) => controller().setLlmApiKeyDraft(event.currentTarget.value)}

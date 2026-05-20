@@ -2,7 +2,10 @@ node_modules
 dist
 src-tauri/target
 *.log
-reports
+reports/*
+!reports/docker/
+!reports/docker/docker-stack-audit-2026-05-21.md
+!reports/docker/docker-stack-hardening-2026-05-21.md
 .vscode
 .idea
 .DS_Store
@@ -29,7 +32,9 @@ AI/
 .zed/
 docs/archive/
 docs-cleanup-task.md
-infra/
+infra/*
+!infra/replyline-ai-stack.override.yml
+!infra/replyline-ai-stack.pinned.example.yml
 postman/
 scratch/
 tests/api/postman/
@@ -39,6 +44,7 @@ test-out.txt
 .env
 .env.*
 !.env.keys
+!.env.docker.example
 scripts/runtime-probe-env.local.ps1
 *.pem
 *.key

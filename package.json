@@ -52,6 +52,7 @@
     "runtime:preflight": "pwsh -File scripts/runtime-preflight.ps1",
     "docker:replyline:check": "pwsh -File scripts/docker-replyline-health.ps1",
     "docker:replyline:check:dry": "pwsh -File scripts/docker-replyline-health.ps1 -DryRun",
+    "docker:replyline:check:strict": "pwsh -ExecutionPolicy Bypass -File scripts/docker-replyline-health.ps1 -Json -StrictRelease",
     "docker:replyline:heal": "pwsh -File scripts/docker-replyline-health.ps1 -AutoRecover",
     "docker:replyline:heal:dry": "pwsh -File scripts/docker-replyline-health.ps1 -AutoRecover -DryRun",
     "docker:replyline:restore:ai": "pwsh -File scripts/docker-replyline-restore-ai-stack.ps1",

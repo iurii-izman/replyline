@@ -130,11 +130,16 @@ function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
 function ProcessingState(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
+  const isRecording = () => controller().phase() === "capturing";
+  const isAnalyzing = () => controller().phase() === "analyzing";
 
   return (
-    <section class="phase-card" data-testid="main-state-processing">
+    <section
+      class={`phase-card ${isRecording() ? "phase-card--recording" : "phase-card--analyzing"}`}
+      data-testid="main-state-processing"
+    >
       <Show
-        when={controller().phase() === "capturing"}
+        when={isRecording()}
         fallback={
           <>
             <strong>{st().header.statusAnalyzing}</strong>
@@ -149,6 +154,10 @@ function ProcessingState(props: Readonly<{ controller: ReplylineController }>) {
           <span>{controller().phaseLabel()}</span>
         </div>
         <p class="empty-flow-hint">{st().card.releaseToAnalyze}</p>
+        <div class="phase-activity-pulse" aria-hidden="true" />
+      </Show>
+      <Show when={isAnalyzing()}>
+        <div class="phase-progress-line" aria-hidden="true" />
       </Show>
       <Show when={controller().statusDetail()}>
         <p class="empty-flow-hint">{controller().statusDetail()}</p>
@@ -180,7 +189,7 @@ function LiveAnswerCard(props: Readonly<{ controller: ReplylineController }>) {
       <div class="answer-hero-header">
         <div class="result-label">{st().card.sayNowLabel}</div>
         <button
-          class="btn-primary"
+          class={`btn-primary answer-copy-btn ${copied() ? "is-copied" : ""}`}
           aria-label={st().card.copySayNow}
           onClick={() => void handleCopy()}
         >

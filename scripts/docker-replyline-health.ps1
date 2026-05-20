@@ -7,7 +7,8 @@ param(
   [switch]$AutoRecover,
   [switch]$DryRun,
   [switch]$Json,
-  [switch]$AllowUnsafeCompose
+  [switch]$AllowUnsafeCompose,
+  [switch]$StrictRelease
 )
 
 $ErrorActionPreference = "Stop"
@@ -336,13 +337,81 @@ function Get-VersionFinding {
   if ([string]::IsNullOrWhiteSpace($ImageRef)) {
     return "unknown"
   }
-  if ($ImageRef -match ":(latest|dev)$") {
-    return "floating-tag"
-  }
   if ($ImageRef -notmatch ":") {
     return "implicit-latest"
   }
-  return "pinned-or-major"
+  if ($ImageRef -match ":(latest|dev)$") {
+    return "floating-tag"
+  }
+  if ($ImageRef -match ":[0-9]+$") {
+    return "major-only"
+  }
+  if ($ImageRef -match "@sha256:[0-9a-f]{64}$") {
+    return "digest-pinned"
+  }
+  return "exact-pinned"
+}
+
+function Get-PublicPortBindingFindings {
+  param([object[]]$DesiredPorts)
+
+  $publicAllowed = @("langfuse-web")
+  $nonPublicServices = @("langfuse-minio", "qdrant")
+  $findings = @()
+  foreach ($entry in $DesiredPorts) {
+    $isPublicBind = ([string]::IsNullOrWhiteSpace($entry.hostIp) -or $entry.hostIp -eq "0.0.0.0" -or $entry.hostIp -eq "::")
+    if (-not $isPublicBind) { continue }
+
+    $isSensitive = $nonPublicServices -contains $entry.service
+    $isAllowed = $publicAllowed -contains $entry.service
+    if ($isSensitive -or -not $isAllowed) {
+      $findings += [pscustomobject]@{
+        service = $entry.service
+        hostIp = if ([string]::IsNullOrWhiteSpace($entry.hostIp)) { "0.0.0.0" } else { $entry.hostIp }
+        published = $entry.published
+        target = $entry.target
+        protocol = $entry.protocol
+        recommendation = if ($entry.service -eq "langfuse-web") { "Document intentional public exposure or bind to 127.0.0.1." } else { "Bind to 127.0.0.1 for local-only access." }
+      }
+    }
+  }
+  return $findings
+}
+
+function Get-ExternalComposeInlineSecretFindings {
+  param(
+    [string]$BaseComposeFilePath,
+    [string]$RepoRoot
+  )
+
+  if ([string]::IsNullOrWhiteSpace($BaseComposeFilePath) -or -not (Test-Path $BaseComposeFilePath)) {
+    return @()
+  }
+  $resolvedBase = (Resolve-Path $BaseComposeFilePath).Path
+  $resolvedRepo = (Resolve-Path $RepoRoot).Path
+  if ($resolvedBase.StartsWith($resolvedRepo, [System.StringComparison]::OrdinalIgnoreCase)) {
+    return @()
+  }
+
+  $lines = Get-Content $resolvedBase
+  $findings = @()
+  for ($i = 0; $i -lt $lines.Count; $i++) {
+    $line = $lines[$i]
+    if ($line -match '^\s*([A-Z0-9_]*(SECRET|PASSWORD|TOKEN|KEY)[A-Z0-9_]*)\s*:\s*(.+)\s*$') {
+      $key = $Matches[1]
+      $valueToken = $Matches[3].Trim()
+      if ($valueToken -notmatch '^\$\{?[A-Z0-9_]+\}?$') {
+        $findings += [pscustomobject]@{
+          file = $resolvedBase
+          line = ($i + 1)
+          variable = $key
+          finding = "inline-secret-like-value"
+        }
+      }
+    }
+  }
+
+  return $findings
 }
 
 function Get-ContainerState {
@@ -564,6 +633,26 @@ $unhealthyCount = ($containers | Where-Object { $_.health -eq "unhealthy" } | Me
 $stoppedCount = ($containers | Where-Object { $_.status -ne "running" -and -not $_.expectedStopped } | Measure-Object).Count
 $expectedStoppedCount = ($containers | Where-Object { $_.expectedStopped } | Measure-Object).Count
 $healthyCount = ($containers | Where-Object { $_.status -eq "running" -and ($_.health -eq $null -or $_.health -eq "healthy") } | Measure-Object).Count
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$envExampleCandidates = @(
+  (Join-Path $repoRoot ".env.docker.example"),
+  (Join-Path $repoRoot "infra\replyline-ai-stack.env.example")
+)
+$envExampleFound = @($envExampleCandidates | Where-Object { Test-Path $_ })
+$publicPortFindings = Get-PublicPortBindingFindings -DesiredPorts $desiredPorts
+$floatingImageFindings = @($containers | Where-Object { $_.versionFinding -in @("floating-tag", "implicit-latest") } | Select-Object name, service, image, versionFinding)
+$majorOnlyImageFindings = @($containers | Where-Object { $_.versionFinding -eq "major-only" } | Select-Object name, service, image, versionFinding)
+$experimentalRunning = @($containers | Where-Object { $_.service -eq "qdrant" -and $_.status -eq "running" } | Select-Object -ExpandProperty name)
+$externalComposeInlineSecrets = @()
+if ($composeContext.Mode -eq "merged" -and $composeContext.Files.Count -ge 1) {
+  $externalComposeInlineSecrets = Get-ExternalComposeInlineSecretFindings -BaseComposeFilePath $composeContext.Files[0] -RepoRoot $repoRoot
+}
+$strictFailures = @()
+if ($StrictRelease) {
+  if ($floatingImageFindings.Count -gt 0) { $strictFailures += "floatingImageTags" }
+  if (($publicPortFindings | Where-Object { $_.service -in @("langfuse-minio", "qdrant") }).Count -gt 0) { $strictFailures += "publicPortBindingsSensitive" }
+  if ($envExampleFound.Count -eq 0) { $strictFailures += "missingEnvExample" }
+}
 
 $report = [pscustomobject]@{
   generatedAt = (Get-Date).ToString("s")
@@ -591,15 +680,21 @@ $report = [pscustomobject]@{
   warnings = [pscustomobject]@{
     missingComposeOverride = ($composeContext.Mode -eq "none")
     unsafeComposeContainerNames = (-not $composeSafety.safe)
-    floatingImageTags = @($containers | Where-Object { $_.versionFinding -in @("floating-tag", "implicit-latest") } | Select-Object -ExpandProperty name)
+    floatingImageTags = $floatingImageFindings
+    majorOnlyImageTags = $majorOnlyImageFindings
+    publicPortBindings = $publicPortFindings
+    missingEnvExample = ($envExampleFound.Count -eq 0)
+    envExampleCandidates = $envExampleCandidates
+    externalComposeSecretsInline = $externalComposeInlineSecrets
+    experimentalServicesRunning = $experimentalRunning
     exitedExpected = @($containers | Where-Object { $_.expectedStopped } | Select-Object -ExpandProperty name)
   }
+  strictRelease = [pscustomobject]@{
+    enabled = [bool]$StrictRelease
+    passed = ($strictFailures.Count -eq 0)
+    failures = $strictFailures
+  }
   containers = $containers
-}
-
-if ($Json) {
-  $report | ConvertTo-Json -Depth 8
-  exit 0
 }
 
 Write-Info "Project=$ProjectName Label=$ManagedLabel"
@@ -640,15 +735,54 @@ if ($containers.Count -eq 0) {
     Format-Table -AutoSize
 }
 
+if ($publicPortFindings.Count -gt 0) {
+  Write-Info "Public port binding findings:"
+  foreach ($f in $publicPortFindings) {
+    Write-Host "  - service=$($f.service) hostIp=$($f.hostIp) published=$($f.published) target=$($f.target) recommendation=$($f.recommendation)"
+  }
+}
+
+if ($floatingImageFindings.Count -gt 0) {
+  Write-Info "Floating image findings:"
+  foreach ($f in $floatingImageFindings) {
+    Write-Host "  - service=$($f.service) image=$($f.image) finding=$($f.versionFinding)"
+  }
+}
+
+if ($envExampleFound.Count -eq 0) {
+  Write-Info "Env example not found. Add .env.docker.example or infra/replyline-ai-stack.env.example."
+}
+
+if ($externalComposeInlineSecrets.Count -gt 0) {
+  Write-Info "External compose includes inline secret-like values (variable names only):"
+  foreach ($f in $externalComposeInlineSecrets) {
+    Write-Host "  - file=$($f.file) line=$($f.line) variable=$($f.variable) finding=$($f.finding)"
+  }
+}
+
 if (@($actions).Count -gt 0) {
   Write-Info "Recovery actions:"
   $actions | ForEach-Object { Write-Host "  - $_" }
 }
 
+if ($StrictRelease -and $strictFailures.Count -gt 0) {
+  if ($Json) {
+    $report | ConvertTo-Json -Depth 8
+  }
+  Write-Info "Strict release check failed: $($strictFailures -join ', ')"
+  exit 3
+}
+
 if ($portConflicts.hasConflicts -or $stoppedCount -gt 0 -or $unhealthyCount -gt 0) {
+  if ($Json) {
+    $report | ConvertTo-Json -Depth 8
+  }
   Write-Info "Health check completed with issues."
   exit 2
 }
 
+if ($Json) {
+  $report | ConvertTo-Json -Depth 8
+}
 Write-Info "Health check passed."
 exit 0

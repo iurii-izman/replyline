@@ -59,9 +59,8 @@ if (customBlock) {
   failures.push('Missing backend block for "custom_openai_compatible".');
 }
 
-const hasUnknownFallbackProvider = /_\s*=>\s*ModelPreset\s*\{[\s\S]*provider_kind:\s*ProviderKind::OpenAiCompatible/.test(
-  rsSource,
-);
+const hasUnknownFallbackProvider =
+  /_\s*=>\s*ModelPreset\s*\{[\s\S]*provider_kind:\s*ProviderKind::OpenAiCompatible/.test(rsSource);
 if (!hasUnknownFallbackProvider) {
   failures.push("Unknown preset safe fallback must resolve to ProviderKind::OpenAiCompatible.");
 }

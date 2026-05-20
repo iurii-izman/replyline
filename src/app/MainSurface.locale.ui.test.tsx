@@ -98,6 +98,48 @@ describe("MainSurface state-driven view", () => {
     expect(screen.queryByTestId("pipeline-timeline")).toBeNull();
   });
 
+  it("recording state renders dedicated visual class", () => {
+    render(
+      () =>
+        (
+          <MainSurface
+            controller={
+              createController(ui_ru, {
+                phase: () => "capturing",
+                mainUiState: () => "capturing",
+                phaseLabel: () => ui_ru.phase.capturing,
+              }) as never
+            }
+          />
+        ) as never,
+    );
+    expect(screen.getByTestId("main-state-processing").className).toContain(
+      "phase-card--recording",
+    );
+    expect(screen.getByText("Идёт запись")).toBeTruthy();
+  });
+
+  it("analyzing state renders dedicated visual class", () => {
+    render(
+      () =>
+        (
+          <MainSurface
+            controller={
+              createController(ui_ru, {
+                phase: () => "analyzing",
+                mainUiState: () => "analyzing",
+                phaseLabel: () => ui_ru.phase.analyzing,
+              }) as never
+            }
+          />
+        ) as never,
+    );
+    expect(screen.getByTestId("main-state-processing").className).toContain(
+      "phase-card--analyzing",
+    );
+    expect(screen.getByText("Собираем ответ")).toBeTruthy();
+  });
+
   it("answer-ready renders hero, insight and action dock", () => {
     const copyCurrentCard = vi.fn();
     render(
@@ -124,7 +166,12 @@ describe("MainSurface state-driven view", () => {
     expect(screen.getByTestId("answer-hero-card")).toBeTruthy();
     expect(screen.getByTestId("secondary-insight-cards")).toBeTruthy();
     expect(screen.getByTestId("action-row")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Скопировать ответ" }));
+    const hero = screen.getByTestId("answer-hero-card");
+    const copy = screen.getByRole("button", { name: "Скопировать ответ" });
+    expect(hero.contains(copy)).toBe(true);
+    expect(screen.getByRole("button", { name: "Пересобрать" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Очистить" })).toBeTruthy();
+    fireEvent.click(copy);
     expect(copyCurrentCard).toHaveBeenCalled();
   });
 

@@ -64,7 +64,11 @@ export function ShellChrome(props: { controller: ReplylineController }) {
             <span class="app-header-phase-dot" aria-hidden="true" />
             <span class="app-header-phase-text">{headerStatus()}</span>
           </span>
-          <span class="app-header-hotkey" data-testid="app-header-hotkey">
+          <span
+            class="app-header-hotkey"
+            data-testid="app-header-hotkey"
+            aria-label={st().settings.hotkeyLabel}
+          >
             {hotkeyHint()}
           </span>
         </div>
