@@ -113,13 +113,14 @@ function validateInterviewCardSchemaV1(output) {
   if (!Array.isArray(output?.risks?.avoid)) errors.push("risks.avoid invalid");
   if (!String(output?.risks?.safeReframe ?? "").trim()) errors.push("risks.safeReframe missing");
 
-  if (!Array.isArray(output.followUps)) errors.push("followUps invalid");
-  else {
+  if (Array.isArray(output.followUps)) {
     for (const [idx, row] of output.followUps.entries()) {
       if (!String(row?.question ?? "").trim()) errors.push(`followUps[${idx}].question missing`);
       if (!String(row?.bridgeAnswer ?? "").trim())
         errors.push(`followUps[${idx}].bridgeAnswer missing`);
     }
+  } else {
+    errors.push("followUps invalid");
   }
 
   if (!output.clarifier || typeof output.clarifier !== "object") errors.push("clarifier missing");

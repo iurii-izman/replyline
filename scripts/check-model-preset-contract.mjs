@@ -47,9 +47,7 @@ for (const id of openrouterIds) {
 const customBlock = rsSource.match(
   /"custom_openai_compatible"\s*=>\s*ModelPreset\s*\{([\s\S]*?)\},/m,
 );
-if (!customBlock) {
-  failures.push('Missing backend block for "custom_openai_compatible".');
-} else {
+if (customBlock) {
   const block = customBlock[1];
   if (!/provider_kind:\s*ProviderKind::Custom/.test(block)) {
     failures.push('"custom_openai_compatible" must map to ProviderKind::Custom.');
@@ -57,18 +55,20 @@ if (!customBlock) {
   if (!/fallback_models:\s*&\[\s*]/.test(block)) {
     failures.push('"custom_openai_compatible" must keep empty fallback_models.');
   }
+} else {
+  failures.push('Missing backend block for "custom_openai_compatible".');
 }
 
 const hasUnknownFallbackProvider = /_\s*=>\s*ModelPreset\s*\{[\s\S]*provider_kind:\s*ProviderKind::OpenAiCompatible/.test(
   rsSource,
 );
-if (hasUnknownFallbackProvider === false) {
+if (!hasUnknownFallbackProvider) {
   failures.push("Unknown preset safe fallback must resolve to ProviderKind::OpenAiCompatible.");
 }
 const hasUnknownFallbackModels = /_\s*=>\s*ModelPreset\s*\{[\s\S]*fallback_models:\s*&\[\s*]/.test(
   rsSource,
 );
-if (hasUnknownFallbackModels === false) {
+if (!hasUnknownFallbackModels) {
   failures.push("Unknown preset safe fallback must keep empty fallback_models.");
 }
 

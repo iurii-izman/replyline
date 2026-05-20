@@ -23,11 +23,7 @@ function percentile(values, p) {
 }
 
 const soakAvailable = existsSync(summaryPath);
-if (!soakAvailable) {
-  console.log(
-    "slo-check: reports/runtime/soak-summary.json not found — skipping probe/failure envelope checks.",
-  );
-} else {
+if (soakAvailable) {
   const summary = JSON.parse(readFileSync(summaryPath, "utf8"));
   const runs = (summary.runs ?? []).filter((r) => r && typeof r === "object");
   const successRuns = runs.filter((r) => r.success && typeof r.releaseToCardMs === "number");
@@ -83,24 +79,20 @@ if (!soakAvailable) {
       pass,
     });
   }
+} else {
+  console.log(
+    "slo-check: reports/runtime/soak-summary.json not found — skipping probe/failure envelope checks.",
+  );
 }
 
 const stagesAvailable = existsSync(latencySummaryPath);
-if (!stagesAvailable) {
-  console.log("slo-check: reports/runtime/pipeline-latency-summary.json not found.");
-  console.log(
-    "slo-check: fallback mode — per-stage SLO cannot be evaluated without parsed app_log pipeline_timing events.",
-  );
-  console.log(
-    "slo-check: run pnpm parse:latency (or pnpm evidence:bundle) after a runtime capture.",
-  );
-} else if (thresholds.stages) {
+if (stagesAvailable && thresholds.stages) {
   const latencyData = JSON.parse(readFileSync(latencySummaryPath, "utf8"));
   const stageMetrics = latencyData.stages ?? {};
 
   for (const [stageName, stageSlo] of Object.entries(thresholds.stages)) {
     const data = stageMetrics[stageName];
-    if (!data) {
+    if (data == null) {
       console.log(`slo-check: no data for stage "${stageName}" — skipping.`);
       continue;
     }
@@ -132,6 +124,14 @@ if (!stagesAvailable) {
       });
     }
   }
+} else if (!stagesAvailable) {
+  console.log("slo-check: reports/runtime/pipeline-latency-summary.json not found.");
+  console.log(
+    "slo-check: fallback mode — per-stage SLO cannot be evaluated without parsed app_log pipeline_timing events.",
+  );
+  console.log(
+    "slo-check: run pnpm parse:latency (or pnpm evidence:bundle) after a runtime capture.",
+  );
 }
 
 console.log("SLO check results:");

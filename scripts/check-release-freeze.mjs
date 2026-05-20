@@ -10,7 +10,9 @@ const baseline = JSON.parse(readFileSync(baselinePath, "utf8"));
 const strictMode = process.argv.includes("--strict");
 const baseArgIndex = process.argv.indexOf("--base");
 const baseRef = baseArgIndex !== -1 ? process.argv[baseArgIndex + 1] : null;
-if (baseArgIndex !== -1 && baseRef == null) {
+if (baseArgIndex === -1 || baseRef != null) {
+  // no-op
+} else {
   console.error("[release-freeze] --base requires a ref argument");
   process.exit(2);
 }
