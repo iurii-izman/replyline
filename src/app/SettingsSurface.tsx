@@ -38,14 +38,16 @@ type SetupStatusTone = "missing" | "ready" | "optional";
 export function SettingsSurface(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
-  void st().checks.code.ok;
-  void st().checks.code.missing_key;
-  void st().checks.code.config_error;
-  void st().checks.code.auth_error;
-  void st().checks.code.endpoint_error;
-  void st().checks.code.network_error;
-  void st().checks.code.skipped;
-  void st().checks.code.error;
+  Object.freeze([
+    st().checks.code.ok,
+    st().checks.code.missing_key,
+    st().checks.code.config_error,
+    st().checks.code.auth_error,
+    st().checks.code.endpoint_error,
+    st().checks.code.network_error,
+    st().checks.code.skipped,
+    st().checks.code.error,
+  ]);
 
   const selectedPreset = () => resolveModelPreset(controller().settings.selectedModelPreset);
   const setupSteps = () => controller().setupSteps();
