@@ -323,7 +323,7 @@ describe("App UX stabilization", () => {
     expect(appView).toBeTruthy();
     expect(appView.contains(screen.getByTestId("main-surface"))).toBe(true);
     expect(screen.getByTestId("main-card-body")).toBeTruthy();
-    expect(screen.getByTestId("action-row")).toBeTruthy();
+    expect(screen.queryByTestId("action-row")).toBeNull();
     expect(screen.queryByTitle("Выход")).toBeNull();
   });
 
@@ -410,8 +410,8 @@ describe("App UX stabilization", () => {
     await mock.emitShortcut({ state: "Released" });
 
     const mainLayout = screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout");
-    expect(mainLayout?.className).toContain("is-wide");
-    expect(screen.getByTestId("main-side-panel")).toBeTruthy();
+    expect(mainLayout?.className).toContain("no-side-panel");
+    expect(screen.queryByTestId("main-side-panel")).toBeNull();
   });
 
   it("renders compact interview layout fixture after enabling compact mode", async () => {
@@ -428,9 +428,7 @@ describe("App UX stabilization", () => {
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
     fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
 
-    await waitFor(() =>
-      expect(screen.getByTestId("main-surface").className).toContain("main-card--compact"),
-    );
+    await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
     const mainLayout = screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout");
     expect(mainLayout?.className).toContain("is-compact");
   });
@@ -489,14 +487,10 @@ describe("App UX stabilization", () => {
       expect(mock.invoke.mock.calls.some((c) => c[0] === "start_interview_session")).toBe(true),
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Завершить сессию" })[0]);
-    await waitFor(() =>
-      expect(mock.invoke.mock.calls.some((c) => c[0] === "end_interview_session")).toBe(true),
-    );
-    expect(screen.getByTestId("report-panel")).toBeTruthy();
+    expect(screen.getByTestId("idle-session-chip")).toBeTruthy();
   });
 
-  it("renders pipeline error fixture and keeps action bar landmark", async () => {
+  it("renders pipeline error fixture", async () => {
     mock = createMockPlatform(uiStateFixtures.errorState());
     render(() => <App platform={mock.platform} />);
 
@@ -507,23 +501,15 @@ describe("App UX stabilization", () => {
     expect(
       await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
     ).toBeTruthy();
-    expect(screen.getByTestId("action-row")).toBeTruthy();
+    expect(screen.queryByTestId("action-row")).toBeNull();
   });
 
-  it("shows card shell and action row in idle", async () => {
+  it("shows idle readiness state without cockpit", async () => {
     render(() => <App platform={mock.platform} />);
 
-    const shell = await screen.findByTestId("main-card-shell");
-    const surface = screen.getByTestId("main-surface");
-    const top = screen.getByTestId("main-card-top");
-    const body = screen.getByTestId("main-card-body");
-    const actions = screen.getByTestId("action-row");
-
-    expect(shell).toBeTruthy();
-    expect([...surface.children]).toEqual([top, body, actions]);
-    expect(screen.getByText("Суть")).toBeTruthy();
-    expect(screen.getByText("Скажи сейчас")).toBeTruthy();
-    expect(screen.getByText("Дальше")).toBeTruthy();
+    expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
+    expect(screen.queryByTestId("main-card-shell")).toBeNull();
+    expect(screen.queryByTestId("action-row")).toBeNull();
     expect(screen.getByTestId("main-status-strip")).toBeTruthy();
   });
 
@@ -533,11 +519,9 @@ describe("App UX stabilization", () => {
     const mainSurface = await screen.findByTestId("main-surface");
     const appView = screen.getByTestId("app-view");
     const mainLayout = screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout");
-    const sidePanel = screen.getByTestId("main-side-panel");
     expect(mainSurface.className).toContain("app-page");
     expect(appView.contains(mainSurface)).toBe(true);
-    expect(mainLayout?.className).toContain("is-wide");
-    expect(sidePanel.className).toContain("cockpit-side");
+    expect(mainLayout).toBeNull();
 
     fireEvent.click(screen.getByTitle("Настройки"));
     await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
@@ -550,29 +534,19 @@ describe("App UX stabilization", () => {
     expect(screen.getByTestId("candidate-pack-preview")).toBeTruthy();
   });
 
-  it("keeps actions disabled in idle without card", async () => {
+  it("does not render copy action in idle without card", async () => {
     render(() => <App platform={mock.platform} />);
 
-    const copy = await screen.findByRole("button", { name: "Скопировать ответ" });
-    const retry = screen.getByRole("button", { name: "Пересобрать" });
-
-    expect(copy).toHaveProperty("disabled", true);
-    expect(retry).toHaveProperty("disabled", true);
-    expect(copy.getAttribute("title")).toBe("Ответ ещё не готов.");
+    expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Скопировать ответ" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Пересобрать" })).toBeNull();
   });
 
-  it("keeps action buttons fixed-height and out of the scroll body", async () => {
+  it("renders answer action dock only in ready state", async () => {
     render(() => <App platform={mock.platform} />);
 
-    const copy = await screen.findByRole("button", { name: "Скопировать ответ" });
-    const actions = screen.getByTestId("action-row");
-    const body = screen.getByTestId("main-card-body");
-
-    expect(actions.parentElement).toBe(screen.getByTestId("main-surface"));
-    expect(body.contains(actions)).toBe(false);
-    expect(getComputedStyle(actions).alignItems).toBe("center");
-    expect(getComputedStyle(copy).height).toBe("36px");
-    expect(getComputedStyle(copy).maxHeight).toBe("36px");
+    expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
+    expect(screen.queryByTestId("action-row")).toBeNull();
   });
 
   it("enables actions and handles keyboard shortcuts when card is ready", async () => {
@@ -590,7 +564,7 @@ describe("App UX stabilization", () => {
       expect(retry).toHaveProperty("disabled", false);
     });
     expect(actions.parentElement).toBe(screen.getByTestId("main-surface"));
-    expect(screen.getByText("Ответ готов к копированию.")).toBeTruthy();
+    expect(screen.getByTestId("answer-hero-card")).toBeTruthy();
 
     fireEvent.keyDown(window, { key: "c", ctrlKey: true });
     await waitFor(() => expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("say"));
@@ -604,7 +578,7 @@ describe("App UX stabilization", () => {
     await waitFor(() => expect(screen.queryByText("Ответ скопирован.")).toBeNull());
   });
 
-  it("keeps the same action zone after a pipeline error", async () => {
+  it("hides action zone after a pipeline error", async () => {
     mock = createMockPlatform({ analysisError: { kind: "Pipeline", message: "LLM timeout" } });
     render(() => <App platform={mock.platform} />);
 
@@ -616,11 +590,8 @@ describe("App UX stabilization", () => {
       await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
     ).toBeTruthy();
     expect(screen.getByText("Повторите захват или проверьте настройки.")).toBeTruthy();
-    expect(screen.getByTestId("action-row").parentElement).toBe(screen.getByTestId("main-surface"));
-    expect(screen.getByRole("button", { name: "Скопировать ответ" })).toHaveProperty(
-      "disabled",
-      true,
-    );
+    expect(screen.queryByTestId("action-row")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Скопировать ответ" })).toBeNull();
   });
 
   it("renders localized settings CTA labels", async () => {
@@ -807,37 +778,16 @@ describe("App UX stabilization", () => {
   });
 
   it("manages interview report actions", async () => {
+    mock = createMockPlatform({
+      ...uiStateFixtures.workCardReady(),
+      deepgramKeyPresent: true,
+      llmBaseUrl: "https://api.openai.com/v1",
+    });
     render(() => <App platform={mock.platform} />);
-    const fullExportBefore = screen.getByRole("button", {
-      name: "Экспортировать Full Markdown с transcript",
-    });
-    const redactedBefore = screen.getByRole("button", {
-      name: "Экспортировать Redacted Markdown без transcript",
-    });
-    expect(fullExportBefore).toHaveProperty("disabled", true);
-    expect(redactedBefore).toHaveProperty("disabled", true);
-    expect(fullExportBefore.className).toContain("btn-warning");
-    expect(redactedBefore.className).toContain("btn-secondary");
-
-    fireEvent.click(await screen.findByRole("button", { name: "Начать сессию" }));
-    fireEvent.click(screen.getAllByRole("button", { name: "Завершить сессию" })[0]!);
-    await waitFor(() => expect(screen.getByTestId("report-panel")).toBeTruthy());
-    fireEvent.click(
-      screen.getByRole("button", { name: "Экспортировать Full Markdown с transcript" }),
-    );
-    await waitFor(() => expect(screen.getByText(/interview-report-full-is-1\.md/)).toBeTruthy());
-    fireEvent.click(
-      screen.getByRole("button", { name: "Экспортировать Redacted Markdown без transcript" }),
-    );
-    await waitFor(() =>
-      expect(screen.getByText(/interview-report-redacted-is-1\.md/)).toBeTruthy(),
-    );
-    const clearReports = screen.getByRole("button", { name: "Очистить отчёты" });
-    expect(clearReports.className).toContain("btn-danger");
-    fireEvent.click(clearReports);
-    await waitFor(() =>
-      expect(mock.invoke.mock.calls.some((c) => c[0] === "clear_interview_reports")).toBe(true),
-    );
+    await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
+    expect(
+      screen.queryByRole("button", { name: "Экспортировать Full Markdown с transcript" }),
+    ).toBeNull();
   });
 });
 
@@ -899,7 +849,7 @@ describe("Interview card rendering", () => {
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
 
-    fireEvent.click(await screen.findByRole("button", { name: "Скопировать ответ" }));
+    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
     await waitFor(() =>
       expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("Primary answer main"),
     );

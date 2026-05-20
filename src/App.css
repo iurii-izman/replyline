@@ -490,6 +490,9 @@ textarea {
   min-height: 30px;
   overflow-x: auto;
 }
+.status-strip--quiet {
+  min-height: 20px;
+}
 .status-strip-phase,
 .status-strip-next {
   font-size: var(--text-caption);
@@ -530,7 +533,7 @@ textarea {
   min-height: 0;
   overflow: visible;
   padding-right: var(--space-1);
-  padding-bottom: calc(var(--page-footer-space) - 10px);
+  padding-bottom: var(--space-2);
 }
 
 .main-cockpit-layout {
@@ -547,6 +550,9 @@ textarea {
 }
 .main-cockpit-layout.is-compact {
   grid-template-columns: minmax(0, 1fr);
+}
+.main-cockpit-layout.no-side-panel {
+  justify-content: center;
 }
 .cockpit-main {
   min-width: 0;
@@ -770,6 +776,63 @@ textarea {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.82);
+}
+.readiness-state--centered {
+  max-width: 720px;
+  margin: 24px auto 0;
+  justify-items: center;
+  text-align: center;
+  padding: 24px;
+}
+.readiness-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--success);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--success-soft) 85%, white);
+}
+.readiness-title {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+.setup-focus-state {
+  max-width: 720px;
+  width: 100%;
+  margin: 20px auto 0;
+  padding: 20px;
+  border: 1px solid rgba(154, 108, 31, 0.26);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 247, 231, 0.9);
+  display: grid;
+  gap: var(--space-3);
+}
+.setup-focus-title {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+.setup-focus-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+}
+.setup-focus-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.setup-focus-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--space-2);
+  align-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.75);
+}
+.setup-focus-row.is-ready {
+  opacity: 0.72;
 }
 .readiness-instruction {
   margin: 0;
