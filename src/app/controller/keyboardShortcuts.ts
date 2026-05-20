@@ -69,7 +69,7 @@ export function setupKeyboardShortcuts(deps: KeyboardShortcutDeps): void {
         void deps.retryAnalysis();
       }
     };
-    window.addEventListener("keydown", onKeyDown);
-    onCleanup(() => window.removeEventListener("keydown", onKeyDown));
+    globalThis.addEventListener("keydown", onKeyDown);
+    onCleanup(() => globalThis.removeEventListener("keydown", onKeyDown));
   });
 }

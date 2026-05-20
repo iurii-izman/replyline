@@ -595,15 +595,15 @@ describe("App UX stabilization", () => {
     expect(actions.parentElement).toBe(screen.getByTestId("main-surface"));
     expect(screen.getByTestId("answer-hero-card")).toBeTruthy();
 
-    fireEvent.keyDown(window, { key: "c", ctrlKey: true });
+    fireEvent.keyDown(globalThis, { key: "c", ctrlKey: true });
     await waitFor(() => expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("say"));
 
-    fireEvent.keyDown(window, { key: "r" });
+    fireEvent.keyDown(globalThis, { key: "r" });
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "retry_last_analysis")).toBe(true),
     );
 
-    fireEvent.keyDown(window, { key: "Escape" });
+    fireEvent.keyDown(globalThis, { key: "Escape" });
     await waitFor(() => expect(screen.queryByText("Ответ скопирован.")).toBeNull());
   });
 
