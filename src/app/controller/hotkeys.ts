@@ -8,10 +8,10 @@ import type {
   ContextStatusDto,
   CommandErrorKind,
   SetupStatusDto,
+  Panel,
 } from "../model";
 import type { UiStrings } from "../locale";
 import type { AppPlatform } from "../platform";
-import type { Panel } from "../model";
 import type { NoticeApi } from "./notices";
 import {
   invokeErrorMessage,

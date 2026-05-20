@@ -34,7 +34,7 @@ function containsAny(haystack, needles) {
 }
 
 function countDigits(text) {
-  const matches = String(text ?? "").match(/[0-9]+/g);
+  const matches = String(text ?? "").match(/\d+/g);
   return matches ? matches.length : 0;
 }
 

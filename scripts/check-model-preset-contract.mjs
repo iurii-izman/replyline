@@ -29,7 +29,7 @@ for (const id of tsPresetIds) {
 const openrouterIds = tsPresetIds.filter((id) => id.startsWith("openrouter_"));
 for (const id of openrouterIds) {
   const blockMatch = rsSource.match(
-    new RegExp(`"${id}"\\s*=>\\s*ModelPreset\\s*\\{([\\s\\S]*?)\\},`, "m"),
+    new RegExp(String.raw`"${id}"\s*=>\s*ModelPreset\s*\{([\s\S]*?)\},`, "m"),
   );
   if (!blockMatch) {
     failures.push(`Missing backend block for OpenRouter preset "${id}".`);
@@ -59,12 +59,16 @@ if (!customBlock) {
   }
 }
 
-if (
-  !/_\s*=>\s*ModelPreset\s*\{[\s\S]*provider_kind:\s*ProviderKind::OpenAiCompatible/.test(rsSource)
-) {
+const hasUnknownFallbackProvider = /_\s*=>\s*ModelPreset\s*\{[\s\S]*provider_kind:\s*ProviderKind::OpenAiCompatible/.test(
+  rsSource,
+);
+if (hasUnknownFallbackProvider === false) {
   failures.push("Unknown preset safe fallback must resolve to ProviderKind::OpenAiCompatible.");
 }
-if (!/_\s*=>\s*ModelPreset\s*\{[\s\S]*fallback_models:\s*&\[\s*]/.test(rsSource)) {
+const hasUnknownFallbackModels = /_\s*=>\s*ModelPreset\s*\{[\s\S]*fallback_models:\s*&\[\s*]/.test(
+  rsSource,
+);
+if (hasUnknownFallbackModels === false) {
   failures.push("Unknown preset safe fallback must keep empty fallback_models.");
 }
 

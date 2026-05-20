@@ -107,10 +107,10 @@ export function getDefaultPlatform(): AppPlatform {
     return defaultPlatform;
   }
 
-  const hasTauriRuntime =
-    typeof window !== "undefined" &&
-    typeof (window as typeof window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__ !==
-      "undefined";
+  const tauriGlobals = globalThis as typeof globalThis & {
+    __TAURI_INTERNALS__?: unknown;
+  };
+  const hasTauriRuntime = tauriGlobals.__TAURI_INTERNALS__ !== undefined;
 
   if (!hasTauriRuntime) {
     defaultPlatform = createBrowserFallbackPlatform();
