@@ -129,8 +129,7 @@ const unusedKeys = uiRuKeys.filter((k) => !usedKeys.has(k));
 const uiRuKeysSet = new Set(uiRuKeys);
 const missingKeys = [...usedKeys].filter((k) => !uiRuKeysSet.has(k));
 
-const allowedUnused = new Set();
-const realUnused = unusedKeys.filter((k) => !allowedUnused.has(k));
+const realUnused = unusedKeys;
 
 const hardcodedAllowlist = new Set([
   "API",
