@@ -43,7 +43,7 @@ for (const filePath of allFiles) {
   const relPath = filePath
     .replace(cwd, "")
     .replace(/^[\\/]/, "")
-    .replace(/\\/g, "/");
+    .replaceAll("\\", "/");
 
   // Remove code blocks before checking for links
   const contentNoCode = content.replace(/```[\s\S]*?```/g, "");

@@ -84,7 +84,7 @@ try {
   process.exit(1);
 }
 
-const uiRuKeys = collectKeys(uiRu).sort();
+const uiRuKeys = collectKeys(uiRu).sort((a, b) => a.localeCompare(b));
 if (uiRuKeys.length === 0) {
   console.error("No locale keys extracted — parser may be broken.");
   process.exit(1);
@@ -126,10 +126,10 @@ for (const file of sourceFiles) {
 }
 
 const unusedKeys = uiRuKeys.filter((k) => !usedKeys.has(k));
-const missingKeys = [...usedKeys].filter((k) => !uiRuKeys.includes(k));
+const uiRuKeysSet = new Set(uiRuKeys);
+const missingKeys = [...usedKeys].filter((k) => !uiRuKeysSet.has(k));
 
-const allowedUnused = [];
-const realUnused = unusedKeys.filter((k) => !allowedUnused.includes(k));
+const realUnused = unusedKeys;
 
 const hardcodedAllowlist = new Set([
   "API",
@@ -146,7 +146,7 @@ const hardcodedAllowlist = new Set([
 ]);
 
 const hardcodedAllowRegex = [
-  /^[0-9]+(?:[.,][0-9]+)?%?$/,
+  /^\d+(?:[.,]\d+)?%?$/,
   /^[✓○→%]$/,
   /^[a-z0-9][a-z0-9._:-]*$/i,
   /^https?:\/\//i,

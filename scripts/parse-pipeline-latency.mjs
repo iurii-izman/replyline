@@ -85,7 +85,7 @@ for (const [stage, agg] of Object.entries(stageAgg)) {
     p50Ms: percentile(durations, 50),
     p95Ms: percentile(durations, 95),
     minMs: sorted[0] ?? 0,
-    maxMs: sorted[sorted.length - 1] ?? 0,
+    maxMs: sorted.at(-1) ?? 0,
     meanMs,
     count,
     failCount,

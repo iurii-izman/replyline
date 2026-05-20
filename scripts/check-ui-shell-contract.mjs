@@ -211,7 +211,7 @@ if (appCss) {
 
   assertRegex(
     appCss,
-    /\.settings-content\s*,\s*\.candidate-pack-studio\s*\{[^}]*padding-bottom\s*:\s*(?:7[0-9]|8[0-9])px;/su,
+    /\.settings-content\s*,\s*\.candidate-pack-studio\s*\{[^}]*padding-bottom\s*:\s*(?:7\d|8\d)px;/su,
     "src/App.css",
     "expected sticky-footer bottom padding compensation for settings and studio content",
   );

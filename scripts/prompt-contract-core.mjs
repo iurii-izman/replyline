@@ -48,8 +48,8 @@ export function validateCardV3(card, snippet) {
     return "card must be an object";
   }
 
-  const keys = Object.keys(card).sort();
-  const allowedOptional = ["risk_or_clarifier"];
+  const keys = Object.keys(card).sort((a, b) => a.localeCompare(b));
+  const allowedOptional = new Set(["risk_or_clarifier"]);
   const required = [...V3_CARD_KEYS];
   for (const key of required) {
     if (!(key in card)) {
@@ -57,7 +57,7 @@ export function validateCardV3(card, snippet) {
     }
   }
   for (const key of keys) {
-    if (!required.includes(key) && !allowedOptional.includes(key)) {
+    if (!required.includes(key) && !allowedOptional.has(key)) {
       return `unexpected v3 field: ${key}`;
     }
   }
@@ -94,8 +94,8 @@ export function validateCard(card, snippet) {
     return "card must be an object";
   }
 
-  const keys = Object.keys(card).sort();
-  const expected = [...LEGACY_CARD_KEYS].sort();
+  const keys = Object.keys(card).sort((a, b) => a.localeCompare(b));
+  const expected = [...LEGACY_CARD_KEYS].sort((a, b) => a.localeCompare(b));
   if (JSON.stringify(keys) !== JSON.stringify(expected)) {
     return `keys must be exactly gist/say_now/next_move, got: ${keys.join(", ")}`;
   }
