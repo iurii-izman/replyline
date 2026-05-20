@@ -1,9 +1,9 @@
 import type { JSX } from "solid-js";
 
-type IconProps = {
+type IconProps = Readonly<{
   class?: string;
   title?: string;
-};
+}>;
 
 function iconClassName(extra?: string): string {
   return extra ? `ui-icon ${extra}` : "ui-icon";
@@ -19,13 +19,12 @@ function strokeProps(): JSX.SvgSVGAttributes<SVGSVGElement> {
   };
 }
 
-function IconBase(props: IconProps & { children: JSX.Element; viewBox?: string }) {
+function IconBase(props: Readonly<IconProps & { children: JSX.Element; viewBox?: string }>) {
   return (
     <svg
       class={iconClassName(props.class)}
       viewBox={props.viewBox ?? "0 0 24 24"}
       aria-hidden={props.title ? undefined : "true"}
-      role={props.title ? "img" : "presentation"}
     >
       {props.title ? <title>{props.title}</title> : null}
       {props.children}

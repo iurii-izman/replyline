@@ -30,7 +30,7 @@ function joinList(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-function SetupFocusState(props: { controller: ReplylineController }) {
+function SetupFocusState(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   const missingSteps = createMemo(() =>
@@ -76,7 +76,7 @@ function SetupFocusState(props: { controller: ReplylineController }) {
   );
 }
 
-function IdleReadyState(props: { controller: ReplylineController }) {
+function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   const steps = createMemo(() => controller().setupSteps());
@@ -127,7 +127,7 @@ function IdleReadyState(props: { controller: ReplylineController }) {
   );
 }
 
-function ProcessingState(props: { controller: ReplylineController }) {
+function ProcessingState(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
 
@@ -157,7 +157,7 @@ function ProcessingState(props: { controller: ReplylineController }) {
   );
 }
 
-function LiveAnswerCard(props: { controller: ReplylineController }) {
+function LiveAnswerCard(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   const [copied, setCopied] = createSignal(false);
@@ -194,7 +194,7 @@ function LiveAnswerCard(props: { controller: ReplylineController }) {
   );
 }
 
-function InsightStrip(props: { controller: ReplylineController }) {
+function InsightStrip(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   return (
@@ -213,7 +213,7 @@ function InsightStrip(props: { controller: ReplylineController }) {
   );
 }
 
-function WorkspaceSidePanel(props: { controller: ReplylineController }) {
+function WorkspaceSidePanel(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   const hasInterviewReport = () => Boolean(controller().interviewReport());
@@ -355,7 +355,7 @@ function WorkspaceSidePanel(props: { controller: ReplylineController }) {
   );
 }
 
-function ActionDock(props: { controller: ReplylineController }) {
+function ActionDock(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   return (
@@ -395,11 +395,13 @@ function interviewCardLabel(
   return st.card.interview.cardLabels.clarifier;
 }
 
-function LiveAssistShell(props: {
-  controller: ReplylineController;
-  showSidePanel: boolean;
-  compactLayout: boolean;
-}) {
+function LiveAssistShell(
+  props: Readonly<{
+    controller: ReplylineController;
+    showSidePanel: boolean;
+    compactLayout: boolean;
+  }>,
+) {
   const controller = () => props.controller;
   return (
     <div
@@ -549,7 +551,7 @@ function LiveAssistShell(props: {
   );
 }
 
-export function MainSurface(props: { controller: ReplylineController }) {
+export function MainSurface(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   const localeCoverage = createMemo(() => [
@@ -706,3 +708,4 @@ export function MainSurface(props: { controller: ReplylineController }) {
     </Show>
   );
 }
+
