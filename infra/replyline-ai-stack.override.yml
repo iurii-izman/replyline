@@ -1,0 +1,71 @@
+services:
+  langfuse-web:
+    container_name: null
+    labels:
+      com.replyline.managed: "true"
+      com.replyline.project: "replyline"
+      com.replyline.stack: "ai-bridge"
+    ports:
+      - "13000:3000"
+
+  langfuse-worker:
+    container_name: null
+    labels:
+      com.replyline.managed: "true"
+      com.replyline.project: "replyline"
+      com.replyline.stack: "ai-bridge"
+
+  langfuse-db:
+    container_name: null
+    labels:
+      com.replyline.managed: "true"
+      com.replyline.project: "replyline"
+      com.replyline.stack: "ai-bridge"
+    ports:
+      - "127.0.0.1:15433:5432"
+
+  langfuse-redis:
+    container_name: null
+    labels:
+      com.replyline.managed: "true"
+      com.replyline.project: "replyline"
+      com.replyline.stack: "ai-bridge"
+    ports:
+      - "127.0.0.1:16379:6379"
+
+  langfuse-clickhouse:
+    container_name: null
+    labels:
+      com.replyline.managed: "true"
+      com.replyline.project: "replyline"
+      com.replyline.stack: "ai-bridge"
+    ports:
+      - "127.0.0.1:18123:8123"
+      - "127.0.0.1:19009:9000"
+
+  langfuse-minio:
+    container_name: null
+    labels:
+      com.replyline.managed: "true"
+      com.replyline.project: "replyline"
+      com.replyline.stack: "ai-bridge"
+    ports:
+      - "19090:9000"
+      - "127.0.0.1:19091:9001"
+
+  langfuse-minio-init:
+    container_name: null
+    labels:
+      com.replyline.managed: "true"
+      com.replyline.project: "replyline"
+      com.replyline.stack: "ai-bridge"
+
+  qdrant:
+    container_name: null
+    labels:
+      com.replyline.managed: "true"
+      com.replyline.project: "replyline"
+      com.replyline.stack: "ai-bridge"
+    ports:
+      - "16333:6333"
+      - "16334:6334"

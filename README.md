@@ -85,6 +85,7 @@ See:
 - [docs/interview-quality.md](docs/interview-quality.md)
 - [docs/runtime-bringup.md](docs/runtime-bringup.md)
 - [docs/runtime-evidence.md](docs/runtime-evidence.md)
+- [docs/docker-stack.md](docs/docker-stack.md)
 - [docs/known-limitations.md](docs/known-limitations.md)
 - [docs/README.md](docs/README.md)
 

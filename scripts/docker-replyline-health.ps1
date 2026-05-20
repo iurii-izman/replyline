@@ -316,6 +316,35 @@ function Get-ManagedContainers {
   return $containerLines | Sort-Object -Unique
 }
 
+function Get-ServiceRole {
+  param([string]$ServiceName)
+  switch -Regex ($ServiceName) {
+    "^langfuse-web$" { return "observability-app" }
+    "^langfuse-worker$" { return "worker" }
+    "^langfuse-db$" { return "db" }
+    "^langfuse-redis$" { return "cache" }
+    "^langfuse-clickhouse$" { return "olap-db" }
+    "^langfuse-minio$" { return "object-storage" }
+    "^langfuse-minio-init$" { return "init" }
+    "^qdrant$" { return "vector-db" }
+    default { return "unknown" }
+  }
+}
+
+function Get-VersionFinding {
+  param([string]$ImageRef)
+  if ([string]::IsNullOrWhiteSpace($ImageRef)) {
+    return "unknown"
+  }
+  if ($ImageRef -match ":(latest|dev)$") {
+    return "floating-tag"
+  }
+  if ($ImageRef -notmatch ":") {
+    return "implicit-latest"
+  }
+  return "pinned-or-major"
+}
+
 function Get-ContainerState {
   param([string]$ContainerId)
 
@@ -348,6 +377,14 @@ function Get-ContainerState {
   )
   $service = if ($serviceInspect.ExitCode -eq 0) { $serviceInspect.Output.Trim() } else { "" }
 
+  $imageInspect = Invoke-CheckedCommand -FilePath "docker" -Arguments @(
+    "inspect",
+    "--format",
+    "{{.Config.Image}}",
+    $ContainerId
+  )
+  $imageRef = if ($imageInspect.ExitCode -eq 0) { $imageInspect.Output.Trim() } else { "" }
+
   $restartInspect = Invoke-CheckedCommand -FilePath "docker" -Arguments @(
     "inspect",
     "--format",
@@ -369,18 +406,27 @@ function Get-ContainerState {
   $expectedStopped = (
     $state.Status -eq "exited" -and
     $exitCode -eq 0 -and
-    $restartPolicy -eq "no"
+    ($restartPolicy -eq "no" -or $service -match "init")
   )
+
+  $role = Get-ServiceRole -ServiceName $service
+  $versionFinding = Get-VersionFinding -ImageRef $imageRef
 
   return [pscustomobject]@{
     id = $ContainerId
     name = $name
     service = $service
+    role = $role
+    image = $imageRef
     status = $state.Status
     health = $healthStatus
     exitCode = $exitCode
     restartPolicy = $restartPolicy
     expectedStopped = $expectedStopped
+    expectedState = if ($expectedStopped) { "exited(0)" } else { "running" }
+    versionFinding = $versionFinding
+    portFindings = @()
+    labelFindings = @()
     needsRecovery = (
       ((-not $expectedStopped) -and ($state.Status -ne "running")) -or
       ($healthStatus -eq "unhealthy")
@@ -542,6 +588,12 @@ $report = [pscustomobject]@{
     "com.replyline.project=$ProjectName",
     "com.replyline.stack=ai-bridge"
   )
+  warnings = [pscustomobject]@{
+    missingComposeOverride = ($composeContext.Mode -eq "none")
+    unsafeComposeContainerNames = (-not $composeSafety.safe)
+    floatingImageTags = @($containers | Where-Object { $_.versionFinding -in @("floating-tag", "implicit-latest") } | Select-Object -ExpandProperty name)
+    exitedExpected = @($containers | Where-Object { $_.expectedStopped } | Select-Object -ExpandProperty name)
+  }
   containers = $containers
 }
 
@@ -584,7 +636,7 @@ if ($containers.Count -eq 0) {
   Write-Info "No managed containers found."
 } else {
   $containers |
-    Select-Object name, service, status, health, exitCode, expectedStopped, needsRecovery |
+    Select-Object name, service, role, status, health, exitCode, expectedStopped, versionFinding, needsRecovery |
     Format-Table -AutoSize
 }
 
