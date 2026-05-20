@@ -57,29 +57,58 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
   const shortcuts: ((event: ShortcutEvent) => void | Promise<void>)[] = [];
   let closeHandler: ((event: { preventDefault(): void }) => void | Promise<void>) | null = null;
 
-  const invoke = vi.fn(async (command: string) => {
+  let settingsState = {
+    schemaVersion: 7,
+    hotkey: "Ctrl+Alt+Space",
+    llmBaseUrl: "https://api.example/v1",
+    llmModel: "gpt-4o-mini",
+    selectedModelPreset: "custom_openai_compatible",
+    captureMaxSeconds: 45,
+    activeAnswerProfile: "interview_default",
+    windowOpacity: 100,
+    hideToTrayOnClose: options.settingsOverrides?.hideToTrayOnClose ?? true,
+    keepOnTopDuringCapture: options.settingsOverrides?.keepOnTopDuringCapture ?? false,
+    interviewCompactMode: false,
+    interviewReportRetentionDays: 0,
+  };
+  let deepgramPresent = true;
+  let llmPresent = true;
+
+  const invoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
     if (command === "load_bootstrap") {
       return {
-        settings: {
-          schemaVersion: 7,
-          hotkey: "Ctrl+Alt+Space",
-          llmBaseUrl: "https://api.example/v1",
-          llmModel: "gpt-4o-mini",
-          selectedModelPreset: "custom_openai_compatible",
-          captureMaxSeconds: 45,
-          activeAnswerProfile: "interview_default",
-          windowOpacity: 100,
-          hideToTrayOnClose: options.settingsOverrides?.hideToTrayOnClose ?? true,
-          keepOnTopDuringCapture: options.settingsOverrides?.keepOnTopDuringCapture ?? false,
-          interviewCompactMode: false,
-          interviewReportRetentionDays: 0,
-        },
-        deepgramKeyPresent: true,
-        llmKeyPresent: true,
+        settings: settingsState,
+        deepgramKeyPresent: deepgramPresent,
+        llmKeyPresent: llmPresent,
         contextActive: false,
         contextEntryCount: 0,
-        runtimeReady: true,
+        runtimeReady:
+          deepgramPresent &&
+          Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim()),
       };
+    }
+    if (command === "get_setup_status") {
+      return {
+        deepgramKeyPresent: deepgramPresent,
+        llmKeyPresent: llmPresent,
+        llmRouteConfigured: Boolean(
+          settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim(),
+        ),
+        runtimePathReady:
+          deepgramPresent &&
+          Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim()),
+      };
+    }
+    if (command === "save_settings") {
+      const next = (args?.input as Record<string, unknown> | undefined) ?? {};
+      settingsState = { ...settingsState, ...(next as typeof settingsState) };
+      return settingsState;
+    }
+    if (command === "save_secret") {
+      const slot = args?.slot;
+      if (slot === "deepgramApiKey") deepgramPresent = true;
+      if (slot === "llmApiKey") llmPresent = true;
+      return null;
     }
     if (command === "get_context_status") {
       return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
@@ -1344,29 +1373,36 @@ describe("Setup wizard (first-run guidance)", () => {
       analysisCard: { gist: "g", sayNow: "say", nextMove: "next" },
     });
 
+    let deepgramPresent = overrides.deepgramKeyPresent ?? false;
+    let llmPresent = overrides.llmKeyPresent ?? false;
+    let settingsState = {
+      schemaVersion: 7,
+      hotkey: "Ctrl+Alt+Space",
+      llmBaseUrl: overrides.llmBaseUrl ?? "",
+      llmModel: overrides.llmModel ?? "gpt-4o-mini",
+      selectedModelPreset: "custom_openai_compatible",
+      captureMaxSeconds: 45,
+      activeAnswerProfile: "interview_default",
+      windowOpacity: 100,
+      hideToTrayOnClose: true,
+      keepOnTopDuringCapture: false,
+      interviewCompactMode: false,
+      interviewReportRetentionDays: 0,
+    };
     const origInvoke = base.platform.invoke;
     const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
       if (command === "load_bootstrap") {
+        const routeReady = Boolean(
+          settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim(),
+        );
+        const runtimeReady = deepgramPresent && routeReady;
         return {
-          settings: {
-            schemaVersion: 7,
-            hotkey: "Ctrl+Alt+Space",
-            llmBaseUrl: overrides.llmBaseUrl ?? "",
-            llmModel: overrides.llmModel ?? "gpt-4o-mini",
-            selectedModelPreset: "custom_openai_compatible",
-            captureMaxSeconds: 45,
-            activeAnswerProfile: "interview_default",
-            windowOpacity: 100,
-            hideToTrayOnClose: true,
-            keepOnTopDuringCapture: false,
-            interviewCompactMode: false,
-            interviewReportRetentionDays: 0,
-          },
-          deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
-          llmKeyPresent: overrides.llmKeyPresent ?? false,
+          settings: settingsState,
+          deepgramKeyPresent: deepgramPresent,
+          llmKeyPresent: llmPresent,
           contextActive: false,
           contextEntryCount: 0,
-          runtimeReady: overrides.runtimeReady ?? false,
+          runtimeReady,
           logStatus: { logPath: "", lastLine: null },
           canRetryLastTranscript: false,
         };
@@ -1375,9 +1411,13 @@ describe("Setup wizard (first-run guidance)", () => {
         const input = (args as Record<string, unknown> | undefined)?.input as
           | Record<string, unknown>
           | undefined;
-        return { ...input, schemaVersion: 7 };
+        settingsState = { ...settingsState, ...(input as typeof settingsState), schemaVersion: 7 };
+        return settingsState;
       }
       if (command === "save_secret") {
+        const slot = args?.slot;
+        if (slot === "deepgramApiKey") deepgramPresent = true;
+        if (slot === "llmApiKey") llmPresent = true;
         return null;
       }
       if (command === "get_context_status") {
@@ -1558,5 +1598,105 @@ describe("Setup wizard (first-run guidance)", () => {
     const input = (saveCall?.[1] as { input?: Record<string, unknown> } | undefined)?.input ?? {};
     expect(Object.prototype.hasOwnProperty.call(input, "llmApiKey")).toBe(false);
     expect(Object.prototype.hasOwnProperty.call(input, "deepgramApiKey")).toBe(false);
+  });
+
+  it("save flow applies backend settings and resyncs bootstrap without empty secret overwrite", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmKeyPresent: true,
+      llmBaseUrl: "https://api.example.com/v1",
+      llmModel: "gpt-4o-mini",
+      runtimeReady: true,
+    });
+
+    let bootstrapCount = 0;
+    const invoke = mock.platform.invoke;
+    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "load_bootstrap") {
+        bootstrapCount += 1;
+        return {
+          settings: {
+            schemaVersion: 7,
+            hotkey: "Ctrl+Alt+Shift+S",
+            llmBaseUrl: "https://api.example.com/v1",
+            llmModel: "gpt-4.1-mini",
+            selectedModelPreset: "custom_openai_compatible",
+            captureMaxSeconds: 45,
+            activeAnswerProfile: "interview_default",
+            windowOpacity: 100,
+            hideToTrayOnClose: true,
+            keepOnTopDuringCapture: false,
+            interviewCompactMode: false,
+            interviewReportRetentionDays: 0,
+          },
+          deepgramKeyPresent: true,
+          llmKeyPresent: true,
+          contextActive: false,
+          contextEntryCount: 0,
+          runtimeReady: true,
+          logStatus: { logPath: "", lastLine: null },
+          canRetryLastTranscript: false,
+        };
+      }
+      if (command === "save_settings") {
+        return (args as { input: Record<string, unknown> }).input;
+      }
+      return invoke(command, args);
+    });
+    mock.platform.invoke = patchedInvoke;
+    mock.invoke = patchedInvoke;
+
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
+    fireEvent.click(screen.getByTitle("Настройки"));
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.filter((call) => call[0] === "load_bootstrap").length).toBe(2),
+    );
+    expect(bootstrapCount).toBe(2);
+    expect(mock.invoke.mock.calls.some((c) => c[0] === "save_secret")).toBe(false);
+  });
+
+  it("hotkey preflight keeps ready state when secrets are redacted in UI but present in credential store", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmKeyPresent: true,
+      llmBaseUrl: "https://api.example.com/v1",
+      llmModel: "gpt-4o-mini",
+      runtimeReady: true,
+    });
+
+    const origInvoke = mock.platform.invoke;
+    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "get_setup_status") {
+        return {
+          deepgramKeyPresent: true,
+          llmKeyPresent: true,
+          llmRouteConfigured: true,
+          runtimePathReady: true,
+        };
+      }
+      if (command === "capture_start") return "run-1";
+      if (command === "get_context_status") {
+        return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
+      }
+      return origInvoke(command, args);
+    });
+    mock.platform.invoke = patchedInvoke;
+    mock.invoke = patchedInvoke;
+
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "capture_start")).toBe(true),
+    );
+    expect(screen.queryByTestId("settings-surface")).toBeNull();
+    expect(mock.invoke.mock.calls.some((c) => c[0] === "get_setup_status")).toBe(true);
   });
 });

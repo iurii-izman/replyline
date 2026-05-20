@@ -74,14 +74,20 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
     deps.setSettingsFormHint(null);
     try {
       const input: AppSettings = { ...deps.settings };
-      await deps.platform.invoke("save_settings", { input });
+      await deps.platform.invoke("log_client_event", {
+        event: "settings_persist_attempt",
+        detail: `llm_url_present=${Boolean(input.llmBaseUrl.trim())} llm_model_present=${Boolean(
+          input.llmModel.trim(),
+        )} hotkey_present=${Boolean(input.hotkey.trim())} model_preset=${input.selectedModelPreset}`,
+      });
+      const saved = await deps.platform.invoke<AppSettings>("save_settings", { input });
+      deps.setSettings({ ...DEFAULT_SETTINGS, ...saved });
       if (deps.draftSecrets.deepgramApiKey.trim()) {
         await deps.platform.invoke("save_secret", {
           slot: "deepgramApiKey",
           value: deps.draftSecrets.deepgramApiKey,
         });
         deps.setDraftSecrets("deepgramApiKey", "");
-        deps.setDeepgramSaved(true);
       }
       if (deps.draftSecrets.llmApiKey.trim()) {
         await deps.platform.invoke("save_secret", {
@@ -89,17 +95,26 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
           value: deps.draftSecrets.llmApiKey,
         });
         deps.setDraftSecrets("llmApiKey", "");
-        deps.setLlmKeySaved(true);
       }
-      await deps.hotkeys.registerCurrentHotkey(input.hotkey);
+      const boot = await deps.platform.invoke<BootstrapDto>("load_bootstrap");
+      deps.setSettings({ ...DEFAULT_SETTINGS, ...boot.settings });
+      deps.setDeepgramSaved(boot.deepgramKeyPresent);
+      deps.setLlmKeySaved(boot.llmKeyPresent);
+      deps.setContextActive(boot.contextActive);
+      deps.setContextEntryCount(boot.contextEntryCount);
+      deps.setLastTranscriptPreview(boot.lastTranscriptPreview ?? null);
+      await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
+      const setupRequiredFromBoot =
+        !boot.deepgramKeyPresent ||
+        !(boot.settings.llmBaseUrl.trim() && boot.settings.llmModel.trim());
       deps.setHotkeyFailed(false);
       deps.notices.pushNotice({
         tone: "info",
-        message: deps.setupRequired()
+        message: setupRequiredFromBoot
           ? deps.strings().notices.settingsSavedPartial
           : deps.strings().notices.settingsSaved,
       });
-      if (!deps.setupRequired()) deps.setPanel("main");
+      if (boot.runtimeReady && !setupRequiredFromBoot) deps.setPanel("main");
     } catch (err) {
       deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
       deps.setSettingsFormHint(mapSettingsSaveError(err) ?? invokeErrorMessage(err));

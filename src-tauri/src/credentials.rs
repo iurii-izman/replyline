@@ -2,7 +2,7 @@ use keyring::Entry;
 
 use crate::types::SecretSlot;
 
-const SERVICE: &str = "com.replyline.app.credentials";
+pub const SERVICE: &str = "com.replyline.app.credentials";
 
 #[derive(Debug, thiserror::Error)]
 pub enum CredentialError {
@@ -21,8 +21,20 @@ fn entry(slot: SecretSlot) -> Result<Entry, keyring::Error> {
 pub fn present(slot: SecretSlot) -> Result<bool, CredentialError> {
     let entry = entry(slot)?;
     match entry.get_password() {
-        Ok(_) => Ok(true),
-        Err(keyring::Error::NoEntry) => Ok(false),
+        Ok(_) => {
+            let _ = crate::app_log::append_event(
+                "secret_present",
+                format!("slot={slot:?} present=true"),
+            );
+            Ok(true)
+        }
+        Err(keyring::Error::NoEntry) => {
+            let _ = crate::app_log::append_event(
+                "secret_present",
+                format!("slot={slot:?} present=false"),
+            );
+            Ok(false)
+        }
         Err(err) => Err(CredentialError::Keyring(err)),
     }
 }

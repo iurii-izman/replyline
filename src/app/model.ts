@@ -288,6 +288,37 @@ export type RuntimeCheckDto = {
   runtimeReady: boolean;
 };
 
+export type SetupStatusDto = {
+  deepgramKeyPresent: boolean;
+  llmKeyPresent: boolean;
+  llmRouteConfigured: boolean;
+  runtimePathReady: boolean;
+};
+
+export type PersistenceDiagnosticsDto = {
+  settingsPath: string;
+  settingsPathHash: string;
+  settingsFileExists: boolean;
+  settingsFileSize: number;
+  settingsFileModifiedAt?: string | null;
+  settingsParseOk: boolean;
+  settingsValidationOk: boolean;
+  settingsSchemaVersion: number;
+  llmBaseUrlPresent: boolean;
+  llmBaseUrlHost?: string | null;
+  llmModelPresent: boolean;
+  selectedModelPreset: string;
+  activeAnswerProfile: string;
+  hotkey: string;
+  captureMaxSeconds: number;
+  corruptBackups: string[];
+  keyringServiceName: string;
+  deepgramKeyPresent: boolean;
+  llmKeyPresent: boolean;
+  runtimePathReady: boolean;
+  appLogPath?: string | null;
+};
+
 export type InterviewQuestionReportDto = {
   timestamp: string;
   rawTranscript: string;
@@ -422,5 +453,6 @@ export function mapSettingsSaveError(err: unknown): string | null {
   if (s.includes("MODEL_REQUIRED")) return "Укажите модель LLM.";
   if (s.includes("INVALID_URL") || /^URL:/i.test(s)) return "Неверный URL LLM.";
   if (s.includes("CAPTURE_RANGE_INVALID")) return "Лимит записи: 5-180 секунд.";
+  if (s.includes("EMPTY_SECRET_NOT_SAVED")) return "Пустой ключ не сохранён. Введите значение.";
   return null;
 }

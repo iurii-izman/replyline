@@ -4,7 +4,7 @@
 use std::fs;
 use std::io::ErrorKind;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use url::Url;
 
@@ -13,6 +13,7 @@ use crate::types::AppSettings;
 
 const SETTINGS_DIR: &str = "com.replyline.app";
 const SETTINGS_FILE: &str = "settings.json";
+pub const SETTINGS_DIR_OVERRIDE_ENV: &str = "REPLYLINE_SETTINGS_DIR_OVERRIDE";
 const ALLOWED_INTERVIEW_REPORT_RETENTION_DAYS: [u16; 4] = [0, 7, 30, 90];
 
 #[derive(Debug, thiserror::Error)]
@@ -40,6 +41,9 @@ pub enum SettingsError {
 }
 
 pub fn settings_path() -> Result<PathBuf, SettingsError> {
+    if let Some(override_dir) = settings_dir_override() {
+        return Ok(override_dir.join(SETTINGS_FILE));
+    }
     let base = dirs::config_dir()
         .ok_or_else(|| std::io::Error::new(ErrorKind::NotFound, "config_dir_unavailable"))?;
     Ok(base.join(SETTINGS_DIR).join(SETTINGS_FILE))
@@ -47,7 +51,17 @@ pub fn settings_path() -> Result<PathBuf, SettingsError> {
 
 pub fn load() -> Result<AppSettings, SettingsError> {
     let path = settings_path()?;
+    let exists = path.exists();
+    let size = fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+    let _ = crate::app_log::append_event(
+        "settings_load_attempt",
+        format!(
+            "exists={exists} size={size} path_hash={}",
+            hash_path_for_log(&path)
+        ),
+    );
     if !path.exists() {
+        let _ = crate::app_log::append_event("settings_load_default", "reason=missing_file");
         return Ok(AppSettings::default());
     }
     let raw = fs::read(&path)?;
@@ -56,6 +70,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
         Ok(v) => v,
         Err(err) => {
             quarantine_corrupt(&path, &format!("parse_error={err}"));
+            let _ = crate::app_log::append_event("settings_load_default", "reason=parse_error");
             return Ok(AppSettings::default());
         }
     };
@@ -64,6 +79,8 @@ pub fn load() -> Result<AppSettings, SettingsError> {
 
     if let Err(err) = ensure_required_fields(&migrated) {
         quarantine_corrupt(&path, &format!("required_fields_error={err}"));
+        let _ =
+            crate::app_log::append_event("settings_load_default", "reason=required_fields_error");
         return Ok(AppSettings::default());
     }
 
@@ -71,14 +88,31 @@ pub fn load() -> Result<AppSettings, SettingsError> {
         Ok(s) => s,
         Err(err) => {
             quarantine_corrupt(&path, &format!("migration_deserialize_error={err}"));
+            let _ = crate::app_log::append_event(
+                "settings_load_default",
+                "reason=migration_deserialize_error",
+            );
             return Ok(AppSettings::default());
         }
     };
 
     match validate(&settings) {
-        Ok(()) => Ok(settings),
+        Ok(()) => {
+            let _ = crate::app_log::append_event(
+                "settings_load_ok",
+                format!(
+                    "schema={} llm_url_present={} llm_model_present={}",
+                    settings.schema_version,
+                    !settings.llm_base_url.trim().is_empty(),
+                    !settings.llm_model.trim().is_empty()
+                ),
+            );
+            Ok(settings)
+        }
         Err(err) => {
             quarantine_corrupt(&path, &format!("validation_error={err}"));
+            let _ =
+                crate::app_log::append_event("settings_load_default", "reason=validation_error");
             Ok(AppSettings::default())
         }
     }
@@ -169,9 +203,21 @@ fn migrate_v6_to_v7(value: &mut serde_json::Value) {
 }
 
 pub fn save(settings: &AppSettings) -> Result<AppSettings, SettingsError> {
+    let _ = crate::app_log::append_event(
+        "settings_save_attempt",
+        format!(
+            "schema={} llm_url_present={} llm_model_present={} hotkey_present={}",
+            settings.schema_version,
+            !settings.llm_base_url.trim().is_empty(),
+            !settings.llm_model.trim().is_empty(),
+            !settings.hotkey.trim().is_empty()
+        ),
+    );
     validate(settings)?;
     let path = settings_path()?;
     fs_atomic::write_json_atomically(&path, settings)?;
+    let bytes = fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+    let _ = crate::app_log::append_event("settings_save_ok", format!("bytes={bytes}"));
     Ok(settings.clone())
 }
 
@@ -255,7 +301,64 @@ fn quarantine_corrupt(path: &std::path::Path, reason: &str) {
     let corrupt_name = format!("settings.json.corrupt.{ts}");
     let corrupt_path = path.with_file_name(&corrupt_name);
     let _ = fs::rename(path, &corrupt_path);
+    let _ = crate::app_log::append_event(
+        "settings_quarantine",
+        format!(
+            "reason={} backup={} path_hash={}",
+            reason,
+            corrupt_name,
+            hash_path_for_log(path)
+        ),
+    );
     eprintln!("settings_corrupt_recovery: {reason} backup={corrupt_name}");
+}
+
+pub fn settings_file_metadata(path: &Path) -> (bool, u64, Option<String>) {
+    match fs::metadata(path) {
+        Ok(meta) => {
+            let modified = meta
+                .modified()
+                .ok()
+                .map(chrono::DateTime::<chrono::Utc>::from)
+                .map(|dt| dt.to_rfc3339());
+            (true, meta.len(), modified)
+        }
+        Err(_) => (false, 0, None),
+    }
+}
+
+pub fn list_corrupt_backups(path: &Path) -> Vec<String> {
+    let Some(parent) = path.parent() else {
+        return vec![];
+    };
+    let Ok(entries) = fs::read_dir(parent) else {
+        return vec![];
+    };
+    let mut backups: Vec<String> = entries
+        .filter_map(Result::ok)
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .filter(|name| name.starts_with("settings.json.corrupt."))
+        .collect();
+    backups.sort();
+    backups
+}
+
+fn settings_dir_override() -> Option<PathBuf> {
+    let raw = std::env::var(SETTINGS_DIR_OVERRIDE_ENV).ok()?;
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(PathBuf::from(trimmed))
+    }
+}
+
+fn hash_path_for_log(path: &Path) -> String {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    let mut hasher = DefaultHasher::new();
+    path.to_string_lossy().hash(&mut hasher);
+    format!("{:x}", hasher.finish())
 }
 
 fn validate_http_url(value: &str, error: SettingsError) -> Result<(), SettingsError> {
@@ -464,5 +567,55 @@ mod tests {
             validate(&settings),
             Err(SettingsError::RetentionPolicyInvalid)
         ));
+    }
+
+    #[test]
+    fn settings_path_uses_override_env_var() {
+        let dir = std::env::temp_dir().join("replyline-settings-override-path");
+        std::fs::create_dir_all(&dir).expect("mkdir");
+        std::env::set_var(SETTINGS_DIR_OVERRIDE_ENV, dir.to_string_lossy().to_string());
+        let path = settings_path().expect("settings_path");
+        assert_eq!(path, dir.join(SETTINGS_FILE));
+        std::env::remove_var(SETTINGS_DIR_OVERRIDE_ENV);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn save_and_load_roundtrip_keeps_runtime_fields() {
+        let dir = std::env::temp_dir().join(format!(
+            "replyline-settings-roundtrip-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("time")
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).expect("mkdir");
+        std::env::set_var(SETTINGS_DIR_OVERRIDE_ENV, dir.to_string_lossy().to_string());
+
+        let settings = AppSettings {
+            llm_base_url: "https://openrouter.ai/api/v1".to_string(),
+            llm_model: "gpt-4.1-mini".to_string(),
+            hotkey: "Ctrl+Alt+K".to_string(),
+            selected_model_preset: "custom_openai_compatible".to_string(),
+            active_answer_profile: "interview_default".to_string(),
+            window_opacity: 90,
+            ..AppSettings::default()
+        };
+
+        save(&settings).expect("save");
+        let loaded = load().expect("load");
+        assert_eq!(loaded.llm_base_url, settings.llm_base_url);
+        assert_eq!(loaded.llm_model, settings.llm_model);
+        assert_eq!(loaded.hotkey, settings.hotkey);
+        assert_eq!(loaded.selected_model_preset, settings.selected_model_preset);
+        assert_eq!(loaded.active_answer_profile, settings.active_answer_profile);
+        assert_eq!(loaded.window_opacity, settings.window_opacity);
+
+        let path = settings_path().expect("settings_path");
+        let backups = list_corrupt_backups(&path);
+        assert!(backups.is_empty());
+
+        std::env::remove_var(SETTINGS_DIR_OVERRIDE_ENV);
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

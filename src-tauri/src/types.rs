@@ -206,6 +206,44 @@ pub struct RuntimeCheckDto {
     pub runtime_ready: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SetupStatusDto {
+    pub deepgram_key_present: bool,
+    pub llm_key_present: bool,
+    pub llm_route_configured: bool,
+    pub runtime_path_ready: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PersistenceDiagnosticsDto {
+    pub settings_path: String,
+    pub settings_path_hash: String,
+    pub settings_file_exists: bool,
+    pub settings_file_size: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub settings_file_modified_at: Option<String>,
+    pub settings_parse_ok: bool,
+    pub settings_validation_ok: bool,
+    pub settings_schema_version: u32,
+    pub llm_base_url_present: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub llm_base_url_host: Option<String>,
+    pub llm_model_present: bool,
+    pub selected_model_preset: String,
+    pub active_answer_profile: String,
+    pub hotkey: String,
+    pub capture_max_seconds: u16,
+    pub corrupt_backups: Vec<String>,
+    pub keyring_service_name: String,
+    pub deepgram_key_present: bool,
+    pub llm_key_present: bool,
+    pub runtime_path_ready: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub app_log_path: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CandidateFactDto {

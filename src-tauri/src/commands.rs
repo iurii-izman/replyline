@@ -14,8 +14,8 @@ use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
     AnalysisCardDto, AppSettings, BootstrapDto, CandidatePackDraftDto, CheckItemDto, CommandError,
-    ContextStatusDto, InterviewReportDto, PrepareCandidatePackInputDto, RuntimeCheckDto,
-    SecretSlot,
+    ContextStatusDto, InterviewReportDto, PersistenceDiagnosticsDto, PrepareCandidatePackInputDto,
+    RuntimeCheckDto, SecretSlot, SetupStatusDto,
 };
 
 static RUN_SEQ: AtomicU64 = AtomicU64::new(0);
@@ -87,7 +87,9 @@ pub fn load_bootstrap(state: State<'_, ReplylineState>) -> Result<BootstrapDto, 
     let log_status = app_log::status().map_err(CommandError::Internal)?;
     let _ = app_log::append_event(
         "bootstrap_loaded",
-        format!("runtime_ready={runtime_ready} context_entries={context_entry_count}"),
+        format!(
+            "runtime_ready={runtime_ready} context_entries={context_entry_count} deepgram_present={deepgram_key_present} llm_key_present={llm_key_present}"
+        ),
     );
 
     Ok(BootstrapDto {
@@ -154,6 +156,28 @@ pub fn save_settings(input: AppSettings) -> Result<AppSettings, CommandError> {
             Err(CommandError::from(err))
         }
     }
+}
+
+#[tauri::command]
+pub fn get_setup_status() -> Result<SetupStatusDto, CommandError> {
+    let settings = settings::load()?;
+    let deepgram_key_present = credentials::present(SecretSlot::DeepgramApiKey)?;
+    let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
+    let llm_route_configured =
+        !settings.llm_base_url.trim().is_empty() && !settings.llm_model.trim().is_empty();
+    let runtime_path_ready = settings.runtime_path_configured(deepgram_key_present);
+    let _ = app_log::append_event(
+        "setup_status_checked",
+        format!(
+            "deepgram_key_present={deepgram_key_present} llm_key_present={llm_key_present} llm_route_configured={llm_route_configured} runtime_path_ready={runtime_path_ready}"
+        ),
+    );
+    Ok(SetupStatusDto {
+        deepgram_key_present,
+        llm_key_present,
+        llm_route_configured,
+        runtime_path_ready,
+    })
 }
 
 #[tauri::command]
@@ -248,7 +272,12 @@ pub fn save_secret(slot: String, value: String) -> Result<(), CommandError> {
         SecretSlot::LlmApiKey => "llm_api_key",
     };
     let _ = app_log::append_event("secret_save_attempt", slot_name);
-    match credentials::save(slot, value.trim()) {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        let _ = app_log::append_event("secret_save_failed", format!("{slot_name}: empty_value"));
+        return Err(CommandError::Settings("EMPTY_SECRET_NOT_SAVED".to_string()));
+    }
+    match credentials::save(slot, trimmed) {
         Ok(()) => {
             let _ = app_log::append_event("secret_save_ok", slot_name);
             Ok(())
@@ -258,6 +287,61 @@ pub fn save_secret(slot: String, value: String) -> Result<(), CommandError> {
             Err(CommandError::from(err))
         }
     }
+}
+
+#[tauri::command]
+pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, CommandError> {
+    let settings_path = settings::settings_path()?;
+    let (exists, size, modified_at) = settings::settings_file_metadata(&settings_path);
+    let raw = if exists {
+        std::fs::read(&settings_path).ok()
+    } else {
+        None
+    };
+    let parsed = raw
+        .as_ref()
+        .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(bytes).ok());
+    let settings_parse_ok = parsed.is_some();
+    let settings = settings::load()?;
+    let settings_validation_ok = settings::validate(&settings).is_ok();
+    let llm_base_url_host = url::Url::parse(settings.llm_base_url.trim())
+        .ok()
+        .and_then(|url| url.host_str().map(|h| h.to_string()));
+    let deepgram_key_present = credentials::present(SecretSlot::DeepgramApiKey)?;
+    let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
+    let runtime_path_ready = settings.runtime_path_configured(deepgram_key_present);
+    let log_status = app_log::status().ok();
+    Ok(PersistenceDiagnosticsDto {
+        settings_path: settings_path.display().to_string(),
+        settings_path_hash: hash_path_for_log(&settings_path),
+        settings_file_exists: exists,
+        settings_file_size: size,
+        settings_file_modified_at: modified_at,
+        settings_parse_ok,
+        settings_validation_ok,
+        settings_schema_version: settings.schema_version,
+        llm_base_url_present: !settings.llm_base_url.trim().is_empty(),
+        llm_base_url_host,
+        llm_model_present: !settings.llm_model.trim().is_empty(),
+        selected_model_preset: settings.selected_model_preset,
+        active_answer_profile: settings.active_answer_profile,
+        hotkey: settings.hotkey,
+        capture_max_seconds: settings.capture_max_seconds,
+        corrupt_backups: settings::list_corrupt_backups(&settings_path),
+        keyring_service_name: credentials::SERVICE.to_string(),
+        deepgram_key_present,
+        llm_key_present,
+        runtime_path_ready,
+        app_log_path: log_status.map(|status| status.log_path),
+    })
+}
+
+fn hash_path_for_log(path: &std::path::Path) -> String {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    let mut hasher = DefaultHasher::new();
+    path.to_string_lossy().hash(&mut hasher);
+    format!("{:x}", hasher.finish())
 }
 
 #[tauri::command]

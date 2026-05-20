@@ -257,6 +257,8 @@ export function useReplylineController(platform: AppPlatform) {
     settings: () => settings,
     setSettings,
     setHotkeyFailed,
+    setDeepgramSaved,
+    setLlmKeySaved,
     setLastCommandErrorKind,
     setActiveRunId,
     notices,

@@ -7,6 +7,7 @@ import type {
   AppSettings,
   ContextStatusDto,
   CommandErrorKind,
+  SetupStatusDto,
 } from "../model";
 import type { UiStrings } from "../locale";
 import type { AppPlatform } from "../platform";
@@ -36,6 +37,8 @@ export interface HotkeyDeps {
   settings: Accessor<AppSettings>;
   setSettings: SetStoreFunction<AppSettings>;
   setHotkeyFailed: Setter<boolean>;
+  setDeepgramSaved: Setter<boolean>;
+  setLlmKeySaved: Setter<boolean>;
   setLastCommandErrorKind: Setter<CommandErrorKind | null>;
   setActiveRunId: Setter<string | null>;
   notices: NoticeApi;
@@ -65,7 +68,10 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         if (deps.pipelineActive()) return;
         deps.setError(null);
         deps.notices.dismissNotice();
-        if (deps.setupRequired()) {
+        const setupStatus = await deps.platform.invoke<SetupStatusDto>("get_setup_status");
+        deps.setDeepgramSaved(setupStatus.deepgramKeyPresent);
+        deps.setLlmKeySaved(setupStatus.llmKeyPresent);
+        if (!setupStatus.runtimePathReady || deps.setupRequired()) {
           deps.setPanel("settings");
           deps.setPhase("idle");
           await deps.showWindow("settings");

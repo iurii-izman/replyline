@@ -25,6 +25,8 @@ const REQUIRED = [
   "delete_secret",
   "get_candidate_pack_status",
   "get_context_status",
+  "get_setup_status",
+  "get_persistence_diagnostics",
   "load_bootstrap",
   "load_candidate_pack",
   "get_interview_report",
