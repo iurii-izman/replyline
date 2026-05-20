@@ -89,7 +89,7 @@ jobs:
           exit 1
       - name: Upload extended summary artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: extended-quality-summary-${{ github.run_id }}
           path: ${{ runner.temp }}/extended-quality-failures.json

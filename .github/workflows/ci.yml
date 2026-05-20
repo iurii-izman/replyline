@@ -121,7 +121,7 @@ jobs:
 
       - name: Upload release-freeze artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-freeze-check-${{ github.run_id }}
           path: reports/release-freeze-check.json
@@ -129,7 +129,7 @@ jobs:
 
       - name: Upload test artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: verify-artifacts-${{ github.run_id }}
           path: |
