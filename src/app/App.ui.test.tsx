@@ -1698,5 +1698,18 @@ describe("Setup wizard (first-run guidance)", () => {
     );
     expect(screen.queryByTestId("settings-surface")).toBeNull();
     expect(mock.invoke.mock.calls.some((c) => c[0] === "get_setup_status")).toBe(true);
+    expect(
+      mock.invoke.mock.calls.some(
+        (c) =>
+          c[0] === "log_client_event" &&
+          (c[1] as { event?: string })?.event === "setup_preflight_check_result",
+      ),
+    ).toBe(true);
+    expect(
+      mock.invoke.mock.calls.some(
+        (c) =>
+          c[0] === "log_client_event" && (c[1] as { event?: string })?.event === "ui_answer_ready",
+      ),
+    ).toBe(true);
   });
 });

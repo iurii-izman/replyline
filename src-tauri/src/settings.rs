@@ -74,6 +74,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
             return Ok(AppSettings::default());
         }
     };
+    let _ = crate::app_log::append_event("settings_parse_ok", "source=settings_json");
 
     let migrated = migrate_settings(value);
 
@@ -98,6 +99,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
 
     match validate(&settings) {
         Ok(()) => {
+            let _ = crate::app_log::append_event("settings_validation_ok", "source=settings_json");
             let _ = crate::app_log::append_event(
                 "settings_load_ok",
                 format!(
