@@ -95,26 +95,32 @@ function hasDangerousPattern(rule, codeOnly) {
   return rule.patterns.some((pattern) => pattern.test(codeOnly));
 }
 
+function scanRustFileAgainstRule(rule, fileRel) {
+  if (isExcludedByRule(rule, fileRel)) return false;
+  const filePath = resolve(repoRoot, fileRel);
+  const lines = readRustLines(filePath);
+  if (!lines) return false;
+  let matched = false;
+  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+    const line = lines[lineIdx];
+    const codeOnly = line.replace(/\/\/.*$/, "").trim();
+    if (!codeOnly || line.includes("privacy-lane: allow")) continue;
+    if (!hasDangerousPattern(rule, codeOnly)) continue;
+    const relPath = relative(repoRoot, filePath);
+    console.error(`[privacy-lane] ${rule.label}: ${relPath}:${lineIdx + 1}`);
+    console.error(`  → ${line.trim()}`);
+    matched = true;
+  }
+  return matched;
+}
+
 function checkDangerousLogPatterns() {
   const rustFiles = walkRustFiles();
   let failed = false;
 
   for (const rule of DANGEROUS_LOG_PATTERNS) {
     for (const fileRel of rustFiles) {
-      if (isExcludedByRule(rule, fileRel)) continue;
-      const filePath = resolve(repoRoot, fileRel);
-      const lines = readRustLines(filePath);
-      if (!lines) continue;
-      for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-        const line = lines[lineIdx];
-        // Skip comment-only lines
-        const codeOnly = line.replace(/\/\/.*$/, "").trim();
-        if (!codeOnly) continue;
-        if (line.includes("privacy-lane: allow")) continue;
-        if (!hasDangerousPattern(rule, codeOnly)) continue;
-        const relPath = relative(repoRoot, filePath);
-        console.error(`[privacy-lane] ${rule.label}: ${relPath}:${lineIdx + 1}`);
-        console.error(`  → ${line.trim()}`);
+      if (scanRustFileAgainstRule(rule, fileRel)) {
         failed = true;
       }
     }

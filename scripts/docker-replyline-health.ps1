@@ -417,52 +417,28 @@ function Get-ExternalComposeInlineSecretFindings {
 function Get-ContainerState {
   param([string]$ContainerId)
 
-  $inspect = Invoke-CheckedCommand -FilePath "docker" -Arguments @(
-    "inspect",
-    "--format",
-    "{{json .State}}",
-    $ContainerId
-  )
-  if ($inspect.ExitCode -ne 0) {
-    throw "docker inspect failed for ${ContainerId}: $($inspect.Output)"
+  function Get-InspectOutput {
+    param([string]$Format, [string]$ErrorLabel, [bool]$Required = $false)
+    $inspectResult = Invoke-CheckedCommand -FilePath "docker" -Arguments @(
+      "inspect",
+      "--format",
+      $Format,
+      $ContainerId
+    )
+    if ($Required -and $inspectResult.ExitCode -ne 0) {
+      throw "docker inspect ($ErrorLabel) failed for ${ContainerId}: $($inspectResult.Output)"
+    }
+    if ($inspectResult.ExitCode -eq 0) { return $inspectResult.Output.Trim() }
+    return ""
   }
 
-  $nameInspect = Invoke-CheckedCommand -FilePath "docker" -Arguments @(
-    "inspect",
-    "--format",
-    "{{.Name}}",
-    $ContainerId
-  )
-  if ($nameInspect.ExitCode -ne 0) {
-    throw "docker inspect (name) failed for ${ContainerId}: $($nameInspect.Output)"
-  }
-  $name = $nameInspect.Output.Trim().TrimStart("/")
+  $stateJson = Get-InspectOutput -Format "{{json .State}}" -ErrorLabel "state" -Required $true
+  $name = (Get-InspectOutput -Format "{{.Name}}" -ErrorLabel "name" -Required $true).TrimStart("/")
+  $service = Get-InspectOutput -Format "{{ index .Config.Labels ""com.docker.compose.service"" }}" -ErrorLabel "service-label"
+  $imageRef = Get-InspectOutput -Format "{{.Config.Image}}" -ErrorLabel "image"
+  $restartPolicy = Get-InspectOutput -Format "{{.HostConfig.RestartPolicy.Name}}" -ErrorLabel "restart-policy"
 
-  $serviceInspect = Invoke-CheckedCommand -FilePath "docker" -Arguments @(
-    "inspect",
-    "--format",
-    "{{ index .Config.Labels ""com.docker.compose.service"" }}",
-    $ContainerId
-  )
-  $service = if ($serviceInspect.ExitCode -eq 0) { $serviceInspect.Output.Trim() } else { "" }
-
-  $imageInspect = Invoke-CheckedCommand -FilePath "docker" -Arguments @(
-    "inspect",
-    "--format",
-    "{{.Config.Image}}",
-    $ContainerId
-  )
-  $imageRef = if ($imageInspect.ExitCode -eq 0) { $imageInspect.Output.Trim() } else { "" }
-
-  $restartInspect = Invoke-CheckedCommand -FilePath "docker" -Arguments @(
-    "inspect",
-    "--format",
-    "{{.HostConfig.RestartPolicy.Name}}",
-    $ContainerId
-  )
-  $restartPolicy = if ($restartInspect.ExitCode -eq 0) { $restartInspect.Output.Trim() } else { "" }
-
-  $state = $inspect.Output | ConvertFrom-Json
+  $state = $stateJson | ConvertFrom-Json
   $healthStatus = $null
   if ($state.PSObject.Properties.Name -contains "Health" -and $state.Health) {
     $healthStatus = $state.Health.Status

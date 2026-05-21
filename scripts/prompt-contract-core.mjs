@@ -48,41 +48,54 @@ export function validateCardV3(card, snippet) {
     return "card must be an object";
   }
 
+  const required = [...V3_CARD_KEYS];
+  const shapeError = validateV3Shape(card, required);
+  if (shapeError) return shapeError;
+  const requiredStringError = validateV3RequiredStrings(card, required);
+  if (requiredStringError) return requiredStringError;
+  const answerError = validateV3Answer(card.answer_now);
+  if (answerError) return answerError;
+
+  return validateCard(mapV3ToLegacy(card), snippet);
+}
+
+function validateV3Shape(card, required) {
   const keys = Object.keys(card).sort((a, b) => a.localeCompare(b));
   const allowedOptional = new Set(["risk_or_clarifier"]);
-  const required = [...V3_CARD_KEYS];
   const isAllowedField = (key) => required.includes(key) || allowedOptional.has(key);
   for (const key of required) {
-    if (!(key in card)) {
-      return `missing required v3 field: ${key}`;
-    }
+    if (!(key in card)) return `missing required v3 field: ${key}`;
   }
   for (const key of keys) {
-    if (!isAllowedField(key)) {
-      return `unexpected v3 field: ${key}`;
-    }
-  }
-
-  for (const key of required) {
-    if (typeof card[key] !== "string" || !card[key].trim()) {
-      return `${key} must be a non-empty string`;
-    }
+    if (!isAllowedField(key)) return `unexpected v3 field: ${key}`;
   }
   if ("risk_or_clarifier" in card && card.risk_or_clarifier != null) {
     if (typeof card.risk_or_clarifier !== "string") {
       return "risk_or_clarifier must be a string when present";
     }
   }
+  return null;
+}
 
-  const answer = card.answer_now.trim();
+function validateV3RequiredStrings(card, required) {
+  for (const key of required) {
+    if (typeof card[key] !== "string" || !card[key].trim()) {
+      return `${key} must be a non-empty string`;
+    }
+  }
+  return null;
+}
+
+function validateV3Answer(rawAnswer) {
+  const answer = rawAnswer.trim();
   const words = answer.split(/\s+/u).filter(Boolean);
   const sentences = answer.split(/[.!?]/u).filter((part) => part.trim()).length;
   if (answer.length > 560) return "answer_now must be <= 560 chars";
   if (words.length < 10) return "answer_now should be paragraph-shaped (>= 10 words)";
-  if (sentences < 2 && words.length < 18)
+  if (sentences < 2 && words.length < 18) {
     return "answer_now should read as a paragraph (2+ sentences or >= 18 words)";
-
-  return validateCard(mapV3ToLegacy(card), snippet);
+  }
+  return null;
 }
 
 export function validateCard(card, snippet) {
