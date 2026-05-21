@@ -112,121 +112,107 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
   };
   let deepgramPresent = true;
   let llmPresent = true;
+  const runtimeReady = () =>
+    deepgramPresent && Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim());
+  const defaultInterviewReport = () => ({
+    sessionId: "is-1",
+    startedAt: "2026-05-18T10:00:00Z",
+    endedAt: "2026-05-18T10:30:00Z",
+    language: "en",
+    questions: [
+      {
+        timestamp: "2026-05-18T10:01:00Z",
+        rawTranscript: "Tell me about ownership",
+        cleanQuestion: "Tell me about ownership",
+        questionType: "behavioral",
+        answerMain: "I owned delivery.",
+        hints: ["safe reframe"],
+        signals: ["ownership"],
+      },
+    ],
+    fullTranscript: "Tell me about ownership",
+    scores: { clarity: 80, relevance: 77, accuracy: 70 },
+    feedback: { strengths: ["structured"], improvements: [], missingExamples: [] },
+  });
+  const defaultCandidatePackPreview = () => ({
+    packQualityScore: 84,
+    missingDataWarnings: ["add metrics"],
+    suggestedMissingInfo: ["add leadership example"],
+    candidateFacts: [
+      { fact: "Fact", evidence: "Resume line", strength: "strong", metrics: [] },
+      { fact: "Weak fact", evidence: "No metric", strength: "weak", metrics: [] },
+    ],
+    roleKeywords: ["rust", "ownership"],
+    companyValues: ["customer obsession"],
+  });
 
   const invoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
-    if (command === "load_bootstrap") {
-      return {
-        settings: settingsState,
-        deepgramKeyPresent: deepgramPresent,
-        llmKeyPresent: llmPresent,
-        contextActive: false,
-        contextEntryCount: 0,
-        runtimeReady:
-          deepgramPresent &&
-          Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim()),
-      };
+    switch (command) {
+      case "load_bootstrap":
+        return {
+          settings: settingsState,
+          deepgramKeyPresent: deepgramPresent,
+          llmKeyPresent: llmPresent,
+          contextActive: false,
+          contextEntryCount: 0,
+          runtimeReady: runtimeReady(),
+        };
+      case "get_setup_status":
+        return {
+          deepgramKeyPresent: deepgramPresent,
+          llmKeyPresent: llmPresent,
+          llmRouteConfigured: Boolean(
+            settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim(),
+          ),
+          runtimePathReady: runtimeReady(),
+        };
+      case "save_settings": {
+        const next = (args?.input as Record<string, unknown> | undefined) ?? {};
+        settingsState = { ...settingsState, ...(next as typeof settingsState) };
+        return settingsState;
+      }
+      case "save_secret": {
+        const slot = args?.slot;
+        if (slot === "deepgramApiKey") deepgramPresent = true;
+        if (slot === "llmApiKey") llmPresent = true;
+        return null;
+      }
+      case "get_context_status":
+        return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
+      case "capture_stop_and_analyze":
+      case "retry_last_analysis":
+        if (options.analysisError) throw options.analysisError;
+        return options.analysisCard ?? { gist: "g", sayNow: "say", nextMove: "next" };
+      case "clear_context":
+        return { contextActive: false, entryCount: 0, canRetryLastTranscript: false };
+      case "prepare_candidate_pack":
+        return options.candidatePackPreview ?? defaultCandidatePackPreview();
+      case "load_candidate_pack":
+        return options.candidatePack ?? null;
+      case "get_candidate_pack_status":
+        return options.candidatePackStatus ?? { exists: false, factCount: 0, weakFactCount: 0 };
+      case "save_candidate_pack":
+      case "save_prepared_candidate_pack":
+      case "clear_interview_reports":
+        return null;
+      case "start_interview_session":
+        return {
+          active: true,
+          sessionId: "is-1",
+          startedAt: "2026-05-18T10:00:00Z",
+          language: "en",
+          questions: [],
+        };
+      case "end_interview_session":
+      case "get_interview_report":
+        return defaultInterviewReport();
+      case "export_interview_report_markdown":
+        return String.raw`C:\reports\interview-report-full-is-1.md`;
+      case "export_interview_report_redacted_markdown":
+        return String.raw`C:\reports\interview-report-redacted-is-1.md`;
+      default:
+        return null;
     }
-    if (command === "get_setup_status") {
-      return {
-        deepgramKeyPresent: deepgramPresent,
-        llmKeyPresent: llmPresent,
-        llmRouteConfigured: Boolean(
-          settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim(),
-        ),
-        runtimePathReady:
-          deepgramPresent &&
-          Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim()),
-      };
-    }
-    if (command === "save_settings") {
-      const next = (args?.input as Record<string, unknown> | undefined) ?? {};
-      settingsState = { ...settingsState, ...(next as typeof settingsState) };
-      return settingsState;
-    }
-    if (command === "save_secret") {
-      const slot = args?.slot;
-      if (slot === "deepgramApiKey") deepgramPresent = true;
-      if (slot === "llmApiKey") llmPresent = true;
-      return null;
-    }
-    if (command === "get_context_status") {
-      return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
-    }
-    if (command === "capture_stop_and_analyze" || command === "retry_last_analysis") {
-      if (options.analysisError) throw options.analysisError;
-      return options.analysisCard ?? { gist: "g", sayNow: "say", nextMove: "next" };
-    }
-    if (command === "clear_context") {
-      return { contextActive: false, entryCount: 0, canRetryLastTranscript: false };
-    }
-    if (command === "prepare_candidate_pack") {
-      return (
-        options.candidatePackPreview ?? {
-          packQualityScore: 84,
-          missingDataWarnings: ["add metrics"],
-          suggestedMissingInfo: ["add leadership example"],
-          candidateFacts: [
-            { fact: "Fact", evidence: "Resume line", strength: "strong", metrics: [] },
-            { fact: "Weak fact", evidence: "No metric", strength: "weak", metrics: [] },
-          ],
-          roleKeywords: ["rust", "ownership"],
-          companyValues: ["customer obsession"],
-        }
-      );
-    }
-    if (command === "load_candidate_pack") {
-      return options.candidatePack ?? null;
-    }
-    if (command === "get_candidate_pack_status") {
-      return options.candidatePackStatus ?? { exists: false, factCount: 0, weakFactCount: 0 };
-    }
-    if (command === "save_candidate_pack") {
-      return null;
-    }
-    if (command === "save_prepared_candidate_pack") {
-      return null;
-    }
-    if (command === "start_interview_session") {
-      return {
-        active: true,
-        sessionId: "is-1",
-        startedAt: "2026-05-18T10:00:00Z",
-        language: "en",
-        questions: [],
-      };
-    }
-    if (command === "end_interview_session" || command === "get_interview_report") {
-      return {
-        sessionId: "is-1",
-        startedAt: "2026-05-18T10:00:00Z",
-        endedAt: "2026-05-18T10:30:00Z",
-        language: "en",
-        questions: [
-          {
-            timestamp: "2026-05-18T10:01:00Z",
-            rawTranscript: "Tell me about ownership",
-            cleanQuestion: "Tell me about ownership",
-            questionType: "behavioral",
-            answerMain: "I owned delivery.",
-            hints: ["safe reframe"],
-            signals: ["ownership"],
-          },
-        ],
-        fullTranscript: "Tell me about ownership",
-        scores: { clarity: 80, relevance: 77, accuracy: 70 },
-        feedback: { strengths: ["structured"], improvements: [], missingExamples: [] },
-      };
-    }
-    if (command === "export_interview_report_markdown") {
-      return String.raw`C:\reports\interview-report-full-is-1.md`;
-    }
-    if (command === "export_interview_report_redacted_markdown") {
-      return String.raw`C:\reports\interview-report-redacted-is-1.md`;
-    }
-    if (command === "clear_interview_reports") {
-      return null;
-    }
-    return null;
   });
 
   const platform: AppPlatform = {

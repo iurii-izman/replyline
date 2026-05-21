@@ -89,44 +89,12 @@ function validateInterviewCardSchemaV1(output) {
   const allowedConfidence = new Set(["low", "medium", "high"]);
   const allowedStructure = new Set(["STAR", "CASE", "DIRECT", "CLARIFY"]);
 
-  if (output.mode !== "interview") errors.push("mode must be interview");
-  if (!output.question || typeof output.question !== "object") errors.push("question missing");
-  if (!allowedQuestionTypes.has(output?.question?.questionType))
-    errors.push("question.questionType invalid");
-  if (!allowedConfidence.has(output?.question?.confidence))
-    errors.push("question.confidence invalid");
-
-  if (!output.answer || typeof output.answer !== "object") errors.push("answer missing");
-  if (!String(output?.answer?.main ?? "").trim()) errors.push("answer.main missing");
-  if (!String(output?.answer?.short ?? "").trim()) errors.push("answer.short missing");
-  if (!String(output?.answer?.strong ?? "").trim()) errors.push("answer.strong missing");
-  if (!allowedStructure.has(output?.answer?.structure)) errors.push("answer.structure invalid");
-
-  if (!output.signals || typeof output.signals !== "object") errors.push("signals missing");
-  if (!Array.isArray(output?.signals?.mustMention)) errors.push("signals.mustMention invalid");
-  if (!Array.isArray(output?.signals?.keywords)) errors.push("signals.keywords invalid");
-  if (!Array.isArray(output?.signals?.metrics)) errors.push("signals.metrics invalid");
-  if (!Array.isArray(output?.signals?.resumeAnchors)) errors.push("signals.resumeAnchors invalid");
-
-  if (!output.risks || typeof output.risks !== "object") errors.push("risks missing");
-  if (!Array.isArray(output?.risks?.weakPoints)) errors.push("risks.weakPoints invalid");
-  if (!Array.isArray(output?.risks?.avoid)) errors.push("risks.avoid invalid");
-  if (!String(output?.risks?.safeReframe ?? "").trim()) errors.push("risks.safeReframe missing");
-
-  if (Array.isArray(output.followUps)) {
-    for (const [idx, row] of output.followUps.entries()) {
-      if (!String(row?.question ?? "").trim()) errors.push(`followUps[${idx}].question missing`);
-      if (!String(row?.bridgeAnswer ?? "").trim())
-        errors.push(`followUps[${idx}].bridgeAnswer missing`);
-    }
-  } else {
-    errors.push("followUps invalid");
-  }
-
-  if (!output.clarifier || typeof output.clarifier !== "object") errors.push("clarifier missing");
-  if (typeof output?.clarifier?.needed !== "boolean") errors.push("clarifier.needed invalid");
-  if (output?.clarifier?.needed && !String(output?.clarifier?.text ?? "").trim())
-    errors.push("clarifier.text required when needed=true");
+  validateQuestionBlock(output, errors, allowedQuestionTypes, allowedConfidence);
+  validateAnswerBlock(output, errors, allowedStructure);
+  validateSignalsBlock(output, errors);
+  validateRisksBlock(output, errors);
+  validateFollowUps(output, errors);
+  validateClarifier(output, errors);
 
   return {
     errors,
@@ -134,6 +102,53 @@ function validateInterviewCardSchemaV1(output) {
     short: String(output?.answer?.short ?? "").trim(),
     strong: String(output?.answer?.strong ?? "").trim(),
   };
+}
+
+function validateQuestionBlock(output, errors, allowedQuestionTypes, allowedConfidence) {
+  if (output.mode !== "interview") errors.push("mode must be interview");
+  if (!output.question || typeof output.question !== "object") errors.push("question missing");
+  if (!allowedQuestionTypes.has(output?.question?.questionType))
+    errors.push("question.questionType invalid");
+  if (!allowedConfidence.has(output?.question?.confidence))
+    errors.push("question.confidence invalid");
+}
+function validateAnswerBlock(output, errors, allowedStructure) {
+  if (!output.answer || typeof output.answer !== "object") errors.push("answer missing");
+  if (!String(output?.answer?.main ?? "").trim()) errors.push("answer.main missing");
+  if (!String(output?.answer?.short ?? "").trim()) errors.push("answer.short missing");
+  if (!String(output?.answer?.strong ?? "").trim()) errors.push("answer.strong missing");
+  if (!allowedStructure.has(output?.answer?.structure)) errors.push("answer.structure invalid");
+}
+function validateSignalsBlock(output, errors) {
+  if (!output.signals || typeof output.signals !== "object") errors.push("signals missing");
+  if (!Array.isArray(output?.signals?.mustMention)) errors.push("signals.mustMention invalid");
+  if (!Array.isArray(output?.signals?.keywords)) errors.push("signals.keywords invalid");
+  if (!Array.isArray(output?.signals?.metrics)) errors.push("signals.metrics invalid");
+  if (!Array.isArray(output?.signals?.resumeAnchors)) errors.push("signals.resumeAnchors invalid");
+}
+function validateRisksBlock(output, errors) {
+  if (!output.risks || typeof output.risks !== "object") errors.push("risks missing");
+  if (!Array.isArray(output?.risks?.weakPoints)) errors.push("risks.weakPoints invalid");
+  if (!Array.isArray(output?.risks?.avoid)) errors.push("risks.avoid invalid");
+  if (!String(output?.risks?.safeReframe ?? "").trim()) errors.push("risks.safeReframe missing");
+}
+function validateFollowUps(output, errors) {
+  if (!Array.isArray(output.followUps)) {
+    errors.push("followUps invalid");
+    return;
+  }
+  for (const [idx, row] of output.followUps.entries()) {
+    if (!String(row?.question ?? "").trim()) errors.push(`followUps[${idx}].question missing`);
+    if (!String(row?.bridgeAnswer ?? "").trim())
+      errors.push(`followUps[${idx}].bridgeAnswer missing`);
+  }
+}
+function validateClarifier(output, errors) {
+  if (!output.clarifier || typeof output.clarifier !== "object") errors.push("clarifier missing");
+  if (typeof output?.clarifier?.needed !== "boolean") errors.push("clarifier.needed invalid");
+  if (output?.clarifier?.needed && !String(output?.clarifier?.text ?? "").trim()) {
+    errors.push("clarifier.text required when needed=true");
+  }
 }
 
 function validateGates(fixture, profileLimitsById) {
@@ -163,37 +178,8 @@ function validateGates(fixture, profileLimitsById) {
     ].join(" "),
   );
 
-  if (limits) {
-    if (
-      wordCount(schema.main) < limits.answerWordMin ||
-      wordCount(schema.main) > limits.answerWordMax
-    )
-      failures.push("gate: answer.main profile limits");
-    if (wordCount(schema.short) > limits.shortWordMax)
-      failures.push("gate: answer.short profile limits");
-    if (
-      wordCount(schema.strong) < limits.answerWordMin ||
-      wordCount(schema.strong) > limits.strongWordMax
-    )
-      failures.push("gate: answer.strong profile limits");
-  }
-
-  if (expected.requiresNoFabrication) {
-    const transcriptAndEvidence = normalize(
-      `${fixture.transcript} ${gatherEvidenceTokens(fixture.candidatePack).join(" ")}`,
-    );
-    if (countDigits(transcriptAndEvidence) === 0 && countDigits(fullText) > 0)
-      failures.push("gate: fabricated metrics detected");
-
-    for (const metric of output.signals?.metrics ?? []) {
-      if (!transcriptAndEvidence.includes(normalize(metric)))
-        failures.push(`gate: fabricated metric token (${metric})`);
-    }
-    for (const anchor of output.signals?.resumeAnchors ?? []) {
-      if (!transcriptAndEvidence.includes(normalize(anchor)))
-        failures.push(`gate: fabricated resume anchor (${anchor})`);
-    }
-  }
+  applyProfileLimits(schema, limits, failures);
+  applyNoFabricationChecks(fixture, expected, output, fullText, failures);
 
   if (!/\b(i|my|we)\b/i.test(schema.main) && !/\b(я|мы)\b/iu.test(schema.main))
     failures.push("gate: no direct answer framing");
@@ -203,24 +189,7 @@ function validateGates(fixture, profileLimitsById) {
     if (!hasStar) failures.push("gate: missing STAR-like structure");
   }
 
-  if (!expected.allowClarifier && output.clarifier?.needed)
-    failures.push("gate: clarifier present when not allowed");
-  if (output.clarifier?.needed) {
-    const transcriptNorm = normalize(fixture.transcript);
-    const hasAmbiguousCue =
-      /\b(unclear|ambiguous|not sure|уточни|непонятно|ambigu|noise|crosstalk)\b/iu.test(
-        transcriptNorm,
-      );
-    const shortPrompt = wordCount(transcriptNorm) <= 8;
-    const asksHowWouldYou = /\b(how would you|how do you|как бы вы|что делать)\b/iu.test(
-      transcriptNorm,
-    );
-    const allowedByScenario =
-      expected.allowClarifier &&
-      (shortPrompt || output.question?.questionType === "unknown" || asksHowWouldYou);
-    if (!hasAmbiguousCue && !allowedByScenario)
-      failures.push("gate: clarifier not needed by transcript");
-  }
+  applyClarifierChecks(fixture, expected, output, failures);
 
   if (containsAny(fullText, BANNED_COACHING)) failures.push("gate: coaching fluff detected");
 
@@ -228,15 +197,7 @@ function validateGates(fixture, profileLimitsById) {
   if (transcriptNorm.length > 40 && fullText.includes(transcriptNorm.slice(0, 40)))
     failures.push("gate: transcript retell detected");
 
-  for (const token of expected.mustMention ?? []) {
-    if (!fullText.includes(normalize(token)))
-      failures.push(`expectation: mustMention missing (${token})`);
-  }
-
-  for (const token of expected.mustNotMention ?? []) {
-    if (fullText.includes(normalize(token)))
-      failures.push(`expectation: mustNotMention violated (${token})`);
-  }
+  applyExpectationTokens(expected, fullText, failures);
 
   if (output.question?.questionType !== expected.questionType)
     failures.push(
@@ -247,6 +208,76 @@ function validateGates(fixture, profileLimitsById) {
     failures.push("gate: resume anchor required");
 
   return failures;
+}
+
+function applyProfileLimits(schema, limits, failures) {
+  if (!limits) return;
+  if (
+    wordCount(schema.main) < limits.answerWordMin ||
+    wordCount(schema.main) > limits.answerWordMax
+  ) {
+    failures.push("gate: answer.main profile limits");
+  }
+  if (wordCount(schema.short) > limits.shortWordMax)
+    failures.push("gate: answer.short profile limits");
+  if (
+    wordCount(schema.strong) < limits.answerWordMin ||
+    wordCount(schema.strong) > limits.strongWordMax
+  ) {
+    failures.push("gate: answer.strong profile limits");
+  }
+}
+
+function applyNoFabricationChecks(fixture, expected, output, fullText, failures) {
+  if (!expected.requiresNoFabrication) return;
+  const transcriptAndEvidence = normalize(
+    `${fixture.transcript} ${gatherEvidenceTokens(fixture.candidatePack).join(" ")}`,
+  );
+  if (countDigits(transcriptAndEvidence) === 0 && countDigits(fullText) > 0) {
+    failures.push("gate: fabricated metrics detected");
+  }
+  for (const metric of output.signals?.metrics ?? []) {
+    if (!transcriptAndEvidence.includes(normalize(metric))) {
+      failures.push(`gate: fabricated metric token (${metric})`);
+    }
+  }
+  for (const anchor of output.signals?.resumeAnchors ?? []) {
+    if (!transcriptAndEvidence.includes(normalize(anchor))) {
+      failures.push(`gate: fabricated resume anchor (${anchor})`);
+    }
+  }
+}
+
+function applyClarifierChecks(fixture, expected, output, failures) {
+  if (!expected.allowClarifier && output.clarifier?.needed) {
+    failures.push("gate: clarifier present when not allowed");
+  }
+  if (!output.clarifier?.needed) return;
+  const transcriptNorm = normalize(fixture.transcript);
+  const hasAmbiguousCue =
+    /\b(unclear|ambiguous|not sure|уточни|непонятно|ambigu|noise|crosstalk)\b/iu.test(
+      transcriptNorm,
+    );
+  const shortPrompt = wordCount(transcriptNorm) <= 8;
+  const asksHowWouldYou = /\b(how would you|how do you|как бы вы|что делать)\b/iu.test(
+    transcriptNorm,
+  );
+  const allowedByScenario =
+    expected.allowClarifier &&
+    (shortPrompt || output.question?.questionType === "unknown" || asksHowWouldYou);
+  if (!hasAmbiguousCue && !allowedByScenario)
+    failures.push("gate: clarifier not needed by transcript");
+}
+
+function applyExpectationTokens(expected, fullText, failures) {
+  for (const token of expected.mustMention ?? []) {
+    if (!fullText.includes(normalize(token)))
+      failures.push(`expectation: mustMention missing (${token})`);
+  }
+  for (const token of expected.mustNotMention ?? []) {
+    if (fullText.includes(normalize(token)))
+      failures.push(`expectation: mustNotMention violated (${token})`);
+  }
 }
 
 export async function runInterviewQuality() {
