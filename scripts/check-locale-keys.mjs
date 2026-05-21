@@ -27,13 +27,53 @@ function extractUiRu(source) {
   const startMarker = "export const ui_ru = ";
   const startIdx = source.indexOf(startMarker);
   if (startIdx < 0) throw new Error("Cannot find ui_ru in locale.ts");
-  const endMarker = "\nexport type UiStrings";
-  const endIdx = source.indexOf(endMarker, startIdx);
-  if (endIdx < 0) throw new Error("Cannot find ui_en marker in locale.ts");
+  let idx = startIdx + startMarker.length;
+  let depth = 0;
+  let inString = false;
+  let stringChar = "";
+  let escaped = false;
 
-  const rawBlock = source.slice(startIdx + startMarker.length, endIdx).trim();
-  const objectLiteral = rawBlock.replace(/\bas const\s*;?\s*$/u, "").trim();
-  return new Function(`"use strict"; return (${objectLiteral});`)();
+  const finishObject = (endIdx) => {
+    const raw = source.slice(startIdx + startMarker.length, endIdx + 1);
+    const jsonLike = raw
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/,(\s*[}\]])/g, "$1")
+      .replace(/(^|\n|{|,)\s*([a-zA-Z_$][\w$]*)\s*:/g, '$1"$2":')
+      .trim();
+    return JSON.parse(jsonLike);
+  };
+
+  for (; idx < source.length; idx++) {
+    const ch = source[idx];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (inString) {
+      if (ch === "\\") {
+        escaped = true;
+        continue;
+      }
+      if (ch === stringChar) {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") {
+      inString = true;
+      stringChar = ch;
+      continue;
+    }
+    if (ch === "{") {
+      depth += 1;
+      continue;
+    }
+    if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) return finishObject(idx);
+    }
+  }
+  throw new Error("Could not find closing brace for ui_ru");
 }
 
 let uiRu;
@@ -121,7 +161,16 @@ function isAllowedHardcoded(text) {
   if (!/[A-Za-zА-Яа-яЁё]/.test(normalized)) return true;
 
   const parts = normalized
-    .split(/[\s,:;()[\]{}]+/)
+    .replaceAll("(", " ")
+    .replaceAll(")", " ")
+    .replaceAll("[", " ")
+    .replaceAll("]", " ")
+    .replaceAll("{", " ")
+    .replaceAll("}", " ")
+    .replaceAll(",", " ")
+    .replaceAll(":", " ")
+    .replaceAll(";", " ")
+    .split(" ")
     .map((part) => part.trim())
     .filter(Boolean);
   if (parts.length > 0 && parts.every((part) => hardcodedAllowRegex.some((re) => re.test(part)))) {
