@@ -33,7 +33,7 @@ function extractUiRu(source) {
 
   const rawBlock = source.slice(startIdx + startMarker.length, endIdx).trim();
   const objectLiteral = rawBlock.replace(/\bas const\s*;?\s*$/u, "").trim();
-  return Function(`"use strict"; return (${objectLiteral});`)();
+  return new Function(`"use strict"; return (${objectLiteral});`)();
 }
 
 let uiRu;
