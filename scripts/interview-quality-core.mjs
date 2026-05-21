@@ -181,33 +181,48 @@ function validateGates(fixture, profileLimitsById) {
   applyProfileLimits(schema, limits, failures);
   applyNoFabricationChecks(fixture, expected, output, fullText, failures);
 
-  if (!/\b(i|my|we)\b/i.test(schema.main) && !/\b(я|мы)\b/iu.test(schema.main))
-    failures.push("gate: no direct answer framing");
-
-  if (expected.starLikeRequired || output.question?.questionType === "behavioral") {
-    const hasStar = STAR_TOKENS.every((token) => fullText.includes(token));
-    if (!hasStar) failures.push("gate: missing STAR-like structure");
-  }
-
+  applyAnswerFramingChecks(schema, failures);
+  applyStarChecks(expected, output, fullText, failures);
   applyClarifierChecks(fixture, expected, output, failures);
-
-  if (containsAny(fullText, BANNED_COACHING)) failures.push("gate: coaching fluff detected");
-
-  const transcriptNorm = normalize(fixture.transcript);
-  if (transcriptNorm.length > 40 && fullText.includes(transcriptNorm.slice(0, 40)))
-    failures.push("gate: transcript retell detected");
-
+  applyStyleAndRetellChecks(fixture, fullText, failures);
   applyExpectationTokens(expected, fullText, failures);
-
-  if (output.question?.questionType !== expected.questionType)
-    failures.push(
-      `expectation: questionType mismatch (${output.question?.questionType} != ${expected.questionType})`,
-    );
-
-  if (expected.requiresResumeAnchor && (output.signals?.resumeAnchors?.length ?? 0) === 0)
-    failures.push("gate: resume anchor required");
+  applyQuestionTypeCheck(expected, output, failures);
+  applyResumeAnchorRequirement(expected, output, failures);
 
   return failures;
+}
+
+function applyAnswerFramingChecks(schema, failures) {
+  if (!/\b(i|my|we)\b/i.test(schema.main) && !/\b(я|мы)\b/iu.test(schema.main)) {
+    failures.push("gate: no direct answer framing");
+  }
+}
+
+function applyStarChecks(expected, output, fullText, failures) {
+  if (!(expected.starLikeRequired || output.question?.questionType === "behavioral")) return;
+  const hasStar = STAR_TOKENS.every((token) => fullText.includes(token));
+  if (!hasStar) failures.push("gate: missing STAR-like structure");
+}
+
+function applyStyleAndRetellChecks(fixture, fullText, failures) {
+  if (containsAny(fullText, BANNED_COACHING)) failures.push("gate: coaching fluff detected");
+  const transcriptNorm = normalize(fixture.transcript);
+  if (transcriptNorm.length > 40 && fullText.includes(transcriptNorm.slice(0, 40))) {
+    failures.push("gate: transcript retell detected");
+  }
+}
+
+function applyQuestionTypeCheck(expected, output, failures) {
+  if (output.question?.questionType === expected.questionType) return;
+  failures.push(
+    `expectation: questionType mismatch (${output.question?.questionType} != ${expected.questionType})`,
+  );
+}
+
+function applyResumeAnchorRequirement(expected, output, failures) {
+  if (!expected.requiresResumeAnchor) return;
+  if ((output.signals?.resumeAnchors?.length ?? 0) > 0) return;
+  failures.push("gate: resume anchor required");
 }
 
 function applyProfileLimits(schema, limits, failures) {

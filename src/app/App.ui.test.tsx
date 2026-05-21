@@ -146,74 +146,84 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     companyValues: ["customer obsession"],
   });
 
-  const invoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
-    switch (command) {
-      case "load_bootstrap":
-        return {
-          settings: settingsState,
-          deepgramKeyPresent: deepgramPresent,
-          llmKeyPresent: llmPresent,
-          contextActive: false,
-          contextEntryCount: 0,
-          runtimeReady: runtimeReady(),
-        };
-      case "get_setup_status":
-        return {
-          deepgramKeyPresent: deepgramPresent,
-          llmKeyPresent: llmPresent,
-          llmRouteConfigured: Boolean(
-            settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim(),
-          ),
-          runtimePathReady: runtimeReady(),
-        };
-      case "save_settings": {
-        const next = (args?.input as Record<string, unknown> | undefined) ?? {};
-        settingsState = { ...settingsState, ...(next as typeof settingsState) };
-        return settingsState;
-      }
-      case "save_secret": {
-        const slot = args?.slot;
-        if (slot === "deepgramApiKey") deepgramPresent = true;
-        if (slot === "llmApiKey") llmPresent = true;
-        return null;
-      }
-      case "get_context_status":
-        return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
-      case "capture_stop_and_analyze":
-      case "retry_last_analysis":
-        if (options.analysisError) throw options.analysisError;
-        return options.analysisCard ?? { gist: "g", sayNow: "say", nextMove: "next" };
-      case "clear_context":
-        return { contextActive: false, entryCount: 0, canRetryLastTranscript: false };
-      case "prepare_candidate_pack":
-        return options.candidatePackPreview ?? defaultCandidatePackPreview();
-      case "load_candidate_pack":
-        return options.candidatePack ?? null;
-      case "get_candidate_pack_status":
-        return options.candidatePackStatus ?? { exists: false, factCount: 0, weakFactCount: 0 };
-      case "save_candidate_pack":
-      case "save_prepared_candidate_pack":
-      case "clear_interview_reports":
-        return null;
-      case "start_interview_session":
-        return {
-          active: true,
-          sessionId: "is-1",
-          startedAt: "2026-05-18T10:00:00Z",
-          language: "en",
-          questions: [],
-        };
-      case "end_interview_session":
-      case "get_interview_report":
-        return defaultInterviewReport();
-      case "export_interview_report_markdown":
-        return String.raw`C:\reports\interview-report-full-is-1.md`;
-      case "export_interview_report_redacted_markdown":
-        return String.raw`C:\reports\interview-report-redacted-is-1.md`;
-      default:
-        return null;
-    }
+  const handleBootstrap = () => ({
+    settings: settingsState,
+    deepgramKeyPresent: deepgramPresent,
+    llmKeyPresent: llmPresent,
+    contextActive: false,
+    contextEntryCount: 0,
+    runtimeReady: runtimeReady(),
   });
+  const handleSetupStatus = () => ({
+    deepgramKeyPresent: deepgramPresent,
+    llmKeyPresent: llmPresent,
+    llmRouteConfigured: Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim()),
+    runtimePathReady: runtimeReady(),
+  });
+  const handleSaveSettings = (args?: Record<string, unknown>) => {
+    const next = (args?.input as Record<string, unknown> | undefined) ?? {};
+    settingsState = { ...settingsState, ...(next as typeof settingsState) };
+    return settingsState;
+  };
+  const handleSaveSecret = (args?: Record<string, unknown>) => {
+    const slot = args?.slot;
+    if (slot === "deepgramApiKey") deepgramPresent = true;
+    if (slot === "llmApiKey") llmPresent = true;
+    return null;
+  };
+  const handleAnalysis = () => {
+    if (options.analysisError) throw options.analysisError;
+    return options.analysisCard ?? { gist: "g", sayNow: "say", nextMove: "next" };
+  };
+  const handleCommand = (command: string, args?: Record<string, unknown>) => {
+    if (command === "load_bootstrap") return handleBootstrap();
+    if (command === "get_setup_status") return handleSetupStatus();
+    if (command === "save_settings") return handleSaveSettings(args);
+    if (command === "save_secret") return handleSaveSecret(args);
+    if (command === "get_context_status")
+      return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
+    if (command === "capture_stop_and_analyze" || command === "retry_last_analysis") {
+      return handleAnalysis();
+    }
+    if (command === "clear_context")
+      return { contextActive: false, entryCount: 0, canRetryLastTranscript: false };
+    if (command === "prepare_candidate_pack") {
+      return options.candidatePackPreview ?? defaultCandidatePackPreview();
+    }
+    if (command === "load_candidate_pack") return options.candidatePack ?? null;
+    if (command === "get_candidate_pack_status") {
+      return options.candidatePackStatus ?? { exists: false, factCount: 0, weakFactCount: 0 };
+    }
+    if (
+      command === "save_candidate_pack" ||
+      command === "save_prepared_candidate_pack" ||
+      command === "clear_interview_reports"
+    ) {
+      return null;
+    }
+    if (command === "start_interview_session") {
+      return {
+        active: true,
+        sessionId: "is-1",
+        startedAt: "2026-05-18T10:00:00Z",
+        language: "en",
+        questions: [],
+      };
+    }
+    if (command === "end_interview_session" || command === "get_interview_report") {
+      return defaultInterviewReport();
+    }
+    if (command === "export_interview_report_markdown") {
+      return String.raw`C:\reports\interview-report-full-is-1.md`;
+    }
+    if (command === "export_interview_report_redacted_markdown") {
+      return String.raw`C:\reports\interview-report-redacted-is-1.md`;
+    }
+    return null;
+  };
+  const invoke = vi.fn(async (command: string, args?: Record<string, unknown>) =>
+    handleCommand(command, args),
+  );
 
   const platform: AppPlatform = {
     invoke,

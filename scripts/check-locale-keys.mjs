@@ -46,38 +46,36 @@ function extractUiRu(source) {
 
   for (; idx < source.length; idx++) {
     const ch = source[idx];
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    if (inString) {
-      if (ch === "\\") {
-        escaped = true;
-        continue;
-      }
-      if (ch === stringChar) {
-        inString = false;
-        continue;
-      }
-      continue;
-    }
-    if (ch === '"' || ch === "'" || ch === "`") {
-      inString = true;
-      stringChar = ch;
-      continue;
-    }
-    if (ch === "{") {
-      depth++;
-      continue;
-    }
-    if (ch === "}") {
-      depth--;
-      if (depth === 0) {
-        return finishObject(idx);
-      }
-    }
+    const state = consumeChar(ch, { inString, escaped, stringChar, depth });
+    inString = state.inString;
+    escaped = state.escaped;
+    stringChar = state.stringChar;
+    depth = state.depth;
+    if (state.objectClosed) return finishObject(idx);
   }
   throw new Error("Could not find closing brace for ui_ru");
+}
+
+function consumeChar(ch, state) {
+  if (state.escaped) {
+    return { ...state, escaped: false, objectClosed: false };
+  }
+  if (state.inString) {
+    if (ch === "\\") return { ...state, escaped: true, objectClosed: false };
+    if (ch === state.stringChar) {
+      return { ...state, inString: false, objectClosed: false };
+    }
+    return { ...state, objectClosed: false };
+  }
+  if (ch === '"' || ch === "'" || ch === "`") {
+    return { ...state, inString: true, stringChar: ch, objectClosed: false };
+  }
+  if (ch === "{") return { ...state, depth: state.depth + 1, objectClosed: false };
+  if (ch === "}") {
+    const nextDepth = state.depth - 1;
+    return { ...state, depth: nextDepth, objectClosed: nextDepth === 0 };
+  }
+  return { ...state, objectClosed: false };
 }
 
 let uiRu;
