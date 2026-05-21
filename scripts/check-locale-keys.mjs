@@ -28,10 +28,7 @@ function extractUiRu(source) {
   const startIdx = source.indexOf(startMarker);
   if (startIdx < 0) throw new Error("Cannot find ui_ru in locale.ts");
   let idx = startIdx + startMarker.length;
-  let depth = 0;
-  let inString = false;
-  let stringChar = "";
-  let escaped = false;
+  let state = { depth: 0, inString: false, stringChar: "", escaped: false, objectClosed: false };
 
   const finishObject = (endIdx) => {
     const raw = source.slice(startIdx + startMarker.length, endIdx + 1);
@@ -44,36 +41,30 @@ function extractUiRu(source) {
   };
 
   for (; idx < source.length; idx++) {
-    const ch = source[idx];
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    if (inString) {
-      if (ch === "\\") {
-        escaped = true;
-        continue;
-      }
-      if (ch === stringChar) {
-        inString = false;
-      }
-      continue;
-    }
-    if (ch === '"' || ch === "'" || ch === "`") {
-      inString = true;
-      stringChar = ch;
-      continue;
-    }
-    if (ch === "{") {
-      depth += 1;
-      continue;
-    }
-    if (ch === "}") {
-      depth -= 1;
-      if (depth === 0) return finishObject(idx);
-    }
+    state = consumeUiChar(source[idx], state);
+    if (state.objectClosed) return finishObject(idx);
   }
   throw new Error("Could not find closing brace for ui_ru");
+}
+
+function consumeUiChar(ch, state) {
+  if (state.escaped) return { ...state, escaped: false, objectClosed: false };
+  if (state.inString) return consumeStringChar(ch, state);
+  if (ch === '"' || ch === "'" || ch === "`") {
+    return { ...state, inString: true, stringChar: ch, objectClosed: false };
+  }
+  if (ch === "{") return { ...state, depth: state.depth + 1, objectClosed: false };
+  if (ch === "}") {
+    const nextDepth = state.depth - 1;
+    return { ...state, depth: nextDepth, objectClosed: nextDepth === 0 };
+  }
+  return { ...state, objectClosed: false };
+}
+
+function consumeStringChar(ch, state) {
+  if (ch === "\\") return { ...state, escaped: true, objectClosed: false };
+  if (ch === state.stringChar) return { ...state, inString: false, objectClosed: false };
+  return { ...state, objectClosed: false };
 }
 
 let uiRu;
