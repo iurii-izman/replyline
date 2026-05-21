@@ -1,0 +1,177 @@
+[
+  {
+    "id": "work-short-status-update",
+    "mode": "work_conversation",
+    "transcript": "Короткий апдейт: блок интеграции готов, остался деплой и подтверждение QA до завтра 11:00.",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["завтра", "11:00"],
+      "mustNotContain": ["выдуманный факт"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true
+    }
+  },
+  {
+    "id": "angry-client-calm-response",
+    "mode": "work_conversation",
+    "transcript": "Вы снова сорвали срок. Мне не нужны оправдания, мне нужен понятный план сегодня.",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["сегодня", "план"],
+      "mustNotContain": ["это не моя вина"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true
+    }
+  },
+  {
+    "id": "unclear-requirement-clarification",
+    "mode": "work_conversation",
+    "transcript": "Нужно закрыть это нормально. Вы понимаете, что я имею в виду?",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["уточ"],
+      "mustNotContain": ["всё понял без вопросов"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Чтобы не промахнуться, уточню критерий: приоритет в сроке, качестве или владельце? Сегодня фиксирую выбранный критерий и сразу даю следующий шаг.",
+      "next_move": "После вашего ответа зафиксирую критерий и срок в чате."
+    }
+  },
+  {
+    "id": "work-deadline-ownership",
+    "mode": "work_conversation",
+    "transcript": "Дедлайн пропущен. Кто владелец закрытия и когда будет новый срок?",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["владелец", "срок"],
+      "mustNotContain": ["выдуманный факт"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true
+    }
+  },
+  {
+    "id": "interview-answer-star-format",
+    "mode": "interview",
+    "transcript": "Расскажите о конфликте в команде и как вы его решили.",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["Situation", "Task", "Action", "Result"],
+      "mustNotContain": ["выдуманный факт"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Situation: в команде был конфликт по приоритету релиза. Task: нужно было вернуть фокус на срок и качество. Action: я свёл стороны, зафиксировал критерий решения и владельца в одном документе. Result: команда синхронизировалась и релиз вышел без сдвига.",
+      "next_move": "Если полезно, дам короткий follow-up с риском и метрикой контроля."
+    }
+  },
+  {
+    "id": "weak-transcript-short-capture",
+    "mode": "work_conversation",
+    "transcript": "ээ... ну...",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["уточ"],
+      "mustNotContain": ["уверен"],
+      "maxSayNowChars": 320,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Сигнал короткий и шумный, поэтому уточню один критерий перед решением: что важно закрыть первым — срок, качество или владелец?",
+      "next_move": "После уточнения сразу зафиксирую один следующий шаг и срок."
+    }
+  },
+  {
+    "id": "noisy-transcript-partial-words",
+    "mode": "work_conversation",
+    "transcript": "...клие... срок... завтра... риск... не слышно...",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["риск", "завтра"],
+      "mustNotContain": ["гарантирую"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true
+    }
+  },
+  {
+    "id": "empty-transcript-graceful-fail",
+    "mode": "work_conversation",
+    "transcript": "",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": [],
+      "mustNotContain": [],
+      "maxSayNowChars": 420,
+      "requiresNextStep": false,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true,
+      "expectsGracefulFailure": true
+    }
+  },
+  {
+    "id": "candidate-pack-supported-answer",
+    "mode": "work_conversation",
+    "transcript": "Сформулируй ответ с опорой на мой опыт и без выдумки.",
+    "candidatePack": {
+      "claims": ["Led migration rollout", "Reduced incident volume"],
+      "metrics": ["p95 latency -18%"],
+      "constraints": ["No fabricated numbers"]
+    },
+    "expected": {
+      "mustContain": ["migration", "p95 latency -18%"],
+      "mustNotContain": ["42% conversion uplift"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": false
+    },
+    "mockCardOverrides": {
+      "say_now": "Опираюсь на ваш опыт: вы вели migration rollout и снизили p95 latency -18%, поэтому ответ строим на этих подтверждённых фактах без новых цифр.",
+      "next_move": "Соберу версию ответа и коротко отмечу, какие факты взяты из Candidate Pack."
+    }
+  },
+  {
+    "id": "export-safe-card",
+    "mode": "work_conversation",
+    "transcript": "Подготовь карточку, безопасную для отчёта без секретов и prompt dump.",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["без секретов", "следующий шаг"],
+      "mustNotContain": ["sk-", "Bearer", "BEGIN PROMPT"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Даю безопасную карточку: без секретов и без prompt dump, только решение и следующий шаг с владельцем.",
+      "next_move": "Сформирую export-safe версию с redaction-проверкой перед отчётом."
+    }
+  }
+]
