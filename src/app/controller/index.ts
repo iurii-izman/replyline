@@ -38,6 +38,24 @@ function lines(value: string): string[] {
     .map((v) => v.trim())
     .filter(Boolean);
 }
+function parseFactsText(value: string): CandidatePackDto["resumeFacts"] {
+  return lines(value).map((line, index) => {
+    const [id = `fact-${index + 1}`, title = "", claim = "", evidence = ""] = line
+      .split("|")
+      .map((part) => part.trim());
+    return {
+      id,
+      title,
+      claim,
+      description: "",
+      evidence,
+      skills: [],
+      metrics: [],
+      strength: evidence ? "medium" : "weak",
+      suitableForQuestions: [],
+    };
+  });
+}
 
 export function useReplylineController(platform: AppPlatform) {
   // ── State ──────────────────────────────────────────────────────────────
@@ -359,24 +377,6 @@ export function useReplylineController(platform: AppPlatform) {
   });
 
   // ── Public API ─────────────────────────────────────────────────────────
-  function parseFactsText(value: string): CandidatePackDto["resumeFacts"] {
-    return lines(value).map((line, index) => {
-      const [id = `fact-${index + 1}`, title = "", claim = "", evidence = ""] = line
-        .split("|")
-        .map((part) => part.trim());
-      return {
-        id,
-        title,
-        claim,
-        description: "",
-        evidence,
-        skills: [],
-        metrics: [],
-        strength: evidence ? "medium" : "weak",
-        suitableForQuestions: [],
-      };
-    });
-  }
   async function loadCandidatePack() {
     const pack = await platform.invoke<CandidatePackDto | null>("load_candidate_pack");
     const status = await platform.invoke<CandidatePackStatusDto>("get_candidate_pack_status");

@@ -34,17 +34,22 @@ function fail(message) {
   console.error(message);
   process.exit(1);
 }
+function assert(condition, message) {
+  if (!condition) fail(message);
+}
+function parseJsonOrFail(raw, messagePrefix) {
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    fail(`${messagePrefix}: ${String(error)}`);
+  }
+}
 
 function runFixtureCase(fixtureName) {
   const fixturePath = join(cwd, "tests", "fixtures", "runtime", fixtureName);
 
   const fixtureRaw = readFileSync(fixturePath, "utf8");
-  let fixtureJson;
-  try {
-    fixtureJson = JSON.parse(fixtureRaw);
-  } catch (error) {
-    fail(`Fixture JSON is invalid (${fixtureName}): ${String(error)}`);
-  }
+  const fixtureJson = parseJsonOrFail(fixtureRaw, `Fixture JSON is invalid (${fixtureName})`);
 
   const run = spawnSync(
     "pwsh",
@@ -55,36 +60,31 @@ function runFixtureCase(fixtureName) {
     },
   );
 
-  if (run.error) {
-    fail(`runtime-preflight process error (${fixtureName}): ${String(run.error)}`);
-  }
+  assert(!run.error, `runtime-preflight process error (${fixtureName}): ${String(run.error)}`);
   if (run.status !== 0) {
     fail(
       `runtime-preflight exited non-zero (${fixtureName}) code=${run.status}\nSTDERR:\n${run.stderr}\nSTDOUT:\n${run.stdout}`,
     );
   }
 
-  let report;
-  try {
-    report = JSON.parse(run.stdout);
-  } catch (error) {
-    fail(
-      `runtime-preflight stdout is not valid JSON (${fixtureName}): ${String(error)}\nSTDOUT:\n${run.stdout}`,
-    );
-  }
-
-  if (report.lane !== "runtime-preflight") {
-    fail(`Unexpected lane (${fixtureName}): ${String(report.lane)}`);
-  }
-
-  if (report?.readiness?.settingsFile?.parseOk !== true) {
-    fail(`settingsFile.parseOk is not true (${fixtureName})`);
-  }
+  const report = parseJsonOrFail(
+    run.stdout,
+    `runtime-preflight stdout is not valid JSON (${fixtureName})\nSTDOUT:\n${run.stdout}`,
+  );
+  assert(
+    report.lane === "runtime-preflight",
+    `Unexpected lane (${fixtureName}): ${String(report.lane)}`,
+  );
+  assert(
+    report?.readiness?.settingsFile?.parseOk === true,
+    `settingsFile.parseOk is not true (${fixtureName})`,
+  );
 
   const configuredFields = report?.readiness?.configuredFields;
-  if (!configuredFields || typeof configuredFields !== "object") {
-    fail(`configuredFields missing in report (${fixtureName})`);
-  }
+  assert(
+    configuredFields && typeof configuredFields === "object",
+    `configuredFields missing in report (${fixtureName})`,
+  );
 
   for (const field of expectedConfiguredFields) {
     if (!(field in configuredFields)) {
@@ -93,9 +93,10 @@ function runFixtureCase(fixtureName) {
   }
 
   const missingExpectedFields = report?.readiness?.schema?.missingExpectedFields;
-  if (!Array.isArray(missingExpectedFields)) {
-    fail(`schema.missingExpectedFields is not an array (${fixtureName})`);
-  }
+  assert(
+    Array.isArray(missingExpectedFields),
+    `schema.missingExpectedFields is not an array (${fixtureName})`,
+  );
   if (missingExpectedFields.length > 0) {
     fail(
       `schema.missingExpectedFields must be empty (${fixtureName}): ${missingExpectedFields.join(", ")}`,

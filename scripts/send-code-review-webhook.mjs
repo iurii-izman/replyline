@@ -70,4 +70,4 @@ if (json.ok !== true) {
   process.exit(1);
 }
 
-console.log(JSON.stringify(json, null, 2));
+console.log(JSON.stringify(responseSummary(res.status, json), null, 2));

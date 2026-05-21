@@ -51,13 +51,14 @@ export function validateCardV3(card, snippet) {
   const keys = Object.keys(card).sort((a, b) => a.localeCompare(b));
   const allowedOptional = new Set(["risk_or_clarifier"]);
   const required = [...V3_CARD_KEYS];
+  const isAllowedField = (key) => required.includes(key) || allowedOptional.has(key);
   for (const key of required) {
     if (!(key in card)) {
       return `missing required v3 field: ${key}`;
     }
   }
   for (const key of keys) {
-    if (!required.includes(key) && !allowedOptional.has(key)) {
+    if (!isAllowedField(key)) {
       return `unexpected v3 field: ${key}`;
     }
   }
@@ -74,17 +75,12 @@ export function validateCardV3(card, snippet) {
   }
 
   const answer = card.answer_now.trim();
-  if (answer.length > 560) {
-    return "answer_now must be <= 560 chars";
-  }
   const words = answer.split(/\s+/u).filter(Boolean);
-  if (words.length < 10) {
-    return "answer_now should be paragraph-shaped (>= 10 words)";
-  }
   const sentences = answer.split(/[.!?]/u).filter((part) => part.trim()).length;
-  if (sentences < 2 && words.length < 18) {
+  if (answer.length > 560) return "answer_now must be <= 560 chars";
+  if (words.length < 10) return "answer_now should be paragraph-shaped (>= 10 words)";
+  if (sentences < 2 && words.length < 18)
     return "answer_now should read as a paragraph (2+ sentences or >= 18 words)";
-  }
 
   return validateCard(mapV3ToLegacy(card), snippet);
 }

@@ -79,39 +79,43 @@ function walkRustFiles() {
   return results.sort((a, b) => a.localeCompare(b));
 }
 
+function isExcludedByRule(rule, fileRel) {
+  return rule.excludeFiles.some((ex) => fileRel.replaceAll("\\", "/").includes(ex));
+}
+
+function readRustLines(filePath) {
+  try {
+    return readFileSync(filePath, "utf8").split(/\r?\n/u);
+  } catch {
+    return null;
+  }
+}
+
+function hasDangerousPattern(rule, codeOnly) {
+  return rule.patterns.some((pattern) => pattern.test(codeOnly));
+}
+
 function checkDangerousLogPatterns() {
   const rustFiles = walkRustFiles();
   let failed = false;
 
   for (const rule of DANGEROUS_LOG_PATTERNS) {
     for (const fileRel of rustFiles) {
-      // Skip excluded files
-      if (rule.excludeFiles.some((ex) => fileRel.replaceAll("\\", "/").includes(ex))) {
-        continue;
-      }
+      if (isExcludedByRule(rule, fileRel)) continue;
       const filePath = resolve(repoRoot, fileRel);
-      let content;
-      try {
-        content = readFileSync(filePath, "utf8");
-      } catch {
-        continue;
-      }
-      const lines = content.split(/\r?\n/u);
+      const lines = readRustLines(filePath);
+      if (!lines) continue;
       for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
         const line = lines[lineIdx];
         // Skip comment-only lines
         const codeOnly = line.replace(/\/\/.*$/, "").trim();
         if (!codeOnly) continue;
         if (line.includes("privacy-lane: allow")) continue;
-
-        for (const pattern of rule.patterns) {
-          if (pattern.test(codeOnly)) {
-            const relPath = relative(repoRoot, filePath);
-            console.error(`[privacy-lane] ${rule.label}: ${relPath}:${lineIdx + 1}`);
-            console.error(`  → ${line.trim()}`);
-            failed = true;
-          }
-        }
+        if (!hasDangerousPattern(rule, codeOnly)) continue;
+        const relPath = relative(repoRoot, filePath);
+        console.error(`[privacy-lane] ${rule.label}: ${relPath}:${lineIdx + 1}`);
+        console.error(`  → ${line.trim()}`);
+        failed = true;
       }
     }
   }

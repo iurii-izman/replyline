@@ -34,6 +34,16 @@ function extractUiRu(source) {
   let stringChar = "";
   let escaped = false;
 
+  const finishObject = (endIdx) => {
+    const raw = source.slice(startIdx + startMarker.length, endIdx + 1);
+    const jsonLike = raw
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/,(\s*[}\]])/g, "$1")
+      .replace(/(^|\n|{|,)\s*([a-zA-Z_$][\w$]*)\s*:/g, '$1"$2":')
+      .trim();
+    return JSON.parse(jsonLike);
+  };
+
   for (; idx < source.length; idx++) {
     const ch = source[idx];
     if (escaped) {
@@ -63,13 +73,7 @@ function extractUiRu(source) {
     if (ch === "}") {
       depth--;
       if (depth === 0) {
-        const raw = source.slice(startIdx + startMarker.length, idx + 1);
-        const jsonLike = raw
-          .replace(/\/\*[\s\S]*?\*\//g, "")
-          .replace(/,(\s*[}\]])/g, "$1")
-          .replace(/(^|\n|{|,)\s*([a-zA-Z_$][\w$]*)\s*:/g, '$1"$2":')
-          .trim();
-        return JSON.parse(jsonLike);
+        return finishObject(idx);
       }
     }
   }
