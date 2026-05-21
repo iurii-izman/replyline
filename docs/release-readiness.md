@@ -6,6 +6,7 @@ Release gate for Slim Stable Beta.
 
 - `pnpm verify:fast`
 - `pnpm verify:full`
+- `pnpm verify:release-local` (non-manual local release baseline)
 - `pnpm rust:deps`
 - `pnpm audit:npm` (no high/critical)
 

@@ -15,8 +15,10 @@
 - [runtime-bringup.md](runtime-bringup.md)
 - [runtime-probe-credentials.md](runtime-probe-credentials.md)
 - [runtime-evidence.md](runtime-evidence.md)
+- [runtime-quality-harness.md](runtime-quality-harness.md)
 - [smoke-checks.md](smoke-checks.md)
 - [release-readiness.md](release-readiness.md)
+- [release-local-readiness.md](release-local-readiness.md)
 
 ## Runtime and release
 

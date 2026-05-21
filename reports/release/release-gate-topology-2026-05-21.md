@@ -1,0 +1,29 @@
+# Release Gate Topology (2026-05-21)
+
+| Script                                                             | Purpose                                                            | Blocking?                  | Requires external deps?            | Safe in CI?   | Notes                                     |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------ | -------------------------- | ---------------------------------- | ------------- | ----------------------------------------- |
+| `test:quick`                                                       | Fast dev feedback (`typecheck`, `lint`, `test:ui`)                 | Yes (when used)            | No                                 | Yes           | Quick/dev lane.                           |
+| `smoke`                                                            | Core compile + unit + consistency gate                             | Yes                        | Rust toolchain only                | Yes           | Base for `verify:fast`.                   |
+| `verify:fast`                                                      | Default PR/local gate (`smoke` + security lane + public footprint) | Yes                        | npm/rust audit tooling             | Yes           | Canonical required gate.                  |
+| `verify:full`                                                      | Release profile (`verify:fast` + freeze + deps/audit + report)     | Yes                        | npm/rust audit tooling             | Yes           | No GUI/manual steps.                      |
+| `verify:extended`                                                  | Full + coverage + fixtures + runtime-quality checks                | Yes (if invoked)           | Optional fixture/runtime artifacts | Conditionally | Heavier confidence lane.                  |
+| `verify:release-local`                                             | Consolidated non-manual release baseline                           | Yes                        | Same as `verify:fast`              | Yes           | Adds doc-links + readiness report.        |
+| `test:security-lanes`                                              | Privacy log pattern checks + `audit:npm` + `rust:deps`             | Yes                        | cargo-deny/cargo-audit             | Yes           | Must not be bypassed.                     |
+| `rust:deps`                                                        | Rust dependency security (`rust:deny`, `rust:audit`)               | Yes                        | Rust security tooling              | Yes           | Security lane component.                  |
+| `audit:npm`                                                        | npm production audit (`high`)                                      | Yes                        | Network access to advisories       | Yes           | Security lane component.                  |
+| `test:consistency`                                                 | Consistency/contracts pack                                         | Yes                        | No                                 | Yes           | Includes runtime evidence contract test.  |
+| `test:ipc-contract`                                                | IPC handler contract                                               | Yes                        | No                                 | Yes           | Contract lane.                            |
+| `test:runtime-preflight-contract`                                  | Runtime preflight contract                                         | Yes                        | No                                 | Yes           | Contract lane.                            |
+| `test:ui-shell-contract`                                           | UI shell contract                                                  | Yes                        | No                                 | Yes           | Contract lane.                            |
+| `test:public-footprint`                                            | Public footprint policy + report secret scan                       | Yes                        | No                                 | Yes           | Keeps tracked footprint strict.           |
+| `runtime:preflight`                                                | Runtime preflight against local env                                | No (outside core gates)    | Local env/provider setup           | No            | External-state/runtime lane.              |
+| `probe:runtime` / `probe:*` / `evidence:bundle`                    | Runtime evidence and benchmarking                                  | No (outside core gates)    | Providers/audio/runtime            | No            | Evidence lane, manual context.            |
+| `docker:replyline:check`                                           | Docker stack health check                                          | No (outside core gates)    | Docker/compose state               | Conditional   | Non-strict check.                         |
+| `docker:replyline:check:strict`                                    | Strict Docker release check                                        | Manual release gate        | Docker/compose state               | No            | External-state; not auto-pass.            |
+| `test:e2e:*`, `test:perf:k6`, `test:sec:zap`, `test:ux:lighthouse` | Optional E2E/perf/security UX lanes                                | No (optional/experimental) | Extra tools + env                  | Conditional   | Wrapped via optional-lane where possible. |
+
+## Topology notes
+
+- `verify:fast` remains mandatory baseline.
+- `verify:full` remains release profile and keeps freeze/security checks active.
+- `verify:release-local` adds one non-manual readiness command without weakening existing gates.

@@ -6,6 +6,14 @@ reports/*
 !reports/docker/
 !reports/docker/docker-stack-audit-2026-05-21.md
 !reports/docker/docker-stack-hardening-2026-05-21.md
+!reports/release/
+reports/release/*
+!reports/release/release-gate-topology-*.md
+!reports/release/public-footprint-review-*.md
+!reports/release/release-readiness-*.md
+!reports/sonar/
+reports/sonar/*
+!reports/sonar/sonar-residual-readiness-*.md
 .vscode
 .idea
 .DS_Store
