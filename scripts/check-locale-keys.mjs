@@ -27,55 +27,13 @@ function extractUiRu(source) {
   const startMarker = "export const ui_ru = ";
   const startIdx = source.indexOf(startMarker);
   if (startIdx < 0) throw new Error("Cannot find ui_ru in locale.ts");
+  const endMarker = "\nexport type UiStrings";
+  const endIdx = source.indexOf(endMarker, startIdx);
+  if (endIdx < 0) throw new Error("Cannot find ui_en marker in locale.ts");
 
-  let idx = startIdx + startMarker.length;
-  let depth = 0;
-  let inString = false;
-  let stringChar = "";
-  let escaped = false;
-
-  const finishObject = (endIdx) => {
-    const raw = source.slice(startIdx + startMarker.length, endIdx + 1);
-    const jsonLike = raw
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/,(\s*[}\]])/g, "$1")
-      .replace(/(^|\n|{|,)\s*([a-zA-Z_$][\w$]*)\s*:/g, '$1"$2":')
-      .trim();
-    return JSON.parse(jsonLike);
-  };
-
-  for (; idx < source.length; idx++) {
-    const ch = source[idx];
-    const state = consumeChar(ch, { inString, escaped, stringChar, depth });
-    inString = state.inString;
-    escaped = state.escaped;
-    stringChar = state.stringChar;
-    depth = state.depth;
-    if (state.objectClosed) return finishObject(idx);
-  }
-  throw new Error("Could not find closing brace for ui_ru");
-}
-
-function consumeChar(ch, state) {
-  if (state.escaped) {
-    return { ...state, escaped: false, objectClosed: false };
-  }
-  if (state.inString) {
-    if (ch === "\\") return { ...state, escaped: true, objectClosed: false };
-    if (ch === state.stringChar) {
-      return { ...state, inString: false, objectClosed: false };
-    }
-    return { ...state, objectClosed: false };
-  }
-  if (ch === '"' || ch === "'" || ch === "`") {
-    return { ...state, inString: true, stringChar: ch, objectClosed: false };
-  }
-  if (ch === "{") return { ...state, depth: state.depth + 1, objectClosed: false };
-  if (ch === "}") {
-    const nextDepth = state.depth - 1;
-    return { ...state, depth: nextDepth, objectClosed: nextDepth === 0 };
-  }
-  return { ...state, objectClosed: false };
+  const rawBlock = source.slice(startIdx + startMarker.length, endIdx).trim();
+  const objectLiteral = rawBlock.replace(/\bas const\s*;?\s*$/u, "").trim();
+  return Function(`"use strict"; return (${objectLiteral});`)();
 }
 
 let uiRu;
