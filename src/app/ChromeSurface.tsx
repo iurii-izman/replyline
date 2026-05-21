@@ -3,7 +3,7 @@ import { Show } from "solid-js";
 import type { ReplylineController } from "./controller";
 import { GearIcon, HideTrayIcon } from "./ui/icons";
 
-export function ShellChrome(props: { controller: ReplylineController }) {
+export function ShellChrome(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
   const settingsSectionLabel = () => {
@@ -97,17 +97,21 @@ export function ShellChrome(props: { controller: ReplylineController }) {
   );
 }
 
-export function MessagesAndFooter(props: { controller: ReplylineController }) {
+export function MessagesAndFooter(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   return (
     <Show when={controller().notice()}>
       {(notice) => (
         <div class="notice-center" aria-live="polite" aria-atomic="true">
-          <div
-            class={`notice-item ${notice().tone === "error" ? "is-error" : "is-info"}`}
-            role={notice().tone === "error" ? "alert" : "status"}
-          >
-            <span class="notice-item-text">{notice().message}</span>
+          <div class={`notice-item ${notice().tone === "error" ? "is-error" : "is-info"}`}>
+            <output
+              class="notice-item-text"
+              aria-live="polite"
+              aria-atomic="true"
+              role={notice().tone === "error" ? "alert" : "status"}
+            >
+              {notice().message}
+            </output>
           </div>
         </div>
       )}

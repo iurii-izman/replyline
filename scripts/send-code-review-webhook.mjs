@@ -29,6 +29,21 @@ if (stdinMode) {
 }
 
 const body = JSON.stringify({ diff, file: filePath });
+const truncateForLog = (value, limit = 200) => {
+  const text = String(value ?? "");
+  if (text.length <= limit) return text;
+  return `${text.slice(0, limit)}...`;
+};
+const responseSummary = (status, payload) => {
+  if (payload && typeof payload === "object") {
+    const safe = {};
+    for (const key of ["ok", "error", "message", "code"]) {
+      if (key in payload) safe[key] = payload[key];
+    }
+    return { status, ...safe };
+  }
+  return { status, payload: truncateForLog(payload) };
+};
 
 const res = await fetch(url, {
   method: "POST",
@@ -41,17 +56,17 @@ let json;
 try {
   json = JSON.parse(text);
 } catch {
-  console.error("Non-JSON response:", res.status, text.slice(0, 500));
+  console.error("Non-JSON response:", truncateForLog(`status=${res.status}; body=${text}`));
   process.exit(1);
 }
 
 if (!res.ok) {
-  console.error("HTTP", res.status, json);
+  console.error("HTTP error:", JSON.stringify(responseSummary(res.status, json)));
   process.exit(1);
 }
 
 if (json.ok !== true) {
-  console.error("Review failed:", JSON.stringify(json, null, 2));
+  console.error("Review failed:", JSON.stringify(responseSummary(res.status, json), null, 2));
   process.exit(1);
 }
 

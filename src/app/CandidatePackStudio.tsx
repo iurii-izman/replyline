@@ -3,10 +3,10 @@ import type { ReplylineController } from "./controller";
 import type { UiStrings } from "./locale";
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "./ui/icons";
 
-type CandidatePackStudioProps = {
+type CandidatePackStudioProps = Readonly<{
   controller: ReplylineController;
   st: UiStrings;
-};
+}>;
 
 type StudioSectionId =
   | "summary"
@@ -82,6 +82,29 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
     if (isOpen) return <ChevronDownIcon class="ui-icon--16" />;
     return <ChevronRightIcon class="ui-icon--16" />;
   };
+  const isPreparedStep = createMemo(() => stepIndex() >= 2);
+  const canRunPrimaryAction = createMemo(() => {
+    if (isPreparedStep()) return canSavePrepared();
+    return !controller().candidatePackPreparing() && hasSourceInputs();
+  });
+  const primaryTitle = createMemo(() => {
+    if (isPreparedStep()) {
+      return savePreparedDisabledReason() || st().settings.savePackDisabled;
+    }
+    return hasSourceInputs() ? undefined : st().settings.candidatePackDisabledMissingInput;
+  });
+  const runPrimaryAction = () => {
+    if (isPreparedStep()) {
+      void controller().savePreparedCandidatePack();
+      return;
+    }
+    void controller().prepareCandidatePack();
+  };
+  const primaryActionLabel = createMemo(() => {
+    if (isPreparedStep()) return st().settings.saveCandidatePack;
+    if (controller().candidatePackPreparing()) return st().settings.preparing;
+    return st().settings.prepare;
+  });
 
   return (
     <div class="candidate-pack-studio" data-testid="candidate-pack-studio">
@@ -503,29 +526,12 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
         <button
           class="btn-primary"
           type="button"
-          disabled={
-            stepIndex() >= 2
-              ? !canSavePrepared()
-              : controller().candidatePackPreparing() || !hasSourceInputs()
-          }
-          title={
-            stepIndex() >= 2
-              ? savePreparedDisabledReason() || st().settings.savePackDisabled
-              : !hasSourceInputs()
-                ? st().settings.candidatePackDisabledMissingInput
-                : undefined
-          }
-          onClick={() =>
-            stepIndex() >= 2
-              ? void controller().savePreparedCandidatePack()
-              : void controller().prepareCandidatePack()
-          }
+          data-prepare-label={st().settings.prepare}
+          disabled={!canRunPrimaryAction()}
+          title={primaryTitle()}
+          onClick={runPrimaryAction}
         >
-          {stepIndex() >= 2
-            ? st().settings.saveCandidatePack
-            : controller().candidatePackPreparing()
-              ? st().settings.preparing
-              : st().settings.prepare}
+          {primaryActionLabel()}
         </button>
         <button
           class="btn-secondary"

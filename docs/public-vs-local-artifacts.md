@@ -14,6 +14,12 @@ Minimal policy for what should be tracked in GitHub vs kept local-only.
 - build/tooling configuration (`package.json`, lockfiles, lint/format configs)
 - stable-beta documentation used by contributors
 - CI workflows and guardrails
+- Docker policy/runbook artifacts (intentional):
+  - `infra/replyline-ai-stack.override.yml` (repo-local safety override: labels, local-only ports, no secrets)
+  - `infra/replyline-ai-stack.pinned.example.yml` (pinned example policy, no runtime secrets)
+  - `.env.docker.example` (sanitized placeholders only)
+  - `docs/docker-stack.md` (runbook)
+  - `reports/docker/docker-stack-hardening-2026-05-21.md` (audit artifact)
 
 ## Local-only by default (not tracked in GitHub)
 
@@ -33,3 +39,4 @@ Minimal policy for what should be tracked in GitHub vs kept local-only.
 
 - Local-only does not mean deleted from workstation: files can exist locally and stay ignored.
 - If a local-only path becomes required for public usage, move it explicitly into tracked scope and update this doc in the same PR.
+- Runtime `.env` files remain local-only and must never be committed; only `.env.docker.example` is versioned.

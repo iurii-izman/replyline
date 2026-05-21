@@ -52,6 +52,45 @@ type MockPlatformOptions = {
   } | null;
 };
 
+function interviewCardFixture(overrides: Record<string, unknown> = {}) {
+  return {
+    gist: "legacy gist",
+    sayNow: "legacy say",
+    nextMove: "legacy next",
+    charsBand: "normal",
+    interviewCardSchemaV1: {
+      mode: "interview",
+      answer: {
+        main: "Primary answer main",
+        short: "Short 1",
+        strong: "Strong 1",
+        structure: "STAR",
+      },
+      question: {
+        rawTranscript: "um can you tell me",
+        cleanQuestion: "Tell me about a delivery incident.",
+        interviewerIntent: "Validate ownership",
+        questionType: "behavioral",
+        confidence: "high",
+      },
+      signals: {
+        mustMention: ["ownership"],
+        keywords: ["impact"],
+        metrics: [],
+        resumeAnchors: ["project x"],
+      },
+      risks: {
+        weakPoints: ["no numbers"],
+        avoid: ["blame others"],
+        safeReframe: "focus on learning",
+      },
+      followUps: [{ question: "What changed?", bridgeAnswer: "I introduced weekly review." }],
+      clarifier: { needed: false, text: "Which timeframe?" },
+    },
+    ...overrides,
+  };
+}
+
 function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
   const listeners = new Map<string, ((event: ListenerPayload<unknown>) => void)[]>();
   const shortcuts: ((event: ShortcutEvent) => void | Promise<void>)[] = [];
@@ -179,10 +218,10 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
       };
     }
     if (command === "export_interview_report_markdown") {
-      return "C:\\reports\\interview-report-full-is-1.md";
+      return String.raw`C:\reports\interview-report-full-is-1.md`;
     }
     if (command === "export_interview_report_redacted_markdown") {
-      return "C:\\reports\\interview-report-redacted-is-1.md";
+      return String.raw`C:\reports\interview-report-redacted-is-1.md`;
     }
     if (command === "clear_interview_reports") {
       return null;
@@ -235,6 +274,72 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
       await closeHandler({ preventDefault: vi.fn() });
     },
   };
+}
+
+function createSetupMockPlatform(
+  overrides: {
+    deepgramKeyPresent?: boolean;
+    llmKeyPresent?: boolean;
+    llmBaseUrl?: string;
+    llmModel?: string;
+    runtimeReady?: boolean;
+  } = {},
+): MockPlatform {
+  const base = createMockPlatform({
+    analysisCard: { gist: "g", sayNow: "say", nextMove: "next" },
+  });
+
+  let deepgramPresent = overrides.deepgramKeyPresent ?? false;
+  let llmPresent = overrides.llmKeyPresent ?? false;
+  let settingsState = {
+    schemaVersion: 7,
+    hotkey: "Ctrl+Alt+Space",
+    llmBaseUrl: overrides.llmBaseUrl ?? "",
+    llmModel: overrides.llmModel ?? "gpt-4o-mini",
+    selectedModelPreset: "custom_openai_compatible",
+    captureMaxSeconds: 45,
+    activeAnswerProfile: "interview_default",
+    windowOpacity: 100,
+    hideToTrayOnClose: true,
+    keepOnTopDuringCapture: false,
+    interviewCompactMode: false,
+    interviewReportRetentionDays: 0,
+  };
+  const origInvoke = base.platform.invoke;
+  const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+    if (command === "load_bootstrap") {
+      const routeReady = Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim());
+      const runtimeReady = deepgramPresent && routeReady;
+      return {
+        settings: settingsState,
+        deepgramKeyPresent: deepgramPresent,
+        llmKeyPresent: llmPresent,
+        contextActive: false,
+        contextEntryCount: 0,
+        runtimeReady,
+        logStatus: { logPath: "", lastLine: null },
+        canRetryLastTranscript: false,
+      };
+    }
+    if (command === "save_settings") {
+      const input = args?.input as Record<string, unknown> | undefined;
+      settingsState = { ...settingsState, ...(input as typeof settingsState), schemaVersion: 7 };
+      return settingsState;
+    }
+    if (command === "save_secret") {
+      const slot = args?.slot;
+      if (slot === "deepgramApiKey") deepgramPresent = true;
+      if (slot === "llmApiKey") llmPresent = true;
+      return null;
+    }
+    if (command === "get_context_status") {
+      return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
+    }
+    return origInvoke(command, args);
+  });
+  base.platform.invoke = patchedInvoke;
+  base.invoke = patchedInvoke;
+  return base;
 }
 
 describe("App UX stabilization", () => {
@@ -834,47 +939,8 @@ describe("App UX stabilization", () => {
 });
 
 describe("Interview card rendering", () => {
-  function interviewCard(overrides: Record<string, unknown> = {}) {
-    return {
-      gist: "legacy gist",
-      sayNow: "legacy say",
-      nextMove: "legacy next",
-      charsBand: "normal",
-      interviewCardSchemaV1: {
-        mode: "interview",
-        answer: {
-          main: "Primary answer main",
-          short: "Short 1",
-          strong: "Strong 1",
-          structure: "STAR",
-        },
-        question: {
-          rawTranscript: "um can you tell me",
-          cleanQuestion: "Tell me about a delivery incident.",
-          interviewerIntent: "Validate ownership",
-          questionType: "behavioral",
-          confidence: "high",
-        },
-        signals: {
-          mustMention: ["ownership"],
-          keywords: ["impact"],
-          metrics: [],
-          resumeAnchors: ["project x"],
-        },
-        risks: {
-          weakPoints: ["no numbers"],
-          avoid: ["blame others"],
-          safeReframe: "focus on learning",
-        },
-        followUps: [{ question: "What changed?", bridgeAnswer: "I introduced weekly review." }],
-        clarifier: { needed: false, text: "Which timeframe?" },
-      },
-      ...overrides,
-    };
-  }
-
   it("interview answer renders first", async () => {
-    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
     await mock.emitShortcut({ state: "Pressed" });
@@ -885,7 +951,7 @@ describe("Interview card rendering", () => {
   });
 
   it("copy copies answer.main", async () => {
-    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
     await mock.emitShortcut({ state: "Pressed" });
@@ -898,7 +964,7 @@ describe("Interview card rendering", () => {
   });
 
   it("question card renders cleanQuestion", async () => {
-    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
     await mock.emitShortcut({ state: "Pressed" });
@@ -909,7 +975,7 @@ describe("Interview card rendering", () => {
   });
 
   it("signals hide empty metrics", async () => {
-    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
     await mock.emitShortcut({ state: "Pressed" });
@@ -921,7 +987,7 @@ describe("Interview card rendering", () => {
 
   it("renders interview card fixture without crash when list fields are malformed", async () => {
     const mock = createMockPlatform({
-      analysisCard: interviewCard({
+      analysisCard: interviewCardFixture({
         interviewCardSchemaV1: {
           mode: "interview",
           answer: {
@@ -965,7 +1031,7 @@ describe("Interview card rendering", () => {
   });
 
   it("clarifier hidden when not needed", async () => {
-    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
     await mock.emitShortcut({ state: "Pressed" });
@@ -976,9 +1042,9 @@ describe("Interview card rendering", () => {
 
   it("clarifier needed=true renders text", async () => {
     const mock = createMockPlatform({
-      analysisCard: interviewCard({
+      analysisCard: interviewCardFixture({
         interviewCardSchemaV1: {
-          ...interviewCard().interviewCardSchemaV1,
+          ...interviewCardFixture().interviewCardSchemaV1,
           clarifier: { needed: true, text: "Which timeframe?" },
         },
       }),
@@ -994,7 +1060,7 @@ describe("Interview card rendering", () => {
   });
 
   it("carousel switches cards and answer is default", async () => {
-    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
     await mock.emitShortcut({ state: "Pressed" });
@@ -1008,7 +1074,7 @@ describe("Interview card rendering", () => {
   });
 
   it("pin keeps the selected card visible after refresh", async () => {
-    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
     await mock.emitShortcut({ state: "Pressed" });
@@ -1024,7 +1090,7 @@ describe("Interview card rendering", () => {
   });
 
   it("copy current card works for carousel card", async () => {
-    const mock = createMockPlatform({ analysisCard: interviewCard() });
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
     await mock.emitShortcut({ state: "Pressed" });
@@ -1041,9 +1107,9 @@ describe("Interview card rendering", () => {
 
   it("active tab copy works for risks/followUps/clarifier", async () => {
     const mock = createMockPlatform({
-      analysisCard: interviewCard({
+      analysisCard: interviewCardFixture({
         interviewCardSchemaV1: {
-          ...interviewCard().interviewCardSchemaV1,
+          ...interviewCardFixture().interviewCardSchemaV1,
           clarifier: { needed: true, text: "Need scope?" },
         },
       }),
@@ -1075,15 +1141,15 @@ describe("Interview card rendering", () => {
   });
 
   it("pin resets if pinned key absent in next card", async () => {
-    const withClarifier = interviewCard({
+    const withClarifier = interviewCardFixture({
       interviewCardSchemaV1: {
-        ...interviewCard().interviewCardSchemaV1,
+        ...interviewCardFixture().interviewCardSchemaV1,
         clarifier: { needed: true, text: "Need scope?" },
       },
     });
-    const withoutClarifier = interviewCard({
+    const withoutClarifier = interviewCardFixture({
       interviewCardSchemaV1: {
-        ...interviewCard().interviewCardSchemaV1,
+        ...interviewCardFixture().interviewCardSchemaV1,
         clarifier: { needed: false, text: null },
       },
     });
@@ -1369,79 +1435,6 @@ describe("Interview card rendering", () => {
 });
 
 describe("Setup wizard (first-run guidance)", () => {
-  /**
-   * Create a mock platform with a custom bootstrap response.
-   * Patches platform.invoke so the controller sees the override.
-   */
-  function createSetupMockPlatform(
-    overrides: {
-      deepgramKeyPresent?: boolean;
-      llmKeyPresent?: boolean;
-      llmBaseUrl?: string;
-      llmModel?: string;
-      runtimeReady?: boolean;
-    } = {},
-  ): MockPlatform {
-    const base = createMockPlatform({
-      analysisCard: { gist: "g", sayNow: "say", nextMove: "next" },
-    });
-
-    let deepgramPresent = overrides.deepgramKeyPresent ?? false;
-    let llmPresent = overrides.llmKeyPresent ?? false;
-    let settingsState = {
-      schemaVersion: 7,
-      hotkey: "Ctrl+Alt+Space",
-      llmBaseUrl: overrides.llmBaseUrl ?? "",
-      llmModel: overrides.llmModel ?? "gpt-4o-mini",
-      selectedModelPreset: "custom_openai_compatible",
-      captureMaxSeconds: 45,
-      activeAnswerProfile: "interview_default",
-      windowOpacity: 100,
-      hideToTrayOnClose: true,
-      keepOnTopDuringCapture: false,
-      interviewCompactMode: false,
-      interviewReportRetentionDays: 0,
-    };
-    const origInvoke = base.platform.invoke;
-    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
-      if (command === "load_bootstrap") {
-        const routeReady = Boolean(
-          settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim(),
-        );
-        const runtimeReady = deepgramPresent && routeReady;
-        return {
-          settings: settingsState,
-          deepgramKeyPresent: deepgramPresent,
-          llmKeyPresent: llmPresent,
-          contextActive: false,
-          contextEntryCount: 0,
-          runtimeReady,
-          logStatus: { logPath: "", lastLine: null },
-          canRetryLastTranscript: false,
-        };
-      }
-      if (command === "save_settings") {
-        const input = args?.input as Record<string, unknown> | undefined;
-        settingsState = { ...settingsState, ...(input as typeof settingsState), schemaVersion: 7 };
-        return settingsState;
-      }
-      if (command === "save_secret") {
-        const slot = args?.slot;
-        if (slot === "deepgramApiKey") deepgramPresent = true;
-        if (slot === "llmApiKey") llmPresent = true;
-        return null;
-      }
-      if (command === "get_context_status") {
-        return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
-      }
-      return origInvoke(command, args);
-    });
-    // Patch both references so the controller sees the override
-    base.platform.invoke = patchedInvoke;
-    base.invoke = patchedInvoke;
-    return base;
-  }
-
   it("shows settings on first launch when not ready", async () => {
     const mock = createSetupMockPlatform({
       deepgramKeyPresent: false,

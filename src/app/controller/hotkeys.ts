@@ -65,6 +65,13 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
       await deps.platform.window.setAlwaysOnTop(false);
     }
   };
+  const resolveCaptureQuality = (
+    charsBand: AnalysisCard["charsBand"],
+  ): "short" | "normal" | "long" => {
+    if (charsBand === "short") return "short";
+    if (charsBand === "long") return "long";
+    return "normal";
+  };
 
   async function registerCurrentHotkey(hotkey: string) {
     await deps.platform.shortcuts.unregisterAll();
@@ -130,9 +137,7 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
           const result = await deps.platform.invoke<AnalysisCardDto>("capture_stop_and_analyze");
           const card = asAnalysisCard(result);
           deps.setCard(card);
-          deps.setCaptureQuality(
-            card.charsBand === "short" ? "short" : card.charsBand === "long" ? "long" : "normal",
-          );
+          deps.setCaptureQuality(resolveCaptureQuality(card.charsBand));
           deps.setContextActive(true);
           const status = await deps.platform.invoke<ContextStatusDto>("get_context_status");
           deps.applyContextStatus(status);

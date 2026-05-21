@@ -17,24 +17,29 @@ export interface KeyboardShortcutDeps {
 }
 
 export function setupKeyboardShortcuts(deps: KeyboardShortcutDeps): void {
+  const isEditableTarget = (target: EventTarget | null): boolean => {
+    if (!(target instanceof Element)) return false;
+    return Boolean(
+      target.closest("input, textarea, select, [contenteditable='true'], [contenteditable='']"),
+    );
+  };
+  const hasNoModifiers = (event: KeyboardEvent): boolean =>
+    !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
+  const isCopyShortcut = (event: KeyboardEvent): boolean =>
+    (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c";
+  const isRetryShortcut = (event: KeyboardEvent): boolean =>
+    hasNoModifiers(event) && event.key.toLowerCase() === "r";
+
   onMount(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      const target = event.target;
-      const editable =
-        target instanceof Element
-          ? Boolean(
-              target.closest(
-                "input, textarea, select, [contenteditable='true'], [contenteditable='']",
-              ),
-            )
-          : false;
+      const editable = isEditableTarget(event.target);
       if (event.key === "Escape") {
         deps.dismissNotice();
         deps.setError(null);
         return;
       }
       if (deps.panel() !== "main" || editable) return;
-      if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+      if (hasNoModifiers(event)) {
         if (event.key === "ArrowRight") {
           event.preventDefault();
           deps.nextInterviewCard();
@@ -51,19 +56,13 @@ export function setupKeyboardShortcuts(deps: KeyboardShortcutDeps): void {
           return;
         }
       }
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+      if (isCopyShortcut(event)) {
         if (!deps.canCopyCurrentCard()) return;
         event.preventDefault();
         void deps.copyCurrentCard();
         return;
       }
-      if (
-        !event.ctrlKey &&
-        !event.metaKey &&
-        !event.altKey &&
-        !event.shiftKey &&
-        event.key.toLowerCase() === "r"
-      ) {
+      if (isRetryShortcut(event)) {
         if (!deps.canRetry()) return;
         event.preventDefault();
         void deps.retryAnalysis();

@@ -40,6 +40,13 @@ export interface PipelineActions {
 }
 
 export function createPipelineActions(deps: PipelineActionDeps): PipelineActions {
+  const resolveCaptureQuality = (
+    charsBand: AnalysisCard["charsBand"],
+  ): "short" | "normal" | "long" => {
+    if (charsBand === "short") return "short";
+    if (charsBand === "long") return "long";
+    return "normal";
+  };
   async function clearContext() {
     try {
       deps.setError(null);
@@ -80,9 +87,7 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
       });
       const card = asAnalysisCard(result);
       deps.setCard(card);
-      deps.setCaptureQuality(
-        card.charsBand === "short" ? "short" : card.charsBand === "long" ? "long" : "normal",
-      );
+      deps.setCaptureQuality(resolveCaptureQuality(card.charsBand));
       const status = await deps.platform.invoke<ContextStatusDto>("get_context_status");
       deps.applyContextStatus(status);
       deps.setPhase("ready");

@@ -2,7 +2,7 @@ import { Show } from "solid-js";
 import { CandidatePackStudio } from "./CandidatePackStudio";
 import type { ReplylineController } from "./controller";
 
-export function CandidatePackStudioSurface(props: { controller: ReplylineController }) {
+export function CandidatePackStudioSurface(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
 

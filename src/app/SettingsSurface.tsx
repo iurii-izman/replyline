@@ -116,7 +116,7 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
 
   const focusSectionByOffset = (delta: number) => {
     const currentIndex = sections.findIndex((section) => section.id === activeSection());
-    const safeIndex = currentIndex < 0 ? 0 : currentIndex;
+    const safeIndex = Math.max(currentIndex, 0);
     const nextIndex = (safeIndex + delta + sections.length) % sections.length;
     const nextSection = sections[nextIndex];
     if (nextSection) controller().setSettingsActiveSection(nextSection.id);

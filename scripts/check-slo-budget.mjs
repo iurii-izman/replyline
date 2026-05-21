@@ -15,6 +15,8 @@ const slo = JSON.parse(readFileSync(sloPath, "utf8"));
 const thresholds = slo.corePipeline;
 const blockerKeys = new Set(slo.classification?.blocker ?? []);
 const violations = [];
+const hasValue = (value) => value != null;
+const asRoundedNumber = (value) => Number(value.toFixed?.(2) ?? value);
 
 function percentile(values, p) {
   if (values.length === 0) return null;
@@ -70,10 +72,10 @@ if (soakAvailable) {
   ];
 
   for (const c of globalChecks) {
-    const pass = c.actual != null ? c.actual <= c.threshold : false;
+    const pass = hasValue(c.actual) ? c.actual <= c.threshold : false;
     violations.push({
       metric: c.metric,
-      actual: c.actual != null ? Number(c.actual.toFixed?.(2) ?? c.actual) : null,
+      actual: hasValue(c.actual) ? asRoundedNumber(c.actual) : null,
       threshold: c.threshold,
       blocker: c.blocker,
       pass,
@@ -114,10 +116,10 @@ if (stagesAvailable && thresholds.stages) {
       },
     ];
     for (const c of checks) {
-      const pass = c.actual != null ? c.actual <= c.threshold : false;
+      const pass = hasValue(c.actual) ? c.actual <= c.threshold : false;
       violations.push({
         metric: c.metric,
-        actual: c.actual != null ? Number(c.actual.toFixed?.(2) ?? c.actual) : null,
+        actual: hasValue(c.actual) ? asRoundedNumber(c.actual) : null,
         threshold: c.threshold,
         blocker: false,
         pass,

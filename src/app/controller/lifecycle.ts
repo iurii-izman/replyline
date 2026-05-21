@@ -55,13 +55,9 @@ export function setupLifecycle(deps: LifecycleDeps): void {
           if (["transcribing", "analyzing", "ready"].includes(nextPhase)) deps.setPhase(nextPhase);
           deps.setStatusDetail(event.payload.detail ?? null);
         }),
-      );
-      cleanups.push(
         await deps.platform.listen("replyline://open-settings", async () => {
           await deps.showWindow("settings");
         }),
-      );
-      cleanups.push(
         await deps.platform.listen("replyline://context-cleared", () => {
           deps.setContextActive(false);
           deps.setContextEntryCount(0);
@@ -73,8 +69,6 @@ export function setupLifecycle(deps: LifecycleDeps): void {
             message: deps.strings().notices.contextCleared,
           });
         }),
-      );
-      cleanups.push(
         await deps.platform.window.onCloseRequested(async (event) => {
           if (deps.settings().hideToTrayOnClose) {
             event.preventDefault();

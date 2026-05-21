@@ -32,6 +32,12 @@ import { setupKeyboardShortcuts } from "./keyboardShortcuts";
 import { setupTraySync } from "./traySync";
 
 type InterviewCardKey = "answer" | "question" | "signals" | "risks" | "followUps" | "clarifier";
+function lines(value: string): string[] {
+  return value
+    .split("\n")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
 
 export function useReplylineController(platform: AppPlatform) {
   // ── State ──────────────────────────────────────────────────────────────
@@ -353,12 +359,6 @@ export function useReplylineController(platform: AppPlatform) {
   });
 
   // ── Public API ─────────────────────────────────────────────────────────
-  function lines(value: string): string[] {
-    return value
-      .split("\n")
-      .map((v) => v.trim())
-      .filter(Boolean);
-  }
   function parseFactsText(value: string): CandidatePackDto["resumeFacts"] {
     return lines(value).map((line, index) => {
       const [id = `fact-${index + 1}`, title = "", claim = "", evidence = ""] = line
