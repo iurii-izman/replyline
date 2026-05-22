@@ -416,6 +416,30 @@ fn is_local_http_host(host: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, OnceLock};
+
+    fn settings_override_env_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
+
+    fn with_settings_override_env<T>(value: &std::path::Path, f: impl FnOnce() -> T) -> T {
+        let _guard = settings_override_env_lock()
+            .lock()
+            .expect("env mutex poisoned");
+        let previous = std::env::var(SETTINGS_DIR_OVERRIDE_ENV).ok();
+        std::env::set_var(
+            SETTINGS_DIR_OVERRIDE_ENV,
+            value.to_string_lossy().to_string(),
+        );
+        let result = f();
+        if let Some(prev) = previous {
+            std::env::set_var(SETTINGS_DIR_OVERRIDE_ENV, prev);
+        } else {
+            std::env::remove_var(SETTINGS_DIR_OVERRIDE_ENV);
+        }
+        result
+    }
     use std::io::Write;
 
     #[test]
@@ -575,10 +599,10 @@ mod tests {
     fn settings_path_uses_override_env_var() {
         let dir = std::env::temp_dir().join("replyline-settings-override-path");
         std::fs::create_dir_all(&dir).expect("mkdir");
-        std::env::set_var(SETTINGS_DIR_OVERRIDE_ENV, dir.to_string_lossy().to_string());
-        let path = settings_path().expect("settings_path");
-        assert_eq!(path, dir.join(SETTINGS_FILE));
-        std::env::remove_var(SETTINGS_DIR_OVERRIDE_ENV);
+        with_settings_override_env(&dir, || {
+            let path = settings_path().expect("settings_path");
+            assert_eq!(path, dir.join(SETTINGS_FILE));
+        });
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -592,32 +616,30 @@ mod tests {
                 .as_nanos()
         ));
         std::fs::create_dir_all(&dir).expect("mkdir");
-        std::env::set_var(SETTINGS_DIR_OVERRIDE_ENV, dir.to_string_lossy().to_string());
+        with_settings_override_env(&dir, || {
+            let settings = AppSettings {
+                llm_base_url: "https://openrouter.ai/api/v1".to_string(),
+                llm_model: "gpt-4.1-mini".to_string(),
+                hotkey: "Ctrl+Alt+K".to_string(),
+                selected_model_preset: "custom_openai_compatible".to_string(),
+                active_answer_profile: "interview_default".to_string(),
+                window_opacity: 90,
+                ..AppSettings::default()
+            };
 
-        let settings = AppSettings {
-            llm_base_url: "https://openrouter.ai/api/v1".to_string(),
-            llm_model: "gpt-4.1-mini".to_string(),
-            hotkey: "Ctrl+Alt+K".to_string(),
-            selected_model_preset: "custom_openai_compatible".to_string(),
-            active_answer_profile: "interview_default".to_string(),
-            window_opacity: 90,
-            ..AppSettings::default()
-        };
+            save(&settings).expect("save");
+            let loaded = load().expect("load");
+            assert_eq!(loaded.llm_base_url, settings.llm_base_url);
+            assert_eq!(loaded.llm_model, settings.llm_model);
+            assert_eq!(loaded.hotkey, settings.hotkey);
+            assert_eq!(loaded.selected_model_preset, settings.selected_model_preset);
+            assert_eq!(loaded.active_answer_profile, settings.active_answer_profile);
+            assert_eq!(loaded.window_opacity, settings.window_opacity);
 
-        save(&settings).expect("save");
-        let loaded = load().expect("load");
-        assert_eq!(loaded.llm_base_url, settings.llm_base_url);
-        assert_eq!(loaded.llm_model, settings.llm_model);
-        assert_eq!(loaded.hotkey, settings.hotkey);
-        assert_eq!(loaded.selected_model_preset, settings.selected_model_preset);
-        assert_eq!(loaded.active_answer_profile, settings.active_answer_profile);
-        assert_eq!(loaded.window_opacity, settings.window_opacity);
-
-        let path = settings_path().expect("settings_path");
-        let backups = list_corrupt_backups(&path);
-        assert!(backups.is_empty());
-
-        std::env::remove_var(SETTINGS_DIR_OVERRIDE_ENV);
+            let path = settings_path().expect("settings_path");
+            let backups = list_corrupt_backups(&path);
+            assert!(backups.is_empty());
+        });
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
