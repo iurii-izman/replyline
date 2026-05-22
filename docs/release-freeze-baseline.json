@@ -55,6 +55,7 @@
     "scripts/report-release-readiness.mjs",
     ".rooignore"
   ],
+  "guardrailPathRegexes": ["^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"],
   "allowlistPrefixes": [
     ".github/",
     ".roo/",

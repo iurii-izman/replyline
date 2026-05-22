@@ -111,6 +111,11 @@ function run(args, label) {
 function processChangedFiles(changedFiles, label) {
   const allowlistPrefixes = baseline.allowlistPrefixes ?? [];
   const guardrailPaths = new Set(baseline.guardrailPaths ?? []);
+  const guardrailPathRegexes = (baseline.guardrailPathRegexes ?? []).map(
+    (pattern) => new RegExp(pattern, "u"),
+  );
+  const isGuardrailPath = (file) =>
+    guardrailPaths.has(file) || guardrailPathRegexes.some((regex) => regex.test(file));
 
   // Files explicitly listed in guardrailPaths are exempt from the allowlist
   // directory-prefix check. This allows root-level config files (AGENTS.md,
@@ -118,9 +123,9 @@ function processChangedFiles(changedFiles, label) {
   // approved without bloating the allowlist.
   const outsideFreeze = changedFiles.filter(
     (file) =>
-      !guardrailPaths.has(file) && !allowlistPrefixes.some((prefix) => file.startsWith(prefix)),
+      !isGuardrailPath(file) && !allowlistPrefixes.some((prefix) => file.startsWith(prefix)),
   );
-  const outsideGuardrails = changedFiles.filter((file) => !guardrailPaths.has(file));
+  const outsideGuardrails = changedFiles.filter((file) => !isGuardrailPath(file));
 
   mkdirSync(join(cwd, "reports"), { recursive: true });
   const artifactPath = join(cwd, "reports", "release-freeze-check.json");
@@ -133,6 +138,7 @@ function processChangedFiles(changedFiles, label) {
     outsideGuardrails,
     baselineScenarios: baseline.baselineScenarios ?? [],
     guardrailPaths: baseline.guardrailPaths ?? [],
+    guardrailPathRegexes: baseline.guardrailPathRegexes ?? [],
     status:
       outsideFreeze.length === 0 && outsideGuardrails.length === 0
         ? "in-guardrails"
