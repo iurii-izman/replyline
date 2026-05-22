@@ -90,6 +90,13 @@ See:
 - [docs/known-limitations.md](docs/known-limitations.md)
 - [docs/README.md](docs/README.md)
 
+### Manual beta closure
+
+For manual beta seal and local QA, use:
+
+- [docs/manual-closure-pack.html](docs/manual-closure-pack.html)
+- [docs/manual-closure-pack.md](docs/manual-closure-pack.md)
+
 ## Security and Support
 
 - Security reporting: [.github/SECURITY.md](.github/SECURITY.md)

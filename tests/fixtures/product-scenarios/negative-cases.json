@@ -1,0 +1,159 @@
+[
+  {
+    "id": "neg-missing-say-now",
+    "scenario": {
+      "id": "neg-missing-say-now",
+      "category": "work",
+      "mode": "work_conversation",
+      "transcript": "Нужен ответ клиенту по сроку",
+      "candidatePack": null,
+      "expected": {
+        "mustContainConcepts": ["deadline", "next_step"],
+        "requiresNextStep": true,
+        "maxSayNowChars": 420,
+        "language": "ru",
+        "targetUsefulness": 85
+      },
+      "mockCard": { "gist": "g", "say_now": "", "next_move": "Дам следующий шаг" }
+    },
+    "mustFailReasons": ["card_shape", "say_now_usefulness"]
+  },
+  {
+    "id": "neg-too-long-say-now",
+    "scenario": {
+      "id": "neg-too-long-say-now",
+      "category": "work",
+      "mode": "work_conversation",
+      "transcript": "Нужен краткий ответ",
+      "candidatePack": null,
+      "expected": {
+        "mustContainConcepts": ["next_step"],
+        "requiresNextStep": true,
+        "maxSayNowChars": 120,
+        "language": "ru",
+        "targetUsefulness": 80
+      },
+      "mockCard": { "gist": "g", "say_now": "Очень длинный ответ ", "next_move": "Следующий шаг" },
+      "extendSayNowTo": 500
+    },
+    "mustFailReasons": ["brevity"]
+  },
+  {
+    "id": "neg-raw-prompt-leak",
+    "scenario": {
+      "id": "neg-raw-prompt-leak",
+      "category": "privacy",
+      "mode": "work_conversation",
+      "transcript": "Нужна безопасная формулировка",
+      "candidatePack": null,
+      "expected": {
+        "mustContainConcepts": ["next_step"],
+        "mustAvoidConcepts": ["prompt_leak"],
+        "requiresNextStep": true,
+        "maxSayNowChars": 420,
+        "language": "ru",
+        "targetUsefulness": 80
+      },
+      "mockCard": {
+        "gist": "g",
+        "say_now": "Это часть system prompt, поэтому делай так",
+        "next_move": "BEGIN PROMPT"
+      }
+    },
+    "mustFailReasons": ["privacy_no_secret_leak"]
+  },
+  {
+    "id": "neg-secret-output",
+    "scenario": {
+      "id": "neg-secret-output",
+      "category": "privacy",
+      "mode": "work_conversation",
+      "transcript": "Безопасность",
+      "candidatePack": null,
+      "expected": {
+        "mustContainConcepts": ["next_step"],
+        "mustAvoidConcepts": ["secret_leak"],
+        "requiresNextStep": true,
+        "maxSayNowChars": 420,
+        "language": "ru",
+        "targetUsefulness": 80
+      },
+      "mockCard": {
+        "gist": "g",
+        "say_now": "Отправляю sk-live-abcdef1234567890 прямо сейчас",
+        "next_move": "Подтвержу"
+      }
+    },
+    "mustFailReasons": ["privacy_no_secret_leak"]
+  },
+  {
+    "id": "neg-candidate-hallucination",
+    "scenario": {
+      "id": "neg-candidate-hallucination",
+      "category": "candidate_pack",
+      "mode": "interview",
+      "transcript": "Не выдумывать факты",
+      "candidatePack": null,
+      "expected": {
+        "mustContainConcepts": ["next_step"],
+        "mustAvoidConcepts": ["invented_details"],
+        "requiresNextStep": true,
+        "maxSayNowChars": 420,
+        "language": "ru",
+        "targetUsefulness": 80
+      },
+      "mockCard": {
+        "gist": "g",
+        "say_now": "В вашем резюме есть опыт в NASA и портфолио на 12 проектов",
+        "next_move": "Продолжим"
+      }
+    },
+    "mustFailReasons": ["no_hallucination"]
+  },
+  {
+    "id": "neg-markdown-table-say-now",
+    "scenario": {
+      "id": "neg-markdown-table-say-now",
+      "category": "work",
+      "mode": "work_conversation",
+      "transcript": "Нужен разговорный ответ",
+      "candidatePack": null,
+      "expected": {
+        "mustContainConcepts": ["next_step"],
+        "requiresNextStep": true,
+        "maxSayNowChars": 420,
+        "language": "ru",
+        "targetUsefulness": 80
+      },
+      "mockCard": {
+        "gist": "g",
+        "say_now": "| step | owner |\n| --- | --- |",
+        "next_move": "Дальше"
+      }
+    },
+    "mustFailReasons": ["say_now_usefulness"]
+  },
+  {
+    "id": "neg-no-next-step",
+    "scenario": {
+      "id": "neg-no-next-step",
+      "category": "work",
+      "mode": "work_conversation",
+      "transcript": "Нужно действие",
+      "candidatePack": null,
+      "expected": {
+        "mustContainConcepts": ["next_step"],
+        "requiresNextStep": true,
+        "maxSayNowChars": 420,
+        "language": "ru",
+        "targetUsefulness": 85
+      },
+      "mockCard": {
+        "gist": "g",
+        "say_now": "Понимаю запрос и сделаю всё возможное сегодня.",
+        "next_move": ""
+      }
+    },
+    "mustFailReasons": ["next_step"]
+  }
+]

@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Replyline Manual Closure Pack (RU)</title>
+    <style>
+      :root {
+        --bg: #f5f7fb;
+        --panel: #ffffff;
+        --text: #1d2430;
+        --muted: #627086;
+        --line: #d7dfea;
+        --accent: #0b6bcb;
+        --ok: #1f8f4e;
+        --warn: #b7791f;
+        --block: #c53030;
+        --todo: #7a869a;
+      }
+      [data-theme="dark"] {
+        --bg: #0f1420;
+        --panel: #172032;
+        --text: #e9eef9;
+        --muted: #a8b5cc;
+        --line: #28344b;
+        --accent: #56a3ff;
+        --ok: #5aca88;
+        --warn: #ffc15a;
+        --block: #ff7a7a;
+        --todo: #9aa8bf;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: linear-gradient(130deg, var(--bg), #dbe7ff 180%);
+        color: var(--text);
+      }
+      [data-theme="dark"] body {
+        background: linear-gradient(130deg, #0f1420, #0a1c34 180%);
+      }
+      .wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 14px;
+      }
+      .top {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+      }
+      h1,
+      h2,
+      h3 {
+        margin: 0 0 8px;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      button,
+      select,
+      input,
+      textarea {
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .stat {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+      .small {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .sec {
+        border-top: 1px solid var(--line);
+        margin-top: 12px;
+        padding-top: 12px;
+      }
+      .item {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .head {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        gap: 10px;
+        align-items: center;
+      }
+      textarea {
+        width: 100%;
+        min-height: 66px;
+        margin-top: 8px;
+      }
+      .status-Todo {
+        color: var(--todo);
+      }
+      .status-Pass {
+        color: var(--ok);
+      }
+      .status-Warn {
+        color: var(--warn);
+      }
+      .status-Block {
+        color: var(--block);
+      }
+      .mono {
+        font-family: Consolas, "Courier New", monospace;
+        white-space: pre-wrap;
+      }
+      .hidden {
+        display: none;
+      }
+      .go-PASS {
+        color: var(--ok);
+      }
+      .go-WARN {
+        color: var(--warn);
+      }
+      .go-NO-GO {
+        color: var(--block);
+      }
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .head {
+          grid-template-columns: auto 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="wrap">
+      <div class="card top">
+        <div>
+          <h1>Replyline Manual Closure Pack</h1>
+          <div class="meta">
+            Локальный статический QA-runbook для финального beta-seal. Без network calls и внешних
+            зависимостей.
+          </div>
+        </div>
+        <div class="row">
+          <button id="themeBtn">Тёмная тема</button>
+          <button id="printBtn">Печать / PDF</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <input id="search" placeholder="Поиск по чеклисту" />
+          <button id="expandBtn">Раскрыть всё</button>
+          <button id="collapseBtn">Свернуть всё</button>
+        </div>
+        <div class="sec grid">
+          <div class="stat">
+            <strong id="progress">0%</strong>
+            <div class="small">Общий прогресс</div>
+          </div>
+          <div class="stat">
+            <strong id="p0progress">0%</strong>
+            <div class="small">Прогресс P0</div>
+          </div>
+          <div class="stat">
+            <strong id="blockers">0</strong>
+            <div class="small">Блокеры</div>
+          </div>
+          <div class="stat">
+            <strong id="go" class="go-WARN">WARN</strong>
+            <div class="small">Решение</div>
+          </div>
+        </div>
+        <div class="sec row">
+          <button class="primary" id="exportBtn">Экспорт JSON</button>
+          <button id="importBtn">Импорт JSON</button>
+          <input id="fileInput" type="file" class="hidden" accept="application/json" />
+          <button id="mdBtn">MD отчёт</button>
+          <button id="copyMdBtn">Копировать MD</button>
+        </div>
+        <div class="sec row">
+          <button data-cmd="pnpm verify:fast">Копировать: `pnpm verify:fast`</button>
+          <button data-cmd="pnpm verify:release-local">
+            Копировать: `pnpm verify:release-local`
+          </button>
+          <button data-cmd="pnpm release:freeze:check">
+            Копировать: `pnpm release:freeze:check`
+          </button>
+        </div>
+      </div>
+
+      <div class="card" id="list"></div>
+      <div class="card">
+        <h3>Предпросмотр Markdown-отчёта</h3>
+        <div id="mdOut" class="mono"></div>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "replyline-manual-closure-pack-v1";
+      const sections = [
+        ["Live runtime + hotkey evidence / Доказательства live runtime и hotkey", "P0"],
+        ["Audio robustness matrix / Матрица устойчивости аудио", "P0"],
+        ["Human answer quality review / Ручной review качества ответов", "P0"],
+        ["First-run onboarding / Проверка первого запуска", "P1"],
+        ["Privacy, logs, exports, reports / Приватность, логи, экспорты, отчёты", "P0"],
+        ["Installer / clean machine check / Проверка инсталлятора и чистой машины", "P1"],
+        ["External Docker compose hardening / Усиление внешнего Docker compose", "P1"],
+        ["SonarCloud final review / Финальный review SonarCloud", "P1"],
+        ["Visual QA snapshot / Визуальный QA-снимок", "P2"],
+        ["Release / handoff / Релиз и handoff", "P0"],
+        ["Go / No-Go / Финальное решение", "P0"],
+      ];
+
+      const list = document.getElementById("list");
+      const state = loadState();
+
+      function defaultState() {
+        const items = {};
+        for (const [title, prio] of sections) {
+          items[title] = { checked: false, status: "Todo", notes: "", priority: prio, open: true };
+        }
+        return { version: 1, theme: "light", items };
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return defaultState();
+          const parsed = JSON.parse(raw);
+          const base = defaultState();
+          for (const [k, v] of Object.entries(base.items)) {
+            if (!parsed.items || !parsed.items[k])
+              ((parsed.items = parsed.items || {}), (parsed.items[k] = v));
+          }
+          return parsed;
+        } catch (_) {
+          return defaultState();
+        }
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        renderSummary();
+        renderMd();
+      }
+
+      function mkRow(title, item) {
+        const wrap = document.createElement("div");
+        wrap.className = "item";
+        wrap.dataset.title = title.toLowerCase();
+        wrap.innerHTML = `
+        <div class="head">
+          <input type="checkbox" ${item.checked ? "checked" : ""} />
+          <div><strong>${title}</strong> <span class="small">(${item.priority})</span></div>
+          <select>
+            <option value="Todo" ${item.status === "Todo" ? "selected" : ""}>Todo / К выполнению</option>
+            <option value="Pass" ${item.status === "Pass" ? "selected" : ""}>Pass / Пройдено</option>
+            <option value="Warn" ${item.status === "Warn" ? "selected" : ""}>Warn / Риск</option>
+            <option value="Block" ${item.status === "Block" ? "selected" : ""}>Block / Блокер</option>
+          </select>
+          <button>${item.open ? "Свернуть" : "Раскрыть"}</button>
+        </div>
+        <textarea ${item.open ? "" : 'class="hidden"'} placeholder="Доказательства, результаты проверок, ссылки на локальные отчёты (без секретов).">${item.notes || ""}</textarea>
+      `;
+
+        const checkbox = wrap.querySelector("input");
+        const select = wrap.querySelector("select");
+        const toggle = wrap.querySelector("button");
+        const notes = wrap.querySelector("textarea");
+
+        function applyStatusClass() {
+          select.className = `status-${select.value}`;
+        }
+
+        checkbox.addEventListener("change", () => {
+          item.checked = checkbox.checked;
+          saveState();
+        });
+        select.addEventListener("change", () => {
+          item.status = select.value;
+          applyStatusClass();
+          saveState();
+        });
+        notes.addEventListener("input", () => {
+          item.notes = notes.value;
+          saveState();
+        });
+        toggle.addEventListener("click", () => {
+          item.open = !item.open;
+          notes.classList.toggle("hidden", !item.open);
+          toggle.textContent = item.open ? "Свернуть" : "Раскрыть";
+          saveState();
+        });
+
+        applyStatusClass();
+        return wrap;
+      }
+
+      function renderList() {
+        list.innerHTML = "";
+        for (const [title] of sections) {
+          list.appendChild(mkRow(title, state.items[title]));
+        }
+      }
+
+      function renderSummary() {
+        const values = Object.values(state.items);
+        const done = values.filter((i) => i.status !== "Todo").length;
+        const p0 = values.filter((i) => i.priority === "P0");
+        const p0Done = p0.filter((i) => i.status === "Pass").length;
+        const blockers = values.filter((i) => i.status === "Block").length;
+        const allProgress = Math.round((done / values.length) * 100);
+        const p0Progress = Math.round((p0Done / p0.length) * 100);
+
+        let go = "WARN";
+        if (blockers > 0 || p0.some((i) => i.status === "Block")) go = "NO-GO";
+        else if (p0.every((i) => i.status === "Pass")) go = "PASS";
+
+        document.getElementById("progress").textContent = allProgress + "%";
+        document.getElementById("p0progress").textContent = p0Progress + "%";
+        document.getElementById("blockers").textContent = String(blockers);
+        const goEl = document.getElementById("go");
+        goEl.textContent = go;
+        goEl.className = `go-${go}`;
+      }
+
+      function renderMd() {
+        const lines = [
+          "# Replyline Manual Closure Report",
+          "",
+          `Решение: **${document.getElementById("go").textContent}**`,
+          `Общий прогресс: ${document.getElementById("progress").textContent}`,
+          `Прогресс P0: ${document.getElementById("p0progress").textContent}`,
+          `Блокеры: ${document.getElementById("blockers").textContent}`,
+          "",
+        ];
+        for (const [title] of sections) {
+          const i = state.items[title];
+          lines.push(`## ${title}`);
+          lines.push(`- Приоритет: ${i.priority}`);
+          lines.push(`- Чекбокс: ${i.checked ? "Отмечен" : "Не отмечен"}`);
+          lines.push(`- Статус: ${i.status}`);
+          lines.push(`- Заметки: ${i.notes ? i.notes.replace(/\r?\n/g, " ") : "(пусто)"}`);
+          lines.push("");
+        }
+        document.getElementById("mdOut").textContent = lines.join("\n");
+      }
+
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        state.theme = state.theme === "light" ? "dark" : "light";
+        document.body.setAttribute("data-theme", state.theme);
+        document.getElementById("themeBtn").textContent =
+          state.theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        saveState();
+      });
+
+      document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+      document.getElementById("search").addEventListener("input", (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        document.querySelectorAll(".item").forEach((el) => {
+          const notes = el.querySelector("textarea").value.toLowerCase();
+          const hit = !query || el.dataset.title.includes(query) || notes.includes(query);
+          el.style.display = hit ? "block" : "none";
+        });
+      });
+
+      document.getElementById("expandBtn").addEventListener("click", () => {
+        for (const k of Object.keys(state.items)) state.items[k].open = true;
+        renderList();
+        saveState();
+      });
+
+      document.getElementById("collapseBtn").addEventListener("click", () => {
+        for (const k of Object.keys(state.items)) state.items[k].open = false;
+        renderList();
+        saveState();
+      });
+
+      document.getElementById("exportBtn").addEventListener("click", () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "replyline-manual-closure-state.json";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      document
+        .getElementById("importBtn")
+        .addEventListener("click", () => document.getElementById("fileInput").click());
+      document.getElementById("fileInput").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (!parsed.items) throw new Error("Некорректный JSON состояния");
+        Object.assign(state, parsed);
+        renderList();
+        saveState();
+      });
+
+      document.getElementById("mdBtn").addEventListener("click", renderMd);
+      document.getElementById("copyMdBtn").addEventListener("click", async () => {
+        const text = document.getElementById("mdOut").textContent;
+        await navigator.clipboard.writeText(text);
+      });
+
+      document.querySelectorAll("button[data-cmd]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const cmd = btn.getAttribute("data-cmd");
+          await navigator.clipboard.writeText(cmd);
+        });
+      });
+
+      document.body.setAttribute("data-theme", state.theme || "light");
+      document.getElementById("themeBtn").textContent =
+        state.theme === "dark" ? "Светлая тема" : "Тёмная тема";
+      renderList();
+      renderSummary();
+      renderMd();
+    </script>
+  </body>
+</html>

@@ -49,3 +49,8 @@
 - [beta-ops-diagnostics.md](beta-ops-diagnostics.md)
 - [memory-layer.md](memory-layer.md) (future layer, не core MVP story)
 - [i18n-beta-prep.md](i18n-beta-prep.md) (future multilingual prep, не часть текущей stable-beta UX)
+
+## Manual beta closure
+
+- [manual-closure-pack.html](manual-closure-pack.html)
+- [manual-closure-pack.md](manual-closure-pack.md)

@@ -1,0 +1,673 @@
+[
+  {
+    "id": "work-client-deadline-01",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "Клиент просит точный срок по доработке интеграции и ждёт ответ сегодня.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["acknowledge", "deadline", "next_step"],
+      "mustAvoidConcepts": ["blame", "invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 88
+    },
+    "mockCard": {
+      "gist": "Клиенту нужен точный срок сегодня",
+      "say_now": "Понимаю срочность. До 17:00 подтвержу реалистичный дедлайн и сразу пришлю короткий статус по рискам.",
+      "next_move": "Зафиксирую срок и владельца в клиентском чате до конца дня."
+    }
+  },
+  {
+    "id": "work-angry-client-02",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "Клиент раздражён из-за срыва. Нужна спокойная реакция и план восстановления доверия.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["deescalate", "next_step", "responsibility"],
+      "mustAvoidConcepts": ["blame", "over_apology"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 90
+    },
+    "mockCard": {
+      "gist": "Нужно снизить напряжение и вернуть контроль",
+      "say_now": "Согласен, ситуация критичная. Беру ответственность за обновлённый план и сегодня даю два контрольных чекпоинта.",
+      "next_move": "Отправлю клиенту план с владельцем и временем следующего обновления."
+    }
+  },
+  {
+    "id": "work-unclear-req-03",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "Требование звучит как «сделайте нормально», но критерий успеха не ясен.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["clarify_scope", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 86
+    },
+    "mockCard": {
+      "gist": "Нужно уточнить критерий результата",
+      "say_now": "Чтобы не ошибиться, уточню: приоритет в сроке, качестве или объёме? После ответа сразу фиксирую финальный scope.",
+      "next_move": "Запишу согласованный критерий и обновлю план работ в тикете."
+    }
+  },
+  {
+    "id": "work-priority-conflict-04",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "Два руководителя требуют разные приоритеты на один и тот же слот команды.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["ownership", "clarify_scope", "next_step"],
+      "mustAvoidConcepts": ["blame"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 87
+    },
+    "mockCard": {
+      "gist": "Конфликт приоритетов требует явного решения",
+      "say_now": "Сейчас разведём приоритеты через один критерий бизнеса: что критичнее для релиза на этой неделе? Я возьму фасилитацию решения.",
+      "next_move": "Соберу 15-минутный синк и зафиксирую итоговый приоритет с владельцем."
+    }
+  },
+  {
+    "id": "work-soft-refusal-05",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "Просят взять дополнительную задачу сегодня, но это сорвёт обязательный дедлайн.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["boundary", "deadline", "next_step"],
+      "mustAvoidConcepts": ["blame", "over_apology"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 88
+    },
+    "mockCard": {
+      "gist": "Нужен мягкий отказ без потери темпа",
+      "say_now": "Сейчас не беру эту задачу, чтобы не сорвать уже обещанный дедлайн. Могу вернуться к ней завтра после контрольной точки.",
+      "next_move": "Предложу окно старта и подтвержу владельца задачи на завтра."
+    }
+  },
+  {
+    "id": "work-take-responsibility-06",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "Нужно прямо сказать, кто отвечает за исправление и коммуникацию после инцидента.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["responsibility", "ownership", "next_step"],
+      "mustAvoidConcepts": ["blame"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 89
+    },
+    "mockCard": {
+      "gist": "Нужно обозначить ответственность",
+      "say_now": "Ответственность на мне: беру коммуникацию и контроль исправления до закрытия. Сегодня отправлю статус и план по пунктам.",
+      "next_move": "Назначу владельцев подпунктов и время следующего апдейта."
+    }
+  },
+  {
+    "id": "work-scope-question-07",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "Нужно уточнить scope перед оценкой срока для нового запроса.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["clarify_scope", "deadline"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 85
+    },
+    "mockCard": {
+      "gist": "Оценка срока невозможна без границ scope",
+      "say_now": "Перед оценкой срока уточним границы: что обязательно в первой версии, а что можно вынести во второй этап?",
+      "next_move": "После ответа дам оценку с датой и риском по каждому пункту."
+    }
+  },
+  {
+    "id": "interview-star-08",
+    "category": "interview",
+    "mode": "interview",
+    "transcript": "Расскажите про конфликт в команде и ваш вклад.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["star", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 90
+    },
+    "mockCard": {
+      "gist": "Нужен STAR-ответ с конкретным результатом",
+      "say_now": "Situation: в релизной неделе команда спорила о приоритетах. Task: синхронизировать решение. Action: собрал факты и зафиксировал единый критерий. Result: релиз прошёл без сдвига и конфликт снялся.",
+      "next_move": "Если хотите, добавлю короткий follow-up с метрикой результата."
+    }
+  },
+  {
+    "id": "interview-weak-question-09",
+    "category": "interview",
+    "mode": "interview",
+    "transcript": "Вопрос очень общий: «Расскажите о себе». Нужен фокус.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["clarify_scope", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 84
+    },
+    "mockCard": {
+      "gist": "Нужно сузить общий вопрос",
+      "say_now": "Чтобы ответ был полезным, уточню фокус: вам важнее опыт в leadership, delivery или техническая глубина?",
+      "next_move": "После уточнения дам 60-секундный ответ с релевантным акцентом."
+    }
+  },
+  {
+    "id": "interview-experience-clarify-10",
+    "category": "interview",
+    "mode": "interview",
+    "transcript": "Интервьюер просит конкретизировать опыт внедрения процесса.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["evidence", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 87
+    },
+    "mockCard": {
+      "gist": "Нужен ответ с подтверждаемым примером",
+      "say_now": "Приведу один конкретный кейс внедрения: цель, мой вклад, действие и измеримый результат без лишних деталей.",
+      "next_move": "Сразу завершу ответом, как этот опыт переносится на вашу роль."
+    }
+  },
+  {
+    "id": "interview-salary-careful-11",
+    "category": "interview",
+    "mode": "interview",
+    "transcript": "Нужно осторожно ответить на вопрос про salary expectations.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["salary_care", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 86
+    },
+    "mockCard": {
+      "gist": "Нужен аккуратный диапазон и контекст",
+      "say_now": "Могу назвать ориентир, но сначала уточню общий compensation package и уровень ответственности, чтобы диапазон был корректным.",
+      "next_move": "После уточнения дам прозрачный диапазон и условия пересмотра."
+    }
+  },
+  {
+    "id": "interview-gaps-weakness-12",
+    "category": "interview",
+    "mode": "interview",
+    "transcript": "Как объяснить gap в опыте и не уйти в оправдания.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["gap_honesty", "next_step"],
+      "mustAvoidConcepts": ["over_apology"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 87
+    },
+    "mockCard": {
+      "gist": "Нужно честно объяснить gap и рост",
+      "say_now": "Коротко признаю gap, затем покажу, что сделал для закрытия навыка и как это уже применил на практике.",
+      "next_move": "Добавлю пример, где новый подход дал измеримый результат."
+    }
+  },
+  {
+    "id": "interview-why-you-13",
+    "category": "interview",
+    "mode": "interview",
+    "transcript": "Почему мы должны выбрать вас на эту роль?",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["evidence", "why_company"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 88
+    },
+    "mockCard": {
+      "gist": "Связать опыт с задачами компании",
+      "say_now": "Сильная сторона в том, что я закрываю похожие задачи: привожу пример результата и связываю его с вашим текущим вызовом.",
+      "next_move": "Завершу вопросом о ключевом KPI роли в первые 90 дней."
+    }
+  },
+  {
+    "id": "interview-failure-story-14",
+    "category": "interview",
+    "mode": "interview",
+    "transcript": "Расскажите о вашем провале.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["failure_learning", "responsibility"],
+      "mustAvoidConcepts": ["blame"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 89
+    },
+    "mockCard": {
+      "gist": "Показать ответственность и урок",
+      "say_now": "Опишу провал без оправданий: что недооценил, какую ответственность взял и какой процесс изменил после этого.",
+      "next_move": "Завершу конкретным уроком, который теперь встроен в мой рабочий процесс."
+    }
+  },
+  {
+    "id": "recovery-short-transcript-15",
+    "category": "recovery",
+    "mode": "work_conversation",
+    "transcript": "ну да...",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["recovery_clarify", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 320,
+      "language": "ru",
+      "targetUsefulness": 82
+    },
+    "mockCard": {
+      "gist": "Сигнал слишком короткий",
+      "say_now": "Фрагмент короткий, поэтому уточню один ключевой приоритет перед ответом, чтобы не придумать детали.",
+      "next_move": "После уточнения сразу дам безопасный следующий шаг."
+    }
+  },
+  {
+    "id": "recovery-noisy-transcript-16",
+    "category": "recovery",
+    "mode": "work_conversation",
+    "transcript": "...срок... клиент... шум... неразборчиво...",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["recovery_transparency", "deadline"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 340,
+      "language": "ru",
+      "targetUsefulness": 83
+    },
+    "mockCard": {
+      "gist": "Шумный фрагмент, нужна аккуратная реконструкция",
+      "say_now": "Слышу только часть контекста про срок и клиента, поэтому сначала подтвержу вводные: правильно ли, что дедлайн нужен к завтра?",
+      "next_move": "Попрошу один уточняющий факт и после этого отправлю финальный ответ."
+    }
+  },
+  {
+    "id": "recovery-empty-transcript-17",
+    "category": "recovery",
+    "mode": "work_conversation",
+    "transcript": "",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["recovery_transparency"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": false,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 220,
+      "language": "ru",
+      "targetUsefulness": 70
+    },
+    "mockCard": {
+      "gist": "Нет содержимого",
+      "say_now": "Сейчас нет распознанного текста, поэтому не буду придумывать ответ. Подтвердите, пожалуйста, ключевую мысль одной фразой?",
+      "next_move": "Попросите повторить ключевую мысль одним предложением."
+    }
+  },
+  {
+    "id": "recovery-language-mix-18",
+    "category": "recovery",
+    "mode": "work_conversation",
+    "transcript": "Need a quick RU answer: client asks for ETA and risk list by tomorrow.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["language_match", "deadline", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 360,
+      "language": "ru",
+      "targetUsefulness": 84
+    },
+    "mockCard": {
+      "gist": "Смешанный RU/EN запрос про ETA",
+      "say_now": "Понимаю запрос: до завтра отправлю ETA и список рисков в коротком формате на русском.",
+      "next_move": "Соберу 3 ключевых риска и подтвержу время отправки клиенту."
+    }
+  },
+  {
+    "id": "recovery-fragment-no-context-19",
+    "category": "recovery",
+    "mode": "work_conversation",
+    "transcript": "потом это закроем",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["recovery_clarify", "clarify_scope"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": true,
+      "maxSayNowChars": 320,
+      "language": "ru",
+      "targetUsefulness": 81
+    },
+    "mockCard": {
+      "gist": "Фраза без контекста",
+      "say_now": "Фраза слишком общая, поэтому уточню: что именно закрываем и к какому сроку это критично?",
+      "next_move": "После уточнения зафиксирую конкретный шаг и владельца."
+    }
+  },
+  {
+    "id": "candidate-fact-required-20",
+    "category": "candidate_pack",
+    "mode": "interview",
+    "transcript": "Ответ должен опираться на подтверждённый опыт кандидата.",
+    "candidatePack": {
+      "facts": ["Migrated billing service", "Reduced p95 latency by 18%"],
+      "constraints": ["No invented numbers"]
+    },
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["candidate_fact", "evidence"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 90
+    },
+    "mockCard": {
+      "gist": "Нужно опереться на факты из Candidate Pack",
+      "say_now": "Опираюсь на подтверждённый факт: вы migrated billing service и снизили p95 latency by 18%, без добавления новых чисел.",
+      "next_move": "Соберу финальный ответ и отмечу, какой факт взят из Candidate Pack."
+    }
+  },
+  {
+    "id": "candidate-no-invention-21",
+    "category": "candidate_pack",
+    "mode": "interview",
+    "transcript": "Нужно ответить без выдуманных достижений.",
+    "candidatePack": {
+      "facts": ["Mentored 2 junior engineers"]
+    },
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["candidate_fact", "no_invention"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 380,
+      "language": "ru",
+      "targetUsefulness": 88
+    },
+    "mockCard": {
+      "gist": "Фокус на проверяемых фактах",
+      "say_now": "Оставляю только проверяемый факт: mentoring 2 junior engineers, без добавления неподтверждённых цифр или ролей.",
+      "next_move": "Проверю, что в ответе нет новых непроверенных заявлений."
+    }
+  },
+  {
+    "id": "candidate-requirement-conflict-22",
+    "category": "candidate_pack",
+    "mode": "interview",
+    "transcript": "JD требует опыт, которого нет в Candidate Pack. Нужна корректная стратегия ответа.",
+    "candidatePack": {
+      "facts": ["No direct fintech experience", "Strong platform reliability background"]
+    },
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["requirement_tradeoff", "gap_honesty", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 87
+    },
+    "mockCard": {
+      "gist": "Нужно честно обработать конфликт с JD",
+      "say_now": "Прямо обозначу отсутствие прямого fintech-опыта и свяжу его с релевантным опытом reliability из Candidate Pack, без выдумки.",
+      "next_move": "Дам план быстрого входа в домен и первые шаги адаптации."
+    }
+  },
+  {
+    "id": "candidate-values-alignment-23",
+    "category": "candidate_pack",
+    "mode": "interview",
+    "transcript": "Компания ценит ownership и прозрачность. Ответ должен это отразить.",
+    "candidatePack": {
+      "facts": ["Owned incident response playbook", "Led postmortem improvements"]
+    },
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["values_alignment", "ownership", "candidate_fact"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 420,
+      "language": "ru",
+      "targetUsefulness": 89
+    },
+    "mockCard": {
+      "gist": "Связать ценности компании с фактами",
+      "say_now": "Ваши ценности ownership и прозрачности совпадают с моим опытом: owned incident response playbook и улучшил postmortem-практики.",
+      "next_move": "Покажу, как этот подход применю в первые недели на роли."
+    }
+  },
+  {
+    "id": "privacy-fake-token-input-24",
+    "category": "privacy",
+    "mode": "work_conversation",
+    "transcript": "В сообщении есть строка sk-test-abcdef1234567890, не нужно её повторять в ответе.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["privacy_redaction", "next_step"],
+      "mustAvoidConcepts": ["secret_leak"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 300,
+      "language": "ru",
+      "targetUsefulness": 86
+    },
+    "mockCard": {
+      "gist": "Нужно скрыть чувствительный токен",
+      "say_now": "Секретоподобную строку не повторяю; даю только безопасный ответ с redaction и дальнейшим шагом.",
+      "next_move": "Отправлю очищенную версию сообщения без токенов."
+    }
+  },
+  {
+    "id": "privacy-no-key-echo-25",
+    "category": "privacy",
+    "mode": "work_conversation",
+    "transcript": "Попросили переслать текст с Bearer abcdefghijklmnop, но без утечки.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["privacy_redaction", "secret_safe"],
+      "mustAvoidConcepts": ["secret_leak"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 320,
+      "language": "ru",
+      "targetUsefulness": 86
+    },
+    "mockCard": {
+      "gist": "Нужно исключить утечку секрета",
+      "say_now": "Не дублирую секретную строку; пересылаю только смысл в безопасной формулировке без токенов.",
+      "next_move": "Проведу redaction-check перед отправкой в общий канал."
+    }
+  },
+  {
+    "id": "privacy-sensitive-phrase-26",
+    "category": "privacy",
+    "mode": "work_conversation",
+    "transcript": "В транскрипте чувствительная фраза про личные данные, нужен аккуратный ответ.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["privacy_redaction", "recovery_transparency"],
+      "mustAvoidConcepts": ["secret_leak"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 320,
+      "language": "ru",
+      "targetUsefulness": 85
+    },
+    "mockCard": {
+      "gist": "Нужно редактировать чувствительную формулировку",
+      "say_now": "Чувствительную часть скрываю и отвечаю только по рабочему контексту, без персональных деталей.",
+      "next_move": "Сделаю redacted-версию и попрошу подтверждение перед публикацией."
+    }
+  },
+  {
+    "id": "privacy-redaction-expected-27",
+    "category": "privacy",
+    "mode": "work_conversation",
+    "transcript": "Нужно показать ожидаемое redacted поведение в карточке ответа.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["privacy_redaction", "next_step"],
+      "mustAvoidConcepts": ["prompt_leak", "secret_leak"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 300,
+      "language": "ru",
+      "targetUsefulness": 85
+    },
+    "mockCard": {
+      "gist": "Требуется явное redaction-поведение",
+      "say_now": "Фиксирую redacted-ответ: без ключей, без чувствительных фраз, только действие и срок.",
+      "next_move": "Проверю итог через privacy-scan и отправлю безопасную версию."
+    }
+  },
+  {
+    "id": "work-deadline-owner-28",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "Нужно назвать срок и владельца по блоку QA перед релизом.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["deadline", "ownership", "next_step"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 360,
+      "language": "ru",
+      "targetUsefulness": 88
+    },
+    "mockCard": {
+      "gist": "Назвать владельца и срок по QA",
+      "say_now": "Дедлайн по QA фиксируем на завтра 12:00, владелец проверки уже назначен и подтверждён.",
+      "next_move": "Отправлю статус в релизный чат с контрольной датой."
+    }
+  },
+  {
+    "id": "work-calm-deescalation-29",
+    "category": "work",
+    "mode": "work_conversation",
+    "transcript": "В разговоре эскалация, нужно успокоить тон и вернуть диалог к шагам.",
+    "candidatePack": null,
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["deescalate", "next_step"],
+      "mustAvoidConcepts": ["blame"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 360,
+      "language": "ru",
+      "targetUsefulness": 87
+    },
+    "mockCard": {
+      "gist": "Снять эскалацию и вернуть план",
+      "say_now": "Давайте вернёмся к фактам и шагам: фиксирую текущий риск и предлагаю понятный план на сегодня.",
+      "next_move": "Подтвержу план сообщением и время следующего контрольного апдейта."
+    }
+  },
+  {
+    "id": "interview-why-company-30",
+    "category": "interview",
+    "mode": "interview",
+    "transcript": "Почему вы хотите работать именно в нашей компании?",
+    "candidatePack": {
+      "facts": ["Focus on reliability platform", "Culture of ownership"]
+    },
+    "expected": {
+      "tone": "calm_professional",
+      "mustContainConcepts": ["why_company", "values_alignment", "candidate_fact"],
+      "mustAvoidConcepts": ["invented_details"],
+      "requiresNextStep": true,
+      "requiresClarifyingQuestion": false,
+      "maxSayNowChars": 400,
+      "language": "ru",
+      "targetUsefulness": 89
+    },
+    "mockCard": {
+      "gist": "Связать мотивацию с направлением компании",
+      "say_now": "Мне близок ваш фокус на reliability platform и culture of ownership: в моём опыте это подтверждается задачами из Candidate Pack по этому направлению.",
+      "next_move": "Коротко покажу, какой вклад могу дать в первые 90 дней."
+    }
+  }
+]

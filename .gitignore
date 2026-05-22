@@ -11,6 +11,9 @@ reports/release/*
 !reports/release/release-gate-topology-*.md
 !reports/release/public-footprint-review-*.md
 !reports/release/release-readiness-*.md
+!reports/manual/
+reports/manual/*
+!reports/manual/.gitkeep
 !reports/sonar/
 reports/sonar/*
 !reports/sonar/sonar-residual-readiness-*.md

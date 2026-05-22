@@ -43,6 +43,7 @@ const matrix = {
     "test:rust",
     "test:consistency",
     "test:doc-links",
+    "test:manual-closure-pack",
     "test:fixture-gate",
     "test:fixtures",
     "test:runtime-preflight-contract",

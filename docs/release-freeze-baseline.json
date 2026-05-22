@@ -10,6 +10,9 @@
     "runtime-probe-and-evidence"
   ],
   "guardrailPaths": [
+    ".gitignore",
+    ".prettierignore",
+    "README.md",
     "src/app/model.ts",
     "src/app/platform.ts",
     "src/app/controller.ts",
@@ -42,6 +45,14 @@
     "CHANGELOG.md",
     "CLAUDE.md",
     "CONTRIBUTING.md",
+    "package.json",
+    "reports/release/release-readiness-2026-05-21.md",
+    "docs/README.md",
+    "docs/release-local-readiness.md",
+    "docs/script-lifecycle-matrix.md",
+    "scripts/check-report-secret-leaks.mjs",
+    "scripts/check-script-lifecycle.mjs",
+    "scripts/report-release-readiness.mjs",
     ".rooignore"
   ],
   "allowlistPrefixes": [
@@ -49,6 +60,7 @@
     ".roo/",
     ".zed/",
     "docs/",
+    "reports/",
     "scripts/",
     "tests/",
     "src/",

@@ -1,13 +1,13 @@
 # Release Readiness Summary
 
-Generated at: 2026-05-21T21:28:52.139Z
+Generated at: 2026-05-22T09:21:29.767Z
 Strict mode: enabled
 
 ## Release Gate Snapshot
-- blockers: 1
-- warnings: 2
-- overall score: 83
-- overall status: block
+- blockers: 0
+- warnings: 3
+- overall score: 93
+- overall status: warn
 
 ## Required Script Presence
 - verify:fast: present
@@ -18,13 +18,13 @@ Strict mode: enabled
 - test:runtime-quality: present
 
 ## Script File Link Validation
-- scanned referenced script files: 45
+- scanned referenced script files: 46
 - missing referenced files: 0
 
 ## Artifact Presence
-- runtime-quality summary (2026-05-21): present
-- product-scenario benchmark (2026-05-21): present
-- sonar residual report (2026-05-21): present
+- runtime-quality summary (2026-05-22): present
+- product-scenario benchmark (2026-05-22): present
+- sonar residual report (2026-05-22): missing
 - release freeze report: present
 - docker hardening report: present
 
@@ -35,15 +35,16 @@ Strict mode: enabled
 | Product scenario coverage | 100 | pass | product scenario benchmark for today is present |
 | Security lanes | 100 | pass | security/public-footprint scripts are configured |
 | Public footprint | 100 | pass | public footprint config and secret scan are clean |
-| Sonar readiness | 100 | pass | sonar residual report for today is present |
+| Sonar readiness | 75 | warn | sonar residual report is stale (today file missing) |
 | Docker optional stack | 75 | warn | docker hardening evidence present, strict check remains external |
-| Release freeze | 30 | block | release freeze reports outside guardrails |
+| Release freeze | 100 | pass | release freeze is within guardrails |
 | Manual evidence gap | 60 | warn | manual GUI/live-provider and external docker strict evidence is intentionally out of local gate |
 
 ## Blockers
-- Release freeze report has files outside guardrails.
+- none
 
 ## Warnings
+- Sonar residual readiness report for today is missing (stale evidence).
 - docker:replyline:check:strict is external-state/manual and not part of strict local blocker.
 - Live GUI/provider evidence remains manual and out of strict local gate.
 

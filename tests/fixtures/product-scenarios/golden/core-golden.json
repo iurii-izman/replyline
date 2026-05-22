@@ -1,0 +1,68 @@
+[
+  {
+    "id": "work-client-deadline-01",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["acknowledge", "deadline"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "work-angry-client-02",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["responsibility"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "work-soft-refusal-05",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["boundary", "deadline"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "interview-star-08",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["star"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "interview-salary-careful-11",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["salary_care"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "interview-failure-story-14",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": {
+      "sayNow": ["failure_learning", "responsibility"],
+      "nextMove": ["next_step"]
+    }
+  },
+  {
+    "id": "recovery-short-transcript-15",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["recovery_clarify"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "recovery-language-mix-18",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["language_match", "deadline"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "candidate-fact-required-20",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["candidate_fact", "evidence"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "candidate-requirement-conflict-22",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": {
+      "sayNow": ["requirement_tradeoff", "gap_honesty"],
+      "nextMove": ["next_step"]
+    }
+  },
+  {
+    "id": "privacy-fake-token-input-24",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["privacy_redaction"], "nextMove": ["next_step"] }
+  },
+  {
+    "id": "privacy-redaction-expected-27",
+    "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
+    "expectedConcepts": { "sayNow": ["privacy_redaction"], "nextMove": ["next_step"] }
+  }
+]
