@@ -1,460 +1,1161 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="warm">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Replyline Manual Closure Pack (RU)</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Replyline Interactive Manual Closure Pack</title>
     <style>
       :root {
-        --bg: #f5f7fb;
-        --panel: #ffffff;
-        --text: #1d2430;
-        --muted: #627086;
-        --line: #d7dfea;
-        --accent: #0b6bcb;
-        --ok: #1f8f4e;
-        --warn: #b7791f;
-        --block: #c53030;
-        --todo: #7a869a;
+        --bg: #f5efe4;
+        --bg2: #efe5d4;
+        --paper: rgba(255, 253, 248, 0.84);
+        --card: rgba(255, 255, 255, 0.78);
+        --card2: rgba(250, 246, 237, 0.88);
+        --line: rgba(91, 71, 42, 0.18);
+        --line2: rgba(91, 71, 42, 0.28);
+        --text: #133531;
+        --muted: #62736f;
+        --muted2: #87908d;
+        --accent: #0e4d43;
+        --accent2: #0f6658;
+        --soft: #e2f0eb;
+        --ok: #24735d;
+        --ok-bg: #e2f3ec;
+        --warn: #af7119;
+        --warn-bg: #fff1d2;
+        --bad: #ad3f35;
+        --bad-bg: #ffe9e4;
+        --blue: #395f9d;
+        --blue-bg: #e8eef9;
+        --shadow: 0 22px 60px rgba(38, 29, 14, 0.12);
+        --shadow2: 0 10px 30px rgba(38, 29, 14, 0.08);
+        --radius: 22px;
+        --radius2: 14px;
+        --mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+        --sans: Inter, Segoe UI, system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
       }
-      [data-theme="dark"] {
-        --bg: #0f1420;
-        --panel: #172032;
-        --text: #e9eef9;
-        --muted: #a8b5cc;
-        --line: #28344b;
-        --accent: #56a3ff;
-        --ok: #5aca88;
-        --warn: #ffc15a;
-        --block: #ff7a7a;
-        --todo: #9aa8bf;
+      html[data-theme="dark"] {
+        --bg: #0f1715;
+        --bg2: #17211e;
+        --paper: rgba(24, 34, 31, 0.88);
+        --card: rgba(28, 40, 36, 0.84);
+        --card2: rgba(23, 33, 30, 0.9);
+        --line: rgba(222, 233, 225, 0.14);
+        --line2: rgba(222, 233, 225, 0.24);
+        --text: #ecf4ef;
+        --muted: #a9bbb4;
+        --muted2: #81948c;
+        --accent: #72d1bd;
+        --accent2: #9ee8d8;
+        --soft: rgba(114, 209, 189, 0.12);
+        --ok: #7bd8b7;
+        --ok-bg: rgba(123, 216, 183, 0.12);
+        --warn: #f0c36d;
+        --warn-bg: rgba(240, 195, 109, 0.14);
+        --bad: #ff8e7e;
+        --bad-bg: rgba(255, 142, 126, 0.13);
+        --blue: #9bbcff;
+        --blue-bg: rgba(155, 188, 255, 0.13);
+        --shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+        --shadow2: 0 10px 30px rgba(0, 0, 0, 0.22);
       }
       * {
         box-sizing: border-box;
       }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
         margin: 0;
-        font-family: "Segoe UI", Tahoma, sans-serif;
-        background: linear-gradient(130deg, var(--bg), #dbe7ff 180%);
+        min-height: 100vh;
         color: var(--text);
+        font: 14.5px/1.55 var(--sans);
+        background:
+          radial-gradient(900px 500px at 15% -10%, rgba(15, 77, 67, 0.16), transparent 60%),
+          radial-gradient(800px 520px at 95% 0%, rgba(175, 113, 25, 0.13), transparent 55%),
+          linear-gradient(135deg, var(--bg), var(--bg2));
       }
-      [data-theme="dark"] body {
-        background: linear-gradient(130deg, #0f1420, #0a1c34 180%);
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
       }
-      .wrap {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
+      a {
+        color: var(--accent);
       }
-      .card {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 16px;
-        margin-bottom: 14px;
-      }
-      .top {
+      .app {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 308px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow: auto;
+        padding: 18px;
+        border-right: 1px solid var(--line);
+        background: rgba(255, 253, 248, 0.5);
+        backdrop-filter: blur(18px);
+      }
+      html[data-theme="dark"] .sidebar {
+        background: rgba(15, 23, 21, 0.56);
+      }
+      .brand {
+        display: flex;
         gap: 12px;
         align-items: center;
+        margin: 4px 0 18px;
       }
-      h1,
-      h2,
-      h3 {
-        margin: 0 0 8px;
+      .logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 15px;
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--accent), #1b7a6e);
+        box-shadow: 0 14px 30px rgba(15, 77, 67, 0.22);
       }
-      .meta {
+      .brand h1 {
+        font-size: 18px;
+        line-height: 1.05;
+        margin: 0;
+        letter-spacing: -0.03em;
+      }
+      .brand p {
+        margin: 3px 0 0;
         color: var(--muted);
-        font-size: 14px;
+        font-size: 12px;
       }
-      .row {
+      .search {
+        position: relative;
+        margin: 12px 0;
+      }
+      .search input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 12px 10px 34px;
+        background: var(--paper);
+        color: var(--text);
+        outline: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+      .search svg {
+        position: absolute;
+        left: 12px;
+        top: 11px;
+        color: var(--muted);
+      }
+      .navlist {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin: 14px 0;
+      }
+      .navitem {
+        text-decoration: none;
+        color: var(--text);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: center;
+        padding: 10px 11px;
+        border-radius: 15px;
+        border: 1px solid transparent;
+        transition: 0.18s ease;
+      }
+      .navitem:hover,
+      .navitem.active {
+        background: var(--paper);
+        border-color: var(--line);
+        box-shadow: 0 8px 20px rgba(38, 29, 14, 0.04);
+      }
+      .navitem small {
+        color: var(--muted);
+        display: block;
+        font-size: 11px;
+        margin-top: 2px;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .pill.P0 {
+        color: var(--bad);
+        background: var(--bad-bg);
+        border-color: rgba(173, 63, 53, 0.25);
+      }
+      .pill.P1 {
+        color: var(--warn);
+        background: var(--warn-bg);
+        border-color: rgba(175, 113, 25, 0.25);
+      }
+      .pill.P2 {
+        color: var(--blue);
+        background: var(--blue-bg);
+        border-color: rgba(57, 95, 157, 0.25);
+      }
+      .pill.ok {
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+      .statbox {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 12px;
+        margin: 12px 0;
+        box-shadow: var(--shadow2);
+      }
+      .statrow {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--line);
+      }
+      .statrow:last-child {
+        border-bottom: 0;
+      }
+      .progress {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(127, 105, 70, 0.16);
+        overflow: hidden;
+        border: 1px solid var(--line);
+      }
+      .progress > span {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, var(--accent), var(--ok));
+        transition: width 0.25s ease;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .btn {
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        background: var(--paper);
+        color: var(--text);
+        padding: 9px 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 760;
+        transition: 0.16s ease;
+        min-height: 38px;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: var(--line2);
+        box-shadow: 0 10px 20px rgba(38, 29, 14, 0.07);
+      }
+      .btn.primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border-color: transparent;
+        color: #fff;
+      }
+      .btn.danger {
+        background: var(--bad-bg);
+        color: var(--bad);
+      }
+      .btn.ghost {
+        background: transparent;
+      }
+      .main {
+        padding: 24px;
+        min-width: 0;
+      }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 4;
+        margin: -24px -24px 20px;
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(245, 239, 228, 0.78);
+        backdrop-filter: blur(16px);
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      html[data-theme="dark"] .topbar {
+        background: rgba(15, 23, 21, 0.78);
+      }
+      .topbar h2 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: -0.03em;
+      }
+      .topbar .summary {
+        color: var(--muted);
+        margin-left: auto;
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
+        justify-content: flex-end;
       }
-      button,
-      select,
-      input,
-      textarea {
-        background: var(--panel);
-        color: var(--text);
+      .hero {
+        background: linear-gradient(135deg, rgba(255, 253, 248, 0.94), rgba(240, 232, 217, 0.84));
         border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 8px 10px;
-        font: inherit;
+        border-radius: 30px;
+        padding: 28px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
       }
-      button {
-        cursor: pointer;
+      html[data-theme="dark"] .hero {
+        background: linear-gradient(135deg, rgba(29, 42, 38, 0.96), rgba(23, 33, 30, 0.92));
       }
-      button.primary {
-        background: var(--accent);
-        color: #fff;
-        border-color: var(--accent);
+      .hero:after {
+        content: "";
+        position: absolute;
+        width: 360px;
+        height: 360px;
+        right: -140px;
+        top: -160px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(15, 77, 67, 0.18), transparent 62%);
       }
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+      .hero h1 {
+        margin: 0 0 9px;
+        font-size: 36px;
+        line-height: 1.07;
+        letter-spacing: -0.045em;
+        position: relative;
+        z-index: 1;
       }
-      .stat {
-        padding: 12px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-      }
-      .small {
-        font-size: 13px;
+      .hero p {
+        max-width: 900px;
+        margin: 8px 0;
         color: var(--muted);
+        font-size: 16px;
+        position: relative;
+        z-index: 1;
       }
-      .sec {
-        border-top: 1px solid var(--line);
-        margin-top: 12px;
-        padding-top: 12px;
-      }
-      .item {
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 10px;
-      }
-      .head {
+      .dashboard {
         display: grid;
-        grid-template-columns: auto 1fr auto auto;
-        gap: 10px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin: 16px 0 2px;
+        position: relative;
+        z-index: 1;
+      }
+      .metric {
+        background: rgba(255, 255, 255, 0.52);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 13px;
+      }
+      html[data-theme="dark"] .metric {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .metric .n {
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+      }
+      .metric .l {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .section {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: var(--shadow2);
+        margin: 18px 0;
+        overflow: hidden;
+      }
+      .section-head {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        align-items: start;
+        padding: 18px 18px 14px;
+        border-bottom: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent);
+      }
+      .section-title {
+        display: flex;
         align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
       }
-      textarea {
-        width: 100%;
-        min-height: 66px;
-        margin-top: 8px;
+      .section-title h2 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.03em;
       }
-      .status-Todo {
-        color: var(--todo);
+      .section-desc {
+        margin: 7px 0 0;
+        color: var(--muted);
+        max-width: 850px;
       }
-      .status-Pass {
-        color: var(--ok);
+      .section-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
-      .status-Warn {
-        color: var(--warn);
+      .section-body {
+        padding: 16px 18px 18px;
       }
-      .status-Block {
-        color: var(--block);
+      .commands {
+        margin: 0 0 14px;
+        display: grid;
+        gap: 8px;
       }
-      .mono {
-        font-family: Consolas, "Courier New", monospace;
+      .cmd {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 8px;
+        background: #152b28;
+        color: #edf7f1;
+        border-radius: 14px;
+        padding: 10px 10px 10px 13px;
+        overflow: auto;
+      }
+      .cmd code {
+        font-family: var(--mono);
+        font-size: 12.5px;
         white-space: pre-wrap;
       }
-      .hidden {
-        display: none;
+      .cmd button {
+        background: rgba(255, 255, 255, 0.08);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        padding: 6px 8px;
+        cursor: pointer;
       }
-      .go-PASS {
+      .tasklist {
+        display: grid;
+        gap: 9px;
+      }
+      .task {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 12px;
+        align-items: start;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 17px;
+        background: rgba(255, 255, 255, 0.38);
+        transition: 0.16s ease;
+      }
+      html[data-theme="dark"] .task {
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .task.done {
+        opacity: 0.7;
+        background: rgba(36, 115, 93, 0.09);
+      }
+      .task.block {
+        border-color: rgba(173, 63, 53, 0.55);
+        background: var(--bad-bg);
+        opacity: 1;
+      }
+      .task.warn {
+        border-color: rgba(175, 113, 25, 0.45);
+        background: var(--warn-bg);
+        opacity: 1;
+      }
+      .check {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        border: 2px solid var(--line2);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        background: var(--card);
+        margin-top: 2px;
+        user-select: none;
+        font-weight: 900;
+        color: white;
+      }
+      .task.done .check {
+        background: var(--ok);
+        border-color: var(--ok);
+      }
+      .task-main label {
+        font-weight: 780;
+        cursor: pointer;
+      }
+      .task-meta {
+        margin-top: 7px;
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .task-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .status {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 8px;
+        background: var(--paper);
+        color: var(--text);
+        outline: none;
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .note {
+        grid-column: 2/4;
+        display: none;
+        width: 100%;
+        min-height: 74px;
+        resize: vertical;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--paper);
+        color: var(--text);
+        padding: 10px;
+        outline: none;
+      }
+      .task.show-note .note {
+        display: block;
+      }
+      .go {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin: 18px 0;
+      }
+      .gocard {
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: var(--paper);
+        padding: 16px;
+      }
+      .gocard h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      .golist {
+        display: grid;
+        gap: 8px;
+      }
+      .goline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--line);
+      }
+      .goline:last-child {
+        border-bottom: 0;
+      }
+      .go-status {
+        font-weight: 900;
+        font-size: 28px;
+        letter-spacing: -0.04em;
+        padding: 20px;
+        border-radius: 22px;
+        text-align: center;
+        border: 1px solid var(--line);
+      }
+      .go-status.go {
+        background: var(--ok-bg);
         color: var(--ok);
       }
-      .go-WARN {
+      .go-status.warn {
+        background: var(--warn-bg);
         color: var(--warn);
       }
-      .go-NO-GO {
-        color: var(--block);
+      .go-status.nogo {
+        background: var(--bad-bg);
+        color: var(--bad);
       }
-      @media (max-width: 900px) {
-        .grid {
+      .templates {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .template {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        overflow: hidden;
+      }
+      .template header {
+        position: static;
+        background: transparent;
+        border-bottom: 1px solid var(--line);
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .template header h3 {
+        margin: 0;
+        font-size: 15px;
+      }
+      .template pre {
+        margin: 0;
+        padding: 13px;
+        overflow: auto;
+        max-height: 340px;
+        background: #142724;
+        color: #edf7f1;
+        font-size: 12.5px;
+      }
+      .footer-space {
+        height: 30px;
+      }
+      .toast {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        background: #102c27;
+        color: #fff;
+        padding: 12px 14px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(8px);
+        transition: 0.22s ease;
+        z-index: 100;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .importer {
+        display: none;
+      }
+      .hidden {
+        display: none !important;
+      }
+      @media (max-width: 1100px) {
+        .app {
           grid-template-columns: 1fr;
         }
-        .head {
+        .sidebar {
+          position: relative;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .navlist {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .topbar {
+          top: 0;
+        }
+      }
+      @media (max-width: 760px) {
+        .main {
+          padding: 14px;
+        }
+        .topbar {
+          margin: -14px -14px 16px;
+          padding: 12px 14px;
+        }
+        .dashboard,
+        .go,
+        .templates {
+          grid-template-columns: 1fr;
+        }
+        .section-head {
+          grid-template-columns: 1fr;
+        }
+        .task {
           grid-template-columns: auto 1fr;
+        }
+        .task-actions {
+          grid-column: 2;
+          justify-content: flex-start;
+        }
+        .note {
+          grid-column: 1/3;
+        }
+        .navlist {
+          grid-template-columns: 1fr;
+        }
+        .hero h1 {
+          font-size: 29px;
+        }
+      }
+      @media print {
+        body {
+          background: white;
+        }
+        .sidebar,
+        .topbar,
+        .controls,
+        .section-actions,
+        .cmd button,
+        .task-actions,
+        .toast {
+          display: none !important;
+        }
+        .app {
+          display: block;
+        }
+        .main {
+          padding: 0;
+        }
+        .hero,
+        .section,
+        .gocard,
+        .template {
+          box-shadow: none;
+          break-inside: avoid;
+        }
+        .note {
+          display: block;
         }
       }
     </style>
   </head>
-  <body data-theme="light">
-    <div class="wrap">
-      <div class="card top">
-        <div>
-          <h1>Replyline Manual Closure Pack</h1>
-          <div class="meta">
-            Локальный статический QA-runbook для финального beta-seal. Без network calls и внешних
-            зависимостей.
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo">R</div>
+          <div>
+            <h1>Replyline Closure</h1>
+            <p>интерактивный beta seal · 2026-05-21</p>
           </div>
         </div>
-        <div class="row">
-          <button id="themeBtn">Тёмная тема</button>
-          <button id="printBtn">Печать / PDF</button>
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            /></svg
+          ><input id="search" placeholder="Поиск по чеклисту…" autocomplete="off" />
         </div>
-      </div>
-
-      <div class="card">
-        <div class="row">
-          <input id="search" placeholder="Поиск по чеклисту" />
-          <button id="expandBtn">Раскрыть всё</button>
-          <button id="collapseBtn">Свернуть всё</button>
+        <div class="statbox">
+          <div class="statrow"><b>Общий прогресс</b><span id="overallText">0%</span></div>
+          <div class="progress"><span id="overallBar"></span></div>
+          <div class="statrow"><span>P0 прогресс</span><b id="p0Text">0%</b></div>
+          <div class="progress"><span id="p0Bar"></span></div>
+          <div class="statrow"><span>Blockers</span><b id="blockerText">0</b></div>
         </div>
-        <div class="sec grid">
-          <div class="stat">
-            <strong id="progress">0%</strong>
-            <div class="small">Общий прогресс</div>
+        <div class="controls">
+          <button class="btn primary" id="exportBtn">Export</button
+          ><button class="btn" id="importBtn">Import</button
+          ><button class="btn" id="reportBtn">MD report</button
+          ><button class="btn" id="printBtn">Print/PDF</button
+          ><button class="btn" id="themeBtn">Theme</button
+          ><button class="btn danger" id="resetBtn">Reset</button>
+        </div>
+        <input type="file" class="importer" id="importFile" accept="application/json,.json" />
+        <div class="navlist" id="nav"></div>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <h2>Manual Closure Pack</h2>
+          <div class="summary">
+            <span class="pill" id="savedState">autosaved</span
+            ><span class="pill P0">P0 beta seal</span><span class="pill P1">P1 release</span
+            ><span class="pill P2">P2 polish</span>
           </div>
-          <div class="stat">
-            <strong id="p0progress">0%</strong>
-            <div class="small">Прогресс P0</div>
-          </div>
-          <div class="stat">
-            <strong id="blockers">0</strong>
-            <div class="small">Блокеры</div>
-          </div>
-          <div class="stat">
-            <strong id="go" class="go-WARN">WARN</strong>
-            <div class="small">Решение</div>
-          </div>
         </div>
-        <div class="sec row">
-          <button class="primary" id="exportBtn">Экспорт JSON</button>
-          <button id="importBtn">Импорт JSON</button>
-          <input id="fileInput" type="file" class="hidden" accept="application/json" />
-          <button id="mdBtn">MD отчёт</button>
-          <button id="copyMdBtn">Копировать MD</button>
-        </div>
-        <div class="sec row">
-          <button data-cmd="pnpm verify:fast">Копировать: `pnpm verify:fast`</button>
-          <button data-cmd="pnpm verify:release-local">
-            Копировать: `pnpm verify:release-local`
-          </button>
-          <button data-cmd="pnpm release:freeze:check">
-            Копировать: `pnpm release:freeze:check`
-          </button>
-        </div>
-      </div>
-
-      <div class="card" id="list"></div>
-      <div class="card">
-        <h3>Предпросмотр Markdown-отчёта</h3>
-        <div id="mdOut" class="mono"></div>
-      </div>
+        <section class="hero">
+          <h1>Интерактивное закрытие Replyline</h1>
+          <p>
+            Отмечай шаги, ставь статусы, добавляй заметки, экспортируй JSON/Markdown-отчёт. Прогресс
+            сохраняется в браузере через localStorage — файл можно открыть локально без сервера.
+          </p>
+          <div class="dashboard">
+            <div class="metric">
+              <div class="n" id="mTotal">0</div>
+              <div class="l">всего задач</div>
+            </div>
+            <div class="metric">
+              <div class="n" id="mDone">0</div>
+              <div class="l">отмечено done</div>
+            </div>
+            <div class="metric">
+              <div class="n" id="mP0">0</div>
+              <div class="l">P0 осталось</div>
+            </div>
+            <div class="metric">
+              <div class="n" id="mScore">0</div>
+              <div class="l">readiness score</div>
+            </div>
+          </div>
+        </section>
+        <section class="section" id="go">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <span class="pill P0">decision</span>
+                <h2>Go / No-Go</h2>
+              </div>
+              <p class="section-desc">
+                Автоматический статус по чеклисту. P0 blockers или незакрытые P0 переводят решение в
+                WARN/NO-GO.
+              </p>
+            </div>
+            <div class="section-actions">
+              <button class="btn" id="copyDecisionBtn">Copy decision</button>
+            </div>
+          </div>
+          <div class="section-body">
+            <div class="go">
+              <div id="goStatus" class="go-status warn">WARN</div>
+              <div class="gocard">
+                <h3>Критерии</h3>
+                <div class="golist" id="goList"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div id="sections"></div>
+        <section class="section" id="templates">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <span class="pill P2">templates</span>
+                <h2>Готовые тексты</h2>
+              </div>
+              <p class="section-desc">
+                Шаблоны для handoff, bug tickets, runtime report и release notes. Можно копировать
+                одной кнопкой.
+              </p>
+            </div>
+          </div>
+          <div class="section-body"><div class="templates" id="templatesGrid"></div></div>
+        </section>
+        <div class="footer-space"></div>
+      </main>
     </div>
-
+    <div class="toast" id="toast">Copied</div>
+    <script id="pack-data" type="application/json">
+      {&quot;sections&quot;: [{&quot;id&quot;: &quot;runtime&quot;, &quot;title&quot;: &quot;Live runtime + hotkey evidence&quot;, &quot;priority&quot;: &quot;P0&quot;, &quot;goal&quot;: &quot;Доказать на реальной Windows-среде: настройки сохраняются, hotkey работает, STT/LLM дают карточку, после restart ничего не сбрасывается.&quot;, &quot;commands&quot;: [&quot;pnpm verify:release-local&quot;, &quot;pnpm tauri dev&quot;, &quot;powershell -ExecutionPolicy Bypass -File scripts/collect-live-runtime-evidence.ps1&quot;, &quot;node scripts/verify-live-runtime-evidence.mjs reports/runtime-live-evidence-YYYYMMDD-HHMMSS&quot;], &quot;tasks&quot;: [[&quot;rt-preflight&quot;, &quot;Запустить preflight перед ручным сценарием: verify:release-local.&quot;, &quot;P0&quot;], [&quot;rt-settings&quot;, &quot;Проверить, что LLM Base URL, model, profile и hotkey сохранены после открытия приложения.&quot;, &quot;P0&quot;], [&quot;rt-secrets&quot;, &quot;Проверить badges: Deepgram key сохранён; LLM key сохранён, если используется.&quot;, &quot;P0&quot;], [&quot;rt-check&quot;, &quot;Нажать «Проверить настройки» и получить runtime ready.&quot;, &quot;P0&quot;], [&quot;rt-hotkey-1&quot;, &quot;Выполнить первый hotkey capture, дождаться карточки «Ответ готов».&quot;, &quot;P0&quot;], [&quot;rt-copy&quot;, &quot;Проверить, что «Скопировать ответ» активно и работает.&quot;, &quot;P0&quot;], [&quot;rt-restart&quot;, &quot;Закрыть окно, открыть снова, убедиться что настройки не сброшены.&quot;, &quot;P0&quot;], [&quot;rt-hotkey-2&quot;, &quot;Выполнить второй hotkey capture после restart.&quot;, &quot;P0&quot;], [&quot;rt-evidence&quot;, &quot;Собрать live evidence directory и прогнать verifier.&quot;, &quot;P0&quot;], [&quot;rt-log-chain&quot;, &quot;Проверить required event chain в app.log.&quot;, &quot;P0&quot;]]}, {&quot;id&quot;: &quot;audio&quot;, &quot;title&quot;: &quot;Audio robustness matrix&quot;, &quot;priority&quot;: &quot;P0&quot;, &quot;goal&quot;: &quot;Проверить основные аудио edge cases без глубокого soak-тестирования.&quot;, &quot;commands&quot;: [&quot;pnpm tauri dev&quot;], &quot;tasks&quot;: [[&quot;audio-quiet&quot;, &quot;Тихая речь 10–15 сек: STT ok или понятная recovery state.&quot;, &quot;P0&quot;], [&quot;audio-normal&quot;, &quot;Обычная речь 15–30 сек: card ready.&quot;, &quot;P0&quot;], [&quot;audio-noise&quot;, &quot;Шум/фон 15 сек: card ready или понятная recovery error, no crash.&quot;, &quot;P0&quot;], [&quot;audio-short&quot;, &quot;Очень короткая запись &lt;2 сек: short capture recovery, no crash.&quot;, &quot;P0&quot;], [&quot;audio-long&quot;, &quot;Длинный фрагмент 45–60 сек: no freeze, latency acceptable.&quot;, &quot;P0&quot;], [&quot;audio-retry&quot;, &quot;Retry после ошибки: state не зависает.&quot;, &quot;P0&quot;], [&quot;audio-device&quot;, &quot;Смена устройства ввода после restart не сбрасывает настройки.&quot;, &quot;P1&quot;], [&quot;audio-call&quot;, &quot;Проверить поведение при параллельно открытом браузере/звонке.&quot;, &quot;P1&quot;]]}, {&quot;id&quot;: &quot;answer&quot;, &quot;title&quot;: &quot;Human answer quality review&quot;, &quot;priority&quot;: &quot;P0&quot;, &quot;goal&quot;: &quot;Проверить человеческую полезность карточек, не только автоматические validators.&quot;, &quot;commands&quot;: [&quot;pnpm test:product-scenarios&quot;, &quot;pnpm report:runtime-quality&quot;], &quot;tasks&quot;: [[&quot;ans-10&quot;, &quot;Собрать минимум 10 карточек по разным сценариям.&quot;, &quot;P0&quot;], [&quot;ans-score&quot;, &quot;Оценить каждую карточку по 10-балльной human rubric.&quot;, &quot;P0&quot;], [&quot;ans-brief&quot;, &quot;Средняя краткость приемлема: ответ можно сказать вслух.&quot;, &quot;P0&quot;], [&quot;ans-tone&quot;, &quot;Тон спокойный, профессиональный, без агрессии/лишних извинений.&quot;, &quot;P0&quot;], [&quot;ans-next&quot;, &quot;В большинстве карточек есть понятный следующий шаг.&quot;, &quot;P0&quot;], [&quot;ans-hallucination&quot;, &quot;Нет выдуманных фактов, особенно из Candidate Pack.&quot;, &quot;P0&quot;], [&quot;ans-threshold&quot;, &quot;Средний human score ≥ 8/10.&quot;, &quot;P0&quot;]]}, {&quot;id&quot;: &quot;onboarding&quot;, &quot;title&quot;: &quot;First-run onboarding / clean profile&quot;, &quot;priority&quot;: &quot;P0&quot;, &quot;goal&quot;: &quot;Проверить путь нового пользователя с чистым профилем.&quot;, &quot;commands&quot;: [&quot;Rename-Item \&quot;$env:APPDATA\\com.replyline.app\&quot; \&quot;com.replyline.app.backup-YYYYMMDD-HHMMSS\&quot;&quot;, &quot;pnpm tauri dev&quot;], &quot;tasks&quot;: [[&quot;onb-backup&quot;, &quot;Сделать backup текущего профиля перед clean test.&quot;, &quot;P0&quot;], [&quot;onb-first-launch&quot;, &quot;Первый запуск на чистом профиле не падает.&quot;, &quot;P0&quot;], [&quot;onb-setup&quot;, &quot;Показывается понятное состояние «Нужно завершить настройку».&quot;, &quot;P0&quot;], [&quot;onb-speech&quot;, &quot;Speech section понятно ведёт к Deepgram key.&quot;, &quot;P0&quot;], [&quot;onb-llm&quot;, &quot;Ответ / LLM section понятно ведёт к endpoint/model/key.&quot;, &quot;P0&quot;], [&quot;onb-save&quot;, &quot;После Save + Check приложение готово к записи.&quot;, &quot;P0&quot;], [&quot;onb-restart&quot;, &quot;После restart non-secret поля и key badges сохранены.&quot;, &quot;P0&quot;], [&quot;onb-restore&quot;, &quot;Вернуть backup или осознанно удалить тестовый профиль.&quot;, &quot;P1&quot;]]}, {&quot;id&quot;: &quot;privacy&quot;, &quot;title&quot;: &quot;Privacy, logs, exports, reports&quot;, &quot;priority&quot;: &quot;P0&quot;, &quot;goal&quot;: &quot;Подтвердить, что реальные ключи и чувствительные данные не попадают в settings/logs/reports.&quot;, &quot;commands&quot;: [&quot;Select-String -Path \&quot;$env:APPDATA\\com.replyline.app\\logs\\app.log\&quot; -Pattern \&quot;sk-|dg_|Bearer |api key marker\&quot;&quot;, &quot;pnpm test:report-secret-leaks&quot;, &quot;pnpm test:security-lanes&quot;], &quot;tasks&quot;: [[&quot;priv-settings&quot;, &quot;settings.json не содержит Deepgram/OpenAI/OpenRouter keys.&quot;, &quot;P0&quot;], [&quot;priv-log&quot;, &quot;app.log не содержит raw API keys: sk-, dg_, Bearer, api key marker.&quot;, &quot;P0&quot;], [&quot;priv-full-export&quot;, &quot;Full Markdown export явно помечен как sensitive и содержит transcript ожидаемо.&quot;, &quot;P0&quot;], [&quot;priv-redacted&quot;, &quot;Redacted Markdown export не содержит полного transcript.&quot;, &quot;P0&quot;], [&quot;priv-candidate&quot;, &quot;Candidate Profile не попадает в общий app log.&quot;, &quot;P0&quot;], [&quot;priv-clear&quot;, &quot;Clear reports очищает report artifacts там, где ожидается.&quot;, &quot;P1&quot;], [&quot;priv-report&quot;, &quot;Создан privacy audit report без секретов.&quot;, &quot;P0&quot;]]}, {&quot;id&quot;: &quot;installer&quot;, &quot;title&quot;: &quot;Installer / clean machine check&quot;, &quot;priority&quot;: &quot;P1&quot;, &quot;goal&quot;: &quot;Проверить путь передачи приложения другому человеку.&quot;, &quot;commands&quot;: [&quot;pnpm tauri build&quot;], &quot;tasks&quot;: [[&quot;inst-build&quot;, &quot;Installer/build artifact создаётся.&quot;, &quot;P1&quot;], [&quot;inst-install&quot;, &quot;Установка проходит на чистом Windows profile.&quot;, &quot;P1&quot;], [&quot;inst-taskbar&quot;, &quot;Приложение видно в Start/taskbar/Alt+Tab.&quot;, &quot;P1&quot;], [&quot;inst-window&quot;, &quot;Native minimize/maximize/close работают.&quot;, &quot;P1&quot;], [&quot;inst-tray&quot;, &quot;Tray open/hide/quit работают как задумано.&quot;, &quot;P1&quot;], [&quot;inst-defender&quot;, &quot;Defender/SmartScreen поведение задокументировано.&quot;, &quot;P1&quot;], [&quot;inst-uninstall&quot;, &quot;Uninstall поведение по пользовательским данным понятно.&quot;, &quot;P1&quot;]]}, {&quot;id&quot;: &quot;docker&quot;, &quot;title&quot;: &quot;External Docker compose hardening&quot;, &quot;priority&quot;: &quot;P1&quot;, &quot;goal&quot;: &quot;Закрыть manual-only external compose gaps.&quot;, &quot;commands&quot;: [&quot;pnpm docker:replyline:check&quot;, &quot;pnpm docker:replyline:check:strict&quot;], &quot;tasks&quot;: [[&quot;dock-minio&quot;, &quot;MinIO API bind local-only: 127.0.0.1:19090:9000, если нет внешней необходимости.&quot;, &quot;P1&quot;], [&quot;dock-qdrant&quot;, &quot;Qdrant bind local-only: 127.0.0.1:16333/16334.&quot;, &quot;P1&quot;], [&quot;dock-langfuse&quot;, &quot;Langfuse UI public/local-only решение задокументировано.&quot;, &quot;P1&quot;], [&quot;dock-pinning&quot;, &quot;Floating tags заменены на exact tested tags/digests или documented warning.&quot;, &quot;P1&quot;], [&quot;dock-env&quot;, &quot;Inline secret-like env values вынесены в local env file.&quot;, &quot;P1&quot;], [&quot;dock-init&quot;, &quot;minio-init Exited(0) считается expected.&quot;, &quot;P1&quot;], [&quot;dock-strict&quot;, &quot;docker:replyline:check:strict PASS или documented external warning.&quot;, &quot;P1&quot;]]}, {&quot;id&quot;: &quot;sonar&quot;, &quot;title&quot;: &quot;SonarCloud final review&quot;, &quot;priority&quot;: &quot;P1&quot;, &quot;goal&quot;: &quot;Подтвердить SonarCloud после push.&quot;, &quot;commands&quot;: [&quot;curl -s -u \&quot;$SONAR_TOKEN:\&quot; \&quot;https[:]//sonarcloud.io/api/qualitygates/project_status?projectKey=iurii-izman_replyline\&quot;&quot;], &quot;tasks&quot;: [[&quot;sonar-open&quot;, &quot;Открыть SonarCloud project overview.&quot;, &quot;P1&quot;], [&quot;sonar-qg&quot;, &quot;Quality Gate Passed или все remaining issues documented.&quot;, &quot;P1&quot;], [&quot;sonar-hotspots&quot;, &quot;Security Hotspots reviewed.&quot;, &quot;P1&quot;], [&quot;sonar-new-code&quot;, &quot;New code blocker/critical issues = 0.&quot;, &quot;P1&quot;], [&quot;sonar-dup&quot;, &quot;Coverage/Duplication не красные или есть rationale.&quot;, &quot;P1&quot;]]}, {&quot;id&quot;: &quot;visual&quot;, &quot;title&quot;: &quot;Visual QA snapshot&quot;, &quot;priority&quot;: &quot;P2&quot;, &quot;goal&quot;: &quot;Зафиксировать, что UI достаточно зрелый и не требует бесконечной полировки.&quot;, &quot;commands&quot;: [&quot;pnpm tauri dev&quot;], &quot;tasks&quot;: [[&quot;vis-main-setup&quot;, &quot;Main setup missing: focused setup, no useless cockpit.&quot;, &quot;P2&quot;], [&quot;vis-main-idle&quot;, &quot;Main idle ready: calm state, no disabled copy.&quot;, &quot;P2&quot;], [&quot;vis-main-ready&quot;, &quot;Main answer ready: answer card is primary.&quot;, &quot;P2&quot;], [&quot;vis-settings&quot;, &quot;Settings Overview: desktop settings center, no web-form feel.&quot;, &quot;P2&quot;], [&quot;vis-candidate&quot;, &quot;Candidate Studio: workflow/stepper clear.&quot;, &quot;P2&quot;], [&quot;vis-compact&quot;, &quot;Compact width 720–800px: no clipping/horizontal scroll.&quot;, &quot;P2&quot;]]}, {&quot;id&quot;: &quot;release&quot;, &quot;title&quot;: &quot;Release / handoff&quot;, &quot;priority&quot;: &quot;P0&quot;, &quot;goal&quot;: &quot;Принять финальное Go/No-Go решение и подготовить handoff.&quot;, &quot;commands&quot;: [&quot;git status --short&quot;, &quot;pnpm verify:release-local&quot;, &quot;pnpm verify:full&quot;, &quot;pnpm release:freeze:check&quot;, &quot;git tag -a v0.1.0-beta.N -m \&quot;Replyline internal stable beta N\&quot;&quot;, &quot;git push origin v0.1.0-beta.N&quot;], &quot;tasks&quot;: [[&quot;rel-tree&quot;, &quot;Рабочее дерево чистое или изменения осознанно включены.&quot;, &quot;P0&quot;], [&quot;rel-verify&quot;, &quot;verify:release-local PASS.&quot;, &quot;P0&quot;], [&quot;rel-full&quot;, &quot;verify:full PASS или documented non-blocking warning.&quot;, &quot;P0&quot;], [&quot;rel-go&quot;, &quot;Go/No-Go решение принято по таблице критериев.&quot;, &quot;P0&quot;], [&quot;rel-handoff&quot;, &quot;Beta handoff text подготовлен.&quot;, &quot;P0&quot;], [&quot;rel-tag&quot;, &quot;Тег создан только после P0 PASS.&quot;, &quot;P1&quot;]]}], &quot;goCriteria&quot;: [[&quot;verify:release-local&quot;, &quot;PASS&quot;, &quot;FAIL&quot;], [&quot;Live runtime hotkey&quot;, &quot;2 успешные карточки после restart&quot;, &quot;setup reset / no card / crash&quot;], [&quot;Persistence&quot;, &quot;settings + key badges сохраняются&quot;, &quot;сброс после restart&quot;], [&quot;Privacy&quot;, &quot;нет secrets в settings/logs/reports&quot;, &quot;любой raw key leak&quot;], [&quot;Audio&quot;, &quot;минимум 5/6 P0 сценариев PASS&quot;, &quot;частые capture/STT failures&quot;], [&quot;Answer quality&quot;, &quot;≥8/10 human score&quot;, &quot;hallucination или unusable answers&quot;]], &quot;templates&quot;: {&quot;Beta handoff text&quot;: &quot;Replyline internal stable beta готова к проверке.\n\nЧто проверено:\n- локальные quality gates: PASS\n- runtime hotkey scenario: PASS / WARN / FAIL\n- настройки и ключи после restart: PASS / WARN / FAIL\n- privacy/log scan: PASS / WARN / FAIL\n- audio minimum matrix: PASS / WARN / FAIL\n\nКак пользоваться:\n1. Запустить Replyline.\n2. Открыть настройки.\n3. Проверить Deepgram и LLM settings.\n4. На рабочем экране удержать Ctrl+Alt+Space во время фрагмента разговора.\n5. После отпускания дождаться карточки и нажать “Скопировать ответ”.\n\nKnown limitations:\n- Docker observability stack optional.\n- Live provider latency зависит от сети и провайдера.\n- Full Markdown export содержит transcript и считается sensitive.&quot;, &quot;Bug ticket template&quot;: &quot;Title:\n[Replyline] ...\n\nEnvironment:\n- Windows:\n- Replyline commit:\n- Mode: dev/build\n- Audio device:\n- Provider/STT:\n- LLM route:\n\nSteps:\n1.\n2.\n3.\n\nExpected:\n\nActual:\n\nEvidence:\n- app.log path:\n- settings path:\n- report/evidence directory:\n- screenshots:\n\nPrivacy:\n- secrets included? no\n- transcript included? no / redacted\n\nSeverity:\nP0 / P1 / P2&quot;, &quot;Runtime QA report template&quot;: &quot;# Runtime Live QA\n\nDate:\nCommit:\nWindows:\nMode:\nSettings path:\nApp log path:\nEvidence dir:\n\nChecks:\n- settings parse ok:\n- settings validation ok:\n- deepgramKeyPresent:\n- llmKeyPresent:\n- runtimePathReady:\n- hotkey registered:\n- capture start:\n- STT ok:\n- LLM ok:\n- card ready:\n- copy button active:\n- restart persistence:\n\nLeak scan:\n- settings secrets:\n- app log secrets:\n- exports checked:\n\nDecision:\nGO / WARN / NO-GO\n\nNotes:&quot;, &quot;Release notes draft&quot;: &quot;Replyline v0.1.0-beta.N\n\nHighlights:\n- State-driven Live Assist main screen.\n- Stable settings and credential persistence.\n- Runtime quality and release readiness automation.\n- Docker observability stack documented as optional.\n- Privacy-safe logs and exports reviewed.\n\nValidation:\n- verify:release-local PASS\n- live runtime QA PASS\n- privacy audit PASS\n- audio minimum matrix PASS\n\nKnown limitations:\n- External Docker strict hardening may require local compose updates.\n- Live latency depends on provider/network.\n- Full export includes transcript and must be handled as sensitive.&quot;}, &quot;generatedAt&quot;: &quot;2026-05-21&quot;}
+    </script>
     <script>
-      const STORAGE_KEY = "replyline-manual-closure-pack-v1";
-      const sections = [
-        ["Live runtime + hotkey evidence / Доказательства live runtime и hotkey", "P0"],
-        ["Audio robustness matrix / Матрица устойчивости аудио", "P0"],
-        ["Human answer quality review / Ручной review качества ответов", "P0"],
-        ["First-run onboarding / Проверка первого запуска", "P1"],
-        ["Privacy, logs, exports, reports / Приватность, логи, экспорты, отчёты", "P0"],
-        ["Installer / clean machine check / Проверка инсталлятора и чистой машины", "P1"],
-        ["External Docker compose hardening / Усиление внешнего Docker compose", "P1"],
-        ["SonarCloud final review / Финальный review SonarCloud", "P1"],
-        ["Visual QA snapshot / Визуальный QA-снимок", "P2"],
-        ["Release / handoff / Релиз и handoff", "P0"],
-        ["Go / No-Go / Финальное решение", "P0"],
-      ];
-
-      const list = document.getElementById("list");
+      const data = JSON.parse(document.getElementById("pack-data").textContent);
+      const STORAGE_KEY = "replyline.manualClosure.interactive.v1";
       const state = loadState();
-
-      function defaultState() {
-        const items = {};
-        for (const [title, prio] of sections) {
-          items[title] = { checked: false, status: "Todo", notes: "", priority: prio, open: true };
-        }
-        return { version: 1, theme: "light", items };
-      }
-
+      const $ = (id) => document.getElementById(id);
       function loadState() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return defaultState();
-          const parsed = JSON.parse(raw);
-          const base = defaultState();
-          for (const [k, v] of Object.entries(base.items)) {
-            if (!parsed.items || !parsed.items[k])
-              ((parsed.items = parsed.items || {}), (parsed.items[k] = v));
-          }
-          return parsed;
-        } catch (_) {
-          return defaultState();
-        }
+          if (raw) return JSON.parse(raw);
+        } catch {}
+        return { tasks: {}, notes: {}, updatedAt: null, theme: "warm" };
       }
-
       function saveState() {
+        state.updatedAt = new Date().toISOString();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        renderSummary();
-        renderMd();
+        $("savedState").textContent = "saved " + new Date().toLocaleTimeString();
       }
-
-      function mkRow(title, item) {
-        const wrap = document.createElement("div");
-        wrap.className = "item";
-        wrap.dataset.title = title.toLowerCase();
-        wrap.innerHTML = `
-        <div class="head">
-          <input type="checkbox" ${item.checked ? "checked" : ""} />
-          <div><strong>${title}</strong> <span class="small">(${item.priority})</span></div>
-          <select>
-            <option value="Todo" ${item.status === "Todo" ? "selected" : ""}>Todo / К выполнению</option>
-            <option value="Pass" ${item.status === "Pass" ? "selected" : ""}>Pass / Пройдено</option>
-            <option value="Warn" ${item.status === "Warn" ? "selected" : ""}>Warn / Риск</option>
-            <option value="Block" ${item.status === "Block" ? "selected" : ""}>Block / Блокер</option>
-          </select>
-          <button>${item.open ? "Свернуть" : "Раскрыть"}</button>
-        </div>
-        <textarea ${item.open ? "" : 'class="hidden"'} placeholder="Доказательства, результаты проверок, ссылки на локальные отчёты (без секретов).">${item.notes || ""}</textarea>
-      `;
-
-        const checkbox = wrap.querySelector("input");
-        const select = wrap.querySelector("select");
-        const toggle = wrap.querySelector("button");
-        const notes = wrap.querySelector("textarea");
-
-        function applyStatusClass() {
-          select.className = `status-${select.value}`;
-        }
-
-        checkbox.addEventListener("change", () => {
-          item.checked = checkbox.checked;
-          saveState();
-        });
-        select.addEventListener("change", () => {
-          item.status = select.value;
-          applyStatusClass();
-          saveState();
-        });
-        notes.addEventListener("input", () => {
-          item.notes = notes.value;
-          saveState();
-        });
-        toggle.addEventListener("click", () => {
-          item.open = !item.open;
-          notes.classList.toggle("hidden", !item.open);
-          toggle.textContent = item.open ? "Свернуть" : "Раскрыть";
-          saveState();
-        });
-
-        applyStatusClass();
-        return wrap;
+      function allTasks() {
+        return data.sections.flatMap((s) =>
+          s.tasks.map((t) => ({ section: s.id, id: t[0], text: t[1], priority: t[2] })),
+        );
       }
-
-      function renderList() {
-        list.innerHTML = "";
-        for (const [title] of sections) {
-          list.appendChild(mkRow(title, state.items[title]));
+      function taskState(id) {
+        return state.tasks[id] || { done: false, status: "todo" };
+      }
+      function setTask(id, patch) {
+        state.tasks[id] = { ...taskState(id), ...patch };
+        saveState();
+        renderStats();
+        updateTaskDom(id);
+        updateNav();
+      }
+      function note(id) {
+        return state.notes[id] || "";
+      }
+      function setNote(id, val) {
+        state.notes[id] = val;
+        saveState();
+      }
+      function esc(s) {
+        return String(s).replace(
+          /[&<>"']/g,
+          (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m],
+        );
+      }
+      function toast(msg = "Готово") {
+        const el = $("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 1700);
+      }
+      async function copyText(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          toast("Скопировано");
+        } catch {
+          toast("Не удалось скопировать");
         }
       }
-
-      function renderSummary() {
-        const values = Object.values(state.items);
-        const done = values.filter((i) => i.status !== "Todo").length;
-        const p0 = values.filter((i) => i.priority === "P0");
-        const p0Done = p0.filter((i) => i.status === "Pass").length;
-        const blockers = values.filter((i) => i.status === "Block").length;
-        const allProgress = Math.round((done / values.length) * 100);
-        const p0Progress = Math.round((p0Done / p0.length) * 100);
-
-        let go = "WARN";
-        if (blockers > 0 || p0.some((i) => i.status === "Block")) go = "NO-GO";
-        else if (p0.every((i) => i.status === "Pass")) go = "PASS";
-
-        document.getElementById("progress").textContent = allProgress + "%";
-        document.getElementById("p0progress").textContent = p0Progress + "%";
-        document.getElementById("blockers").textContent = String(blockers);
-        const goEl = document.getElementById("go");
-        goEl.textContent = go;
-        goEl.className = `go-${go}`;
+      function renderNav() {
+        const nav = $("nav");
+        nav.innerHTML = data.sections
+          .map(
+            (s) =>
+              `<a class="navitem" href="#sec-${s.id}" data-nav="${s.id}"><span><b>${esc(s.title)}</b><small>${esc(s.goal)}</small></span><span class="pill ${s.priority}">${s.priority}</span></a>`,
+          )
+          .join("");
       }
-
-      function renderMd() {
-        const lines = [
-          "# Replyline Manual Closure Report",
-          "",
-          `Решение: **${document.getElementById("go").textContent}**`,
-          `Общий прогресс: ${document.getElementById("progress").textContent}`,
-          `Прогресс P0: ${document.getElementById("p0progress").textContent}`,
-          `Блокеры: ${document.getElementById("blockers").textContent}`,
-          "",
-        ];
-        for (const [title] of sections) {
-          const i = state.items[title];
-          lines.push(`## ${title}`);
-          lines.push(`- Приоритет: ${i.priority}`);
-          lines.push(`- Чекбокс: ${i.checked ? "Отмечен" : "Не отмечен"}`);
-          lines.push(`- Статус: ${i.status}`);
-          lines.push(`- Заметки: ${i.notes ? i.notes.replace(/\r?\n/g, " ") : "(пусто)"}`);
-          lines.push("");
-        }
-        document.getElementById("mdOut").textContent = lines.join("\n");
+      function renderSections() {
+        const root = $("sections");
+        root.innerHTML = data.sections
+          .map(
+            (s) =>
+              `<section class="section" id="sec-${s.id}" data-section="${s.id}"><div class="section-head"><div><div class="section-title"><span class="pill ${s.priority}">${s.priority}</span><h2>${esc(s.title)}</h2></div><p class="section-desc">${esc(s.goal)}</p></div><div class="section-actions"><button class="btn" data-section-done="${s.id}">Mark section done</button><button class="btn ghost" data-section-toggle="${s.id}">Collapse</button></div></div><div class="section-body" data-section-body="${s.id}">${s.commands?.length ? `<div class="commands">${s.commands.map((c) => `<div class="cmd"><code>${esc(c)}</code><button data-copy="${esc(c)}">Copy</button></div>`).join("")}</div>` : ""}<div class="tasklist">${s.tasks.map((t) => renderTask(t, s.id)).join("")}</div></div></section>`,
+          )
+          .join("");
+        document
+          .querySelectorAll("[data-copy]")
+          .forEach((btn) => btn.addEventListener("click", () => copyText(btn.dataset.copy)));
+        document.querySelectorAll("[data-section-done]").forEach((btn) =>
+          btn.addEventListener("click", () => {
+            const section = data.sections.find((x) => x.id === btn.dataset.sectionDone);
+            section.tasks.forEach((t) => setTask(t[0], { done: true, status: "pass" }));
+            toast("Секция отмечена");
+          }),
+        );
+        document.querySelectorAll("[data-section-toggle]").forEach((btn) =>
+          btn.addEventListener("click", () => {
+            const body = document.querySelector(
+              `[data-section-body="${btn.dataset.sectionToggle}"]`,
+            );
+            body.classList.toggle("hidden");
+            btn.textContent = body.classList.contains("hidden") ? "Expand" : "Collapse";
+          }),
+        );
       }
-
-      document.getElementById("themeBtn").addEventListener("click", () => {
-        state.theme = state.theme === "light" ? "dark" : "light";
-        document.body.setAttribute("data-theme", state.theme);
-        document.getElementById("themeBtn").textContent =
-          state.theme === "dark" ? "Светлая тема" : "Тёмная тема";
-        saveState();
-      });
-
-      document.getElementById("printBtn").addEventListener("click", () => window.print());
-
-      document.getElementById("search").addEventListener("input", (e) => {
-        const query = e.target.value.trim().toLowerCase();
-        document.querySelectorAll(".item").forEach((el) => {
-          const notes = el.querySelector("textarea").value.toLowerCase();
-          const hit = !query || el.dataset.title.includes(query) || notes.includes(query);
-          el.style.display = hit ? "block" : "none";
+      function renderTask(t, sectionId) {
+        const [id, text, pr] = t;
+        const st = taskState(id);
+        const classes = ["task"];
+        if (st.done) classes.push("done");
+        if (st.status === "block") classes.push("block");
+        if (st.status === "warn") classes.push("warn");
+        return `<div class="${classes.join(" ")}" id="task-${id}" data-task="${id}" data-priority="${pr}"><div class="check" data-check="${id}">${st.done ? "✓" : ""}</div><div class="task-main"><label data-check="${id}">${esc(text)}</label><div class="task-meta"><span class="pill ${pr}">${pr}</span><span class="pill">${esc(sectionId)}</span></div></div><div class="task-actions"><select class="status" data-status="${id}"><option value="todo" ${st.status === "todo" ? "selected" : ""}>Todo</option><option value="pass" ${st.status === "pass" ? "selected" : ""}>Pass</option><option value="warn" ${st.status === "warn" ? "selected" : ""}>Warn</option><option value="block" ${st.status === "block" ? "selected" : ""}>Block</option></select><button class="btn ghost" data-note="${id}">Note</button></div><textarea class="note" data-note-field="${id}" placeholder="Заметка / evidence / ссылка на отчёт…">${esc(note(id))}</textarea></div>`;
+      }
+      function bindTasks() {
+        document.addEventListener("click", (e) => {
+          const check = e.target.closest("[data-check]");
+          if (check) {
+            const id = check.dataset.check;
+            const st = taskState(id);
+            setTask(id, { done: !st.done, status: !st.done ? "pass" : "todo" });
+          }
+          const noteBtn = e.target.closest("[data-note]");
+          if (noteBtn) {
+            $("task-" + noteBtn.dataset.note).classList.toggle("show-note");
+          }
         });
-      });
-
-      document.getElementById("expandBtn").addEventListener("click", () => {
-        for (const k of Object.keys(state.items)) state.items[k].open = true;
-        renderList();
-        saveState();
-      });
-
-      document.getElementById("collapseBtn").addEventListener("click", () => {
-        for (const k of Object.keys(state.items)) state.items[k].open = false;
-        renderList();
-        saveState();
-      });
-
-      document.getElementById("exportBtn").addEventListener("click", () => {
-        const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+        document.addEventListener("change", (e) => {
+          if (e.target.matches("[data-status]")) {
+            const id = e.target.dataset.status;
+            const status = e.target.value;
+            setTask(id, { status, done: status === "pass" ? true : taskState(id).done });
+          }
+        });
+        document.addEventListener("input", (e) => {
+          if (e.target.matches("[data-note-field]"))
+            setNote(e.target.dataset.noteField, e.target.value);
+        });
+      }
+      function updateTaskDom(id) {
+        const el = $("task-" + id);
+        if (!el) return;
+        const st = taskState(id);
+        el.classList.toggle("done", !!st.done);
+        el.classList.toggle("block", st.status === "block");
+        el.classList.toggle("warn", st.status === "warn");
+        const check = el.querySelector(".check");
+        if (check) check.textContent = st.done ? "✓" : "";
+        const select = el.querySelector("[data-status]");
+        if (select) select.value = st.status;
+      }
+      function renderStats() {
+        const tasks = allTasks();
+        const done = tasks.filter((t) => taskState(t.id).done).length;
+        const total = tasks.length;
+        const p0 = tasks.filter((t) => t.priority === "P0");
+        const p0Done = p0.filter((t) => taskState(t.id).done).length;
+        const blockers = tasks.filter((t) => taskState(t.id).status === "block").length;
+        const p0Blockers = p0.filter((t) => taskState(t.id).status === "block").length;
+        const warn = tasks.filter((t) => taskState(t.id).status === "warn").length;
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        const p0pct = p0.length ? Math.round((p0Done / p0.length) * 100) : 0;
+        const score = Math.max(
+          0,
+          Math.round(pct - blockers * 8 - warn * 2 - (p0.length - p0Done) * 1.5 - p0Blockers * 12),
+        );
+        $("overallText").textContent = pct + "%";
+        $("overallBar").style.width = pct + "%";
+        $("p0Text").textContent = p0pct + "%";
+        $("p0Bar").style.width = p0pct + "%";
+        $("blockerText").textContent = blockers;
+        $("mTotal").textContent = total;
+        $("mDone").textContent = done;
+        $("mP0").textContent = p0.length - p0Done;
+        $("mScore").textContent = score;
+        const go = $("goStatus");
+        go.classList.remove("go", "warn", "nogo");
+        if (p0Blockers || blockers > 0) {
+          go.textContent = "NO-GO";
+          go.classList.add("nogo");
+        } else if (p0pct < 100) {
+          go.textContent = "WARN";
+          go.classList.add("warn");
+        } else {
+          go.textContent = "GO";
+          go.classList.add("go");
+        }
+        $("goList").innerHTML = data.goCriteria
+          .map(([name, goText, noText]) => {
+            const isOk = p0pct === 100 && blockers === 0;
+            return `<div class="goline"><span><b>${esc(name)}</b><br><small>GO: ${esc(goText)}<br>NO-GO: ${esc(noText)}</small></span><span class="pill ${isOk ? "ok" : "P1"}">${isOk ? "reviewed" : "check"}</span></div>`;
+          })
+          .join("");
+      }
+      function updateNav() {
+        for (const s of data.sections) {
+          const nav = document.querySelector(`[data-nav="${s.id}"]`);
+          if (!nav) continue;
+          const total = s.tasks.length;
+          const done = s.tasks.filter((t) => taskState(t[0]).done).length;
+          const block = s.tasks.some((t) => taskState(t[0]).status === "block");
+          const pill = nav.querySelector(".pill");
+          pill.textContent = block ? "BLOCK" : `${done}/${total}`;
+          pill.className = "pill " + (block ? "P0" : s.priority);
+        }
+      }
+      function renderTemplates() {
+        $("templatesGrid").innerHTML = Object.entries(data.templates)
+          .map(
+            ([name, body]) =>
+              `<div class="template"><header><h3>${esc(name)}</h3><button class="btn" data-template="${esc(name)}">Copy</button></header><pre>${esc(body)}</pre></div>`,
+          )
+          .join("");
+        document
+          .querySelectorAll("[data-template]")
+          .forEach((btn) =>
+            btn.addEventListener("click", () => copyText(data.templates[btn.dataset.template])),
+          );
+      }
+      function buildMarkdownReport() {
+        const tasks = allTasks();
+        const done = tasks.filter((t) => taskState(t.id).done).length;
+        const blockers = tasks.filter((t) => taskState(t.id).status === "block");
+        const warns = tasks.filter((t) => taskState(t.id).status === "warn");
+        let md = `# Replyline Manual Closure Report\n\nGenerated: ${new Date().toISOString()}\n\n`;
+        md += `## Summary\n\n- Done: ${done}/${tasks.length}\n- Blockers: ${blockers.length}\n- Warnings: ${warns.length}\n- Decision: ${$("goStatus").textContent}\n\n`;
+        for (const s of data.sections) {
+          md += `## ${s.priority} — ${s.title}\n\n`;
+          for (const t of s.tasks) {
+            const st = taskState(t[0]);
+            md += `- [${st.done ? "x" : " "}] (${st.status}) ${t[1]}\n`;
+            const n = note(t[0]).trim();
+            if (n) md += `  - Note: ${n.replace(/\n/g, "\n    ")}\n`;
+          }
+          md += "\n";
+        }
+        return md;
+      }
+      function download(filename, content, type = "text/plain") {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "replyline-manual-closure-state.json";
+        a.href = url;
+        a.download = filename;
         a.click();
-        URL.revokeObjectURL(a.href);
-      });
-
-      document
-        .getElementById("importBtn")
-        .addEventListener("click", () => document.getElementById("fileInput").click());
-      document.getElementById("fileInput").addEventListener("change", async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const text = await file.text();
-        const parsed = JSON.parse(text);
-        if (!parsed.items) throw new Error("Некорректный JSON состояния");
-        Object.assign(state, parsed);
-        renderList();
-        saveState();
-      });
-
-      document.getElementById("mdBtn").addEventListener("click", renderMd);
-      document.getElementById("copyMdBtn").addEventListener("click", async () => {
-        const text = document.getElementById("mdOut").textContent;
-        await navigator.clipboard.writeText(text);
-      });
-
-      document.querySelectorAll("button[data-cmd]").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const cmd = btn.getAttribute("data-cmd");
-          await navigator.clipboard.writeText(cmd);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      function bindGlobalControls() {
+        $("exportBtn").addEventListener("click", () =>
+          download(
+            "replyline-closure-state.json",
+            JSON.stringify(state, null, 2),
+            "application/json",
+          ),
+        );
+        $("importBtn").addEventListener("click", () => $("importFile").click());
+        $("importFile").addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const imported = JSON.parse(await file.text());
+          Object.assign(state, imported);
+          saveState();
+          location.reload();
         });
-      });
-
-      document.body.setAttribute("data-theme", state.theme || "light");
-      document.getElementById("themeBtn").textContent =
-        state.theme === "dark" ? "Светлая тема" : "Тёмная тема";
-      renderList();
-      renderSummary();
-      renderMd();
+        $("reportBtn").addEventListener("click", () =>
+          download("replyline-manual-closure-report.md", buildMarkdownReport(), "text/markdown"),
+        );
+        $("printBtn").addEventListener("click", () => window.print());
+        $("themeBtn").addEventListener("click", () => {
+          state.theme = state.theme === "dark" ? "warm" : "dark";
+          document.documentElement.dataset.theme = state.theme;
+          saveState();
+        });
+        $("resetBtn").addEventListener("click", () => {
+          if (confirm("Сбросить все галочки, статусы и заметки?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+          }
+        });
+        $("copyDecisionBtn").addEventListener("click", () => copyText(buildMarkdownReport()));
+        $("search").addEventListener("input", (e) => {
+          const q = e.target.value.trim().toLowerCase();
+          document.querySelectorAll("[data-task]").forEach((el) => {
+            el.classList.toggle("hidden", q && !el.textContent.toLowerCase().includes(q));
+          });
+          document.querySelectorAll("[data-section]").forEach((sec) => {
+            const visible = sec.querySelectorAll("[data-task]:not(.hidden)").length;
+            sec.classList.toggle(
+              "hidden",
+              q && visible === 0 && !sec.textContent.toLowerCase().includes(q),
+            );
+          });
+        });
+      }
+      function init() {
+        document.documentElement.dataset.theme = state.theme || "warm";
+        renderNav();
+        renderSections();
+        renderTemplates();
+        bindTasks();
+        bindGlobalControls();
+        renderStats();
+        updateNav();
+      }
+      init();
     </script>
   </body>
 </html>

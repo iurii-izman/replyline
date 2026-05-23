@@ -53,9 +53,15 @@
     "scripts/check-report-secret-leaks.mjs",
     "scripts/check-script-lifecycle.mjs",
     "scripts/report-release-readiness.mjs",
-    ".rooignore"
+    ".rooignore",
+    "docs/manual-closure-pack.html",
+    "scripts/check-manual-closure-pack.mjs",
+    "docs/release-freeze-matrix.md",
+    "pnpm-lock.yaml"
   ],
-  "guardrailPathRegexes": ["^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"],
+  "guardrailPathRegexes": [
+    "^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"
+  ],
   "allowlistPrefixes": [
     ".github/",
     ".roo/",

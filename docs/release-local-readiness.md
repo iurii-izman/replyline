@@ -33,7 +33,7 @@ This gate is local and non-manual. It does not require GUI actions, Sonar token,
 
 Blockers (fail strict local gate):
 
-- missing required scripts (`verify:fast`, `verify:full`, `verify:release-local`, `test:security-lanes`, `test:public-footprint`, `test:runtime-quality`)
+- missing required scripts (`verify:fast`, `verify:full`, `verify:release-local`, `test:security-lanes`, `test:public-footprint`, `test:runtime-quality`, `report:release-readiness:strict`)
 - weakened `verify:fast`
 - missing required script files or broken `package.json` script file references
 - missing `sonar-project.properties`

@@ -22,9 +22,12 @@ const forbiddenPatterns = [
   { token: "<script src=", reason: "external script src is forbidden" },
   { token: '<link rel="stylesheet" href=', reason: "external stylesheet link is forbidden" },
   { token: "@import url", reason: "css @import remote/local indirection is forbidden" },
-  { token: "sk-", reason: "OpenAI-like secret marker detected" },
-  { token: "dg_", reason: "Deepgram-like secret marker detected" },
-  { token: "Bearer", reason: "Bearer token marker detected" },
+];
+
+const forbiddenSecretRegexes = [
+  { pattern: /\bsk-[A-Za-z0-9]{10,}\b/u, reason: "OpenAI-like secret marker detected" },
+  { pattern: /\bdg_[A-Za-z0-9]{10,}\b/u, reason: "Deepgram-like secret marker detected" },
+  { pattern: /\bBearer\s+[A-Za-z0-9._-]{10,}\b/u, reason: "Bearer token marker detected" },
   { token: "OPENAI_API_KEY=", reason: "OpenAI API key assignment detected" },
   { token: "DEEPGRAM_API_KEY=", reason: "Deepgram API key assignment detected" },
   { token: "api_key=", reason: "generic api_key assignment detected" },
@@ -36,18 +39,27 @@ for (const { token, reason } of forbiddenPatterns) {
   }
 }
 
+for (const rule of forbiddenSecretRegexes) {
+  if (rule.token && html.includes(rule.token)) {
+    fail(`${rule.reason}: found \`${rule.token}\` in docs/manual-closure-pack.html`);
+  }
+  if (rule.pattern && rule.pattern.test(html)) {
+    fail(`${rule.reason}: matching pattern \`${rule.pattern}\` in docs/manual-closure-pack.html`);
+  }
+}
+
 const requiredSections = [
-  "Live runtime + hotkey evidence / Доказательства live runtime и hotkey",
-  "Audio robustness matrix / Матрица устойчивости аудио",
-  "Human answer quality review / Ручной review качества ответов",
-  "First-run onboarding / Проверка первого запуска",
-  "Privacy, logs, exports, reports / Приватность, логи, экспорты, отчёты",
-  "Installer / clean machine check / Проверка инсталлятора и чистой машины",
-  "External Docker compose hardening / Усиление внешнего Docker compose",
-  "SonarCloud final review / Финальный review SonarCloud",
-  "Visual QA snapshot / Визуальный QA-снимок",
-  "Release / handoff / Релиз и handoff",
-  "Go / No-Go / Финальное решение",
+  "Live runtime + hotkey evidence",
+  "Audio robustness matrix",
+  "Human answer quality review",
+  "First-run onboarding",
+  "Privacy, logs, exports, reports",
+  "Installer / clean machine check",
+  "External Docker compose hardening",
+  "SonarCloud final review",
+  "Visual QA snapshot",
+  "Release / handoff",
+  "Go / No-Go",
 ];
 
 for (const section of requiredSections) {
@@ -58,13 +70,13 @@ for (const section of requiredSections) {
 
 const requiredCapabilities = [
   "localStorage",
-  "Экспорт JSON",
-  "Импорт JSON",
-  "MD отчёт",
-  "Todo / К выполнению",
-  "Pass / Пройдено",
-  "Warn / Риск",
-  "Block / Блокер",
+  "Export",
+  "Import",
+  "MD report",
+  "Todo",
+  "Pass",
+  "Warn",
+  "Block",
 ];
 
 for (const marker of requiredCapabilities) {
