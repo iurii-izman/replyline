@@ -110,6 +110,14 @@ const requiredIncludes = [
     path: "docs/model-ladder.md",
     includes: ["Unknown preset ids fall back safely", "OpenRouter presets"],
   },
+  {
+    path: "docs/release-freeze-matrix.md",
+    includes: [
+      "Source of truth: `docs/release-freeze-baseline.json`.",
+      "docs/manual-closure-pack.html",
+      "scripts/check-manual-closure-pack.mjs",
+    ],
+  },
 ];
 
 function lineOf(content, token) {

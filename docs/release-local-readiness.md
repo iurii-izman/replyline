@@ -40,6 +40,7 @@ Blockers (fail strict local gate):
 - missing same-day runtime quality summary
 - missing same-day product scenario benchmark when product scenario lane is configured
 - release freeze report outside guardrails
+- vulnerable `qs` versions (`>=6.11.1 <=6.15.1`) reintroduced in `pnpm-lock.yaml` while `@lhci/cli` optional lane is enabled
 - missing public footprint / report-secret-leak checks
 - secret-like values detected in `reports/**`, `docs/**`, `.env.docker.example`
 

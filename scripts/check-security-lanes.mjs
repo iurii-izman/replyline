@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
+const QS_ADVISORY = "GHSA-q8mj-m7cp-5q26";
 
 // ============================================================================
 // Privacy lane: check Rust source for dangerous logging patterns.
@@ -182,6 +183,37 @@ function checkCspDecision() {
   return true;
 }
 
+function checkQsAdvisoryFloor() {
+  const pkgPath = resolve(repoRoot, "package.json");
+  const lockPath = resolve(repoRoot, "pnpm-lock.yaml");
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+  const optionalDeps = pkg.optionalDependencies ?? {};
+  if (!Object.prototype.hasOwnProperty.call(optionalDeps, "@lhci/cli")) {
+    return true;
+  }
+
+  const lock = readFileSync(lockPath, "utf8");
+  const matches = [...lock.matchAll(/^\s{2}qs@(\d+)\.(\d+)\.(\d+):/gmu)];
+  for (const match of matches) {
+    const major = Number(match[1]);
+    const minor = Number(match[2]);
+    const patch = Number(match[3]);
+    const vulnerable =
+      major === 6 && minor >= 11 && (minor < 15 || (minor === 15 && patch <= 1));
+    if (vulnerable) {
+      console.error(
+        `[security-lane] vulnerable qs version in pnpm-lock.yaml: ${major}.${minor}.${patch}`,
+      );
+      console.error(
+        `[security-lane] ${QS_ADVISORY} requires qs >= 6.15.2; keep override/pin in place.`,
+      );
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // ============================================================================
 // Main
 // ============================================================================
@@ -197,6 +229,10 @@ if (!privacyOk) {
 const cspOk = checkCspDecision();
 if (!cspOk) {
   console.error("[privacy-lane] CSP issue found\n");
+  process.exit(1);
+}
+
+if (!checkQsAdvisoryFloor()) {
   process.exit(1);
 }
 
