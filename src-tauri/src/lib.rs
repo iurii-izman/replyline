@@ -13,6 +13,7 @@ mod interview_report;
 mod language_profile;
 mod llm;
 mod model_presets;
+mod observability;
 mod pipeline_timing;
 mod privacy;
 mod prompt_registry;
@@ -20,6 +21,7 @@ mod providers;
 mod services;
 mod settings;
 mod state;
+mod trace_manifest;
 mod tray_status;
 mod types;
 mod ui_strings;
@@ -30,6 +32,7 @@ use tauri::{
     AppHandle, Emitter, Manager, Runtime,
 };
 
+use crate::observability::{Fields, PrivacyClass};
 use crate::state::ReplylineState;
 use crate::types::SecretSlot;
 
@@ -66,6 +69,13 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
+            let _ = observability::log_audit(
+                "app_start",
+                Fields::new()
+                    .with("source", "app")
+                    .with("phase", "boot")
+                    .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+            );
             let _ = app_log::append_event("app_boot_start", "setup");
             let settings = settings::load().unwrap_or_default();
             let lang = language_profile::default_language();
@@ -87,10 +97,24 @@ pub fn run() {
                 .on_menu_event(|app, event| match event.id().as_ref() {
                     "open" => {
                         let _ = app_log::append_event("tray_action_received", "open");
+                        let _ = observability::log_audit(
+                            "tray_open_main",
+                            Fields::new()
+                                .with("source", "tray")
+                                .with("phase", "ui")
+                                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+                        );
                         let _ = open_main_window(app);
                     }
                     "settings" => {
                         let _ = app_log::append_event("tray_action_received", "settings");
+                        let _ = observability::log_audit(
+                            "settings_opened",
+                            Fields::new()
+                                .with("source", "tray")
+                                .with("phase", "ui")
+                                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+                        );
                         let _ = open_main_window(app);
                         let _ = app.emit("replyline://open-settings", ());
                     }
@@ -104,6 +128,13 @@ pub fn run() {
                     }
                     "quit" => {
                         let _ = app_log::append_event("tray_action_received", "quit");
+                        let _ = observability::log_audit(
+                            "tray_quit_requested",
+                            Fields::new()
+                                .with("source", "tray")
+                                .with("phase", "ui")
+                                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+                        );
                         app.exit(0);
                     }
                     _ => {}
@@ -126,6 +157,13 @@ pub fn run() {
                     let _ = app.emit("replyline://open-settings", ());
                 }
             }
+            let _ = observability::log_audit(
+                "app_ready",
+                Fields::new()
+                    .with("source", "app")
+                    .with("phase", "boot")
+                    .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+            );
 
             Ok(())
         });
@@ -209,6 +247,13 @@ fn open_main_window(app: &tauri::AppHandle) -> Result<(), tauri::Error> {
     if let Some(window) = app.get_webview_window("main") {
         window.show()?;
         window.set_focus()?;
+        let _ = observability::log_audit(
+            "window_show",
+            Fields::new()
+                .with("source", "window")
+                .with("phase", "ui")
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+        );
     }
     Ok(())
 }

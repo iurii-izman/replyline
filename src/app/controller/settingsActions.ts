@@ -5,6 +5,7 @@ import type { UiStrings } from "../locale";
 import type { AppPlatform } from "../platform";
 import type { NoticeApi } from "./notices";
 import type { HotkeyApi } from "./hotkeys";
+import { emitUiEvent } from "../observability";
 import {
   DEFAULT_SETTINGS,
   parseCommandInvokeError,
@@ -74,11 +75,12 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
     deps.setSettingsFormHint(null);
     try {
       const input: AppSettings = { ...deps.settings };
-      await deps.platform.invoke("log_client_event", {
-        event: "settings_persist_attempt",
-        detail: `llm_url_present=${Boolean(input.llmBaseUrl.trim())} llm_model_present=${Boolean(
-          input.llmModel.trim(),
-        )} hotkey_present=${Boolean(input.hotkey.trim())} model_preset=${input.selectedModelPreset}`,
+      await emitUiEvent(deps.platform, "settings_save_attempt", {
+        phase: "settings",
+        llm_url_present: Boolean(input.llmBaseUrl.trim()),
+        llm_model_present: Boolean(input.llmModel.trim()),
+        hotkey_present: Boolean(input.hotkey.trim()),
+        model_preset: input.selectedModelPreset,
       });
       const saved = await deps.platform.invoke<AppSettings>("save_settings", { input });
       deps.setSettings({ ...DEFAULT_SETTINGS, ...saved });

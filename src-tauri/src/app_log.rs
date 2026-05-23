@@ -3,6 +3,7 @@
 use std::fs::{self, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
+use std::sync::{Mutex, OnceLock};
 
 use crate::capture_debug;
 use crate::privacy;
@@ -10,6 +11,11 @@ use crate::types::LogStatusDto;
 use chrono::Local;
 
 pub fn append_event(event: &str, detail: impl AsRef<str>) -> Result<(), String> {
+    let write_lock = log_write_lock();
+    let _guard = write_lock
+        .lock()
+        .map_err(|_| "app_log_write_lock_poisoned".to_string())?;
+
     let path = log_file_path()?;
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|err| err.to_string())?;
@@ -24,6 +30,11 @@ pub fn append_event(event: &str, detail: impl AsRef<str>) -> Result<(), String> 
     let event = sanitize_event(event);
     let detail = sanitize(detail.as_ref());
     writeln!(file, "{ts} [{event}] {detail}").map_err(|err| err.to_string())
+}
+
+fn log_write_lock() -> &'static Mutex<()> {
+    static LOG_WRITE_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOG_WRITE_LOCK.get_or_init(|| Mutex::new(()))
 }
 
 pub fn status() -> Result<LogStatusDto, String> {

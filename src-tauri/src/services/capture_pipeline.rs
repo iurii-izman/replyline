@@ -19,8 +19,14 @@ use crate::services::pipeline_errors;
 use crate::services::pipeline_events::{emit_status, log_diag, update_tray_title};
 use crate::settings;
 use crate::state::ReplylineState;
+use std::collections::BTreeMap;
+
 use crate::types::{AnalysisCardDto, CommandError, SecretSlot};
 use crate::ui_strings::{en, pick_lang, ru};
+use crate::{
+    observability::{self, Fields, PrivacyClass},
+    trace_manifest,
+};
 
 const MIN_TRANSCRIPT_CHARS: usize = 25;
 
@@ -71,6 +77,7 @@ pub async fn capture_stop_and_analyze(
     state: &ReplylineState,
     app: &AppHandle,
 ) -> Result<AnalysisCardDto, CommandError> {
+    let started_at = chrono::Utc::now().to_rfc3339();
     let _ = app_log::append_event("analysis_start", "-");
     let _ = log_diag(
         "capture",
@@ -100,6 +107,24 @@ pub async fn capture_stop_and_analyze(
         })?;
         (run, run_id)
     };
+    if let Some(ref rid) = run_id {
+        let _ =
+            trace_manifest::ensure_run_started(rid, &started_at, &settings, "work_conversation");
+        let _ = trace_manifest::append_timeline_event(
+            rid,
+            "capture_stop_attempt",
+            "capture",
+            BTreeMap::new(),
+        );
+        let _ = observability::log_audit(
+            "capture_stop_attempt",
+            Fields::new()
+                .with("source", "backend")
+                .with("phase", "capture")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+        );
+    }
 
     emit_status(
         app,
@@ -144,6 +169,16 @@ pub async fn capture_stop_and_analyze(
         let _ = log_diag("capture", "fail", RL_CAPTURE_STOP_FAILED, &err);
         CommandError::Capture(err)
     })?;
+    if let Some(ref rid) = run_id {
+        let _ = observability::log_audit(
+            "capture_stop_ok",
+            Fields::new()
+                .with("source", "backend")
+                .with("phase", "capture")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+        );
+    }
     let _ = log_diag(
         "capture",
         "ok",
@@ -158,6 +193,16 @@ pub async fn capture_stop_and_analyze(
         )
     })?;
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
+    if let Some(ref rid) = run_id {
+        let _ = observability::log_audit(
+            "stt_request_start",
+            Fields::new()
+                .with("source", "stt")
+                .with("phase", "transcribing")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+        );
+    }
 
     let (transcript, stt_stages, stt_telemetry) =
         match stt_provider::transcribe(&settings, &deepgram_key, &pcm).await {
@@ -173,6 +218,17 @@ pub async fn capture_stop_and_analyze(
                     code,
                     format!("stt_failure_kind={failure_kind}"),
                 );
+                if let Some(ref rid) = run_id {
+                    let _ = observability::log_error(
+                        "stt_request_failed",
+                        Fields::new()
+                            .with("source", "stt")
+                            .with("phase", "transcribing")
+                            .with("run_id", rid)
+                            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+                            .with("failure_kind", failure_kind),
+                    );
+                }
                 return Err(CommandError::Pipeline(err));
             }
         };
@@ -190,6 +246,22 @@ pub async fn capture_stop_and_analyze(
             stt_telemetry.retry_reason.unwrap_or("none")
         ),
     );
+    if let Some(ref rid) = run_id {
+        let _ = observability::log_audit(
+            "stt_request_ok",
+            Fields::new()
+                .with("source", "stt")
+                .with("phase", "transcribing")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+                .with("chars_band", chars_band)
+                .with("stt_retries", stt_telemetry.retry_count),
+        );
+        let mut fields = BTreeMap::new();
+        fields.insert("chars_band".to_string(), chars_band.to_string());
+        let _ =
+            trace_manifest::append_timeline_event(rid, "stt_request_ok", "transcribing", fields);
+    }
     let _ = log_diag(
         "stt",
         "ok",
@@ -262,6 +334,34 @@ pub async fn capture_stop_and_analyze(
     } else {
         AnalysisMode::WorkConversation
     };
+    if let Some(ref rid) = run_id {
+        let _ = observability::log_audit(
+            "llm_request_start",
+            Fields::new()
+                .with("source", "llm")
+                .with("phase", "analyzing")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+                .with("model", settings.llm_model.trim()),
+        );
+        let _ = observability::log_audit(
+            "llm_request_attempt",
+            Fields::new()
+                .with("source", "llm")
+                .with("phase", "analyzing")
+                .with("run_id", rid)
+                .with("attempt", 1)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+        );
+        let _ = observability::log_audit(
+            "card_normalization_start",
+            Fields::new()
+                .with("source", "card")
+                .with("phase", "analyzing")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+        );
+    }
 
     let outcome = match llm_provider::analyze_transcript(
         &settings,
@@ -274,6 +374,27 @@ pub async fn capture_stop_and_analyze(
     {
         Ok(outcome) => outcome,
         Err(err) => {
+            if let Some(ref rid) = run_id {
+                let _ = observability::log_error(
+                    "card_validation_failed",
+                    Fields::new()
+                        .with("source", "card")
+                        .with("phase", "analyzing")
+                        .with("run_id", rid)
+                        .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+                );
+            }
+            if let Some(ref rid) = run_id {
+                let _ = observability::log_error(
+                    "llm_request_failed",
+                    Fields::new()
+                        .with("source", "llm")
+                        .with("phase", "analyzing")
+                        .with("run_id", rid)
+                        .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+                        .with("chars_band", chars_band),
+                );
+            }
             return Err(pipeline_errors::log_llm_failure(
                 "llm",
                 err,
@@ -312,6 +433,35 @@ pub async fn capture_stop_and_analyze(
             outcome.llm_fast_fallback_reason.unwrap_or("none")
         ),
     );
+    if let Some(ref rid) = run_id {
+        let _ = observability::log_audit(
+            "llm_request_ok",
+            Fields::new()
+                .with("source", "llm")
+                .with("phase", "analyzing")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+                .with("model", settings.llm_model.trim())
+                .with("llm_retries", outcome.llm_transport_retries),
+        );
+        let _ = observability::log_audit(
+            "card_normalization_ok",
+            Fields::new()
+                .with("source", "card")
+                .with("phase", "analyzing")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+        );
+        let _ = observability::log_audit(
+            "card_ready",
+            Fields::new()
+                .with("source", "card")
+                .with("phase", "ready")
+                .with("run_id", rid)
+                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+        );
+        let _ = trace_manifest::append_timeline_event(rid, "card_ready", "ready", BTreeMap::new());
+    }
     let _ = log_diag(
         "llm",
         "ok",
@@ -346,6 +496,9 @@ pub async fn capture_stop_and_analyze(
     let release_to_card = pipeline_timer.measure("release_to_card", "ok", RL_TIMING_SUMMARY);
     let _ = pipeline_timing::log_stage_timing(&release_to_card);
     stage_timings.push(release_to_card);
+    if let Some(ref rid) = run_id {
+        let _ = trace_manifest::write_timings(rid, &stage_timings);
+    }
     Ok(card)
 }
 
@@ -359,6 +512,43 @@ pub async fn retry_last_analysis(
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
 
     let run_id = run_id_param.unwrap_or_else(next_retry_run_id);
+    let started_at = chrono::Utc::now().to_rfc3339();
+    let _ =
+        trace_manifest::ensure_run_started(&run_id, &started_at, &settings, "work_conversation");
+    let _ = observability::log_audit(
+        "retry_clicked",
+        Fields::new()
+            .with("source", "ui")
+            .with("phase", "analyzing")
+            .with("run_id", run_id.clone())
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+    );
+    let _ = observability::log_audit(
+        "llm_request_start",
+        Fields::new()
+            .with("source", "llm")
+            .with("phase", "analyzing")
+            .with("run_id", run_id.clone())
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+            .with("model", settings.llm_model.trim()),
+    );
+    let _ = observability::log_audit(
+        "llm_request_attempt",
+        Fields::new()
+            .with("source", "llm")
+            .with("phase", "analyzing")
+            .with("run_id", run_id.clone())
+            .with("attempt", 1)
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+    );
+    let _ = observability::log_audit(
+        "card_normalization_start",
+        Fields::new()
+            .with("source", "card")
+            .with("phase", "analyzing")
+            .with("run_id", run_id.clone())
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+    );
 
     let (transcript, context_text, last_mode) = {
         let mut context = state
@@ -419,6 +609,22 @@ pub async fn retry_last_analysis(
     {
         Ok(outcome) => outcome.card,
         Err(err) => {
+            let _ = observability::log_error(
+                "card_validation_failed",
+                Fields::new()
+                    .with("source", "card")
+                    .with("phase", "analyzing")
+                    .with("run_id", run_id.clone())
+                    .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+            );
+            let _ = observability::log_error(
+                "llm_request_failed",
+                Fields::new()
+                    .with("source", "llm")
+                    .with("phase", "analyzing")
+                    .with("run_id", run_id.clone())
+                    .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+            );
             return Err(pipeline_errors::log_llm_failure(
                 "retry",
                 err,
@@ -427,6 +633,23 @@ pub async fn retry_last_analysis(
             ));
         }
     };
+    let _ = observability::log_audit(
+        "llm_request_ok",
+        Fields::new()
+            .with("source", "llm")
+            .with("phase", "analyzing")
+            .with("run_id", run_id.clone())
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+            .with("model", settings.llm_model.trim()),
+    );
+    let _ = observability::log_audit(
+        "card_normalization_ok",
+        Fields::new()
+            .with("source", "card")
+            .with("phase", "analyzing")
+            .with("run_id", run_id.clone())
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+    );
     {
         let mut context = state
             .context
@@ -447,6 +670,14 @@ pub async fn retry_last_analysis(
             "card regenerated repair_used={} fallback_used={} chars_band={}",
             card.repair_used, card.fallback_used, card.chars_band
         ),
+    );
+    let _ = observability::log_audit(
+        "card_ready",
+        Fields::new()
+            .with("source", "card")
+            .with("phase", "ready")
+            .with("run_id", run_id.clone())
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
     );
     Ok(card)
 }

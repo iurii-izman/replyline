@@ -30,6 +30,7 @@ import { createPipelineActions } from "./pipelineActions";
 import { setupLifecycle } from "./lifecycle";
 import { setupKeyboardShortcuts } from "./keyboardShortcuts";
 import { setupTraySync } from "./traySync";
+import { emitUiEvent } from "../observability";
 
 type InterviewCardKey = "answer" | "question" | "signals" | "risks" | "followUps" | "clarifier";
 function lines(value: string): string[] {
@@ -245,6 +246,7 @@ export function useReplylineController(platform: AppPlatform) {
 
   async function showWindow(panelName?: Panel) {
     if (panelName) setPanel(panelName);
+    void emitUiEvent(platform, "panel_open", { panel: panelName ?? panel(), phase: "navigation" });
     await platform.window.show();
     await platform.window.setFocus();
   }
@@ -400,6 +402,7 @@ export function useReplylineController(platform: AppPlatform) {
     });
   }
   async function saveCandidatePack() {
+    void emitUiEvent(platform, "candidate_profile_save_clicked", { phase: "candidate_pack" });
     const input: CandidatePackDto = {
       candidateSummary: candidatePackDraft.candidateSummary,
       targetRole: candidatePackDraft.targetRole,
@@ -422,6 +425,7 @@ export function useReplylineController(platform: AppPlatform) {
     await loadCandidatePack();
   }
   async function clearCandidatePack() {
+    void emitUiEvent(platform, "candidate_profile_clear_clicked", { phase: "candidate_pack" });
     await platform.invoke("clear_candidate_pack");
     setCandidatePackDraft({
       candidateSummary: "",
@@ -440,6 +444,7 @@ export function useReplylineController(platform: AppPlatform) {
     setCandidatePackStatus({ exists: false, factCount: 0, weakFactCount: 0 });
   }
   async function prepareCandidatePack() {
+    void emitUiEvent(platform, "candidate_profile_prepare_clicked", { phase: "candidate_pack" });
     setCandidatePackPreparing(true);
     setError(null);
     try {
@@ -490,6 +495,7 @@ export function useReplylineController(platform: AppPlatform) {
     setPinnedInterviewCard((current) => (current === active ? null : active));
   };
   async function startInterviewSession() {
+    void emitUiEvent(platform, "start_session_clicked", { phase: "interview" });
     const session = await platform.invoke<InterviewSessionStateDto>("start_interview_session");
     setInterviewSession(session);
     setInterviewReport(null);
@@ -497,23 +503,28 @@ export function useReplylineController(platform: AppPlatform) {
     setInterviewReportRedactedMarkdownPath(null);
   }
   async function endInterviewSession() {
+    void emitUiEvent(platform, "end_session_clicked", { phase: "interview" });
     const report = await platform.invoke<InterviewReportDto | null>("end_interview_session");
     setInterviewSession(null);
     setInterviewReport(report);
   }
   async function openInterviewReport() {
+    void emitUiEvent(platform, "open_report_clicked", { phase: "report" });
     const report = await platform.invoke<InterviewReportDto | null>("get_interview_report");
     setInterviewReport(report);
   }
   async function exportInterviewReportMarkdown() {
+    void emitUiEvent(platform, "export_full_clicked", { phase: "export" });
     const path = await platform.invoke<string | null>("export_interview_report_markdown");
     setInterviewReportMarkdownPath(path);
   }
   async function exportInterviewReportRedactedMarkdown() {
+    void emitUiEvent(platform, "export_redacted_clicked", { phase: "export" });
     const path = await platform.invoke<string | null>("export_interview_report_redacted_markdown");
     setInterviewReportRedactedMarkdownPath(path);
   }
   async function clearInterviewReports() {
+    void emitUiEvent(platform, "clear_reports_clicked", { phase: "report" });
     await platform.invoke("clear_interview_reports");
     setInterviewReport(null);
     setInterviewReportMarkdownPath(null);
@@ -564,6 +575,7 @@ export function useReplylineController(platform: AppPlatform) {
     interviewReportRedactedMarkdownPath,
     compactMode,
     checkRuntimeConfig: async () => {
+      void emitUiEvent(platform, "check_settings_clicked", { phase: "settings" });
       setRuntimeCheckRunning(true);
       setRuntimeCheckResult(null);
       try {
@@ -586,17 +598,32 @@ export function useReplylineController(platform: AppPlatform) {
     retryAnalysis: pipelineActions.retryAnalysis,
     copyCurrentCard: pipelineActions.copyCurrentCard,
     settingsActiveSection,
-    toggleSettingsPanel: () => setPanel(panel() === "settings" ? "main" : "settings"),
+    toggleSettingsPanel: () => {
+      const target = panel() === "settings" ? "main" : "settings";
+      void emitUiEvent(platform, "panel_open", { panel: target, phase: "navigation" });
+      setPanel(target);
+    },
     openSettingsPanel: (section?: SettingsSectionId) => {
+      void emitUiEvent(platform, "settings_opened", { phase: "settings" });
+      if (section) {
+        void emitUiEvent(platform, "settings_section_opened", { section, phase: "settings" });
+      }
       if (section) setSettingsActiveSection(section);
       setPanel("settings");
     },
     openCandidatePackStudioPanel: () => {
+      void emitUiEvent(platform, "candidate_studio_opened", { phase: "candidate_pack" });
       setSettingsActiveSection("candidatePack");
       setPanel("candidatePackStudio");
     },
-    openMainPanel: () => setPanel("main"),
-    setSettingsActiveSection,
+    openMainPanel: () => {
+      void emitUiEvent(platform, "panel_open", { panel: "main", phase: "navigation" });
+      setPanel("main");
+    },
+    setSettingsActiveSection: (section: SettingsSectionId) => {
+      void emitUiEvent(platform, "settings_section_opened", { section, phase: "settings" });
+      setSettingsActiveSection(section);
+    },
     hideWindow: () => platform.window.hide(),
     quitApp: () => platform.invoke("quit_app"),
     startDragging: () => platform.window.startDragging(),

@@ -7,6 +7,7 @@ use crate::audio::CaptureRun;
 use crate::candidate_pack;
 use crate::credentials;
 use crate::fs_atomic;
+use crate::observability::{self, Fields, PrivacyClass};
 use crate::providers::candidate_pack_provider;
 use crate::services::capture_pipeline;
 use crate::services::pipeline_events::{emit_status, update_tray_title};
@@ -145,6 +146,13 @@ pub fn refresh_tray_menu(app: AppHandle) -> Result<(), CommandError> {
 
 #[tauri::command]
 pub fn save_settings(input: AppSettings) -> Result<AppSettings, CommandError> {
+    let _ = observability::log_audit(
+        "settings_save_attempt",
+        Fields::new()
+            .with("source", "settings")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+            .with("phase", "settings"),
+    );
     let _ = app_log::append_event("settings_save_attempt", format!("hotkey={}", input.hotkey));
     match settings::save(&input) {
         Ok(saved) => {
@@ -171,6 +179,15 @@ pub fn get_setup_status() -> Result<SetupStatusDto, CommandError> {
         format!(
             "deepgram_key_present={deepgram_key_present} llm_key_present={llm_key_present} llm_route_configured={llm_route_configured} runtime_path_ready={runtime_path_ready}"
         ),
+    );
+    let _ = observability::log_audit(
+        "credential_presence_checked",
+        Fields::new()
+            .with("source", "settings")
+            .with("phase", "settings")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+            .with("deepgram_key_present", deepgram_key_present)
+            .with("llm_key_present", llm_key_present),
     );
     Ok(SetupStatusDto {
         deepgram_key_present,
@@ -272,6 +289,14 @@ pub fn save_secret(slot: String, value: String) -> Result<(), CommandError> {
         SecretSlot::LlmApiKey => "llm_api_key",
     };
     let _ = app_log::append_event("secret_save_attempt", slot_name);
+    let _ = observability::log_audit(
+        "credential_save_attempt",
+        Fields::new()
+            .with("source", "settings")
+            .with("phase", "settings")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+            .with("slot", slot_name),
+    );
     let trimmed = value.trim();
     if trimmed.is_empty() {
         let _ = app_log::append_event("secret_save_failed", format!("{slot_name}: empty_value"));
@@ -280,6 +305,14 @@ pub fn save_secret(slot: String, value: String) -> Result<(), CommandError> {
     match credentials::save(slot, trimmed) {
         Ok(()) => {
             let _ = app_log::append_event("secret_save_ok", slot_name);
+            let _ = observability::log_audit(
+                "credential_save_ok",
+                Fields::new()
+                    .with("source", "settings")
+                    .with("phase", "settings")
+                    .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+                    .with("slot", slot_name),
+            );
             Ok(())
         }
         Err(err) => {
@@ -372,7 +405,20 @@ fn hash_path_for_log(path: &std::path::Path) -> String {
 pub fn delete_secret(slot: String) -> Result<(), CommandError> {
     let slot = SecretSlot::from_str(&slot)
         .ok_or_else(|| CommandError::Internal("Unknown secret slot".to_string()))?;
-    credentials::delete(slot).map_err(CommandError::from)
+    credentials::delete(slot).map_err(CommandError::from)?;
+    let slot_name = match slot {
+        SecretSlot::DeepgramApiKey => "deepgram_api_key",
+        SecretSlot::LlmApiKey => "llm_api_key",
+    };
+    let _ = observability::log_audit(
+        "credential_delete_ok",
+        Fields::new()
+            .with("source", "settings")
+            .with("phase", "settings")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+            .with("slot", slot_name),
+    );
+    Ok(())
 }
 
 #[tauri::command]
@@ -401,6 +447,13 @@ pub fn capture_start(
     state: State<'_, ReplylineState>,
     app: AppHandle,
 ) -> Result<String, CommandError> {
+    let _ = observability::log_audit(
+        "capture_start_attempt",
+        Fields::new()
+            .with("source", "backend")
+            .with("phase", "capture")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+    );
     let _ = app_log::append_event("capture_start_attempt", "-");
     let settings = settings::load()?;
     let mut capture = state
@@ -428,6 +481,14 @@ pub fn capture_start(
         ),
     );
     let _ = app_log::append_event("capture_start_ok", format!("run_id={run_id}"));
+    let _ = observability::log_audit(
+        "capture_start_ok",
+        Fields::new()
+            .with("source", "backend")
+            .with("phase", "capture")
+            .with("run_id", run_id.clone())
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+    );
     Ok(run_id)
 }
 
@@ -459,6 +520,13 @@ pub fn tray_open_main(app: AppHandle) -> Result<(), CommandError> {
     window
         .set_focus()
         .map_err(|err| CommandError::Internal(err.to_string()))?;
+    let _ = observability::log_audit(
+        "tray_open_main",
+        Fields::new()
+            .with("source", "tray")
+            .with("phase", "ui")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+    );
     Ok(())
 }
 
@@ -797,13 +865,32 @@ pub fn get_interview_report() -> Result<Option<InterviewReportDto>, CommandError
 
 #[tauri::command]
 pub fn export_interview_report_markdown() -> Result<Option<String>, CommandError> {
-    crate::interview_report::export_latest_report_markdown().map_err(CommandError::Internal)
+    let out =
+        crate::interview_report::export_latest_report_markdown().map_err(CommandError::Internal)?;
+    let _ = observability::log_audit(
+        "export_full_clicked",
+        Fields::new()
+            .with("source", "report")
+            .with("phase", "export")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+            .with("path_present", out.is_some()),
+    );
+    Ok(out)
 }
 
 #[tauri::command]
 pub fn export_interview_report_redacted_markdown() -> Result<Option<String>, CommandError> {
-    crate::interview_report::export_latest_report_redacted_markdown()
-        .map_err(CommandError::Internal)
+    let out = crate::interview_report::export_latest_report_redacted_markdown()
+        .map_err(CommandError::Internal)?;
+    let _ = observability::log_audit(
+        "export_redacted_clicked",
+        Fields::new()
+            .with("source", "report")
+            .with("phase", "export")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+            .with("path_present", out.is_some()),
+    );
+    Ok(out)
 }
 
 #[tauri::command]
@@ -814,5 +901,12 @@ pub fn clear_interview_reports(state: State<'_, ReplylineState>) -> Result<(), C
         .lock()
         .map_err(|_| CommandError::Internal("Interview session lock poisoned".to_string()))?;
     *session = crate::interview_report::InterviewSessionState::default();
+    let _ = observability::log_audit(
+        "clear_reports_clicked",
+        Fields::new()
+            .with("source", "report")
+            .with("phase", "report")
+            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+    );
     Ok(())
 }

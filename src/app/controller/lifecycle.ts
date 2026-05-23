@@ -4,6 +4,7 @@ import type { UiStrings } from "../locale";
 import type { AppPlatform } from "../platform";
 import type { NoticeApi } from "./notices";
 import type { SettingsActions } from "./settingsActions";
+import { emitUiEvent } from "../observability";
 
 export interface LifecycleDeps {
   platform: AppPlatform;
@@ -56,6 +57,7 @@ export function setupLifecycle(deps: LifecycleDeps): void {
           deps.setStatusDetail(event.payload.detail ?? null);
         }),
         await deps.platform.listen("replyline://open-settings", async () => {
+          void emitUiEvent(deps.platform, "settings_opened", { source: "backend_event", phase: "settings" });
           await deps.showWindow("settings");
         }),
         await deps.platform.listen("replyline://context-cleared", () => {
@@ -70,9 +72,11 @@ export function setupLifecycle(deps: LifecycleDeps): void {
           });
         }),
         await deps.platform.window.onCloseRequested(async (event) => {
+          void emitUiEvent(deps.platform, "window_close_requested", { phase: "window" });
           if (deps.settings().hideToTrayOnClose) {
             event.preventDefault();
             await deps.platform.window.hide();
+            void emitUiEvent(deps.platform, "window_hide", { phase: "window" });
           }
         }),
       );

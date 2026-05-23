@@ -15,6 +15,7 @@ import {
   parseCommandInvokeError,
   asAnalysisCard,
 } from "../model";
+import { emitUiEvent } from "../observability";
 
 export interface PipelineActionDeps {
   platform: AppPlatform;
@@ -49,6 +50,7 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
   };
   async function clearContext() {
     try {
+      void emitUiEvent(deps.platform, "clear_clicked", { phase: "ready" });
       deps.setError(null);
       const status = await deps.platform.invoke<ContextStatusDto>("clear_context");
       deps.applyContextStatus(status);
@@ -70,6 +72,7 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
   }
 
   async function retryAnalysis() {
+    void emitUiEvent(deps.platform, "retry_clicked", { phase: "analyzing" });
     deps.setError(null);
     deps.setPhase("analyzing");
     // Generate a client-side runId so the lifecycle listener can
@@ -113,6 +116,7 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
     deps.setError(null);
     const value = deps.copyText().trim();
     if (!value || !deps.canCopyCurrentCard()) return;
+    void emitUiEvent(deps.platform, "copy_answer_clicked", { phase: "ready" });
     await deps.platform.clipboard.writeText(value);
     deps.notices.pushNotice({
       tone: "info",
