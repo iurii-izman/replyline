@@ -185,8 +185,8 @@ describe("model", () => {
   });
 
   describe("settings validation preflight rules", () => {
-    it("DEFAULT_SETTINGS schemaVersion is 8 (matches backend)", () => {
-      expect(DEFAULT_SETTINGS.schemaVersion).toBe(8);
+    it("DEFAULT_SETTINGS schemaVersion is 9 (matches backend)", () => {
+      expect(DEFAULT_SETTINGS.schemaVersion).toBe(9);
     });
 
     it("DEFAULT_SETTINGS hotkey is non-empty", () => {
@@ -213,6 +213,11 @@ describe("model", () => {
     it("DEFAULT_SETTINGS keeps normal window behavior defaults", () => {
       expect(DEFAULT_SETTINGS.hideToTrayOnClose).toBe(true);
       expect(DEFAULT_SETTINGS.keepOnTopDuringCapture).toBe(false);
+    });
+
+    it("DEFAULT_SETTINGS debug trace mode is safe redacted", () => {
+      expect(DEFAULT_SETTINGS.debugTraceMode).toBe("redacted");
+      expect(DEFAULT_SETTINGS.debugTraceRetentionDays).toBe(3);
     });
   });
 

@@ -18,7 +18,7 @@ export type SettingsSectionId =
 export type Panel = "main" | "settings" | "candidatePackStudio";
 
 export type AppSettings = {
-  schemaVersion: 8;
+  schemaVersion: 9;
   hotkey: string;
   llmBaseUrl: string;
   llmModel: string;
@@ -30,7 +30,8 @@ export type AppSettings = {
   keepOnTopDuringCapture: boolean;
   interviewCompactMode: boolean;
   interviewReportRetentionDays: 0 | 7 | 30 | 90;
-  traceIncludeContent: boolean;
+  debugTraceMode: "off" | "redacted" | "full_local";
+  debugTraceRetentionDays: 0 | 1 | 3 | 7;
 };
 
 export type CandidateFactStrength = "strong" | "medium" | "weak";
@@ -379,7 +380,7 @@ export type CandidatePackDraft = {
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  schemaVersion: 8,
+  schemaVersion: 9,
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
@@ -391,7 +392,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   keepOnTopDuringCapture: false,
   interviewCompactMode: false,
   interviewReportRetentionDays: 0,
-  traceIncludeContent: false,
+  debugTraceMode: "redacted",
+  debugTraceRetentionDays: 3,
 };
 
 export function isConfiguredLlmRoute(baseUrl: string, model: string): boolean {

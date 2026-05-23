@@ -646,7 +646,12 @@ export function useReplylineController(platform: AppPlatform) {
     setKeepOnTopDuringCapture: (value: boolean) => setSettings("keepOnTopDuringCapture", value),
     setInterviewReportRetentionDays: (value: AppSettings["interviewReportRetentionDays"]) =>
       setSettings("interviewReportRetentionDays", value),
-    setTraceIncludeContent: (value: boolean) => setSettings("traceIncludeContent", value),
+    setDebugTraceMode: (value: AppSettings["debugTraceMode"]) =>
+      setSettings("debugTraceMode", value),
+    setDebugTraceRetentionDays: (value: AppSettings["debugTraceRetentionDays"]) =>
+      setSettings("debugTraceRetentionDays", value),
+    openTraceFolder: () => platform.invoke("open_trace_folder"),
+    clearDebugTraces: () => platform.invoke("clear_debug_traces"),
     selectInterviewCardIndex: (index: number) =>
       setActiveInterviewCardIndex(clampInterviewCardIndex(index)),
     nextInterviewCard: () =>

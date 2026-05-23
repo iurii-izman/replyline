@@ -5,6 +5,7 @@
 Observability v2 defines a unified safe event foundation for local Replyline runtime diagnostics.
 
 Current block constraints:
+
 - No raw transcript/prompt/LLM response in default logs.
 - No secrets in logs.
 - Safe metadata only by default.
@@ -12,6 +13,7 @@ Current block constraints:
 ## Event Taxonomy
 
 Categories:
+
 - `app`
 - `window`
 - `tray`
@@ -47,6 +49,7 @@ Categories:
 ## Event Envelope
 
 Every v2 typed event emits compact key/value detail via `app_log::append_event` with:
+
 - `schema=1`
 - `level`
 - `source`
@@ -61,18 +64,21 @@ Example:
 ## Runtime Trace Manifest (No Content)
 
 Per run:
+
 - `%APPDATA%/com.replyline.app/traces/<run_id>/manifest.json`
 - `%APPDATA%/com.replyline.app/traces/<run_id>/timeline.jsonl`
 - `%APPDATA%/com.replyline.app/traces/<run_id>/timings.json`
 
 `manifest.json` includes safe metadata and sets:
+
 - `contentIncluded: false` by default
-- `contentIncluded: true` only when `traceIncludeContent=true` explicit opt-in is enabled
+- `contentIncluded: true` only when `debugTraceMode=full_local` explicit opt-in is enabled
 - `privacyMode: "safe_metadata"`
 
 ## Trace Bundle Files
 
 Default mode writes redacted snapshots only:
+
 - `llm-request.redacted.json`
 - `llm-response.redacted.json`
 - `llm-attempts.jsonl`
@@ -81,6 +87,7 @@ Default mode writes redacted snapshots only:
 - `card.redacted.json`
 
 Safe LLM fields:
+
 - endpoint host/path
 - selected/attempted model(s)
 - temperature, max tokens
@@ -90,6 +97,7 @@ Safe LLM fields:
 - usage token counters (if provider returns usage)
 
 Safe STT fields:
+
 - provider and model/options
 - audio byte count and available signal metadata
 - retry counters and error kind
@@ -97,28 +105,31 @@ Safe STT fields:
 - transcript char count and hash
 
 Safe card fields:
+
 - `gist` / `say_now` / `next_move` char counts and hashes
 - `repair_used`, `fallback_used`, `chars_band`
 - schema validity flags
 - interview schema presence
 
 Hashes:
+
 - `sha256_hex(value)` is used to compare content equality across pipeline stages.
 - Hashes are stable for identical input and do not reveal original text.
 
 ## Full-Content Trace Opt-In
 
-- Setting: `traceIncludeContent` (`false` by default).
+- Settings: `debugTraceMode` (`redacted` by default) + `debugTraceRetentionDays` (default `3`).
 - When `false`, trace previews are redacted and manifest keeps `contentIncluded=false`.
 - When `true`, content-capable snapshots may include full payload previews; this is explicit local opt-in only.
 
-## Manual Smoke: traceIncludeContent
+## Manual Smoke: debugTraceMode
 
 1. In Settings -> Reports, enable `Enable full-content trace (opt-in)`.
 2. Run one capture and open the latest `%APPDATA%/com.replyline.app/traces/<run_id>/manifest.json`.
 3. Verify `contentIncluded=true`.
 4. Disable the setting, run one more capture, verify `contentIncluded=false`.
 5. In both runs, verify:
+
 - no `Authorization` token values in snapshot headers
 - no raw HTTP error body dump in LLM error snapshot
 - redacted files still exist (`*.redacted.json`, `llm-attempts.jsonl`)

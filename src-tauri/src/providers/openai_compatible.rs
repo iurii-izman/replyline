@@ -91,7 +91,7 @@ struct ResponseMessage {
     content: serde_json::Value,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Usage {
     prompt_tokens: Option<u32>,
     completion_tokens: Option<u32>,
@@ -229,6 +229,17 @@ pub async fn request_card_raw_text(
             headers: serde_json::json!({ "authorization": "[redacted]" }),
         };
         let _ = trace_manifest::write_run_json(rid, "llm-request.redacted.json", &snapshot);
+        if include_content {
+            let full_request = serde_json::json!({
+                "model": request.model,
+                "models": fallback_models,
+                "messages": request.messages,
+                "temperature": request.temperature,
+                "max_tokens": request.max_tokens,
+                "headers": { "authorization": "[redacted]" }
+            });
+            let _ = trace_manifest::write_run_json(rid, "llm-request.full.json", &full_request);
+        }
     }
 
     let response = {
@@ -497,6 +508,15 @@ pub async fn request_card_raw_text(
             },
         };
         let _ = trace_manifest::write_run_json(rid, "llm-response.redacted.json", &snapshot);
+        if include_content {
+            let full_response = serde_json::json!({
+                "statusCode": telemetry.status_code,
+                "durationMs": telemetry.duration_ms,
+                "rawText": raw_text,
+                "usage": payload.usage,
+            });
+            let _ = trace_manifest::write_run_json(rid, "llm-response.full.json", &full_response);
+        }
     }
 
     Ok((

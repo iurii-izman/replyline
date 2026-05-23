@@ -163,7 +163,7 @@ async fn main() -> Result<(), String> {
     let wav = audio::encode_wav(&pcm);
     let (transcript, _stt_telemetry) = deepgram::transcribe_wav(
         None,
-        settings.trace_include_content,
+        settings.debug_trace_full_enabled(),
         &settings,
         &deepgram_api_key,
         &wav,
@@ -174,7 +174,7 @@ async fn main() -> Result<(), String> {
     let llm_started_at = Instant::now();
     let outcome = llm_provider::analyze_transcript(
         None,
-        settings.trace_include_content,
+        settings.debug_trace_full_enabled(),
         &settings,
         Some(&llm_api_key),
         &transcript,

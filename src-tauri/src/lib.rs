@@ -78,6 +78,15 @@ pub fn run() {
             );
             let _ = app_log::append_event("app_boot_start", "setup");
             let settings = settings::load().unwrap_or_default();
+            if let Ok((removed, kept)) = trace_manifest::enforce_trace_retention(
+                chrono::Utc::now(),
+                settings.debug_trace_retention_days,
+            ) {
+                let _ = app_log::append_event(
+                    "debug_trace_retention_applied",
+                    format!("removed={removed} kept={kept}"),
+                );
+            }
             let lang = language_profile::default_language();
             let handle = app.handle().clone();
             let menu = build_main_tray_menu(&handle, lang)?;
@@ -199,7 +208,10 @@ pub fn run() {
         commands::get_interview_report,
         commands::export_interview_report_markdown,
         commands::export_interview_report_redacted_markdown,
-        commands::clear_interview_reports
+        commands::clear_interview_reports,
+        commands::open_trace_folder,
+        commands::clear_debug_traces,
+        commands::get_trace_status
     ]);
     #[cfg(not(any(debug_assertions, test)))]
     let builder = builder.invoke_handler(tauri::generate_handler![
@@ -233,7 +245,10 @@ pub fn run() {
         commands::get_interview_report,
         commands::export_interview_report_markdown,
         commands::export_interview_report_redacted_markdown,
-        commands::clear_interview_reports
+        commands::clear_interview_reports,
+        commands::open_trace_folder,
+        commands::clear_debug_traces,
+        commands::get_trace_status
     ]);
     builder
         .run(tauri::generate_context!())

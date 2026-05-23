@@ -266,6 +266,15 @@ async fn request_card_with_prompt(
 ) -> Result<(String, String, openai_compatible::LlmRequestTelemetry), String> {
     let user_prompt = llm::build_user_prompt(transcript, context, language, profile, extra_suffix);
     let system_prompt = llm::system_prompt_for_profile(profile, language);
+    if include_content {
+        if let Some(rid) = run_id {
+            let _ = trace_manifest::write_run_text(rid, "transcript.full.txt", transcript);
+            let _ = trace_manifest::write_run_text(rid, "context.full.txt", context);
+            let _ =
+                trace_manifest::write_run_text(rid, "llm-system-prompt.full.txt", system_prompt);
+            let _ = trace_manifest::write_run_text(rid, "llm-user-prompt.full.txt", &user_prompt);
+        }
+    }
     let fallback_models = fallback_models_for_selected_preset(&settings.selected_model_preset);
 
     openai_compatible::request_card_raw_text(
@@ -292,6 +301,13 @@ async fn request_raw_with_prompts(
     user_prompt: &str,
     max_tokens: u16,
 ) -> Result<(String, String, openai_compatible::LlmRequestTelemetry), String> {
+    if include_content {
+        if let Some(rid) = run_id {
+            let _ =
+                trace_manifest::write_run_text(rid, "llm-system-prompt.full.txt", system_prompt);
+            let _ = trace_manifest::write_run_text(rid, "llm-user-prompt.full.txt", user_prompt);
+        }
+    }
     let fallback_models = fallback_models_for_selected_preset(&settings.selected_model_preset);
 
     openai_compatible::request_card_raw_text(
@@ -374,6 +390,9 @@ fn write_card_trace(
             interview_schema_present: card.interview_card_schema_v1.is_some(),
         };
         let _ = trace_manifest::write_run_json(rid, "card.redacted.json", &snapshot);
+        if include_content {
+            let _ = trace_manifest::write_run_json(rid, "card.full.json", card);
+        }
     }
 }
 

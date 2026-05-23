@@ -15,6 +15,7 @@ const SETTINGS_DIR: &str = "com.replyline.app";
 const SETTINGS_FILE: &str = "settings.json";
 pub const SETTINGS_DIR_OVERRIDE_ENV: &str = "REPLYLINE_SETTINGS_DIR_OVERRIDE";
 const ALLOWED_INTERVIEW_REPORT_RETENTION_DAYS: [u16; 4] = [0, 7, 30, 90];
+const ALLOWED_DEBUG_TRACE_RETENTION_DAYS: [u16; 4] = [1, 3, 7, 0];
 
 #[derive(Debug, thiserror::Error)]
 pub enum SettingsError {
@@ -120,7 +121,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     }
 }
 
-const CURRENT_SCHEMA_VERSION: u32 = 8;
+const CURRENT_SCHEMA_VERSION: u32 = 9;
 
 fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     let version = value
@@ -148,6 +149,9 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     }
     if version < 8 {
         migrate_v7_to_v8(&mut value);
+    }
+    if version < 9 {
+        migrate_v8_to_v9(&mut value);
     }
 
     value
@@ -215,6 +219,27 @@ fn migrate_v7_to_v8(value: &mut serde_json::Value) {
     }
 }
 
+fn migrate_v8_to_v9(value: &mut serde_json::Value) {
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("schemaVersion".to_string(), serde_json::json!(9));
+        let trace_include_content = obj
+            .get("traceIncludeContent")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        obj.insert(
+            "debugTraceMode".to_string(),
+            if trace_include_content {
+                serde_json::json!("full_local")
+            } else {
+                serde_json::json!("redacted")
+            },
+        );
+        obj.entry("debugTraceRetentionDays")
+            .or_insert(serde_json::json!(3));
+        obj.remove("traceIncludeContent");
+    }
+}
+
 pub fn save(settings: &AppSettings) -> Result<AppSettings, SettingsError> {
     let _ = crate::app_log::append_event(
         "settings_save_attempt",
@@ -263,6 +288,9 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     {
         return Err(SettingsError::RetentionPolicyInvalid);
     }
+    if !ALLOWED_DEBUG_TRACE_RETENTION_DAYS.contains(&settings.debug_trace_retention_days) {
+        return Err(SettingsError::RetentionPolicyInvalid);
+    }
     Ok(())
 }
 
@@ -283,7 +311,8 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "keepOnTopDuringCapture",
         "interviewCompactMode",
         "interviewReportRetentionDays",
-        "traceIncludeContent",
+        "debugTraceMode",
+        "debugTraceRetentionDays",
     ] {
         if !obj.contains_key(key) {
             return Err(SettingsError::PartialConfigInvalid);
@@ -526,7 +555,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v1_settings_to_v8_with_default_profile_and_preset() {
+    fn migrates_v1_settings_to_v9_with_default_profile_and_preset() {
         let v1 = serde_json::json!({
             "schemaVersion": 1,
             "hotkey": "Ctrl+Alt+Space",
@@ -535,7 +564,7 @@ mod tests {
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
-        assert_eq!(migrated["schemaVersion"], 8);
+        assert_eq!(migrated["schemaVersion"], 9);
         assert_eq!(
             migrated["activeAnswerProfile"],
             crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
@@ -546,15 +575,16 @@ mod tests {
         assert_eq!(migrated["keepOnTopDuringCapture"], false);
         assert_eq!(migrated["interviewCompactMode"], false);
         assert_eq!(migrated["interviewReportRetentionDays"], 0);
-        assert_eq!(migrated["traceIncludeContent"], false);
+        assert_eq!(migrated["debugTraceMode"], "redacted");
+        assert_eq!(migrated["debugTraceRetentionDays"], 3);
         // llmTemperature must NOT be injected — the field is not part of the current schema.
         assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
-    fn v8_settings_pass_through_unchanged() {
+    fn v9_settings_pass_through_unchanged() {
         let v8 = serde_json::json!({
-            "schemaVersion": 8,
+            "schemaVersion": 9,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
@@ -566,10 +596,11 @@ mod tests {
             "keepOnTopDuringCapture": true,
             "interviewCompactMode": true,
             "interviewReportRetentionDays": 30,
-            "traceIncludeContent": true
+            "debugTraceMode": "full_local",
+            "debugTraceRetentionDays": 7
         });
         let migrated = super::migrate_settings(v8);
-        assert_eq!(migrated["schemaVersion"], 8);
+        assert_eq!(migrated["schemaVersion"], 9);
         assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
         assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
         assert_eq!(migrated["llmModel"], "gpt-4o-mini");
@@ -581,15 +612,16 @@ mod tests {
         assert_eq!(migrated["keepOnTopDuringCapture"], true);
         assert_eq!(migrated["interviewCompactMode"], true);
         assert_eq!(migrated["interviewReportRetentionDays"], 30);
-        assert_eq!(migrated["traceIncludeContent"], true);
+        assert_eq!(migrated["debugTraceMode"], "full_local");
+        assert_eq!(migrated["debugTraceRetentionDays"], 7);
         // Schema-defined fields must remain; no phantom fields should appear.
         assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
-    fn migrates_v7_to_v8_with_trace_flag_default_false() {
+    fn migrates_v8_to_v9_with_trace_mode_defaults() {
         let v7 = serde_json::json!({
-            "schemaVersion": 7,
+            "schemaVersion": 8,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
@@ -600,11 +632,13 @@ mod tests {
             "hideToTrayOnClose": true,
             "keepOnTopDuringCapture": false,
             "interviewCompactMode": false,
-            "interviewReportRetentionDays": 0
+            "interviewReportRetentionDays": 0,
+            "traceIncludeContent": false
         });
         let migrated = super::migrate_settings(v7);
-        assert_eq!(migrated["schemaVersion"], 8);
-        assert_eq!(migrated["traceIncludeContent"], false);
+        assert_eq!(migrated["schemaVersion"], 9);
+        assert_eq!(migrated["debugTraceMode"], "redacted");
+        assert_eq!(migrated["debugTraceRetentionDays"], 3);
     }
 
     #[test]

@@ -230,6 +230,9 @@ pub async fn transcribe_wav(
             "contentPreview": if include_content { transcript.clone() } else { "[redacted]".to_string() }
         });
         let _ = trace_manifest::write_run_json(rid, "stt-response.redacted.json", &snapshot);
+        if include_content {
+            let _ = trace_manifest::write_run_text(rid, "transcript.full.txt", &transcript);
+        }
     }
 
     Ok((transcript, telemetry))

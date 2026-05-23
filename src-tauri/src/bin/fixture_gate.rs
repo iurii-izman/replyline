@@ -155,7 +155,7 @@ async fn main() -> Result<(), String> {
         for attempt in 1..=3 {
             match llm_provider::analyze_transcript(
                 None,
-                settings.trace_include_content,
+                settings.debug_trace_full_enabled(),
                 &settings,
                 Some(&llm_api_key),
                 &fixture.snippet,

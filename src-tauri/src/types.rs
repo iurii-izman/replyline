@@ -23,6 +23,15 @@ impl std::fmt::Display for CommandError {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum DebugTraceMode {
+    Off,
+    #[default]
+    Redacted,
+    FullLocal,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
@@ -39,13 +48,14 @@ pub struct AppSettings {
     pub keep_on_top_during_capture: bool,
     pub interview_compact_mode: bool,
     pub interview_report_retention_days: u16,
-    pub trace_include_content: bool,
+    pub debug_trace_mode: DebugTraceMode,
+    pub debug_trace_retention_days: u16,
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 8,
+            schema_version: 9,
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
@@ -57,12 +67,24 @@ impl Default for AppSettings {
             keep_on_top_during_capture: false,
             interview_compact_mode: false,
             interview_report_retention_days: 0,
-            trace_include_content: false,
+            debug_trace_mode: DebugTraceMode::Redacted,
+            debug_trace_retention_days: 3,
         }
     }
 }
 
 impl AppSettings {
+    pub fn debug_trace_redacted_enabled(&self) -> bool {
+        matches!(
+            self.debug_trace_mode,
+            DebugTraceMode::Redacted | DebugTraceMode::FullLocal
+        )
+    }
+
+    pub fn debug_trace_full_enabled(&self) -> bool {
+        matches!(self.debug_trace_mode, DebugTraceMode::FullLocal)
+    }
+
     fn has_placeholder_llm_route(&self) -> bool {
         self.llm_base_url.trim() == "http://127.0.0.1:4000/v1"
             || (self.llm_base_url.trim() == "" && self.llm_model.trim() == "gpt-4o-mini")
@@ -215,6 +237,15 @@ pub struct SetupStatusDto {
     pub llm_key_present: bool,
     pub llm_route_configured: bool,
     pub runtime_path_ready: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TraceStatusDto {
+    pub mode: DebugTraceMode,
+    pub retention_days: u16,
+    pub traces_dir: String,
+    pub total_runs: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

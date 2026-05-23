@@ -542,21 +542,60 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                   </select>
                   <span class="field-help">{st().settings.interviewReportRetentionHint}</span>
                 </label>
-                <label
-                  class="field field-checkbox-row settings-checkbox-row"
-                  data-testid="trace-include-content-row"
-                >
-                  <input
-                    type="checkbox"
-                    aria-label={st().settings.traceIncludeContentLabel}
-                    checked={controller().settings.traceIncludeContent}
+                <label class="field" data-testid="debug-trace-mode-field">
+                  <span class="field-label">{st().settings.debugTraceModeLabel}</span>
+                  <select
+                    class="field-input"
+                    value={controller().settings.debugTraceMode}
                     onInput={(event) =>
-                      controller().setTraceIncludeContent(event.currentTarget.checked)
+                      controller().setDebugTraceMode(
+                        event.currentTarget.value as "off" | "redacted" | "full_local",
+                      )
                     }
-                  />
-                  <span class="field-label">{st().settings.traceIncludeContentLabel}</span>
-                  <span class="field-help">{st().settings.traceIncludeContentHint}</span>
+                  >
+                    <option value="off">{st().settings.debugTraceModeOff}</option>
+                    <option value="redacted">{st().settings.debugTraceModeRedacted}</option>
+                    <option value="full_local">{st().settings.debugTraceModeFull}</option>
+                  </select>
                 </label>
+                <Show when={controller().settings.debugTraceMode === "full_local"}>
+                  <p class="settings-note settings-note-warning">
+                    {st().settings.debugTraceFullWarning}
+                  </p>
+                </Show>
+                <label class="field" data-testid="debug-trace-retention-field">
+                  <span class="field-label">{st().settings.debugTraceRetentionLabel}</span>
+                  <select
+                    class="field-input"
+                    value={String(controller().settings.debugTraceRetentionDays)}
+                    onInput={(event) =>
+                      controller().setDebugTraceRetentionDays(
+                        Number.parseInt(event.currentTarget.value, 10) as 0 | 1 | 3 | 7,
+                      )
+                    }
+                  >
+                    <option value="1">{st().settings.debugTraceRetention1d}</option>
+                    <option value="3">{st().settings.debugTraceRetention3d}</option>
+                    <option value="7">{st().settings.debugTraceRetention7d}</option>
+                    <option value="0">{st().settings.debugTraceRetentionManual}</option>
+                  </select>
+                </label>
+                <div class="settings-form-stack">
+                  <button
+                    class="btn-secondary btn-compact"
+                    type="button"
+                    onClick={() => void controller().openTraceFolder()}
+                  >
+                    {st().settings.openTraceFolder}
+                  </button>
+                  <button
+                    class="btn-danger btn-ghost btn-compact"
+                    type="button"
+                    onClick={() => void controller().clearDebugTraces()}
+                  >
+                    {st().settings.clearDebugTraces}
+                  </button>
+                </div>
                 <p class="settings-note settings-note-warning">
                   {st().settings.interviewReportClearHint}
                 </p>

@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::model_presets::{resolve_model_preset, ProviderKind};
@@ -22,10 +23,10 @@ struct TraceManifest<'a> {
     endpoint_host: String,
     model: &'a str,
     privacy_mode: &'static str,
-    content_included: bool,
+    trace_mode: &'a str,
 }
 
-fn traces_base_dir() -> Result<PathBuf, String> {
+pub fn traces_base_dir() -> Result<PathBuf, String> {
     let base = dirs::data_dir().ok_or_else(|| "data_dir_unavailable".to_string())?;
     Ok(base.join("com.replyline.app").join("traces"))
 }
@@ -42,6 +43,11 @@ pub fn write_run_json<T: Serialize>(
     let path = run_dir(run_id)?.join(file_name);
     let raw = serde_json::to_vec_pretty(value).map_err(|err| err.to_string())?;
     fs::write(path, raw).map_err(|err| err.to_string())
+}
+
+pub fn write_run_text(run_id: &str, file_name: &str, value: &str) -> Result<(), String> {
+    let path = run_dir(run_id)?.join(file_name);
+    fs::write(path, value).map_err(|err| err.to_string())
 }
 
 pub fn append_run_jsonl<T: Serialize>(
@@ -95,7 +101,11 @@ pub fn ensure_run_started(
         endpoint_host,
         model: &settings.llm_model,
         privacy_mode: "safe_metadata",
-        content_included: settings.trace_include_content,
+        trace_mode: match settings.debug_trace_mode {
+            crate::types::DebugTraceMode::Off => "off",
+            crate::types::DebugTraceMode::Redacted => "redacted",
+            crate::types::DebugTraceMode::FullLocal => "full_local",
+        },
     };
 
     let manifest_path = dir.join("manifest.json");
@@ -113,6 +123,65 @@ pub fn ensure_run_started(
     }
 
     Ok(())
+}
+
+pub fn enforce_trace_retention(
+    now: chrono::DateTime<chrono::Utc>,
+    retention_days: u16,
+) -> Result<(usize, usize), String> {
+    let base = traces_base_dir()?;
+    if !base.exists() {
+        return Ok((0, 0));
+    }
+    let mut removed = 0usize;
+    let mut kept = 0usize;
+    for entry in fs::read_dir(&base).map_err(|err| err.to_string())? {
+        let entry = entry.map_err(|err| err.to_string())?;
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+        if retention_days == 0 {
+            kept += 1;
+            continue;
+        }
+        if is_older_than(&path, now, retention_days)? {
+            fs::remove_dir_all(&path).map_err(|err| err.to_string())?;
+            removed += 1;
+        } else {
+            kept += 1;
+        }
+    }
+    Ok((removed, kept))
+}
+
+fn is_older_than(
+    path: &Path,
+    now: chrono::DateTime<chrono::Utc>,
+    days: u16,
+) -> Result<bool, String> {
+    let metadata = fs::metadata(path).map_err(|err| err.to_string())?;
+    let modified = metadata.modified().map_err(|err| err.to_string())?;
+    let modified: chrono::DateTime<chrono::Utc> = modified.into();
+    let age = now.signed_duration_since(modified);
+    Ok(age >= chrono::Duration::days(i64::from(days)))
+}
+
+pub fn clear_all_traces() -> Result<usize, String> {
+    let base = traces_base_dir()?;
+    if !base.exists() {
+        return Ok(0);
+    }
+    let mut removed = 0usize;
+    for entry in fs::read_dir(&base).map_err(|err| err.to_string())? {
+        let entry = entry.map_err(|err| err.to_string())?;
+        let path = entry.path();
+        if path.is_dir() {
+            fs::remove_dir_all(path).map_err(|err| err.to_string())?;
+            removed += 1;
+        }
+    }
+    Ok(removed)
 }
 
 pub fn append_timeline_event(
@@ -174,12 +243,24 @@ pub fn write_timings(run_id: &str, timings: &[StageTiming]) -> Result<(), String
 
 #[cfg(test)]
 mod tests {
-    use super::{append_timeline_event, ensure_run_started, sha256_hex};
+    use super::{
+        append_timeline_event, clear_all_traces, enforce_trace_retention, ensure_run_started,
+        sha256_hex, traces_base_dir,
+    };
     use crate::types::AppSettings;
     use std::collections::BTreeMap;
+    use std::fs;
+    use std::sync::{Mutex, OnceLock};
+    use std::time::{Duration, SystemTime};
+
+    fn trace_test_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
 
     #[test]
     fn manifest_created_without_content() {
+        let _guard = trace_test_lock().lock().expect("trace lock");
         let run_id = format!(
             "test-run-{}",
             chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
@@ -200,7 +281,7 @@ mod tests {
             .join(&run_id)
             .join("manifest.json");
         let raw = std::fs::read_to_string(&manifest_path).expect("manifest read");
-        assert!(raw.contains("\"contentIncluded\": false"));
+        assert!(raw.contains("\"traceMode\": \"redacted\""));
         assert!(!raw.contains("transcript"));
         assert!(!raw.contains("prompt"));
 
@@ -210,12 +291,13 @@ mod tests {
 
     #[test]
     fn manifest_content_toggle_respects_opt_in() {
+        let _guard = trace_test_lock().lock().expect("trace lock");
         let run_id = format!(
             "test-run-content-{}",
             chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
         );
         let mut settings = AppSettings::default();
-        settings.trace_include_content = true;
+        settings.debug_trace_mode = crate::types::DebugTraceMode::FullLocal;
         ensure_run_started(
             &run_id,
             "2026-05-23T12:00:00Z",
@@ -230,16 +312,55 @@ mod tests {
             .join(&run_id)
             .join("manifest.json");
         let raw = std::fs::read_to_string(&manifest_path).expect("manifest read");
-        assert!(raw.contains("\"contentIncluded\": true"));
+        assert!(raw.contains("\"traceMode\": \"full_local\""));
     }
 
     #[test]
     fn sha256_is_stable() {
+        let _guard = trace_test_lock().lock().expect("trace lock");
         let first = sha256_hex("same-value");
         let second = sha256_hex("same-value");
         let different = sha256_hex("other-value");
         assert_eq!(first, second);
         assert_ne!(first, different);
         assert!(first.starts_with("sha256:"));
+    }
+
+    #[test]
+    fn retention_removes_old_trace_dirs() {
+        let _guard = trace_test_lock().lock().expect("trace lock");
+        let base = traces_base_dir().expect("base dir");
+        let old_run = format!("retention-old-{}", chrono::Utc::now().timestamp_millis());
+        let keep_run = format!("retention-keep-{}", chrono::Utc::now().timestamp_millis());
+        fs::create_dir_all(base.join(&old_run)).expect("create old");
+        fs::create_dir_all(base.join(&keep_run)).expect("create keep");
+
+        let old_time = SystemTime::now()
+            .checked_sub(Duration::from_secs(60 * 60 * 24 * 5))
+            .expect("old time");
+        let filetime = filetime::FileTime::from_system_time(old_time);
+        filetime::set_file_mtime(base.join(&old_run), filetime).expect("set mtime");
+
+        let (removed, kept) = enforce_trace_retention(chrono::Utc::now(), 1).expect("retention");
+        assert!(removed >= 1);
+        assert!(kept >= 1);
+        assert!(!base.join(&old_run).exists());
+        assert!(base.join(&keep_run).exists());
+        let _ = fs::remove_dir_all(base.join(&keep_run));
+    }
+
+    #[test]
+    fn clear_removes_all_trace_dirs() {
+        let _guard = trace_test_lock().lock().expect("trace lock");
+        let base = traces_base_dir().expect("base dir");
+        let run_a = format!("clear-a-{}", chrono::Utc::now().timestamp_millis());
+        let run_b = format!("clear-b-{}", chrono::Utc::now().timestamp_millis());
+        fs::create_dir_all(base.join(&run_a)).expect("create run a");
+        fs::create_dir_all(base.join(&run_b)).expect("create run b");
+
+        let removed = clear_all_traces().expect("clear");
+        assert!(removed >= 2);
+        assert!(!base.join(&run_a).exists());
+        assert!(!base.join(&run_b).exists());
     }
 }

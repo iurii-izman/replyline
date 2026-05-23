@@ -16,7 +16,7 @@ use crate::state::ReplylineState;
 use crate::types::{
     AnalysisCardDto, AppSettings, BootstrapDto, CandidatePackDraftDto, CheckItemDto, CommandError,
     ContextStatusDto, InterviewReportDto, PersistenceDiagnosticsDto, PrepareCandidatePackInputDto,
-    RuntimeCheckDto, SecretSlot, SetupStatusDto,
+    RuntimeCheckDto, SecretSlot, SetupStatusDto, TraceStatusDto,
 };
 
 static RUN_SEQ: AtomicU64 = AtomicU64::new(0);
@@ -68,6 +68,15 @@ pub fn load_bootstrap(state: State<'_, ReplylineState>) -> Result<BootstrapDto, 
         "interview_report_retention_applied",
         crate::interview_report::retention_log_detail(retention_policy, retention_result),
     );
+    let (removed, kept) = crate::trace_manifest::enforce_trace_retention(
+        chrono::Utc::now(),
+        settings.debug_trace_retention_days,
+    )
+    .map_err(CommandError::Internal)?;
+    let _ = app_log::append_event(
+        "debug_trace_retention_applied",
+        format!("removed={removed} kept={kept}"),
+    );
     let deepgram_key_present = credentials::present(SecretSlot::DeepgramApiKey)?;
     let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
     let (context_active, context_entry_count, last_transcript_preview, can_retry_last_transcript) = {
@@ -104,6 +113,62 @@ pub fn load_bootstrap(state: State<'_, ReplylineState>) -> Result<BootstrapDto, 
         last_transcript_preview,
         can_retry_last_transcript,
     })
+}
+
+#[tauri::command]
+pub fn get_trace_status() -> Result<TraceStatusDto, CommandError> {
+    let settings = settings::load()?;
+    let traces_dir = crate::trace_manifest::traces_base_dir().map_err(CommandError::Internal)?;
+    let total_runs = if traces_dir.exists() {
+        std::fs::read_dir(&traces_dir)
+            .map_err(|err| CommandError::Internal(err.to_string()))?
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| entry.path().is_dir())
+            .count()
+    } else {
+        0
+    };
+    Ok(TraceStatusDto {
+        mode: settings.debug_trace_mode,
+        retention_days: settings.debug_trace_retention_days,
+        traces_dir: traces_dir.display().to_string(),
+        total_runs,
+    })
+}
+
+#[tauri::command]
+pub fn clear_debug_traces() -> Result<(), CommandError> {
+    let removed = crate::trace_manifest::clear_all_traces().map_err(CommandError::Internal)?;
+    let _ = app_log::append_event("debug_traces_cleared", format!("removed={removed}"));
+    Ok(())
+}
+
+#[tauri::command]
+pub fn open_trace_folder() -> Result<(), CommandError> {
+    let traces_dir = crate::trace_manifest::traces_base_dir().map_err(CommandError::Internal)?;
+    std::fs::create_dir_all(&traces_dir).map_err(|err| CommandError::Internal(err.to_string()))?;
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(&traces_dir)
+            .spawn()
+            .map_err(|err| CommandError::Internal(err.to_string()))?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&traces_dir)
+            .spawn()
+            .map_err(|err| CommandError::Internal(err.to_string()))?;
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&traces_dir)
+            .spawn()
+            .map_err(|err| CommandError::Internal(err.to_string()))?;
+    }
+    Ok(())
 }
 
 #[tauri::command]

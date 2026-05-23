@@ -107,23 +107,31 @@ pub async fn capture_stop_and_analyze(
         })?;
         (run, run_id)
     };
-    if let Some(ref rid) = run_id {
-        let _ =
-            trace_manifest::ensure_run_started(rid, &started_at, &settings, "work_conversation");
-        let _ = trace_manifest::append_timeline_event(
-            rid,
-            "capture_stop_attempt",
-            "capture",
-            BTreeMap::new(),
-        );
-        let _ = observability::log_audit(
-            "capture_stop_attempt",
-            Fields::new()
-                .with("source", "backend")
-                .with("phase", "capture")
-                .with("run_id", rid)
-                .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
-        );
+    let trace_redacted_enabled = settings.debug_trace_redacted_enabled();
+    let trace_full_enabled = settings.debug_trace_full_enabled();
+    if trace_redacted_enabled {
+        if let Some(ref rid) = run_id {
+            let _ = trace_manifest::ensure_run_started(
+                rid,
+                &started_at,
+                &settings,
+                "work_conversation",
+            );
+            let _ = trace_manifest::append_timeline_event(
+                rid,
+                "capture_stop_attempt",
+                "capture",
+                BTreeMap::new(),
+            );
+            let _ = observability::log_audit(
+                "capture_stop_attempt",
+                Fields::new()
+                    .with("source", "backend")
+                    .with("phase", "capture")
+                    .with("run_id", rid)
+                    .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
+            );
+        }
     }
 
     emit_status(
@@ -205,8 +213,12 @@ pub async fn capture_stop_and_analyze(
     }
 
     let (transcript, stt_stages, stt_telemetry) = match stt_provider::transcribe(
-        run_id.as_deref(),
-        settings.trace_include_content,
+        if trace_redacted_enabled {
+            run_id.as_deref()
+        } else {
+            None
+        },
+        trace_full_enabled,
         &settings,
         &deepgram_key,
         &pcm,
@@ -371,8 +383,12 @@ pub async fn capture_stop_and_analyze(
     }
 
     let outcome = match llm_provider::analyze_transcript(
-        run_id.as_deref(),
-        settings.trace_include_content,
+        if trace_redacted_enabled {
+            run_id.as_deref()
+        } else {
+            None
+        },
+        trace_full_enabled,
         &settings,
         llm_key.as_deref(),
         &transcript,
@@ -505,8 +521,10 @@ pub async fn capture_stop_and_analyze(
     let release_to_card = pipeline_timer.measure("release_to_card", "ok", RL_TIMING_SUMMARY);
     let _ = pipeline_timing::log_stage_timing(&release_to_card);
     stage_timings.push(release_to_card);
-    if let Some(ref rid) = run_id {
-        let _ = trace_manifest::write_timings(rid, &stage_timings);
+    if trace_redacted_enabled {
+        if let Some(ref rid) = run_id {
+            let _ = trace_manifest::write_timings(rid, &stage_timings);
+        }
     }
     Ok(card)
 }
@@ -522,8 +540,16 @@ pub async fn retry_last_analysis(
 
     let run_id = run_id_param.unwrap_or_else(next_retry_run_id);
     let started_at = chrono::Utc::now().to_rfc3339();
-    let _ =
-        trace_manifest::ensure_run_started(&run_id, &started_at, &settings, "work_conversation");
+    let trace_redacted_enabled = settings.debug_trace_redacted_enabled();
+    let trace_full_enabled = settings.debug_trace_full_enabled();
+    if trace_redacted_enabled {
+        let _ = trace_manifest::ensure_run_started(
+            &run_id,
+            &started_at,
+            &settings,
+            "work_conversation",
+        );
+    }
     let _ = observability::log_audit(
         "retry_clicked",
         Fields::new()
@@ -608,8 +634,12 @@ pub async fn retry_last_analysis(
         format!("{context_text}\n\nCandidate context:\n{candidate_context}")
     };
     let card = match llm_provider::analyze_transcript(
-        Some(&run_id),
-        settings.trace_include_content,
+        if trace_redacted_enabled {
+            Some(&run_id)
+        } else {
+            None
+        },
+        trace_full_enabled,
         &settings,
         llm_key.as_deref(),
         &transcript,
