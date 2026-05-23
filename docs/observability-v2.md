@@ -70,6 +70,59 @@ Per run:
 - `contentIncluded: true` only when `traceIncludeContent=true` explicit opt-in is enabled
 - `privacyMode: "safe_metadata"`
 
+## Trace Bundle Files
+
+Default mode writes redacted snapshots only:
+- `llm-request.redacted.json`
+- `llm-response.redacted.json`
+- `llm-attempts.jsonl`
+- `stt-request.redacted.json`
+- `stt-response.redacted.json`
+- `card.redacted.json`
+
+Safe LLM fields:
+- endpoint host/path
+- selected/attempted model(s)
+- temperature, max tokens
+- retry/budget/timeout policy
+- status code, duration
+- prompt/response char counts
+- usage token counters (if provider returns usage)
+
+Safe STT fields:
+- provider and model/options
+- audio byte count and available signal metadata
+- retry counters and error kind
+- status code and duration
+- transcript char count and hash
+
+Safe card fields:
+- `gist` / `say_now` / `next_move` char counts and hashes
+- `repair_used`, `fallback_used`, `chars_band`
+- schema validity flags
+- interview schema presence
+
+Hashes:
+- `sha256_hex(value)` is used to compare content equality across pipeline stages.
+- Hashes are stable for identical input and do not reveal original text.
+
+## Full-Content Trace Opt-In
+
+- Setting: `traceIncludeContent` (`false` by default).
+- When `false`, trace previews are redacted and manifest keeps `contentIncluded=false`.
+- When `true`, content-capable snapshots may include full payload previews; this is explicit local opt-in only.
+
+## Manual Smoke: traceIncludeContent
+
+1. In Settings -> Reports, enable `Enable full-content trace (opt-in)`.
+2. Run one capture and open the latest `%APPDATA%/com.replyline.app/traces/<run_id>/manifest.json`.
+3. Verify `contentIncluded=true`.
+4. Disable the setting, run one more capture, verify `contentIncluded=false`.
+5. In both runs, verify:
+- no `Authorization` token values in snapshot headers
+- no raw HTTP error body dump in LLM error snapshot
+- redacted files still exist (`*.redacted.json`, `llm-attempts.jsonl`)
+
 ## Compatibility
 
 - Legacy `app_log` events remain intact.
