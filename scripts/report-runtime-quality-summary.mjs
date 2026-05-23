@@ -41,6 +41,19 @@ function latestRuntimeAnswerReport() {
   return readJsonIfExists(path);
 }
 
+function yesterdayStamp() {
+  const now = new Date();
+  now.setUTCDate(now.getUTCDate() - 1);
+  return now.toISOString().slice(0, 10);
+}
+
+function metricChange(before, after) {
+  if (before == null || after == null) return null;
+  const delta = Number((after - before).toFixed(1));
+  const trend = delta < 0 ? "improved" : delta > 0 ? "worse" : "flat";
+  return { before, after, delta, trend };
+}
+
 function computeLatencyMetrics(summaryJson) {
   if (!summaryJson?.stages) return null;
   const stages = summaryJson.stages;
@@ -64,6 +77,11 @@ function computeLatencyMetrics(summaryJson) {
       .map(
         ([stage, row]) => `${stage}: failCount=${row.failCount}, failPercent=${row.failPercent}`,
       ),
+    stageFails: {
+      sttRequest: getStage("stt_request")?.failPercent ?? null,
+      llmRequest: getStage("llm_request")?.failPercent ?? null,
+      releaseToCard: getStage("release_to_card")?.failPercent ?? null,
+    },
   };
 }
 
@@ -97,6 +115,23 @@ function renderMarkdown(summary) {
     lines.push("- not available");
   }
   lines.push("");
+  lines.push("## Baseline vs After");
+  if (summary.baselineComparison?.length) {
+    lines.push("| Metric | Baseline | After | Delta | Trend |");
+    lines.push("| --- | ---: | ---: | ---: | --- |");
+    for (const row of summary.baselineComparison) {
+      lines.push(
+        `| ${row.metric} | ${row.before} | ${row.after} | ${row.delta} | ${row.trend} |`,
+      );
+    }
+  } else {
+    lines.push("- baseline comparison unavailable");
+  }
+  lines.push("");
+  lines.push("## Live Validation Needed");
+  lines.push("- provider/network behavior still requires live runtime capture");
+  lines.push("- synthetic fixture latency does not prove real hardware/provider p95");
+  lines.push("");
   if (summary.answerQualityAggregate) {
     lines.push("## Answer Quality");
     lines.push(
@@ -121,7 +156,41 @@ function main() {
   const sayNowScenarios = runNode("scripts/check-say-now-scenarios.mjs");
 
   const latencySummary = readJsonIfExists(join(runtimeDir, "pipeline-latency-summary.json"));
+  const baselineSummary = readJsonIfExists(
+    join(runtimeQualityDir, `runtime-quality-summary-${yesterdayStamp()}.json`),
+  );
   const answerQualityReport = latestRuntimeAnswerReport();
+  const latencyMetrics = computeLatencyMetrics(latencySummary);
+  const baselineLatencyMetrics = baselineSummary?.latencyMetrics ?? null;
+  const baselineComparison = [
+    ["stt p95 ms", baselineLatencyMetrics?.sttLatencyMs, latencyMetrics?.sttLatencyMs],
+    ["llm p95 ms", baselineLatencyMetrics?.llmLatencyMs, latencyMetrics?.llmLatencyMs],
+    [
+      "release_to_card p95 ms",
+      baselineLatencyMetrics?.totalHotkeyToCardLatencyMs,
+      latencyMetrics?.totalHotkeyToCardLatencyMs,
+    ],
+    [
+      "stt fail %",
+      baselineLatencyMetrics?.stageFails?.sttRequest,
+      latencyMetrics?.stageFails?.sttRequest,
+    ],
+    [
+      "llm fail %",
+      baselineLatencyMetrics?.stageFails?.llmRequest,
+      latencyMetrics?.stageFails?.llmRequest,
+    ],
+    [
+      "release_to_card fail %",
+      baselineLatencyMetrics?.stageFails?.releaseToCard,
+      latencyMetrics?.stageFails?.releaseToCard,
+    ],
+  ]
+    .map(([metric, before, after]) => {
+      const diff = metricChange(before, after);
+      return diff ? { metric, ...diff } : null;
+    })
+    .filter(Boolean);
 
   const summary = {
     generatedAt: new Date().toISOString(),
@@ -138,7 +207,8 @@ function main() {
       interviewQuality,
       sayNowScenarios,
     },
-    latencyMetrics: computeLatencyMetrics(latencySummary),
+    latencyMetrics,
+    baselineComparison,
     answerQualityAggregate: answerQualityReport?.aggregate ?? null,
   };
 

@@ -117,6 +117,8 @@
     "report:interview-quality": "node scripts/report-interview-quality.mjs",
     "report:runtime-quality": "node scripts/report-runtime-quality-summary.mjs",
     "report:product-quality": "node scripts/evaluate-product-scenarios.mjs --report-only",
+    "report:sonar-residual": "node scripts/report-sonar-residual-readiness.mjs",
+    "report:live-evidence-pack": "node scripts/report-live-evidence-pack.mjs",
     "test:report-secret-leaks": "node scripts/check-report-secret-leaks.mjs",
     "report:release-readiness": "node scripts/report-release-readiness.mjs",
     "report:release-readiness:strict": "node scripts/report-release-readiness.mjs --strict",

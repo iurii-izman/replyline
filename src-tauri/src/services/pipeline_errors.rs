@@ -33,11 +33,20 @@ pub(crate) fn log_llm_failure(
         privacy::safe_preview(&err, 80)
     );
     let _ = app_log::append_event(event, log_detail);
+    let retry_reason = if err.contains("retry_reason=timeout") {
+        "timeout"
+    } else if err.contains("retry_reason=connect") {
+        "connect"
+    } else if err.contains("retry_reason=http_5xx") {
+        "http_5xx"
+    } else {
+        "unknown"
+    };
     let _ = log_diag(
         stage,
         "fail",
         code,
-        format!("llm_error_chars={error_chars}{extra_detail}"),
+        format!("llm_error_chars={error_chars} llm_retry_reason={retry_reason}{extra_detail}"),
     );
     CommandError::Pipeline(err)
 }

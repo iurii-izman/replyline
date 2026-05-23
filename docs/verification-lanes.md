@@ -7,7 +7,7 @@ Replyline uses four separate verification lanes. Green in one lane does not impl
 | Compile + unit    | `pnpm smoke`                                                                                                       | Vite build, Rust compile, Rust clippy/fmt/test, unit tests, consistency gate, prompt contract, copy gate                                         | Real Tauri runtime, loopback capture, provider latency                |
 | Mock / UI         | `pnpm test:ui`                                                                                                     | UI state machine on a mocked platform bridge: bootstrap, settings flow, hotkey fallback, result card surface, copy flow, diagnostic states       | Real Windows audio, real STT, real LLM, packaged Tauri shell behavior |
 | Prompt / contract | `pnpm test:prompt-contract`, `pnpm test:say-now-scenarios`                                                         | Output shape stays `gist / say_now / next_move`; deterministic trust/copy policy checks stay enforced; thin scenario heuristics on example cards | Real usefulness in live calls, provider quality in real runtime       |
-| Runtime proof     | `pnpm probe:runtime`, `pnpm probe:bench`, `pnpm probe:durations`, `pnpm probe:live-source`, `pnpm evidence:bundle` | Real local provider path, real Windows capture path, runtime artifacts from this workstation                                                     | Same behavior on every workstation or call app                        |
+| Runtime proof     | `pnpm probe:runtime`, `pnpm probe:bench`, `pnpm probe:durations`, `pnpm probe:live-source`, `pnpm evidence:bundle`, `pnpm report:live-evidence-pack` | Real local provider path, real Windows capture path, runtime artifacts from this workstation + structured manual attestation scaffold             | Same behavior on every workstation or call app                        |
 
 ## Current truth
 
@@ -18,6 +18,7 @@ Replyline uses four separate verification lanes. Green in one lane does not impl
 - `pnpm probe:runtime` is the minimum real-provider proof.
 - `pnpm probe:bench` compares runtime variants.
 - `pnpm evidence:bundle` collects local JSON/Markdown artifacts for a specific run.
+- `pnpm report:live-evidence-pack` creates strict machine-readable manual attestation scaffold in `reports/manual/`.
 
 ## Lifecycle matrix (required vs optional)
 

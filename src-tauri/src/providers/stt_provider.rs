@@ -10,7 +10,7 @@ pub async fn transcribe(
     settings: &AppSettings,
     deepgram_key: &str,
     pcm: &[i16],
-) -> Result<(String, Vec<StageTiming>), String> {
+) -> Result<(String, Vec<StageTiming>, deepgram::SttRequestTelemetry), String> {
     let mut stages: Vec<StageTiming> = Vec::new();
 
     let wav_timer = PipelineTimer::start();
@@ -19,9 +19,9 @@ pub async fn transcribe(
 
     let stt_timer = PipelineTimer::start();
     match deepgram::transcribe_wav(settings, deepgram_key, &wav).await {
-        Ok(t) => {
+        Ok((t, telemetry)) => {
             stages.push(stt_timer.measure("stt_request", "ok", RL_STT_REQUEST_TIMED));
-            Ok((t, stages))
+            Ok((t, stages, telemetry))
         }
         Err(err) => {
             stages.push(stt_timer.measure("stt_request", "fail", RL_STT_REQUEST_TIMED));

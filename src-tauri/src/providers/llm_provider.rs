@@ -35,6 +35,9 @@ pub struct CardGenerationOutcome {
     pub quality: CardQualityFlags,
     pub llm_stage_timings: Vec<StageTiming>,
     pub card_norm_timing: Option<StageTiming>,
+    pub llm_transport_retries: u32,
+    pub llm_fast_fallback_used: bool,
+    pub llm_fast_fallback_reason: Option<&'static str>,
 }
 
 /// Analyze a transcript using the configured LLM provider and return a
@@ -67,7 +70,7 @@ async fn analyze_work_conversation(
     let profile = resolve_answer_profile(&settings.active_answer_profile);
     let mut all_timings: Vec<StageTiming> = Vec::new();
     let llm_timer = PipelineTimer::start();
-    let (raw_text, parse_or_request_err) = request_card_with_prompt(
+    let (raw_text, parse_or_request_err, llm_telemetry) = request_card_with_prompt(
         settings,
         api_key,
         transcript,
@@ -90,12 +93,15 @@ async fn analyze_work_conversation(
                 quality,
                 llm_stage_timings: all_timings,
                 card_norm_timing: Some(norm_timing),
+                llm_transport_retries: llm_telemetry.retry_count,
+                llm_fast_fallback_used: llm_telemetry.fallback_used,
+                llm_fast_fallback_reason: llm_telemetry.fallback_reason,
             })
         }
         Err(err) if err.contains("Card output invalid:") && MAX_CARD_RETRY_ATTEMPTS > 0 => {
             let _ = norm_timer.measure("card_normalization", "fail", RL_CARD_NORM_TIMED);
             let retry_llm_timer = PipelineTimer::start();
-            let (retry_raw_text, _parse_or_request_err) = request_card_with_prompt(
+            let (retry_raw_text, _parse_or_request_err, retry_llm_telemetry) = request_card_with_prompt(
                 settings,
                 api_key,
                 transcript,
@@ -125,6 +131,12 @@ async fn analyze_work_conversation(
                 quality,
                 llm_stage_timings: all_timings,
                 card_norm_timing: Some(retry_norm_timing),
+                llm_transport_retries: llm_telemetry.retry_count + retry_llm_telemetry.retry_count,
+                llm_fast_fallback_used: llm_telemetry.fallback_used
+                    || retry_llm_telemetry.fallback_used,
+                llm_fast_fallback_reason: llm_telemetry
+                    .fallback_reason
+                    .or(retry_llm_telemetry.fallback_reason),
             })
         }
         Err(err) if err.contains("LLM returned invalid JSON") => {
@@ -149,7 +161,7 @@ async fn analyze_interview(
     let mut all_timings: Vec<StageTiming> = Vec::new();
 
     let base_llm_timer = PipelineTimer::start();
-    let (base_raw_text, parse_or_request_err) = request_card_with_prompt(
+    let (base_raw_text, parse_or_request_err, base_llm_telemetry) = request_card_with_prompt(
         settings,
         api_key,
         transcript,
@@ -173,8 +185,15 @@ async fn analyze_interview(
         &language,
         profile,
         |system_prompt, user_prompt, max_tokens| async move {
-            request_raw_with_prompts(settings, api_key, &system_prompt, &user_prompt, max_tokens)
-                .await
+            let (raw, prefix, _telemetry) = request_raw_with_prompts(
+                settings,
+                api_key,
+                &system_prompt,
+                &user_prompt,
+                max_tokens,
+            )
+            .await?;
+            Ok((raw, prefix))
         },
     )
     .await?;
@@ -189,6 +208,9 @@ async fn analyze_interview(
         quality,
         llm_stage_timings: all_timings,
         card_norm_timing: Some(base_norm_timing),
+        llm_transport_retries: base_llm_telemetry.retry_count,
+        llm_fast_fallback_used: base_llm_telemetry.fallback_used,
+        llm_fast_fallback_reason: base_llm_telemetry.fallback_reason,
     })
 }
 
@@ -203,7 +225,7 @@ async fn request_card_with_prompt(
     profile: &crate::prompt_registry::AnswerProfileConfig,
     extra_suffix: Option<&str>,
     max_tokens: u16,
-) -> Result<(String, String), String> {
+) -> Result<(String, String, openai_compatible::LlmRequestTelemetry), String> {
     let user_prompt = llm::build_user_prompt(transcript, context, language, profile, extra_suffix);
     let system_prompt = llm::system_prompt_for_profile(profile, language);
     let fallback_models = fallback_models_for_selected_preset(&settings.selected_model_preset);
@@ -216,6 +238,7 @@ async fn request_card_with_prompt(
         system_prompt,
         &user_prompt,
         max_tokens,
+        openai_compatible::LlmRequestPolicy::default(),
     )
     .await
 }
@@ -226,7 +249,7 @@ async fn request_raw_with_prompts(
     system_prompt: &str,
     user_prompt: &str,
     max_tokens: u16,
-) -> Result<(String, String), String> {
+) -> Result<(String, String, openai_compatible::LlmRequestTelemetry), String> {
     let fallback_models = fallback_models_for_selected_preset(&settings.selected_model_preset);
 
     openai_compatible::request_card_raw_text(
@@ -237,6 +260,7 @@ async fn request_raw_with_prompts(
         system_prompt,
         user_prompt,
         max_tokens,
+        openai_compatible::LlmRequestPolicy::default(),
     )
     .await
 }

@@ -33,6 +33,8 @@ function setupFixture({
     "test:runtime-quality": "node scripts/test-runtime-quality.mjs",
     "test:report-secret-leaks": "node scripts/check-report-secret-leaks.mjs",
     "report:release-readiness": "node scripts/report-release-readiness.mjs",
+    "report:sonar-residual": "node scripts/report-sonar-residual-readiness.mjs",
+    "report:live-evidence-pack": "node scripts/report-live-evidence-pack.mjs",
     "test:product-scenarios": "node scripts/evaluate-product-scenarios.mjs",
     "custom:missing": includeMissingScriptRef
       ? "node scripts/missing-file.mjs"
@@ -45,7 +47,16 @@ function setupFixture({
     "utf8",
   );
 
-  writeFileSync(join(root, "sonar-project.properties"), "sonar.projectKey=test", "utf8");
+  writeFileSync(
+    join(root, "sonar-project.properties"),
+    [
+      "sonar.projectKey=test",
+      "sonar.organization=test-org",
+      "sonar.sources=src,scripts,src-tauri/src",
+      "sonar.tests=src,tests",
+    ].join("\n"),
+    "utf8",
+  );
   writeFileSync(join(root, "scripts", "check-public-footprint.mjs"), "console.log('ok')\n", "utf8");
   writeFileSync(
     join(root, "scripts", "check-report-secret-leaks.mjs"),
@@ -55,6 +66,16 @@ function setupFixture({
   writeFileSync(join(root, "scripts", "check-release-freeze.mjs"), "console.log('ok')\n", "utf8");
   writeFileSync(
     join(root, "scripts", "report-runtime-quality-summary.mjs"),
+    "console.log('ok')\n",
+    "utf8",
+  );
+  writeFileSync(
+    join(root, "scripts", "report-sonar-residual-readiness.mjs"),
+    "console.log('ok')\n",
+    "utf8",
+  );
+  writeFileSync(
+    join(root, "scripts", "report-live-evidence-pack.mjs"),
     "console.log('ok')\n",
     "utf8",
   );
@@ -98,6 +119,7 @@ function setupFixture({
     "utf8",
   );
   writeFileSync(join(root, "docs", "note.md"), "placeholder\n", "utf8");
+  writeFileSync(join(root, "docs", "manual-closure-pack.html"), "<html></html>\n", "utf8");
   writeFileSync(join(root, ".env.docker.example"), "OPENAI_API_KEY=change-me\n", "utf8");
 
   if (includeSecretLeak) {

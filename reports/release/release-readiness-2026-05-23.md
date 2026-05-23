@@ -1,13 +1,13 @@
 # Release Readiness Summary
 
-Generated at: 2026-05-23T16:26:35.579Z
+Generated at: 2026-05-23T18:45:26.050Z
 Strict mode: enabled
 
 ## Release Gate Snapshot
-- blockers: 1
-- warnings: 3
-- overall score: 79
-- overall status: block
+- blockers: 0
+- warnings: 2
+- overall score: 97
+- overall status: warn
 
 ## Required Script Presence
 - verify:fast: present
@@ -16,15 +16,18 @@ Strict mode: enabled
 - test:security-lanes: present
 - test:public-footprint: present
 - test:runtime-quality: present
+- report:sonar-residual: present
+- report:live-evidence-pack: present
 
 ## Script File Link Validation
-- scanned referenced script files: 46
+- scanned referenced script files: 48
 - missing referenced files: 0
 
 ## Artifact Presence
 - runtime-quality summary (2026-05-23): present
 - product-scenario benchmark (2026-05-23): present
-- sonar residual report (2026-05-23): missing
+- sonar residual report (2026-05-23): present
+- live evidence pack (2026-05-23): present+structured
 - release freeze report: present
 - docker hardening report: present
 
@@ -35,16 +38,15 @@ Strict mode: enabled
 | Product scenario coverage | 100 | pass | product scenario benchmark for today is present |
 | Security lanes | 100 | pass | security/public-footprint scripts are configured |
 | Public footprint | 100 | pass | public footprint config and secret scan are clean |
-| Sonar readiness | 75 | warn | sonar residual report is stale (today file missing) |
+| Sonar readiness | 100 | pass | sonar residual report for today is present |
 | Docker optional stack | 75 | warn | docker hardening evidence present, strict check remains external |
-| Release freeze | 30 | block | release freeze reports outside guardrails |
-| Manual evidence gap | 60 | warn | manual GUI/live-provider and external docker strict evidence is intentionally out of local gate |
+| Release freeze | 100 | pass | release freeze is within guardrails |
+| Manual evidence gap | 60 | warn | manual GUI/provider steps are formalized in structured attestation; external docker strict remains manual |
 
 ## Blockers
-- Release freeze report has files outside guardrails.
+- none
 
 ## Warnings
-- Sonar residual readiness report for today is missing (stale evidence).
 - docker:replyline:check:strict is external-state/manual and not part of strict local blocker.
-- Live GUI/provider evidence remains manual and out of strict local gate.
+- Live GUI/provider evidence requires manual attestation rows in reports/manual/live-evidence-pack-YYYY-MM-DD.json.
 

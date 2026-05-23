@@ -12,7 +12,7 @@ pub async fn prepare_candidate_pack(
 ) -> Result<CandidatePackDraftDto, String> {
     let user_prompt =
         candidate_pack::build_prepare_prompt(raw_resume, job_description, company_values_text);
-    let (raw_text, _prefix) = openai_compatible::request_card_raw_text(
+    let (raw_text, _prefix, _telemetry) = openai_compatible::request_card_raw_text(
         &settings.llm_base_url,
         &settings.llm_model,
         &[],
@@ -20,6 +20,7 @@ pub async fn prepare_candidate_pack(
         candidate_pack::system_prompt(),
         &user_prompt,
         candidate_pack::max_tokens(),
+        openai_compatible::LlmRequestPolicy::default(),
     )
     .await?;
     candidate_pack::normalize_from_raw(&raw_text)

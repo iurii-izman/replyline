@@ -159,7 +159,8 @@ async fn main() -> Result<(), String> {
     let captured_audio_ms = (pcm.len() as u128 * 1000) / 16_000;
     let stt_started_at = Instant::now();
     let wav = audio::encode_wav(&pcm);
-    let transcript = deepgram::transcribe_wav(&settings, &deepgram_api_key, &wav).await?;
+    let (transcript, _stt_telemetry) =
+        deepgram::transcribe_wav(&settings, &deepgram_api_key, &wav).await?;
     let stt_ms = stt_started_at.elapsed().as_millis();
 
     let llm_started_at = Instant::now();

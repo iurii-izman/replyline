@@ -52,12 +52,23 @@
     "docs/script-lifecycle-matrix.md",
     "scripts/check-report-secret-leaks.mjs",
     "scripts/check-script-lifecycle.mjs",
+    "scripts/report-runtime-quality-summary.mjs",
     "scripts/report-release-readiness.mjs",
+    "scripts/report-release-readiness.test.mjs",
+    "scripts/report-sonar-residual-readiness.mjs",
+    "scripts/report-live-evidence-pack.mjs",
     ".rooignore",
     "docs/manual-closure-pack.html",
     "scripts/check-manual-closure-pack.mjs",
     "docs/release-freeze-matrix.md",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    "src-tauri/src/bin/runtime_probe.rs",
+    "src-tauri/src/providers/candidate_pack_provider.rs",
+    "src-tauri/src/providers/deepgram.rs",
+    "src-tauri/src/providers/llm_provider.rs",
+    "src-tauri/src/providers/openai_compatible.rs",
+    "src-tauri/src/providers/stt_provider.rs",
+    "src-tauri/src/services/pipeline_errors.rs"
   ],
   "guardrailPathRegexes": [
     "^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"

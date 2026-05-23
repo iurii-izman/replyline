@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scanReportSecretLeaks } from "./check-report-secret-leaks.mjs";
+import { runSonarResidualReadiness } from "./report-sonar-residual-readiness.mjs";
+import { runLiveEvidencePackReport } from "./report-live-evidence-pack.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = join(__dirname, "..");
@@ -13,6 +15,8 @@ const REQUIRED_SCRIPTS = [
   "test:security-lanes",
   "test:public-footprint",
   "test:runtime-quality",
+  "report:sonar-residual",
+  "report:live-evidence-pack",
 ];
 
 const REQUIRED_SCRIPT_FILES = [
@@ -20,6 +24,8 @@ const REQUIRED_SCRIPT_FILES = [
   "scripts/check-report-secret-leaks.mjs",
   "scripts/check-release-freeze.mjs",
   "scripts/report-runtime-quality-summary.mjs",
+  "scripts/report-sonar-residual-readiness.mjs",
+  "scripts/report-live-evidence-pack.mjs",
   "scripts/report-release-readiness.mjs",
 ];
 
@@ -202,7 +208,7 @@ function buildRiskSnapshot(state, blockers, warnings) {
     score: 60,
     status: "warn",
     reason:
-      "manual GUI/live-provider and external docker strict evidence is intentionally out of local gate",
+      "manual GUI/provider steps are formalized in structured attestation; external docker strict remains manual",
   });
 
   const weightedTotal =
@@ -240,6 +246,8 @@ export function runReleaseReadiness(options = {}) {
 
   const freeze = readJson(join(root, "reports", "release-freeze-check.json"));
   const sonarConfigPresent = existsSync(join(root, "sonar-project.properties"));
+  const sonarResidualReport = runSonarResidualReadiness({ root, now });
+  const liveEvidencePack = runLiveEvidencePackReport({ root, now });
   const sonarResidualToday = existsSync(
     join(root, "reports", "sonar", `sonar-residual-readiness-${stamp}.md`),
   );
@@ -283,6 +291,9 @@ export function runReleaseReadiness(options = {}) {
   if (!sonarConfigPresent) {
     blockers.push("Missing sonar-project.properties while Sonar readiness is part of policy.");
   }
+  if (!sonarResidualReport.pass) {
+    blockers.push("Sonar residual readiness report generation failed policy checks.");
+  }
 
   if (!runtimeSummaryToday) {
     blockers.push("Missing runtime quality summary for today.");
@@ -310,13 +321,18 @@ export function runReleaseReadiness(options = {}) {
   }
 
   if (!sonarResidualToday && sonarConfigPresent) {
-    warnings.push("Sonar residual readiness report for today is missing (stale evidence).");
+    blockers.push("Sonar residual readiness report for today is missing after auto-generation.");
+  }
+  if (!liveEvidencePack.pass) {
+    blockers.push("Live evidence pack is missing required automated artifacts.");
   }
 
   warnings.push(
     "docker:replyline:check:strict is external-state/manual and not part of strict local blocker.",
   );
-  warnings.push("Live GUI/provider evidence remains manual and out of strict local gate.");
+  warnings.push(
+    "Live GUI/provider evidence requires manual attestation rows in reports/manual/live-evidence-pack-YYYY-MM-DD.json.",
+  );
 
   const secretLeakScan = scanReportSecretLeaks({ repoRoot: root });
   if (secretLeakScan.violations.length > 0) {
@@ -355,6 +371,7 @@ export function runReleaseReadiness(options = {}) {
     dockerHardeningReport,
     freezePresent,
     freezeHasOutsideGuardrails,
+    liveEvidencePackPass: liveEvidencePack.pass,
   };
 
   const risk = buildRiskSnapshot(state, blockers, warnings);
@@ -386,6 +403,7 @@ export function runReleaseReadiness(options = {}) {
     `- runtime-quality summary (${stamp}): ${runtimeSummaryToday ? "present" : "missing"}`,
     `- product-scenario benchmark (${stamp}): ${productScenarioToday ? "present" : "missing"}`,
     `- sonar residual report (${stamp}): ${sonarResidualToday ? "present" : "missing"}`,
+    `- live evidence pack (${stamp}): ${liveEvidencePack.pass ? "present+structured" : "missing-required-automation"}`,
     `- release freeze report: ${freezePresent ? "present" : "missing"}`,
     `- docker hardening report: ${dockerHardeningReport ? "present" : "missing"}`,
     "",
@@ -421,6 +439,12 @@ export function runReleaseReadiness(options = {}) {
       runtimeQualitySummaryToday: runtimeSummaryToday,
       productScenarioBenchmarkToday: productScenarioToday,
       sonarResidualToday,
+      liveEvidencePack: {
+        pass: liveEvidencePack.pass,
+        jsonPath: liveEvidencePack.jsonPath,
+        mdPath: liveEvidencePack.mdPath,
+        requiredAutomatedMissing: liveEvidencePack.requiredAutomatedMissing,
+      },
       freezeReportPresent: freezePresent,
       dockerHardeningReport,
     },

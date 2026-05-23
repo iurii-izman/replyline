@@ -159,7 +159,7 @@ pub async fn capture_stop_and_analyze(
     })?;
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
 
-    let (transcript, stt_stages) =
+    let (transcript, stt_stages, stt_telemetry) =
         match stt_provider::transcribe(&settings, &deepgram_key, &pcm).await {
             Ok(value) => value,
             Err(err) => {
@@ -184,7 +184,11 @@ pub async fn capture_stop_and_analyze(
     let chars_band = llm::chars_band(&transcript);
     let _ = app_log::append_event(
         "analysis_stt_ok",
-        format!("transcript_chars={transcript_chars} chars_band={chars_band}"),
+        format!(
+            "transcript_chars={transcript_chars} chars_band={chars_band} stt_retries={} stt_retry_reason={}",
+            stt_telemetry.retry_count,
+            stt_telemetry.retry_reason.unwrap_or("none")
+        ),
     );
     let _ = log_diag(
         "stt",
@@ -296,13 +300,16 @@ pub async fn capture_stop_and_analyze(
     let _ = app_log::append_event(
         "analysis_llm_ok",
         format!(
-            "gist_chars={} say_now_chars={} next_move_chars={} repair_used={} fallback_used={} chars_band={}",
+            "gist_chars={} say_now_chars={} next_move_chars={} repair_used={} fallback_used={} chars_band={} llm_retries={} llm_fast_fallback_used={} llm_fast_fallback_reason={}",
             card.gist.chars().count(),
             card.say_now.chars().count(),
             card.next_move.chars().count(),
             card.repair_used,
             card.fallback_used,
-            card.chars_band
+            card.chars_band,
+            outcome.llm_transport_retries,
+            outcome.llm_fast_fallback_used,
+            outcome.llm_fast_fallback_reason.unwrap_or("none")
         ),
     );
     let _ = log_diag(

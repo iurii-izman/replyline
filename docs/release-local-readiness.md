@@ -18,13 +18,16 @@ This gate is local and non-manual. It does not require GUI actions, Sonar token,
 2. `pnpm test:doc-links`
 3. `pnpm report:runtime-quality`
 4. `pnpm test:product-scenarios`
-5. `pnpm report:release-readiness:strict`
+5. `pnpm test:manual-closure-pack`
+6. `pnpm release:freeze:check`
+7. `pnpm report:release-readiness:strict`
 
 ## Strict mode behavior
 
 `report:release-readiness:strict`:
 
 - always generates Markdown + JSON reports in `reports/release/`
+- auto-generates same-day Sonar residual and structured live evidence pack artifacts
 - prints blockers/warnings summary
 - exits `1` when blockers exist
 - exits `0` when only warnings exist
@@ -39,6 +42,7 @@ Blockers (fail strict local gate):
 - missing `sonar-project.properties`
 - missing same-day runtime quality summary
 - missing same-day product scenario benchmark when product scenario lane is configured
+- missing required automated references in same-day live evidence pack
 - release freeze report outside guardrails
 - vulnerable `qs` versions (`>=6.11.1 <=6.15.1`) reintroduced in `pnpm-lock.yaml` while `@lhci/cli` optional lane is enabled
 - missing public footprint / report-secret-leak checks
@@ -47,9 +51,8 @@ Blockers (fail strict local gate):
 Warnings (reported but non-blocking):
 
 - Docker strict check (`docker:replyline:check:strict`) is external-state/manual
-- live GUI/provider evidence is manual
+- live GUI/provider evidence is formalized as structured manual attestation rows
 - optional E2E/perf/UX lanes are outside this local baseline
-- Sonar residual report stale/missing for today while config is present
 
 ## Risk snapshot scoring
 
@@ -70,7 +73,7 @@ Overall score is a weighted average and is included in both Markdown and JSON re
 ## Why Docker strict and live GUI stay manual
 
 - `docker:replyline:check:strict` depends on external compose/runtime state outside repository-only automation.
-- GUI/live-provider evidence requires local environment and credentials by design.
+- GUI/live-provider evidence requires local environment and credentials by design; strict now enforces structured checklist artifact generation, not free text.
 - Strict local gate remains credential-free and deterministic for repository checks.
 
 ## Release handoff profile
