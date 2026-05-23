@@ -88,9 +88,7 @@
     "tests/fixtures/runtime/settings-vcurrent.json",
     "tests/fixtures/runtime/settings-missing-optional.json"
   ],
-  "guardrailPathRegexes": [
-    "^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"
-  ],
+  "guardrailPathRegexes": ["^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"],
   "allowlistPrefixes": [
     ".github/",
     ".roo/",

@@ -57,7 +57,10 @@ export function setupLifecycle(deps: LifecycleDeps): void {
           deps.setStatusDetail(event.payload.detail ?? null);
         }),
         await deps.platform.listen("replyline://open-settings", async () => {
-          void emitUiEvent(deps.platform, "settings_opened", { source: "backend_event", phase: "settings" });
+          void emitUiEvent(deps.platform, "settings_opened", {
+            source: "backend_event",
+            phase: "settings",
+          });
           await deps.showWindow("settings");
         }),
         await deps.platform.listen("replyline://context-cleared", () => {

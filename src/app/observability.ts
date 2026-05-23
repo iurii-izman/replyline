@@ -23,7 +23,9 @@ function isForbiddenKey(key: string): boolean {
 }
 
 function sanitizeValue(value: string | number | boolean): string {
-  return String(value).replace(/[\r\n\t]/g, " ").slice(0, 120);
+  return String(value)
+    .replace(/[\r\n\t]/g, " ")
+    .slice(0, 120);
 }
 
 function serialize(fields: UiEventFields): string {

@@ -198,8 +198,7 @@ function checkQsAdvisoryFloor() {
     const major = Number(match[1]);
     const minor = Number(match[2]);
     const patch = Number(match[3]);
-    const vulnerable =
-      major === 6 && minor >= 11 && (minor < 15 || (minor === 15 && patch <= 1));
+    const vulnerable = major === 6 && minor >= 11 && (minor < 15 || (minor === 15 && patch <= 1));
     if (vulnerable) {
       console.error(
         `[security-lane] vulnerable qs version in pnpm-lock.yaml: ${major}.${minor}.${patch}`,

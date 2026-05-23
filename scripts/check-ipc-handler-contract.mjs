@@ -22,6 +22,7 @@ const REQUIRED = [
   "clear_context",
   "clear_interview_reports",
   "clear_candidate_pack",
+  "clear_debug_traces",
   "delete_secret",
   "get_candidate_pack_status",
   "get_context_status",
@@ -30,6 +31,8 @@ const REQUIRED = [
   "load_bootstrap",
   "load_candidate_pack",
   "get_interview_report",
+  "get_trace_status",
+  "open_trace_folder",
   "log_client_event",
   "quit_app",
   "refresh_tray_menu",
@@ -77,12 +80,12 @@ if (missing.length || extra.length || !debugBlockHasGuard || !releaseBlockExclud
 const hasDebugOnly = DEBUG_ONLY.some((name) => found.has(name));
 const staticContractChecks = [
   {
-    ok: modelText.includes("schemaVersion: 8"),
-    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 8 in src/app/model.ts",
+    ok: modelText.includes("schemaVersion: 9"),
+    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 9 in src/app/model.ts",
   },
   {
-    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 8;"),
-    message: "Expected CURRENT_SCHEMA_VERSION = 8 in src-tauri/src/settings.rs",
+    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 9;"),
+    message: "Expected CURRENT_SCHEMA_VERSION = 9 in src-tauri/src/settings.rs",
   },
   {
     ok: interviewRustText.includes("pub short: String") && modelText.includes("short: string;"),

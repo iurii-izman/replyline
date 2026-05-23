@@ -76,11 +76,18 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
     let armed = false;
     let currentRunId: string | null = null;
     const handlePressed = async () => {
-      void emitClientEvent("hotkey_pressed", { state: "Pressed", source: "hotkey", phase: "capture" });
+      void emitClientEvent("hotkey_pressed", {
+        state: "Pressed",
+        source: "hotkey",
+        phase: "capture",
+      });
       if (deps.pipelineActive()) return;
       deps.setError(null);
       deps.notices.dismissNotice();
-      void emitClientEvent("setup_preflight_check_start", { source: "hotkey_press", phase: "settings" });
+      void emitClientEvent("setup_preflight_check_start", {
+        source: "hotkey_press",
+        phase: "settings",
+      });
       const setupStatus = await deps.platform.invoke<SetupStatusDto>("get_setup_status");
       void emitClientEvent("setup_preflight_check_result", {
         source: "hotkey_press",
@@ -108,7 +115,10 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         if (deps.platform.window.setAlwaysOnTop && deps.settings().keepOnTopDuringCapture) {
           await deps.platform.window.setAlwaysOnTop(true);
         }
-        void emitClientEvent("capture_start_requested", { source: "hotkey_press", phase: "capture" });
+        void emitClientEvent("capture_start_requested", {
+          source: "hotkey_press",
+          phase: "capture",
+        });
         const runId = await deps.platform.invoke<string>("capture_start");
         void emitClientEvent("capture_start_client_ok", {
           source: "hotkey_press",
@@ -138,7 +148,11 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
       }
     };
     const handleReleased = async () => {
-      void emitClientEvent("hotkey_released", { state: "Released", source: "hotkey", phase: "capture" });
+      void emitClientEvent("hotkey_released", {
+        state: "Released",
+        source: "hotkey",
+        phase: "capture",
+      });
       if (!armed) return;
       armed = false;
       deps.setPhase("transcribing");

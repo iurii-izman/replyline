@@ -120,9 +120,7 @@ function renderMarkdown(summary) {
     lines.push("| Metric | Baseline | After | Delta | Trend |");
     lines.push("| --- | ---: | ---: | ---: | --- |");
     for (const row of summary.baselineComparison) {
-      lines.push(
-        `| ${row.metric} | ${row.before} | ${row.after} | ${row.delta} | ${row.trend} |`,
-      );
+      lines.push(`| ${row.metric} | ${row.before} | ${row.after} | ${row.delta} | ${row.trend} |`);
     }
   } else {
     lines.push("- baseline comparison unavailable");
