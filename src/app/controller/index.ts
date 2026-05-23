@@ -646,6 +646,7 @@ export function useReplylineController(platform: AppPlatform) {
     setKeepOnTopDuringCapture: (value: boolean) => setSettings("keepOnTopDuringCapture", value),
     setInterviewReportRetentionDays: (value: AppSettings["interviewReportRetentionDays"]) =>
       setSettings("interviewReportRetentionDays", value),
+    setTraceIncludeContent: (value: boolean) => setSettings("traceIncludeContent", value),
     selectInterviewCardIndex: (index: number) =>
       setActiveInterviewCardIndex(clampInterviewCardIndex(index)),
     nextInterviewCard: () =>

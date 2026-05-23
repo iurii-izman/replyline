@@ -39,12 +39,13 @@ pub struct AppSettings {
     pub keep_on_top_during_capture: bool,
     pub interview_compact_mode: bool,
     pub interview_report_retention_days: u16,
+    pub trace_include_content: bool,
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 7,
+            schema_version: 8,
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
@@ -56,6 +57,7 @@ impl Default for AppSettings {
             keep_on_top_during_capture: false,
             interview_compact_mode: false,
             interview_report_retention_days: 0,
+            trace_include_content: false,
         }
     }
 }

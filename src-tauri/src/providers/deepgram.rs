@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use std::time::{Duration, Instant};
+use url::Url;
 
+use crate::trace_manifest;
 use crate::types::AppSettings;
 
 const HTTP_TIMEOUT_SECS: u64 = 20;
@@ -19,9 +21,14 @@ pub struct SttRequestPolicy {
 }
 
 #[derive(Debug, Clone, Default)]
+#[allow(dead_code)]
 pub struct SttRequestTelemetry {
     pub retry_count: u32,
     pub retry_reason: Option<&'static str>,
+    pub status_code: Option<u16>,
+    pub duration_ms: u64,
+    pub audio_bytes: usize,
+    pub transcript_chars: usize,
 }
 
 impl Default for SttRequestPolicy {
@@ -57,6 +64,8 @@ struct DeepgramAlternative {
 }
 
 pub async fn transcribe_wav(
+    run_id: Option<&str>,
+    include_content: bool,
     _settings: &AppSettings,
     api_key: &str,
     wav_bytes: &[u8],
@@ -66,10 +75,41 @@ pub async fn transcribe_wav(
     let endpoint = format!(
         "https://api.deepgram.com/v1/listen?model={model}&language={language}&smart_format=true&punctuate=true"
     );
+    let endpoint_url = Url::parse(&endpoint).ok();
+    let endpoint_host = endpoint_url
+        .as_ref()
+        .and_then(|url| url.host_str().map(|v| v.to_string()));
+    let endpoint_path = endpoint_url
+        .as_ref()
+        .map(|url| url.path().to_string())
+        .unwrap_or_else(|| "/v1/listen".to_string());
 
     let policy = SttRequestPolicy::default();
     let started = Instant::now();
-    let mut telemetry = SttRequestTelemetry::default();
+    let mut telemetry = SttRequestTelemetry {
+        audio_bytes: wav_bytes.len(),
+        ..SttRequestTelemetry::default()
+    };
+
+    if let Some(rid) = run_id {
+        let request_snapshot = serde_json::json!({
+            "schemaVersion": 1,
+            "runId": rid,
+            "provider": "deepgram",
+            "endpointHost": endpoint_host,
+            "endpointPath": endpoint_path,
+            "model": model,
+            "options": {
+                "language": language,
+                "smart_format": true,
+                "punctuate": true,
+            },
+            "audioBytes": wav_bytes.len(),
+            "sampleRateHz": serde_json::Value::Null,
+            "channels": serde_json::Value::Null
+        });
+        let _ = trace_manifest::write_run_json(rid, "stt-request.redacted.json", &request_snapshot);
+    }
 
     let body = bytes::Bytes::copy_from_slice(wav_bytes);
     let response = {
@@ -105,11 +145,13 @@ pub async fn transcribe_wav(
                 .await
             {
                 Ok(resp) if resp.status().is_server_error() && attempt < policy.max_retries => {
+                    telemetry.status_code = Some(resp.status().as_u16());
                     last_err = format!("STT_HTTP_5XX: Deepgram server error {}", resp.status());
                     telemetry.retry_reason = Some("http_5xx");
                     continue;
                 }
                 Ok(resp) => {
+                    telemetry.status_code = Some(resp.status().as_u16());
                     resolved = Some(resp);
                     break;
                 }
@@ -139,6 +181,20 @@ pub async fn transcribe_wav(
         // Privacy: intentionally discard response body to avoid logging
         // potentially sensitive error payloads from Deepgram.
         let _ = response.text().await;
+        if let Some(rid) = run_id {
+            let snapshot = serde_json::json!({
+                "schemaVersion": 1,
+                "runId": rid,
+                "statusCode": status.as_u16(),
+                "durationMs": started.elapsed().as_millis() as u64,
+                "transcriptChars": 0,
+                "transcriptHash": serde_json::Value::Null,
+                "retries": telemetry.retry_count,
+                "errorKind": "http_error",
+                "contentPreview": if include_content { "[content_included_in_opt_in_mode]" } else { "[redacted]" }
+            });
+            let _ = trace_manifest::write_run_json(rid, "stt-response.redacted.json", &snapshot);
+        }
         return Err(format!("STT_HTTP_ERROR: Deepgram error {status}"));
     }
 
@@ -157,6 +213,23 @@ pub async fn transcribe_wav(
 
     if transcript.is_empty() {
         return Err("STT_EMPTY: Deepgram returned an empty transcript.".to_string());
+    }
+    telemetry.duration_ms = started.elapsed().as_millis() as u64;
+    telemetry.transcript_chars = transcript.chars().count();
+    if let Some(rid) = run_id {
+        let snapshot = serde_json::json!({
+            "schemaVersion": 1,
+            "runId": rid,
+            "provider": "deepgram",
+            "statusCode": telemetry.status_code,
+            "durationMs": telemetry.duration_ms,
+            "transcriptChars": telemetry.transcript_chars,
+            "transcriptHash": trace_manifest::sha256_hex(&transcript),
+            "retries": telemetry.retry_count,
+            "errorKind": serde_json::Value::Null,
+            "contentPreview": if include_content { transcript.clone() } else { "[redacted]".to_string() }
+        });
+        let _ = trace_manifest::write_run_json(rid, "stt-response.redacted.json", &snapshot);
     }
 
     Ok((transcript, telemetry))

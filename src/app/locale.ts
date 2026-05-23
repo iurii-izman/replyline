@@ -248,6 +248,9 @@ export const ui_ru = {
     interviewReportRetentionOption7d: "7 дней",
     interviewReportRetentionOption30d: "30 дней",
     interviewReportRetentionOption90d: "90 дней",
+    traceIncludeContentLabel: "Включить full-content trace (opt-in)",
+    traceIncludeContentHint:
+      "По умолчанию trace redacted. Включайте только для локальной диагностики чувствительного инцидента.",
     interviewReportClearHint: "Кнопка «Очистить отчёты» удаляет локальные interview reports сразу.",
     savedBadge: "Сохранено",
     checkSettings: "Проверить настройки",
@@ -597,6 +600,9 @@ export const ui_en: UiStrings = {
     interviewReportRetentionOption7d: "7 days",
     interviewReportRetentionOption30d: "30 days",
     interviewReportRetentionOption90d: "90 days",
+    traceIncludeContentLabel: "Enable full-content trace (opt-in)",
+    traceIncludeContentHint:
+      "Default trace is redacted. Enable only for local diagnostics of sensitive incidents.",
     interviewReportClearHint: '"Clear reports" removes local interview reports immediately.',
     savedBadge: "saved",
     checkSettings: "Check settings",

@@ -65,8 +65,9 @@ Per run:
 - `%APPDATA%/com.replyline.app/traces/<run_id>/timeline.jsonl`
 - `%APPDATA%/com.replyline.app/traces/<run_id>/timings.json`
 
-`manifest.json` includes safe metadata only and always sets:
-- `contentIncluded: false`
+`manifest.json` includes safe metadata and sets:
+- `contentIncluded: false` by default
+- `contentIncluded: true` only when `traceIncludeContent=true` explicit opt-in is enabled
 - `privacyMode: "safe_metadata"`
 
 ## Compatibility

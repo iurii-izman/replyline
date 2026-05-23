@@ -44,6 +44,8 @@ mod privacy;
 mod prompt_registry;
 #[path = "../settings.rs"]
 mod settings;
+#[path = "../trace_manifest.rs"]
+mod trace_manifest;
 #[path = "../types.rs"]
 mod types;
 
@@ -159,12 +161,20 @@ async fn main() -> Result<(), String> {
     let captured_audio_ms = (pcm.len() as u128 * 1000) / 16_000;
     let stt_started_at = Instant::now();
     let wav = audio::encode_wav(&pcm);
-    let (transcript, _stt_telemetry) =
-        deepgram::transcribe_wav(&settings, &deepgram_api_key, &wav).await?;
+    let (transcript, _stt_telemetry) = deepgram::transcribe_wav(
+        None,
+        settings.trace_include_content,
+        &settings,
+        &deepgram_api_key,
+        &wav,
+    )
+    .await?;
     let stt_ms = stt_started_at.elapsed().as_millis();
 
     let llm_started_at = Instant::now();
     let outcome = llm_provider::analyze_transcript(
+        None,
+        settings.trace_include_content,
         &settings,
         Some(&llm_api_key),
         &transcript,

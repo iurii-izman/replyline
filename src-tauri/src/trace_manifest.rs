@@ -6,6 +6,8 @@ use std::path::PathBuf;
 use crate::model_presets::{resolve_model_preset, ProviderKind};
 use crate::pipeline_timing::StageTiming;
 use crate::types::AppSettings;
+use serde::Serialize;
+use sha2::{Digest, Sha256};
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -30,6 +32,37 @@ fn traces_base_dir() -> Result<PathBuf, String> {
 
 fn run_dir(run_id: &str) -> Result<PathBuf, String> {
     Ok(traces_base_dir()?.join(run_id))
+}
+
+pub fn write_run_json<T: Serialize>(
+    run_id: &str,
+    file_name: &str,
+    value: &T,
+) -> Result<(), String> {
+    let path = run_dir(run_id)?.join(file_name);
+    let raw = serde_json::to_vec_pretty(value).map_err(|err| err.to_string())?;
+    fs::write(path, raw).map_err(|err| err.to_string())
+}
+
+pub fn append_run_jsonl<T: Serialize>(
+    run_id: &str,
+    file_name: &str,
+    value: &T,
+) -> Result<(), String> {
+    let path = run_dir(run_id)?.join(file_name);
+    let line = serde_json::to_string(value).map_err(|err| err.to_string())?;
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .map_err(|err| err.to_string())?;
+    writeln!(file, "{line}").map_err(|err| err.to_string())
+}
+
+pub fn sha256_hex(value: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(value.as_bytes());
+    format!("sha256:{:x}", hasher.finalize())
 }
 
 pub fn ensure_run_started(
@@ -62,7 +95,7 @@ pub fn ensure_run_started(
         endpoint_host,
         model: &settings.llm_model,
         privacy_mode: "safe_metadata",
-        content_included: false,
+        content_included: settings.trace_include_content,
     };
 
     let manifest_path = dir.join("manifest.json");
@@ -141,7 +174,7 @@ pub fn write_timings(run_id: &str, timings: &[StageTiming]) -> Result<(), String
 
 #[cfg(test)]
 mod tests {
-    use super::{append_timeline_event, ensure_run_started};
+    use super::{append_timeline_event, ensure_run_started, sha256_hex};
     use crate::types::AppSettings;
     use std::collections::BTreeMap;
 
@@ -173,5 +206,40 @@ mod tests {
 
         append_timeline_event(&run_id, "capture_start_ok", "capturing", BTreeMap::new())
             .expect("timeline");
+    }
+
+    #[test]
+    fn manifest_content_toggle_respects_opt_in() {
+        let run_id = format!(
+            "test-run-content-{}",
+            chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
+        );
+        let mut settings = AppSettings::default();
+        settings.trace_include_content = true;
+        ensure_run_started(
+            &run_id,
+            "2026-05-23T12:00:00Z",
+            &settings,
+            "work_conversation",
+        )
+        .expect("trace start");
+        let base = dirs::data_dir().expect("data dir");
+        let manifest_path = base
+            .join("com.replyline.app")
+            .join("traces")
+            .join(&run_id)
+            .join("manifest.json");
+        let raw = std::fs::read_to_string(&manifest_path).expect("manifest read");
+        assert!(raw.contains("\"contentIncluded\": true"));
+    }
+
+    #[test]
+    fn sha256_is_stable() {
+        let first = sha256_hex("same-value");
+        let second = sha256_hex("same-value");
+        let different = sha256_hex("other-value");
+        assert_eq!(first, second);
+        assert_ne!(first, different);
+        assert!(first.starts_with("sha256:"));
     }
 }

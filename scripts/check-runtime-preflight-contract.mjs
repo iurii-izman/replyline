@@ -20,6 +20,7 @@ const expectedConfiguredFields = [
   "keepOnTopDuringCapture",
   "interviewCompactMode",
   "interviewReportRetentionDays",
+  "traceIncludeContent",
 ];
 
 const secretPatterns = [

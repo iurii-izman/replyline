@@ -542,6 +542,21 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                   </select>
                   <span class="field-help">{st().settings.interviewReportRetentionHint}</span>
                 </label>
+                <label
+                  class="field field-checkbox-row settings-checkbox-row"
+                  data-testid="trace-include-content-row"
+                >
+                  <input
+                    type="checkbox"
+                    aria-label={st().settings.traceIncludeContentLabel}
+                    checked={controller().settings.traceIncludeContent}
+                    onInput={(event) =>
+                      controller().setTraceIncludeContent(event.currentTarget.checked)
+                    }
+                  />
+                  <span class="field-label">{st().settings.traceIncludeContentLabel}</span>
+                  <span class="field-help">{st().settings.traceIncludeContentHint}</span>
+                </label>
                 <p class="settings-note settings-note-warning">
                   {st().settings.interviewReportClearHint}
                 </p>

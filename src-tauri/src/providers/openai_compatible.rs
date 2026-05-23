@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
+use url::Url;
+
+use crate::trace_manifest;
 
 const HTTP_TIMEOUT_SECS: u64 = 20;
 const MAX_RETRIES: u32 = 2;
@@ -18,10 +21,28 @@ pub struct LlmRequestPolicy {
 }
 
 #[derive(Debug, Clone, Default)]
+#[allow(dead_code)]
 pub struct LlmRequestTelemetry {
     pub retry_count: u32,
     pub fallback_used: bool,
     pub fallback_reason: Option<&'static str>,
+    pub endpoint_host: Option<String>,
+    pub endpoint_path: String,
+    pub selected_model: String,
+    pub attempted_models: Vec<String>,
+    pub status_code: Option<u16>,
+    pub duration_ms: u64,
+    pub total_budget_ms: u64,
+    pub per_attempt_timeout_ms: u64,
+    pub max_retries: u32,
+    pub temperature: f32,
+    pub max_tokens: u16,
+    pub prompt_chars_system: usize,
+    pub prompt_chars_user: usize,
+    pub response_chars: usize,
+    pub usage_prompt_tokens: Option<u32>,
+    pub usage_completion_tokens: Option<u32>,
+    pub usage_total_tokens: Option<u32>,
 }
 
 impl Default for LlmRequestPolicy {
@@ -56,16 +77,84 @@ pub struct ChatMessage<'a> {
 #[derive(Debug, Deserialize)]
 struct ChatResponse {
     choices: Vec<Choice>,
+    usage: Option<Usage>,
 }
 
 #[derive(Debug, Deserialize)]
 struct Choice {
     message: ResponseMessage,
+    finish_reason: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 struct ResponseMessage {
     content: serde_json::Value,
+}
+
+#[derive(Debug, Deserialize)]
+struct Usage {
+    prompt_tokens: Option<u32>,
+    completion_tokens: Option<u32>,
+    total_tokens: Option<u32>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RedactedMessageSnapshot<'a> {
+    role: &'a str,
+    content_chars: usize,
+    content_hash: String,
+    preview: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RedactedRequestSnapshot<'a> {
+    schema_version: u8,
+    run_id: &'a str,
+    endpoint_host: Option<String>,
+    endpoint_path: String,
+    model: &'a str,
+    fallback_models: Vec<&'a str>,
+    temperature: f32,
+    max_tokens: u16,
+    messages: Vec<RedactedMessageSnapshot<'a>>,
+    headers: serde_json::Value,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RedactedResponseUsageSnapshot {
+    prompt_tokens: Option<u32>,
+    completion_tokens: Option<u32>,
+    total_tokens: Option<u32>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RedactedResponseSnapshot<'a> {
+    schema_version: u8,
+    run_id: &'a str,
+    status_code: Option<u16>,
+    duration_ms: u64,
+    response_chars: usize,
+    response_hash: Option<String>,
+    usage: Option<RedactedResponseUsageSnapshot>,
+    finish_reason: Option<String>,
+    content_preview: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LlmAttemptSnapshot {
+    attempt: u32,
+    model: String,
+    started_at: String,
+    duration_ms: u64,
+    status: String,
+    status_code: Option<u16>,
+    retry_reason: Option<String>,
+    fallback_applied: bool,
 }
 
 /// Send a raw chat completion request to an OpenAI-compatible endpoint.
@@ -75,6 +164,8 @@ struct ResponseMessage {
 /// if JSON parsing later fails.
 #[allow(clippy::too_many_arguments)]
 pub async fn request_card_raw_text(
+    run_id: Option<&str>,
+    include_content: bool,
     base_url: &str,
     model: &str,
     fallback_models: &[&str],
@@ -102,16 +193,74 @@ pub async fn request_card_raw_text(
     };
 
     let endpoint = format!("{}/chat/completions", base_url.trim_end_matches('/'));
+    let endpoint_url = Url::parse(&endpoint).ok();
+    let endpoint_host = endpoint_url
+        .as_ref()
+        .and_then(|url| url.host_str().map(|v| v.to_string()));
+    let endpoint_path = endpoint_url
+        .as_ref()
+        .map(|url| url.path().to_string())
+        .unwrap_or_else(|| "/chat/completions".to_string());
+
+    if let Some(rid) = run_id {
+        let snapshot = RedactedRequestSnapshot {
+            schema_version: 1,
+            run_id: rid,
+            endpoint_host: endpoint_host.clone(),
+            endpoint_path: endpoint_path.clone(),
+            model: request.model,
+            fallback_models: fallback_models.to_vec(),
+            temperature: request.temperature,
+            max_tokens: request.max_tokens,
+            messages: request
+                .messages
+                .iter()
+                .map(|item| RedactedMessageSnapshot {
+                    role: item.role,
+                    content_chars: item.content.chars().count(),
+                    content_hash: trace_manifest::sha256_hex(item.content),
+                    preview: if include_content {
+                        item.content.to_string()
+                    } else {
+                        "[redacted]".to_string()
+                    },
+                })
+                .collect(),
+            headers: serde_json::json!({ "authorization": "[redacted]" }),
+        };
+        let _ = trace_manifest::write_run_json(rid, "llm-request.redacted.json", &snapshot);
+    }
 
     let response = {
         let started = Instant::now();
         let mut last_err = "LLM_REQUEST_FAILED: unknown transport error".to_string();
         let mut resolved = None;
-        let mut telemetry = LlmRequestTelemetry::default();
+        let mut telemetry = LlmRequestTelemetry {
+            endpoint_host: endpoint_host.clone(),
+            endpoint_path: endpoint_path.clone(),
+            selected_model: model.trim().to_string(),
+            attempted_models: Vec::new(),
+            status_code: None,
+            duration_ms: 0,
+            total_budget_ms: policy.total_budget_ms,
+            per_attempt_timeout_ms: policy.per_attempt_timeout_ms,
+            max_retries: policy.max_retries,
+            temperature: request.temperature,
+            max_tokens,
+            prompt_chars_system: system_prompt.chars().count(),
+            prompt_chars_user: user_prompt.chars().count(),
+            response_chars: 0,
+            usage_prompt_tokens: None,
+            usage_completion_tokens: None,
+            usage_total_tokens: None,
+            ..LlmRequestTelemetry::default()
+        };
         let mut selected_model = model.trim().to_string();
         let mut fallback_applied = false;
 
         for attempt in 0..=policy.max_retries {
+            let attempt_started = Instant::now();
+            let attempt_started_at = chrono::Utc::now().to_rfc3339();
             if attempt > 0 {
                 telemetry.retry_count += 1;
                 let backoff = (policy.retry_base_ms.saturating_mul(2u64.pow(attempt - 1)))
@@ -135,12 +284,29 @@ pub async fn request_card_raw_text(
             let mut local_request = request.clone();
             local_request.model = selected_model.as_str();
             local_request.models = vec![];
+            telemetry.attempted_models.push(selected_model.clone());
             let mut req = client.post(&endpoint).json(&local_request);
             if let Some(token) = api_key.filter(|value| !value.trim().is_empty()) {
                 req = req.bearer_auth(token);
             }
             match req.send().await {
                 Ok(resp) if resp.status().is_server_error() && attempt < policy.max_retries => {
+                    if let Some(rid) = run_id {
+                        let _ = trace_manifest::append_run_jsonl(
+                            rid,
+                            "llm-attempts.jsonl",
+                            &LlmAttemptSnapshot {
+                                attempt,
+                                model: selected_model.clone(),
+                                started_at: attempt_started_at,
+                                duration_ms: attempt_started.elapsed().as_millis() as u64,
+                                status: "retry".to_string(),
+                                status_code: Some(resp.status().as_u16()),
+                                retry_reason: Some("http_5xx".to_string()),
+                                fallback_applied: false,
+                            },
+                        );
+                    }
                     last_err = format!(
                         "LLM_RETRYABLE_5XX: LLM server error {} retry_reason=http_5xx",
                         resp.status()
@@ -157,12 +323,56 @@ pub async fn request_card_raw_text(
                     continue;
                 }
                 Ok(resp) => {
+                    telemetry.duration_ms = started.elapsed().as_millis() as u64;
+                    telemetry.status_code = Some(resp.status().as_u16());
+                    if let Some(rid) = run_id {
+                        let _ = trace_manifest::append_run_jsonl(
+                            rid,
+                            "llm-attempts.jsonl",
+                            &LlmAttemptSnapshot {
+                                attempt,
+                                model: selected_model.clone(),
+                                started_at: attempt_started_at,
+                                duration_ms: attempt_started.elapsed().as_millis() as u64,
+                                status: if resp.status().is_success() {
+                                    "ok".to_string()
+                                } else {
+                                    "http_error".to_string()
+                                },
+                                status_code: Some(resp.status().as_u16()),
+                                retry_reason: None,
+                                fallback_applied: false,
+                            },
+                        );
+                    }
+                    telemetry.selected_model = selected_model.clone();
                     resolved = Some((resp, telemetry));
                     break;
                 }
                 Err(err)
                     if (err.is_timeout() || err.is_connect()) && attempt < policy.max_retries =>
                 {
+                    if let Some(rid) = run_id {
+                        let reason = if err.is_timeout() {
+                            "timeout"
+                        } else {
+                            "connect"
+                        };
+                        let _ = trace_manifest::append_run_jsonl(
+                            rid,
+                            "llm-attempts.jsonl",
+                            &LlmAttemptSnapshot {
+                                attempt,
+                                model: selected_model.clone(),
+                                started_at: attempt_started_at,
+                                duration_ms: attempt_started.elapsed().as_millis() as u64,
+                                status: "retry".to_string(),
+                                status_code: None,
+                                retry_reason: Some(reason.to_string()),
+                                fallback_applied: false,
+                            },
+                        );
+                    }
                     let reason = if err.is_timeout() {
                         "timeout"
                     } else {
@@ -181,18 +391,55 @@ pub async fn request_card_raw_text(
                     }
                     continue;
                 }
-                Err(err) => return Err(format!("LLM_REQUEST_FAILED: LLM request failed: {err}")),
+                Err(err) => {
+                    if let Some(rid) = run_id {
+                        let _ = trace_manifest::append_run_jsonl(
+                            rid,
+                            "llm-attempts.jsonl",
+                            &LlmAttemptSnapshot {
+                                attempt,
+                                model: selected_model.clone(),
+                                started_at: attempt_started_at,
+                                duration_ms: attempt_started.elapsed().as_millis() as u64,
+                                status: "error".to_string(),
+                                status_code: None,
+                                retry_reason: None,
+                                fallback_applied: false,
+                            },
+                        );
+                    }
+                    return Err(format!("LLM_REQUEST_FAILED: LLM request failed: {err}"));
+                }
             }
         }
         resolved.ok_or(last_err)?
     };
-    let (response, telemetry) = response;
+    let (response, mut telemetry) = response;
+    telemetry.duration_ms = telemetry.duration_ms.max(1);
 
     if !response.status().is_success() {
         let status = response.status();
         // Privacy: intentionally discard response body to avoid logging
         // potentially sensitive error payloads from the LLM provider.
         let _ = response.text().await;
+        if let Some(rid) = run_id {
+            let snapshot = RedactedResponseSnapshot {
+                schema_version: 1,
+                run_id: rid,
+                status_code: Some(status.as_u16()),
+                duration_ms: telemetry.duration_ms,
+                response_chars: 0,
+                response_hash: None,
+                usage: None,
+                finish_reason: None,
+                content_preview: if include_content {
+                    "[content_included_in_opt_in_mode]".to_string()
+                } else {
+                    "[redacted]".to_string()
+                },
+            };
+            let _ = trace_manifest::write_run_json(rid, "llm-response.redacted.json", &snapshot);
+        }
         return Err(format!("LLM_HTTP_ERROR: LLM error {status}"));
     }
 
@@ -217,6 +464,40 @@ pub async fn request_card_raw_text(
             .join("\n"),
         other => other.to_string(),
     };
+    telemetry.response_chars = raw_text.chars().count();
+    telemetry.usage_prompt_tokens = payload.usage.as_ref().and_then(|u| u.prompt_tokens);
+    telemetry.usage_completion_tokens = payload.usage.as_ref().and_then(|u| u.completion_tokens);
+    telemetry.usage_total_tokens = payload.usage.as_ref().and_then(|u| u.total_tokens);
+    if let Some(rid) = run_id {
+        let finish_reason = payload
+            .choices
+            .first()
+            .and_then(|choice| choice.finish_reason.clone());
+        let usage_snapshot = payload
+            .usage
+            .as_ref()
+            .map(|usage| RedactedResponseUsageSnapshot {
+                prompt_tokens: usage.prompt_tokens,
+                completion_tokens: usage.completion_tokens,
+                total_tokens: usage.total_tokens,
+            });
+        let snapshot = RedactedResponseSnapshot {
+            schema_version: 1,
+            run_id: rid,
+            status_code: telemetry.status_code,
+            duration_ms: telemetry.duration_ms,
+            response_chars: telemetry.response_chars,
+            response_hash: Some(trace_manifest::sha256_hex(&raw_text)),
+            usage: usage_snapshot,
+            finish_reason,
+            content_preview: if include_content {
+                "[content_included_in_opt_in_mode]".to_string()
+            } else {
+                "[redacted]".to_string()
+            },
+        };
+        let _ = trace_manifest::write_run_json(rid, "llm-response.redacted.json", &snapshot);
+    }
 
     Ok((
         raw_text,
@@ -275,5 +556,54 @@ mod tests {
         assert_eq!(telemetry.retry_count, 0);
         assert!(!telemetry.fallback_used);
         assert_eq!(telemetry.fallback_reason, None);
+    }
+
+    #[test]
+    fn usage_parses_when_present() {
+        let payload = r#"{"choices":[{"message":{"content":"ok"},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":2,"total_tokens":12}}"#;
+        let parsed: super::ChatResponse = serde_json::from_str(payload).expect("parse usage");
+        assert_eq!(parsed.usage.and_then(|u| u.total_tokens), Some(12));
+    }
+
+    #[test]
+    fn redacted_request_snapshot_hides_content_and_authorization() {
+        let snapshot = super::RedactedRequestSnapshot {
+            schema_version: 1,
+            run_id: "run-1",
+            endpoint_host: Some("api.openai.com".to_string()),
+            endpoint_path: "/v1/chat/completions".to_string(),
+            model: "gpt-test",
+            fallback_models: vec![],
+            temperature: 0.25,
+            max_tokens: 128,
+            messages: vec![super::RedactedMessageSnapshot {
+                role: "user",
+                content_chars: 12,
+                content_hash: "sha256:abc".to_string(),
+                preview: "[redacted]".to_string(),
+            }],
+            headers: serde_json::json!({ "authorization": "[redacted]" }),
+        };
+        let raw = serde_json::to_string(&snapshot).expect("serialize snapshot");
+        assert!(!raw.contains("hello world"));
+        assert!(raw.contains("\"authorization\":\"[redacted]\""));
+    }
+
+    #[test]
+    fn redacted_http_error_snapshot_has_no_body() {
+        let snapshot = super::RedactedResponseSnapshot {
+            schema_version: 1,
+            run_id: "run-1",
+            status_code: Some(500),
+            duration_ms: 100,
+            response_chars: 0,
+            response_hash: None,
+            usage: None,
+            finish_reason: None,
+            content_preview: "[redacted]".to_string(),
+        };
+        let raw = serde_json::to_string(&snapshot).expect("serialize snapshot");
+        assert!(!raw.contains("body"));
+        assert!(!raw.contains("Internal Server Error"));
     }
 }

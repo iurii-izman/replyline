@@ -103,7 +103,8 @@ $expectedSettingsFields = @(
   "hideToTrayOnClose",
   "keepOnTopDuringCapture",
   "interviewCompactMode",
-  "interviewReportRetentionDays"
+  "interviewReportRetentionDays",
+  "traceIncludeContent"
 )
 
 $settingsFieldNames = @()
@@ -145,6 +146,7 @@ $report = [ordered]@{
       keepOnTopDuringCapture = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "keepOnTopDuringCapture"
       interviewCompactMode = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "interviewCompactMode"
       interviewReportRetentionDays = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "interviewReportRetentionDays"
+      traceIncludeContent = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "traceIncludeContent"
     }
     schema = [ordered]@{
       schemaVersion = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "schemaVersion"

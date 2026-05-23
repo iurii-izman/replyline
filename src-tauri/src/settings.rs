@@ -120,7 +120,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     }
 }
 
-const CURRENT_SCHEMA_VERSION: u32 = 7;
+const CURRENT_SCHEMA_VERSION: u32 = 8;
 
 fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     let version = value
@@ -145,6 +145,9 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     }
     if version < 7 {
         migrate_v6_to_v7(&mut value);
+    }
+    if version < 8 {
+        migrate_v7_to_v8(&mut value);
     }
 
     value
@@ -200,6 +203,14 @@ fn migrate_v6_to_v7(value: &mut serde_json::Value) {
         obj.entry("hideToTrayOnClose")
             .or_insert(serde_json::json!(true));
         obj.entry("keepOnTopDuringCapture")
+            .or_insert(serde_json::json!(false));
+    }
+}
+
+fn migrate_v7_to_v8(value: &mut serde_json::Value) {
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("schemaVersion".to_string(), serde_json::json!(8));
+        obj.entry("traceIncludeContent")
             .or_insert(serde_json::json!(false));
     }
 }
@@ -272,6 +283,7 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "keepOnTopDuringCapture",
         "interviewCompactMode",
         "interviewReportRetentionDays",
+        "traceIncludeContent",
     ] {
         if !obj.contains_key(key) {
             return Err(SettingsError::PartialConfigInvalid);
@@ -514,7 +526,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v1_settings_to_v7_with_default_profile_and_preset() {
+    fn migrates_v1_settings_to_v8_with_default_profile_and_preset() {
         let v1 = serde_json::json!({
             "schemaVersion": 1,
             "hotkey": "Ctrl+Alt+Space",
@@ -523,7 +535,7 @@ mod tests {
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
-        assert_eq!(migrated["schemaVersion"], 7);
+        assert_eq!(migrated["schemaVersion"], 8);
         assert_eq!(
             migrated["activeAnswerProfile"],
             crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
@@ -534,14 +546,15 @@ mod tests {
         assert_eq!(migrated["keepOnTopDuringCapture"], false);
         assert_eq!(migrated["interviewCompactMode"], false);
         assert_eq!(migrated["interviewReportRetentionDays"], 0);
+        assert_eq!(migrated["traceIncludeContent"], false);
         // llmTemperature must NOT be injected — the field is not part of the current schema.
         assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
-    fn v7_settings_pass_through_unchanged() {
-        let v7 = serde_json::json!({
-            "schemaVersion": 7,
+    fn v8_settings_pass_through_unchanged() {
+        let v8 = serde_json::json!({
+            "schemaVersion": 8,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
@@ -552,10 +565,11 @@ mod tests {
             "hideToTrayOnClose": false,
             "keepOnTopDuringCapture": true,
             "interviewCompactMode": true,
-            "interviewReportRetentionDays": 30
+            "interviewReportRetentionDays": 30,
+            "traceIncludeContent": true
         });
-        let migrated = super::migrate_settings(v7);
-        assert_eq!(migrated["schemaVersion"], 7);
+        let migrated = super::migrate_settings(v8);
+        assert_eq!(migrated["schemaVersion"], 8);
         assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
         assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
         assert_eq!(migrated["llmModel"], "gpt-4o-mini");
@@ -567,8 +581,30 @@ mod tests {
         assert_eq!(migrated["keepOnTopDuringCapture"], true);
         assert_eq!(migrated["interviewCompactMode"], true);
         assert_eq!(migrated["interviewReportRetentionDays"], 30);
+        assert_eq!(migrated["traceIncludeContent"], true);
         // Schema-defined fields must remain; no phantom fields should appear.
         assert!(migrated.get("llmTemperature").is_none());
+    }
+
+    #[test]
+    fn migrates_v7_to_v8_with_trace_flag_default_false() {
+        let v7 = serde_json::json!({
+            "schemaVersion": 7,
+            "hotkey": "Ctrl+Alt+Space",
+            "llmBaseUrl": "https://openrouter.ai/api/v1",
+            "llmModel": "gpt-4o-mini",
+            "selectedModelPreset": "custom_openai_compatible",
+            "captureMaxSeconds": 30,
+            "activeAnswerProfile": "interview_default",
+            "windowOpacity": 100,
+            "hideToTrayOnClose": true,
+            "keepOnTopDuringCapture": false,
+            "interviewCompactMode": false,
+            "interviewReportRetentionDays": 0
+        });
+        let migrated = super::migrate_settings(v7);
+        assert_eq!(migrated["schemaVersion"], 8);
+        assert_eq!(migrated["traceIncludeContent"], false);
     }
 
     #[test]

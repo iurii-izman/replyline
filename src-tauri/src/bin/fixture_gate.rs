@@ -36,6 +36,8 @@ mod privacy;
 mod prompt_registry;
 #[path = "../settings.rs"]
 mod settings;
+#[path = "../trace_manifest.rs"]
+mod trace_manifest;
 #[path = "../types.rs"]
 mod types;
 
@@ -152,6 +154,8 @@ async fn main() -> Result<(), String> {
         let mut passed = false;
         for attempt in 1..=3 {
             match llm_provider::analyze_transcript(
+                None,
+                settings.trace_include_content,
                 &settings,
                 Some(&llm_api_key),
                 &fixture.snippet,

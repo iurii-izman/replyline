@@ -7,6 +7,7 @@ Slim Stable Beta settings:
 - `selectedModelPreset` (`string`, default `custom_openai_compatible`)
 - `llmBaseUrl` (`string`)
 - `llmModel` (`string`)
+- `traceIncludeContent` (`boolean`, default `false`; opt-in local trace content)
 - `deepgramApiKey` (stored as secret)
 - `llmApiKey` optional (stored as secret)
 

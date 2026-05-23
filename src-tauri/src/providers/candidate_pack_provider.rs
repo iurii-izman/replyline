@@ -13,6 +13,8 @@ pub async fn prepare_candidate_pack(
     let user_prompt =
         candidate_pack::build_prepare_prompt(raw_resume, job_description, company_values_text);
     let (raw_text, _prefix, _telemetry) = openai_compatible::request_card_raw_text(
+        None,
+        settings.trace_include_content,
         &settings.llm_base_url,
         &settings.llm_model,
         &[],

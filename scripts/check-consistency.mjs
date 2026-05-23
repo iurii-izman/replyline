@@ -25,7 +25,7 @@ const requiredIncludes = [
       "WorkConversation",
       "Interview Mode",
       "InterviewCardSchemaV1",
-      "schemaVersion = 7",
+      "schemaVersion = 8",
       "pnpm beta:preflight",
       "pnpm verify:fast",
       "pnpm verify:full",
@@ -92,11 +92,11 @@ const requiredIncludes = [
   },
   {
     path: "src/app/model.ts",
-    includes: [canonicalHotkey, "schemaVersion: 7", "selectedModelPreset"],
+    includes: [canonicalHotkey, "schemaVersion: 8", "selectedModelPreset", "traceIncludeContent"],
   },
   {
     path: "src-tauri/src/settings.rs",
-    includes: ["const CURRENT_SCHEMA_VERSION: u32 = 7;"],
+    includes: ["const CURRENT_SCHEMA_VERSION: u32 = 8;"],
   },
   {
     path: "src-tauri/src/interview_card_v1.rs",

@@ -204,34 +204,41 @@ pub async fn capture_stop_and_analyze(
         );
     }
 
-    let (transcript, stt_stages, stt_telemetry) =
-        match stt_provider::transcribe(&settings, &deepgram_key, &pcm).await {
-            Ok(value) => value,
-            Err(err) => {
-                let failure_kind = classify_stt_failure(&err);
-                let event = "analysis_stt_failed";
-                let _ = app_log::append_event(event, format!("stt_failure_kind={failure_kind}"));
-                let code = RL_STT_FAILED;
-                let _ = log_diag(
-                    "stt",
-                    "fail",
-                    code,
-                    format!("stt_failure_kind={failure_kind}"),
+    let (transcript, stt_stages, stt_telemetry) = match stt_provider::transcribe(
+        run_id.as_deref(),
+        settings.trace_include_content,
+        &settings,
+        &deepgram_key,
+        &pcm,
+    )
+    .await
+    {
+        Ok(value) => value,
+        Err(err) => {
+            let failure_kind = classify_stt_failure(&err);
+            let event = "analysis_stt_failed";
+            let _ = app_log::append_event(event, format!("stt_failure_kind={failure_kind}"));
+            let code = RL_STT_FAILED;
+            let _ = log_diag(
+                "stt",
+                "fail",
+                code,
+                format!("stt_failure_kind={failure_kind}"),
+            );
+            if let Some(ref rid) = run_id {
+                let _ = observability::log_error(
+                    "stt_request_failed",
+                    Fields::new()
+                        .with("source", "stt")
+                        .with("phase", "transcribing")
+                        .with("run_id", rid)
+                        .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
+                        .with("failure_kind", failure_kind),
                 );
-                if let Some(ref rid) = run_id {
-                    let _ = observability::log_error(
-                        "stt_request_failed",
-                        Fields::new()
-                            .with("source", "stt")
-                            .with("phase", "transcribing")
-                            .with("run_id", rid)
-                            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
-                            .with("failure_kind", failure_kind),
-                    );
-                }
-                return Err(CommandError::Pipeline(err));
             }
-        };
+            return Err(CommandError::Pipeline(err));
+        }
+    };
     for timing in &stt_stages {
         let _ = pipeline_timing::log_stage_timing(timing);
     }
@@ -364,6 +371,8 @@ pub async fn capture_stop_and_analyze(
     }
 
     let outcome = match llm_provider::analyze_transcript(
+        run_id.as_deref(),
+        settings.trace_include_content,
         &settings,
         llm_key.as_deref(),
         &transcript,
@@ -599,6 +608,8 @@ pub async fn retry_last_analysis(
         format!("{context_text}\n\nCandidate context:\n{candidate_context}")
     };
     let card = match llm_provider::analyze_transcript(
+        Some(&run_id),
+        settings.trace_include_content,
         &settings,
         llm_key.as_deref(),
         &transcript,

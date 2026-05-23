@@ -7,6 +7,8 @@ use crate::privacy;
 use crate::types::AppSettings;
 
 pub async fn transcribe(
+    run_id: Option<&str>,
+    include_content: bool,
     settings: &AppSettings,
     deepgram_key: &str,
     pcm: &[i16],
@@ -18,7 +20,7 @@ pub async fn transcribe(
     stages.push(wav_timer.measure("wav_encoding", "ok", RL_WAV_ENCODING_TIMED));
 
     let stt_timer = PipelineTimer::start();
-    match deepgram::transcribe_wav(settings, deepgram_key, &wav).await {
+    match deepgram::transcribe_wav(run_id, include_content, settings, deepgram_key, &wav).await {
         Ok((t, telemetry)) => {
             stages.push(stt_timer.measure("stt_request", "ok", RL_STT_REQUEST_TIMED));
             Ok((t, stages, telemetry))

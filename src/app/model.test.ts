@@ -185,8 +185,8 @@ describe("model", () => {
   });
 
   describe("settings validation preflight rules", () => {
-    it("DEFAULT_SETTINGS schemaVersion is 7 (matches backend)", () => {
-      expect(DEFAULT_SETTINGS.schemaVersion).toBe(7);
+    it("DEFAULT_SETTINGS schemaVersion is 8 (matches backend)", () => {
+      expect(DEFAULT_SETTINGS.schemaVersion).toBe(8);
     });
 
     it("DEFAULT_SETTINGS hotkey is non-empty", () => {

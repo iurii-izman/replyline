@@ -5,6 +5,7 @@ use crate::llm;
 use crate::model_presets::{resolve_model_preset, ProviderKind};
 use crate::pipeline_timing::{PipelineTimer, StageTiming};
 use crate::prompt_registry::resolve_answer_profile;
+use crate::trace_manifest;
 use crate::types::{AnalysisCardDto, AppSettings};
 
 use super::openai_compatible;
@@ -46,6 +47,8 @@ pub struct CardGenerationOutcome {
 /// This is the LLM provider boundary — the pipeline calls this function
 /// without knowing which concrete LLM implementation is behind it.
 pub async fn analyze_transcript(
+    run_id: Option<&str>,
+    include_content: bool,
     settings: &AppSettings,
     api_key: Option<&str>,
     transcript: &str,
@@ -54,13 +57,33 @@ pub async fn analyze_transcript(
 ) -> Result<CardGenerationOutcome, String> {
     match mode {
         AnalysisMode::WorkConversation => {
-            analyze_work_conversation(settings, api_key, transcript, context).await
+            analyze_work_conversation(
+                run_id,
+                include_content,
+                settings,
+                api_key,
+                transcript,
+                context,
+            )
+            .await
         }
-        AnalysisMode::Interview => analyze_interview(settings, api_key, transcript, context).await,
+        AnalysisMode::Interview => {
+            analyze_interview(
+                run_id,
+                include_content,
+                settings,
+                api_key,
+                transcript,
+                context,
+            )
+            .await
+        }
     }
 }
 
 async fn analyze_work_conversation(
+    run_id: Option<&str>,
+    include_content: bool,
     settings: &AppSettings,
     api_key: Option<&str>,
     transcript: &str,
@@ -71,6 +94,8 @@ async fn analyze_work_conversation(
     let mut all_timings: Vec<StageTiming> = Vec::new();
     let llm_timer = PipelineTimer::start();
     let (raw_text, parse_or_request_err, llm_telemetry) = request_card_with_prompt(
+        run_id,
+        include_content,
         settings,
         api_key,
         transcript,
@@ -85,6 +110,7 @@ async fn analyze_work_conversation(
     let norm_timer = PipelineTimer::start();
     match llm::normalize_from_raw(&raw_text, transcript, profile) {
         Ok((card, quality)) => {
+            write_card_trace(run_id, include_content, &card, true);
             let norm_timing = norm_timer.measure("card_normalization", "ok", RL_CARD_NORM_TIMED);
             Ok(CardGenerationOutcome {
                 card,
@@ -102,6 +128,8 @@ async fn analyze_work_conversation(
             let _ = norm_timer.measure("card_normalization", "fail", RL_CARD_NORM_TIMED);
             let retry_llm_timer = PipelineTimer::start();
             let (retry_raw_text, _parse_or_request_err, retry_llm_telemetry) = request_card_with_prompt(
+                run_id,
+                include_content,
                 settings,
                 api_key,
                 transcript,
@@ -124,6 +152,7 @@ async fn analyze_work_conversation(
                 .map_err(|retry_err| format!("{err} | retry_failed: {retry_err}"))?;
             let retry_norm_timing =
                 retry_norm_timer.measure("card_normalization_retry", "ok", RL_CARD_NORM_TIMED);
+            write_card_trace(run_id, include_content, &card, true);
             Ok(CardGenerationOutcome {
                 card,
                 retry_attempted: true,
@@ -151,6 +180,8 @@ async fn analyze_work_conversation(
 }
 
 async fn analyze_interview(
+    run_id: Option<&str>,
+    include_content: bool,
     settings: &AppSettings,
     api_key: Option<&str>,
     transcript: &str,
@@ -162,6 +193,8 @@ async fn analyze_interview(
 
     let base_llm_timer = PipelineTimer::start();
     let (base_raw_text, parse_or_request_err, base_llm_telemetry) = request_card_with_prompt(
+        run_id,
+        include_content,
         settings,
         api_key,
         transcript,
@@ -186,6 +219,8 @@ async fn analyze_interview(
         profile,
         |system_prompt, user_prompt, max_tokens| async move {
             let (raw, prefix, _telemetry) = request_raw_with_prompts(
+                run_id,
+                include_content,
                 settings,
                 api_key,
                 &system_prompt,
@@ -200,6 +235,7 @@ async fn analyze_interview(
 
     card.say_now = interview_outcome.card.answer.main.clone();
     card.interview_card_schema_v1 = Some(interview_outcome.card);
+    write_card_trace(run_id, include_content, &card, true);
 
     Ok(CardGenerationOutcome {
         card,
@@ -217,6 +253,8 @@ async fn analyze_interview(
 /// Build the full prompt and call the OpenAI-compatible provider.
 #[allow(clippy::too_many_arguments)]
 async fn request_card_with_prompt(
+    run_id: Option<&str>,
+    include_content: bool,
     settings: &AppSettings,
     api_key: Option<&str>,
     transcript: &str,
@@ -231,6 +269,8 @@ async fn request_card_with_prompt(
     let fallback_models = fallback_models_for_selected_preset(&settings.selected_model_preset);
 
     openai_compatible::request_card_raw_text(
+        run_id,
+        include_content,
         &settings.llm_base_url,
         &settings.llm_model,
         fallback_models,
@@ -244,6 +284,8 @@ async fn request_card_with_prompt(
 }
 
 async fn request_raw_with_prompts(
+    run_id: Option<&str>,
+    include_content: bool,
     settings: &AppSettings,
     api_key: Option<&str>,
     system_prompt: &str,
@@ -253,6 +295,8 @@ async fn request_raw_with_prompts(
     let fallback_models = fallback_models_for_selected_preset(&settings.selected_model_preset);
 
     openai_compatible::request_card_raw_text(
+        run_id,
+        include_content,
         &settings.llm_base_url,
         &settings.llm_model,
         fallback_models,
@@ -263,6 +307,74 @@ async fn request_raw_with_prompts(
         openai_compatible::LlmRequestPolicy::default(),
     )
     .await
+}
+
+fn write_card_trace(
+    run_id: Option<&str>,
+    include_content: bool,
+    card: &AnalysisCardDto,
+    schema_valid: bool,
+) {
+    #[derive(serde::Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct CardField {
+        chars: usize,
+        hash: String,
+    }
+    #[derive(serde::Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct CardSnapshot {
+        schema_version: u8,
+        gist: CardField,
+        say_now: CardField,
+        next_move: CardField,
+        gist_preview: String,
+        say_now_preview: String,
+        next_move_preview: String,
+        repair_used: bool,
+        fallback_used: bool,
+        chars_band: String,
+        card_schema_validity: bool,
+        interview_schema_present: bool,
+    }
+    if let Some(rid) = run_id {
+        let snapshot = CardSnapshot {
+            schema_version: 1,
+            gist: CardField {
+                chars: card.gist.chars().count(),
+                hash: trace_manifest::sha256_hex(&card.gist),
+            },
+            say_now: CardField {
+                chars: card.say_now.chars().count(),
+                hash: trace_manifest::sha256_hex(&card.say_now),
+            },
+            next_move: CardField {
+                chars: card.next_move.chars().count(),
+                hash: trace_manifest::sha256_hex(&card.next_move),
+            },
+            gist_preview: if include_content {
+                card.gist.clone()
+            } else {
+                "[redacted]".to_string()
+            },
+            say_now_preview: if include_content {
+                card.say_now.clone()
+            } else {
+                "[redacted]".to_string()
+            },
+            next_move_preview: if include_content {
+                card.next_move.clone()
+            } else {
+                "[redacted]".to_string()
+            },
+            repair_used: card.repair_used,
+            fallback_used: card.fallback_used,
+            chars_band: card.chars_band.clone(),
+            card_schema_validity: schema_valid,
+            interview_schema_present: card.interview_card_schema_v1.is_some(),
+        };
+        let _ = trace_manifest::write_run_json(rid, "card.redacted.json", &snapshot);
+    }
 }
 
 #[cfg(test)]

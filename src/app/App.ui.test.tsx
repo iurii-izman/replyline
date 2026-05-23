@@ -97,7 +97,7 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
   let closeHandler: ((event: { preventDefault(): void }) => void | Promise<void>) | null = null;
 
   let settingsState = {
-    schemaVersion: 7,
+    schemaVersion: 8,
     hotkey: "Ctrl+Alt+Space",
     llmBaseUrl: "https://api.example/v1",
     llmModel: "gpt-4o-mini",
@@ -109,6 +109,7 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     keepOnTopDuringCapture: options.settingsOverrides?.keepOnTopDuringCapture ?? false,
     interviewCompactMode: false,
     interviewReportRetentionDays: 0,
+    traceIncludeContent: false,
   };
   let deepgramPresent = true;
   let llmPresent = true;
@@ -288,7 +289,7 @@ function createSetupMockPlatform(
   let deepgramPresent = overrides.deepgramKeyPresent ?? false;
   let llmPresent = overrides.llmKeyPresent ?? false;
   let settingsState = {
-    schemaVersion: 7,
+    schemaVersion: 8,
     hotkey: "Ctrl+Alt+Space",
     llmBaseUrl: overrides.llmBaseUrl ?? "",
     llmModel: overrides.llmModel ?? "gpt-4o-mini",
@@ -300,6 +301,7 @@ function createSetupMockPlatform(
     keepOnTopDuringCapture: false,
     interviewCompactMode: false,
     interviewReportRetentionDays: 0,
+    traceIncludeContent: false,
   };
   const origInvoke = base.platform.invoke;
   const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
@@ -319,7 +321,7 @@ function createSetupMockPlatform(
     }
     if (command === "save_settings") {
       const input = args?.input as Record<string, unknown> | undefined;
-      settingsState = { ...settingsState, ...(input as typeof settingsState), schemaVersion: 7 };
+      settingsState = { ...settingsState, ...(input as typeof settingsState), schemaVersion: 8 };
       return settingsState;
     }
     if (command === "save_secret") {
@@ -360,7 +362,7 @@ describe("App UX stabilization", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 7,
+            schemaVersion: 8,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: overrides.llmBaseUrl ?? "",
             llmModel: overrides.llmModel ?? "gpt-4o-mini",
@@ -372,6 +374,7 @@ describe("App UX stabilization", () => {
             keepOnTopDuringCapture: false,
             interviewCompactMode: false,
             interviewReportRetentionDays: 0,
+    traceIncludeContent: false,
           },
           deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
           llmKeyPresent: overrides.llmKeyPresent ?? false,
@@ -384,7 +387,7 @@ describe("App UX stabilization", () => {
       }
       if (command === "save_settings") {
         const input = args?.input as Record<string, unknown> | undefined;
-        return { ...input, schemaVersion: 7 };
+        return { ...input, schemaVersion: 8 };
       }
       if (command === "save_secret") return null;
       return origInvoke(command, args);
@@ -833,6 +836,23 @@ describe("App UX stabilization", () => {
     await waitFor(() => expect(mock.platform.window.setOpacity).toHaveBeenCalledWith(0.8));
   });
 
+  it("saves traceIncludeContent toggle from reports settings", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    fireEvent.click(screen.getByRole("tab", { name: /Отчёты/i }));
+    const toggle = await screen.findByTestId("trace-include-content-row");
+    const checkbox = within(toggle).getByRole("checkbox");
+    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "save_settings")).toBe(true),
+    );
+    const saveCall = mock.invoke.mock.calls.find((call) => call[0] === "save_settings");
+    const input = (saveCall?.[1] as { input?: Record<string, unknown> } | undefined)?.input ?? {};
+    expect(input.traceIncludeContent).toBe(true);
+  });
+
   it("compact mode hides pipeline", async () => {
     mock = createMockPlatform({
       analysisCard: {
@@ -1273,7 +1293,7 @@ describe("Interview card rendering", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 7,
+            schemaVersion: 8,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: "",
             llmModel: "gpt-4o-mini",
@@ -1285,6 +1305,7 @@ describe("Interview card rendering", () => {
             keepOnTopDuringCapture: false,
             interviewCompactMode: false,
             interviewReportRetentionDays: 0,
+    traceIncludeContent: false,
           },
           deepgramKeyPresent: false,
           llmKeyPresent: false,
@@ -1320,7 +1341,7 @@ describe("Interview card rendering", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 7,
+            schemaVersion: 8,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: "",
             llmModel: "gpt-4o-mini",
@@ -1332,6 +1353,7 @@ describe("Interview card rendering", () => {
             keepOnTopDuringCapture: false,
             interviewCompactMode: false,
             interviewReportRetentionDays: 0,
+    traceIncludeContent: false,
           },
           deepgramKeyPresent: false,
           llmKeyPresent: false,
@@ -1616,7 +1638,7 @@ describe("Setup wizard (first-run guidance)", () => {
         bootstrapCount += 1;
         return {
           settings: {
-            schemaVersion: 7,
+            schemaVersion: 8,
             hotkey: "Ctrl+Alt+Shift+S",
             llmBaseUrl: "https://api.example.com/v1",
             llmModel: "gpt-4.1-mini",
@@ -1628,6 +1650,7 @@ describe("Setup wizard (first-run guidance)", () => {
             keepOnTopDuringCapture: false,
             interviewCompactMode: false,
             interviewReportRetentionDays: 0,
+    traceIncludeContent: false,
           },
           deepgramKeyPresent: true,
           llmKeyPresent: true,
@@ -1713,3 +1736,5 @@ describe("Setup wizard (first-run guidance)", () => {
     ).toBe(true);
   });
 });
+
+
