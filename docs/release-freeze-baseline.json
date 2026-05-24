@@ -16,6 +16,7 @@
     "src/app/model.ts",
     "src/app/platform.ts",
     "src/app/controller.ts",
+    "src-tauri/src/lib.rs",
     "src-tauri/src/settings.rs",
     "src-tauri/src/services/capture_pipeline.rs",
     "src-tauri/src/llm.rs",
