@@ -358,6 +358,9 @@ export const ui_ru = {
       companyValues: "Ценности компании",
       warnings: "Предупреждения",
     },
+    candidatePackWeakFactsShort: "слабых",
+    profileLanguageRu: "Русский",
+    profileLanguageEn: "English",
     savedSections: {
       summary: "Краткое резюме кандидата",
       roleCompany: "Роль и компания",
@@ -749,6 +752,9 @@ export const ui_en: UiStrings = {
       companyValues: "Company values",
       warnings: "Warnings",
     },
+    candidatePackWeakFactsShort: "weak",
+    profileLanguageRu: "Russian",
+    profileLanguageEn: "English",
     savedSections: {
       summary: "Candidate summary",
       roleCompany: "Role & company",

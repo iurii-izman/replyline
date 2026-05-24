@@ -189,7 +189,7 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
           <p class="field-help">
             {st().settings.candidatePackStatus}:{" "}
             {controller().candidatePackStatus().exists
-              ? `${controller().candidatePackStatus().factCount} / weak ${controller().candidatePackStatus().weakFactCount}`
+              ? `${controller().candidatePackStatus().factCount} / ${st().settings.candidatePackWeakFactsShort} ${controller().candidatePackStatus().weakFactCount}`
               : st().settings.candidatePackEmpty}
           </p>
           <Show
@@ -365,13 +365,16 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
                   </label>
                   <label class="field">
                     <span class="field-label">{st().settings.profileLanguageLabel}</span>
-                    <input
+                    <select
                       class="field-input"
                       value={controller().candidatePackDraft.language}
                       onInput={(event) =>
                         controller().setCandidatePackDraft("language", event.currentTarget.value)
                       }
-                    />
+                    >
+                      <option value="ru">{st().settings.profileLanguageRu}</option>
+                      <option value="en">{st().settings.profileLanguageEn}</option>
+                    </select>
                   </label>
                 </div>
               </Show>

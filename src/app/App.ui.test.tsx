@@ -648,7 +648,7 @@ describe("App UX stabilization", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
     fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
     await waitFor(() =>
-      expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("7 / weak 1"),
+      expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("7 / слабых 1"),
     );
   });
 
