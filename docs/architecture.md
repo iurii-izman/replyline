@@ -15,6 +15,8 @@ Replyline Slim Stable Beta architecture.
 - capture start/stop
 - STT (Deepgram)
 - LLM card build (`CardSchemaV3` in `src-tauri/src/card_v3.rs`, mapped to legacy DTO)
+- Interview lane (`InterviewCardSchemaV1` during active interview session)
+- local interview report store + explicit full/redacted markdown export commands
 - context clear + retry
 
 ## Analysis card pipeline

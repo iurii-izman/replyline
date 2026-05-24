@@ -158,24 +158,7 @@ cargo clean --manifest-path src-tauri/Cargo.toml
 pnpm smoke
 ```
 
-## 10. Memory spaces not saving or loading
-
-**Symptoms:** Created memory spaces disappear after restart, or "Save to memory" fails.
-
-**Causes:**
-
-- File permissions on `%APPDATA%\com.replyline.app\memory\` directory.
-- Disk full or write-protected.
-- Antivirus blocking JSON file writes.
-
-**Fix:**
-
-- Check that the directory `%APPDATA%\com.replyline.app\memory\` exists and is writable.
-- Verify available disk space.
-- Add an antivirus exclusion for the Replyline app data directory.
-- Check the app log at `%LOCALAPPDATA%\com.replyline.app\app.log` for error details.
-
-## 11. How to triage with diagnostic events
+## 10. How to triage with diagnostic events
 
 If runtime fails unpredictably, collect a diagnostic bundle and inspect:
 

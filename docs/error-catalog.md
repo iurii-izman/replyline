@@ -11,7 +11,6 @@ to Solid.js frontend, and their user-facing guidance.
 | `Credential` | Missing/invalid API key in Windows Credential Manager     | "API key missing"        | `#settings-anchor-stt`    |
 | `Capture`    | Audio device error, hotkey conflict, empty recording      | "Recording failed"       | `#settings-anchor-hotkey` |
 | `Pipeline`   | STT/LLM provider error, network timeout, invalid response | "Pipeline error"         | `#settings-anchor-llm`    |
-| `Memory`     | Memory space CRUD failure, persistence error              | "Memory error"           | `#settings-anchor-memory` |
 | `Internal`   | Lock poisoned, unexpected state, code bug                 | "Internal error"         | `#settings-anchor-hotkey` |
 
 ## Frontend Error Routing

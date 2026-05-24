@@ -44,8 +44,8 @@
 
 ## Memory boundary
 
-- Memory backend существует отдельно от core live-card цикла.
-- Memory layer не должен становиться hero story текущей MVP stable beta.
+- Memory is a future track and is not shipped or compiled into the current stable-beta runtime.
+- There is no memory UI, memory command surface, or automatic memory persistence in the current stable beta.
 
 ## Advanced Mode
 

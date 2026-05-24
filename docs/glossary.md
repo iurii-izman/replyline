@@ -11,7 +11,7 @@
 ## C
 
 - **capture** — короткое hotkey-gated окно записи системного аудио через WASAPI loopback. Hold-to-capture, без background recording.
-- **CommandError** — typed Rust enum для IPC ошибок (`Settings/Credential/Capture/Pipeline/Memory/Internal`) с frontend routing на settings anchors.
+- **CommandError** — typed Rust enum для IPC ошибок (`Settings/Credential/Capture/Pipeline/Internal`) с frontend routing на settings anchors.
 - **context layer** — RAM ring buffer краткосрочной памяти между захватами. 3 entries, 1500 chars, 20-мин TTL, FIFO eviction. Подробнее в [architecture.md](architecture.md).
 - **copy-rules** — дисциплина формулировок: банлист терминов (`stealth`, `therapy`, `emotion`), claim labeling, runtime claim language. См. [copy-rules.md](copy-rules.md).
 
@@ -46,7 +46,7 @@
 ## M
 
 - **measured** — claim level: подтверждён runtime artifact, не теорией. Высший уровень доверия в [benchmark-policy.md](benchmark-policy.md).
-- **memory layer** — отдельный future track для долгосрочной памяти (spaces, facts, commitments, terms). Backend готов, не подключён к LLM context injection. Не часть MVP. См. [memory-layer.md](memory-layer.md).
+- **memory layer** — отдельный future track для долгосрочной памяти (spaces, facts, commitments, terms). Не shipped и не compiled в текущем stable-beta runtime. Не часть текущего user-facing продукта. См. [memory-layer.md](memory-layer.md).
 - **mock lane** — UI-тесты с stubbed providers, без сети. Быстрый, deterministic, не доказывает runtime поведение.
 
 ## P

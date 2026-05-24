@@ -38,9 +38,9 @@ Replyline не является полностью on-device системой п
 
 **Important:** These policies may change. Always verify current terms before production use.
 
-## Advanced Mode: Local LLM
+## Local LLM via `llmBaseUrl` (ops path)
 
-Replyline's LLM path can be pointed to a local server via `llmBaseUrl`. This path is intended for advanced users and requires specific local hardware setup:
+Replyline's LLM path can be pointed to a local server via `llmBaseUrl`. This is an operator setup path and requires specific local hardware setup:
 
 1. **Local LLM:** Use [Ollama](https://ollama.com), [LM Studio](https://lmstudio.ai), or any OpenAI-compatible local server.
 2. **Settings:** Set `llmBaseUrl` to `http://127.0.0.1:<port>/v1` (e.g. `http://127.0.0.1:11434/v1` for Ollama, `http://127.0.0.1:1234/v1` for LM Studio).

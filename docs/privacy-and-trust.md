@@ -96,4 +96,5 @@ Replyline не даёт юридических гарантий и не заме
 - Текущая stable beta: Windows-first и Russian-first.
 - Поведение на разных машинах и во всех call-приложениях ещё не полностью доказано.
 - Memory layer существует как отдельный будущий слой и не является core MVP story текущей stable beta.
-- Наличие memory backend в коде не означает включённую memory-функциональность в текущем user-facing stable-beta потоке.
+- Memory is a future track and is not shipped or compiled into the current stable-beta runtime.
+- There is no memory UI, memory command surface, or automatic memory persistence in the current stable beta.
