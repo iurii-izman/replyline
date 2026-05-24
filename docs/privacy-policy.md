@@ -1,6 +1,6 @@
-# Replyline Privacy Policy (Internal Stable Beta)
+# Replyline Privacy Policy (Public Beta Posture)
 
-This document describes what Replyline captures, where data goes, what is stored, and what the user controls. It applies to the current internal stable beta build.
+This document describes what Replyline captures, where data goes, what is stored, and what the user controls. It applies to the current public beta posture.
 
 ## What Replyline captures
 
@@ -16,9 +16,15 @@ During a capture-analyze cycle, data passes through these stages:
 2. **External STT provider (Deepgram)**: The WAV audio is sent to Deepgram over HTTPS for transcription.
 3. **RAM**: The transcript text is held in the conversation context (RAM only).
 4. **External LLM provider**: The transcript and prior context are sent to your configured LLM endpoint over HTTPS for analysis.
-5. **RAM -> UI**: The resulting card (gist, say_now, next_move) is displayed in the overlay window.
+5. **RAM -> UI**: The resulting card (gist, say_now, next_move) is displayed in the app window.
 
 No step in this pipeline writes audio or transcripts to disk by default.
+
+Candidate Pack boundary:
+
+- Raw Candidate Pack source values (resume/JD/company notes) stay local until user starts preparation.
+- During preparation, relevant content can be sent to the configured LLM provider over HTTPS.
+- The resulting compact Candidate Pack context is stored locally for Interview Mode use.
 
 ## What is stored locally
 
@@ -28,6 +34,7 @@ No step in this pipeline writes audio or transcripts to disk by default.
 | API keys (Deepgram, LLM)                          | Windows Credential Manager                  | OS-managed encrypted store | Until user revokes                        |
 | App event log                                     | `%LOCALAPPDATA%\com.replyline.app\app.log`  | Line-delimited text        | 5 MB rotation (oldest lines dropped)      |
 | Debug WAV files                                   | `%LOCALAPPDATA%\com.replyline.app\debug\`   | WAV                        | Written only on STT failure; user manages |
+| Interview report store                            | `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json` | JSON             | User-controlled (`manual clear`, `7`, `30`, `90` days) |
 
 ## What is NOT stored
 
@@ -35,6 +42,15 @@ No step in this pipeline writes audio or transcripts to disk by default.
 - Transcripts after the session. The conversation context is RAM-only and is cleared on app restart or after the TTL expires.
 - Full conversation recordings. Replyline captures short fragments (up to the configured max seconds), not entire calls.
 - Result cards after the session. Cards exist in the UI state only and are lost on app restart.
+
+## Reports, exports, and diagnostics
+
+- Interview reports are local-only artifacts and can include raw transcript content.
+- Markdown export is explicit user action only (never automatic).
+- `Export full markdown` includes transcript and is sensitive.
+- `Export redacted markdown` excludes transcript and is the safer share path.
+- Debug traces are controlled by Settings (`debugTraceMode`: `off` / `redacted` / `full_local`).
+- `debugTraceMode=full_local` can retain more sensitive local details and should be used only for local triage.
 
 ## External providers
 
@@ -44,6 +60,8 @@ Replyline sends data to two external services that the user configures:
 2. **LLM provider** (user-configured endpoint). Receives transcript text and context for analysis.
 
 Replyline does not control and is not responsible for how these providers store, log, or retain data sent to them. Users should review the privacy policies and data retention terms of their chosen providers independently.
+
+For remote providers, use trusted `https://` endpoints. Local `http://` is intended only for loopback/private-network local-provider setups.
 
 ## User control
 

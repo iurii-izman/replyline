@@ -1,10 +1,10 @@
-# Replyline Known Limitations (Internal Stable Beta)
+# Replyline Known Limitations (Public Beta Posture)
 
-Короткий список ограничений для честной внутренней stable beta.
+Короткий список ограничений для честного публичного beta posture.
 
 ## Stage and platform
 
-- Стадия: внутренняя русскоязычная stable beta.
+- Стадия: публичный beta posture (Windows-first, Russian-first).
 - Фокус: Windows-first (Tauri + Rust + Solid).
 - Публичный binary release не является целью текущего этапа.
 - Main window работает как обычное Windows desktop window (taskbar + Alt+Tab + native titlebar controls).

@@ -19,3 +19,20 @@
 - expected vs actual behavior
 - reproducible steps
 - relevant runtime artifact references (`reports/`, if available and sanitized)
+
+## Sensitive Data Safety (required)
+
+Do not attach or paste:
+
+- API keys, bearer tokens, or credential values
+- raw/full transcripts
+- full interview reports
+- raw Candidate Pack inputs (resume/JD/company notes)
+- provider response bodies
+- screenshots containing secrets or personal data
+- logs that still contain secrets
+
+Prefer redacted artifacts:
+
+- `Export redacted markdown (no transcript)` for interview report sharing
+- sanitized runtime artifacts from `reports/` only

@@ -40,6 +40,12 @@ assignees: []
 - `pnpm probe:runtime` status:
 - `pnpm evidence:bundle` status:
 
+## Sensitive data check (required)
+
+- [ ] I did NOT attach API keys, bearer tokens, or credential values.
+- [ ] I did NOT attach raw/full transcripts, full reports, or raw Candidate Pack input.
+- [ ] Any attached logs/screenshots are sanitized/redacted.
+
 ## Scope check
 
 - Does this block internal stable beta testing? (yes/no):

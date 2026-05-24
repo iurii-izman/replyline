@@ -1,6 +1,6 @@
 # Beta Readiness Handoff
 
-Single handoff doc for preparing an internal stable-beta build.
+Single handoff doc for preparing a public-beta-ready build posture.
 
 ## 1) Product scope
 
@@ -10,7 +10,7 @@ Replyline stable beta supports two bounded paths:
 - Interview Mode: interview preparation path with Candidate Pack and session report
 - Windows-first desktop tray workflow
 
-Out of scope for current beta:
+Out of scope for current beta posture:
 
 - no meeting assistant
 - no transcript tool

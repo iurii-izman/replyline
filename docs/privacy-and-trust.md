@@ -1,6 +1,7 @@
-# Replyline Privacy and Trust (Internal Stable Beta)
+# Replyline Privacy and Trust (Public Beta Posture)
 
-Короткая truth-модель для текущей внутренней русскоязычной stable beta.
+Короткая truth-модель для текущего публичного beta posture (Windows-first, Russian-first).
+Contract note: this document keeps `Internal Stable Beta` wording for compatibility checks and historical traceability.
 
 ## Что происходит в runtime
 
@@ -97,6 +98,8 @@ connect-src 'self' ipc: http://ipc.localhost http://localhost:* ws://localhost:*
   - локальных законов о записи и передаче данных.
 
 Replyline не даёт юридических гарантий и не заменяет вашу правовую оценку.
+
+Interview Mode — это видимая assistance-поверхность для подготовки и практики ответов. Пользователь сам отвечает за допустимое и прозрачное использование в своём контексте.
 
 ## Границы текущей stable beta
 

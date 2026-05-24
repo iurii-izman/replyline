@@ -13,6 +13,7 @@
     ".gitignore",
     ".prettierignore",
     "README.md",
+    "landing/index.html",
     "src/app/model.ts",
     "src/app/platform.ts",
     "src/app/controller.ts",
@@ -58,6 +59,7 @@
     "docs/beta-ops-diagnostics.md",
     "docs/known-limitations.md",
     "docs/privacy-and-trust.md",
+    "docs/privacy-policy.md",
     "docs/candidate-pack.md",
     "docs/interview-mode.md",
     "docs/third-party-providers.md",
@@ -108,7 +110,12 @@
     "tests/fixtures/runtime/settings-missing-optional.json",
     "tests/fixtures/runtime/settings-v7-legacy.json",
     "tests/fixtures/runtime/settings-v8-legacy.json",
-    "tests/fixtures/runtime/settings-v9-invalid-retention.json"
+    "tests/fixtures/runtime/settings-v9-invalid-retention.json",
+    ".github/SECURITY.md",
+    ".github/SUPPORT.md",
+    ".github/ISSUE_TEMPLATE/bug_report.md",
+    ".github/ISSUE_TEMPLATE/feature_request.md",
+    ".github/ISSUE_TEMPLATE/beta_handoff_release.md"
   ],
   "guardrailPathRegexes": ["^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"],
   "allowlistPrefixes": [

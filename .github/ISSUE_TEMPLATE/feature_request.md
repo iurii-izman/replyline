@@ -36,3 +36,9 @@ What is the smallest version of this request that would still help now?
 - Scenario(s) where this was needed:
 - Why current behavior was insufficient:
 - Any artifacts/notes from `docs/test-feedback-template.md`:
+
+## Sensitive data check (required)
+
+- [ ] I did NOT attach API keys, bearer tokens, or credential values.
+- [ ] I did NOT attach raw/full transcripts, full reports, or raw Candidate Pack input.
+- [ ] Any attached logs/screenshots are sanitized/redacted.

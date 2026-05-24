@@ -21,6 +21,15 @@ Include:
 - impact assessment (data exposure, privilege, integrity)
 - logs/artifacts with secrets removed
 
+Do not include:
+
+- API keys, bearer tokens, or credential values
+- raw/full transcripts or full interview reports
+- raw Candidate Pack values (resume/JD/company)
+- provider response bodies containing sensitive data
+
+If possible, attach redacted/sanitized artifacts and minimal reproduction steps.
+
 ## Response Expectations
 
 - Initial acknowledgment target: within 72 hours

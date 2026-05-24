@@ -2,9 +2,9 @@
 
 Replyline должен звучать как спокойный рабочий инструмент: конкретно, честно, без магии.
 
-## Current stable-beta truth
+## Current public-beta truth
 
-- текущая стадия: внутренняя русскоязычная stable beta
+- текущая стадия: публичный beta posture (Windows-first, Russian-first)
 - два bounded пути: WorkConversation (`gist / say_now / next_move`) и Interview Mode (`InterviewCardSchemaV1`)
 - multilingual expansion может готовиться архитектурно, но не продаётся как готовая сейчас
 
