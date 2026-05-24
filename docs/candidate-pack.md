@@ -22,6 +22,13 @@
 
 These rules are enforced by interview quality fixtures and checks.
 
+## Cloud/local boundary
+
+- Raw `resume`, raw `job description`, raw `company values` stay local until user explicitly runs `prepare_candidate_pack`.
+- During `prepare_candidate_pack`, relevant content is sent to the configured LLM provider for draft generation.
+- Saved compact context (`candidate-pack.v1.json`) stays local.
+- By default, saved Candidate Pack context is used for Interview Mode only (active interview session), not WorkConversation.
+
 ## What is sent to LLM
 
 During `prepare_candidate_pack`, Replyline sends:
@@ -32,6 +39,7 @@ During `prepare_candidate_pack`, Replyline sends:
 - Fixed preparation system prompt with anti-fabrication rules
 
 During Interview Mode card generation, compact Candidate Pack context can be included in LLM context to anchor answers.
+WorkConversation generation excludes Candidate Pack context by default.
 
 ## Privacy caveats
 

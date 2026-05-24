@@ -11,6 +11,8 @@ Interview Mode is designed for interview preparation and allowed assistance.
 
 - No stealth cheating features.
 - No hidden audio-capture behavior.
+- Use only where interview assistance is allowed by employer/platform/law.
+- Replyline is a visible local UI assistant (no hidden/click-through workflow).
 - No claims of guaranteed correctness for every question.
 
 ## Runtime switch and card contracts
@@ -21,6 +23,7 @@ Interview Mode is designed for interview preparation and allowed assistance.
   - Interview path is active only while interview session is active (`start_interview_session` -> `end_interview_session`).
   - Otherwise runtime uses WorkConversation path.
 - `retry_last_analysis` reuses the latest available mode; fallback mode is WorkConversation.
+- WorkConversation path excludes Candidate Pack context by default.
 
 Reference: `docs/adr/0001-interview-card-engine.md`.
 
@@ -57,6 +60,7 @@ Storage and export boundaries:
 - Report store is local-only (`%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json`).
 - Reports are never exported unless user explicitly calls `export_interview_report_markdown`.
 - Safer sharing path: prefer `export_interview_report_redacted_markdown` for external sharing.
+- Full export warning: `export_interview_report_markdown` can include raw transcript text and should be treated as sensitive.
 
 ## Prompt profiles
 

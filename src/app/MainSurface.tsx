@@ -107,6 +107,9 @@ function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
           {st().card.interview.sessionChipPrefix} {activeSessionQuestions()}
         </p>
       </Show>
+      <p class="empty-flow-hint" data-testid="interview-trust-note-idle">
+        {st().card.interview.allowedUseBoundary}
+      </p>
       <div class="action-group">
         <button
           class="btn-primary"
@@ -263,6 +266,9 @@ function WorkspaceSidePanel(props: Readonly<{ controller: ReplylineController }>
             </Show>
           </div>
           <div class="action-group side-panel-actions">
+            <p class="empty-flow-hint" data-testid="interview-trust-note-side">
+              {st().card.interview.allowedUseBoundary}
+            </p>
             <button
               class="btn-secondary"
               type="button"

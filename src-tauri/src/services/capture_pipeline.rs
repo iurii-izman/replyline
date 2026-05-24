@@ -73,6 +73,22 @@ fn mode_from_last_card(last_card: Option<&AnalysisCardDto>) -> Option<AnalysisMo
     })
 }
 
+fn combine_context_with_candidate(
+    context_text: &str,
+    candidate_context: &str,
+    mode: AnalysisMode,
+) -> String {
+    let base = context_text.trim();
+    if mode != AnalysisMode::Interview || candidate_context.trim().is_empty() {
+        return base.to_string();
+    }
+    if base.is_empty() {
+        format!("Candidate context:\n{}", candidate_context.trim())
+    } else {
+        format!("{base}\n\nCandidate context:\n{}", candidate_context.trim())
+    }
+}
+
 pub async fn capture_stop_and_analyze(
     state: &ReplylineState,
     app: &AppHandle,
@@ -327,32 +343,29 @@ pub async fn capture_stop_and_analyze(
             .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
         context.formatted_context()
     };
-    let candidate_context = candidate_pack::load()
-        .ok()
-        .flatten()
-        .map(|pack| candidate_pack::compact_context(&pack))
-        .unwrap_or_default();
-    let combined_context = if candidate_context.trim().is_empty() {
-        context_text
-    } else if context_text.trim().is_empty() {
-        format!("Candidate context:\n{candidate_context}")
-    } else {
-        format!("{context_text}\n\nCandidate context:\n{candidate_context}")
-    };
-    let _ = app_log::append_event(
-        "candidate_pack_context_status",
-        format!(
-            "pack_active={} candidate_context_chars={}",
-            !candidate_context.trim().is_empty(),
-            candidate_context.chars().count()
-        ),
-    );
-
     let mode = if is_interview_session_active(state)? {
         AnalysisMode::Interview
     } else {
         AnalysisMode::WorkConversation
     };
+    let candidate_context = candidate_pack::load()
+        .ok()
+        .flatten()
+        .map(|pack| candidate_pack::compact_context(&pack))
+        .unwrap_or_default();
+    let combined_context = combine_context_with_candidate(&context_text, &candidate_context, mode);
+    let _ = app_log::append_event(
+        "candidate_pack_context_status",
+        format!(
+            "pack_active={} mode={} candidate_context_chars={}",
+            mode == AnalysisMode::Interview && !candidate_context.trim().is_empty(),
+            match mode {
+                AnalysisMode::Interview => "interview",
+                AnalysisMode::WorkConversation => "work",
+            },
+            candidate_context.chars().count()
+        ),
+    );
     if let Some(ref rid) = run_id {
         let _ = observability::log_audit(
             "llm_request_start",
@@ -626,13 +639,7 @@ pub async fn retry_last_analysis(
         .flatten()
         .map(|pack| candidate_pack::compact_context(&pack))
         .unwrap_or_default();
-    let combined_context = if candidate_context.trim().is_empty() {
-        context_text
-    } else if context_text.trim().is_empty() {
-        format!("Candidate context:\n{candidate_context}")
-    } else {
-        format!("{context_text}\n\nCandidate context:\n{candidate_context}")
-    };
+    let combined_context = combine_context_with_candidate(&context_text, &candidate_context, mode);
     let card = match llm_provider::analyze_transcript(
         if trace_redacted_enabled {
             Some(&run_id)
@@ -725,7 +732,7 @@ pub async fn retry_last_analysis(
 
 #[cfg(test)]
 mod tests {
-    use super::mode_from_last_card;
+    use super::{combine_context_with_candidate, mode_from_last_card};
     use crate::providers::llm_provider::AnalysisMode;
     use crate::types::AnalysisCardDto;
 
@@ -786,5 +793,27 @@ mod tests {
             mode_from_last_card(Some(&card)),
             Some(AnalysisMode::Interview)
         );
+    }
+
+    #[test]
+    fn work_mode_excludes_candidate_context_by_default() {
+        let combined = combine_context_with_candidate(
+            "Recent conversation context",
+            "Candidate summary: Senior Rust engineer",
+            AnalysisMode::WorkConversation,
+        );
+        assert_eq!(combined, "Recent conversation context");
+        assert!(!combined.contains("Candidate context:"));
+    }
+
+    #[test]
+    fn interview_mode_can_include_candidate_context() {
+        let combined = combine_context_with_candidate(
+            "Recent conversation context",
+            "Candidate summary: Senior Rust engineer",
+            AnalysisMode::Interview,
+        );
+        assert!(combined.contains("Candidate context:"));
+        assert!(combined.contains("Candidate summary: Senior Rust engineer"));
     }
 }

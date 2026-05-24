@@ -29,6 +29,8 @@
 - Есть два явных export-действия:
   - `Export full markdown (includes transcript)` — включает raw/full transcript и считается sensitive.
   - `Export redacted markdown (no transcript)` — safer share copy, исключает raw/full transcript.
+- В WorkConversation Candidate Pack context по умолчанию не добавляется.
+- Candidate Pack context включается только в Interview Mode при активной interview session.
 - Settings diagnostics surface:
   - `debugTraceMode=redacted` (default) пишет только санитизированные traces.
   - `debugTraceMode=full_local` может сохранять более чувствительный локальный контент и должен использоваться только для локального triage.
@@ -79,6 +81,7 @@ connect-src 'self' ipc: http://ipc.localhost http://localhost:* ws://localhost:*
 - После отпускания hotkey фрагмент отправляется в Deepgram для распознавания речи (STT).
 - Текстовый контекст/фрагмент отправляется во внешний LLM-провайдер, который вы настроили.
 - Какие cloud STT/LLM провайдеры получают audio/text, определяется вашей конфигурацией в Settings.
+- Для Candidate Pack: raw resume/JD/company значения локальны до явного запуска preparation; при preparation релевантный контент может уйти в LLM-провайдер; сохранённый compact context хранится локально.
 - Политики хранения/логирования у этих провайдеров определяются их условиями, а не Replyline.
 
 ### Local vs Cloud URL policy

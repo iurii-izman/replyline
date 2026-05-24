@@ -179,6 +179,9 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
             />
           </label>
           <p class="candidate-pack-privacy-note">{st().settings.privacyNote}</p>
+          <p class="field-help" data-testid="candidate-pack-boundary-note">
+            {st().settings.candidatePackBoundaryNote}
+          </p>
         </section>
 
         <section

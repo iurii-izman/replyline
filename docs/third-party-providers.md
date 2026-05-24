@@ -6,6 +6,7 @@ Replyline не является полностью on-device системой п
 
 - **STT provider (Deepgram path):** получает released audio snippet для распознавания речи.
 - **LLM provider (OpenAI-compatible route):** получает transcript/context для генерации `gist / say_now / next_move`.
+- **Candidate Pack prepare path (LLM provider):** может получать релевантные части raw resume/JD/company text при явном действии `prepare_candidate_pack`.
 
 ## OpenRouter preset notes
 
@@ -21,6 +22,7 @@ Replyline не является полностью on-device системой п
 - Когда захват останавливается (при отпускании).
 - Локальное хранение настроек и секретов.
 - Базовый формат выходной карточки.
+- Границу mode usage: Candidate Pack context применяется в Interview Mode (active session), не в WorkConversation по умолчанию.
 
 ## What Replyline does not control
 

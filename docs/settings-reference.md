@@ -30,6 +30,16 @@ Recommendations are not fixed forever: model quality/cost/latency can change ove
 
 No Advanced Mode fields in user-facing settings contract.
 
+## Mode boundary reminders
+
+- Candidate Pack is prepared/saved locally but preparation can call the configured cloud LLM provider.
+- Saved Candidate Pack compact context is used by default for Interview Mode (active session), not WorkConversation.
+
+## Report/export sensitivity
+
+- Full report markdown export includes transcript and must be treated as sensitive.
+- Redacted report markdown export excludes raw/full transcript and is the safer sharing path.
+
 ## Local diagnostics controls
 
 - `debugTraceMode=off`: no local debug trace artifacts.

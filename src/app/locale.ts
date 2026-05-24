@@ -146,6 +146,8 @@ export const ui_ru = {
         clearReportsDanger: "Удаляет все локальные отчёты без возможности восстановления.",
       },
       sessionChipPrefix: "Сессия активна · Вопросов:",
+      allowedUseBoundary:
+        "Используйте только там, где это разрешено. Replyline работает как видимый локальный ассистент (без hidden overlay/click-through); transcript и контекст могут обрабатываться cloud STT/LLM провайдерами.",
     },
   },
   setup: {
@@ -317,7 +319,9 @@ export const ui_ru = {
     clearCandidatePack: "Очистить профиль",
     backToSettings: "Назад в настройки",
     privacyNote:
-      "Данные хранятся локально, используются для подготовки профиля. Не вставляйте секреты.",
+      "Сырой resume/JD/company текст остаётся локально до запуска подготовки. Не вставляйте секреты.",
+    candidatePackBoundaryNote:
+      "При «Подготовить профиль» релевантные части могут уйти в выбранный LLM-провайдер. Сохранённый compact context хранится локально и по умолчанию используется в Interview Mode, а не в WorkConversation.",
     inputPanelTitle: "Исходные данные",
     inputPanelHint: "Заполните исходные данные кандидата и роли.",
     previewPanelTitle: "Предпросмотр и качество",
@@ -541,6 +545,8 @@ export const ui_en: UiStrings = {
         clearReportsDanger: "Deletes all local reports and cannot be undone.",
       },
       sessionChipPrefix: "Session active · Questions:",
+      allowedUseBoundary:
+        "Use only where allowed. Replyline is a visible local assistant (no hidden overlay/click-through); transcript and context may be processed by cloud STT/LLM providers.",
     },
   },
   setup: {
@@ -711,7 +717,10 @@ export const ui_en: UiStrings = {
     saveCandidatePack: "Save profile",
     clearCandidatePack: "Clear profile",
     backToSettings: "Back to Settings",
-    privacyNote: "Stored locally and used to prepare the profile. Do not paste secrets.",
+    privacyNote:
+      "Raw resume/JD/company text stays local before you run preparation. Do not paste secrets.",
+    candidatePackBoundaryNote:
+      'When you click "Prepare profile", relevant content may be sent to your configured LLM provider. Saved compact context stays local and is used by default for Interview Mode, not WorkConversation.',
     inputPanelTitle: "Input",
     inputPanelHint: "Provide source candidate and role context.",
     previewPanelTitle: "Preview and quality",

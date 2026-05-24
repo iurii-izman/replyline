@@ -74,6 +74,9 @@ describe("MainSurface state-driven view", () => {
   it("idle state renders readiness without side panel", () => {
     render(() => <MainSurface controller={createController(ui_ru) as never} />);
     expect(screen.getByTestId("main-state-idle")).toBeTruthy();
+    expect(screen.getByTestId("interview-trust-note-idle").textContent).toContain(
+      "видимый локальный ассистент",
+    );
     expect(screen.queryByTestId("main-side-panel")).toBeNull();
     expect(screen.queryByTestId("action-row")).toBeNull();
   });
