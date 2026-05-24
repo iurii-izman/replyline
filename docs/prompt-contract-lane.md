@@ -38,6 +38,11 @@ Default mode is deterministic and local-only. Scenario checks add a small produc
 
 For those claims, use runtime lanes and evidence artifacts.
 
+## Related guards
+
+- `scripts/check-prompt-contract.mjs` — prompt/schema/copy regression checks
+- `scripts/check-ipc-handler-contract.mjs` — IPC registration + category drift checks
+
 See also:
 
 - `docs/verification-lanes.md`

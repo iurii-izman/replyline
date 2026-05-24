@@ -32,6 +32,29 @@ const secretPatterns = [
   /\bdg_[a-z0-9]{16,}\b/iu,
 ];
 
+const fixtureCases = [
+  {
+    name: "settings-vcurrent.json",
+    expectedMissingFields: [],
+  },
+  {
+    name: "settings-missing-optional.json",
+    expectedMissingFields: [],
+  },
+  {
+    name: "settings-v7-legacy.json",
+    expectedMissingFields: ["debugTraceMode", "debugTraceRetentionDays"],
+  },
+  {
+    name: "settings-v8-legacy.json",
+    expectedMissingFields: ["debugTraceMode", "debugTraceRetentionDays"],
+  },
+  {
+    name: "settings-v9-invalid-retention.json",
+    expectedMissingFields: [],
+  },
+];
+
 function fail(message) {
   console.error(message);
   process.exit(1);
@@ -47,7 +70,8 @@ function parseJsonOrFail(raw, messagePrefix) {
   }
 }
 
-function runFixtureCase(fixtureName) {
+function runFixtureCase(fixtureCase) {
+  const fixtureName = fixtureCase.name;
   const fixturePath = join(cwd, "tests", "fixtures", "runtime", fixtureName);
 
   const fixtureRaw = readFileSync(fixturePath, "utf8");
@@ -99,11 +123,13 @@ function runFixtureCase(fixtureName) {
     Array.isArray(missingExpectedFields),
     `schema.missingExpectedFields is not an array (${fixtureName})`,
   );
-  if (missingExpectedFields.length > 0) {
-    fail(
-      `schema.missingExpectedFields must be empty (${fixtureName}): ${missingExpectedFields.join(", ")}`,
-    );
-  }
+
+  const expectedMissingFieldsSorted = [...fixtureCase.expectedMissingFields].sort();
+  const actualMissingFieldsSorted = [...missingExpectedFields].sort();
+  assert(
+    JSON.stringify(actualMissingFieldsSorted) === JSON.stringify(expectedMissingFieldsSorted),
+    `Unexpected schema.missingExpectedFields (${fixtureName}): expected=${expectedMissingFieldsSorted.join(", ")} actual=${actualMissingFieldsSorted.join(", ")}`,
+  );
 
   if ("primaryLanguage" in configuredFields) {
     fail(`configuredFields must not require legacy primaryLanguage (${fixtureName})`);
@@ -127,7 +153,8 @@ function runFixtureCase(fixtureName) {
   }
 }
 
-runFixtureCase("settings-vcurrent.json");
-runFixtureCase("settings-missing-optional.json");
+for (const fixtureCase of fixtureCases) {
+  runFixtureCase(fixtureCase);
+}
 
 console.log("Runtime preflight contract OK: fixture mode passes without legacy schema drift.");

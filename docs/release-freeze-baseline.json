@@ -22,6 +22,7 @@
     "src-tauri/src/llm.rs",
     "src-tauri/src/card_v3.rs",
     "docs/release-readiness.md",
+    "docs/architecture.md",
     "docs/verification-lanes.md",
     "docs/smoke-checks.md",
     "docs/copy-rules.md",
@@ -29,6 +30,8 @@
     "docs/release-freeze-baseline.json",
     "docs/ai-tooling-policy-matrix.md",
     "docs/card-schema-v3-migration.md",
+    "docs/error-catalog.md",
+    "docs/prompt-contract-lane.md",
     "docs/local-roo-workflow.md",
     "scripts/check-consistency.mjs",
     "scripts/check-prompt-contract.mjs",
@@ -102,7 +105,10 @@
     "src/app/controller/index.ts",
     "src/app/locale.ts",
     "tests/fixtures/runtime/settings-vcurrent.json",
-    "tests/fixtures/runtime/settings-missing-optional.json"
+    "tests/fixtures/runtime/settings-missing-optional.json",
+    "tests/fixtures/runtime/settings-v7-legacy.json",
+    "tests/fixtures/runtime/settings-v8-legacy.json",
+    "tests/fixtures/runtime/settings-v9-invalid-retention.json"
   ],
   "guardrailPathRegexes": ["^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"],
   "allowlistPrefixes": [

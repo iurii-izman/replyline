@@ -59,3 +59,4 @@ To force legacy-only parsing during an incident, revert `src-tauri/src/card_v3.r
 - `docs/architecture.md` — card pipeline overview
 - `docs/error-catalog.md` — `RL_CARD_INVALID` and runtime event fields
 - `docs/prompt-contract-lane.md` — deterministic contract checks
+- `tests/fixtures/runtime/settings-v7-legacy.json` + `settings-v8-legacy.json` — legacy install migration fixtures

@@ -1,7 +1,6 @@
 # Error Catalog
 
-All structured errors that flow through Replyline's IPC boundary, from Rust backend
-to Solid.js frontend, and their user-facing guidance.
+All structured errors that flow through Replyline's IPC boundary, from Rust backend to Solid.js frontend, and their user-facing guidance.
 
 ## CommandError Kinds
 
@@ -17,12 +16,12 @@ to Solid.js frontend, and their user-facing guidance.
 
 When a `CommandError` is received:
 
-1. `parseCommandInvokeError()` extracts `{kind, message}` from the JSON envelope
-2. `settingsAnchorForCommandErrorKind()` maps `kind` to a DOM anchor
-3. ChromeSurface shows an error bar with a context-specific action button
-4. Clicking the button scrolls SettingsSurface to the relevant section
+1. `parseCommandInvokeError()` extracts `{kind, message}` from the JSON envelope.
+2. `settingsAnchorForCommandErrorKind()` maps `kind` to a DOM anchor.
+3. Main UI error bar shows a context-specific action button.
+4. Clicking the button scrolls `SettingsSurface` to the relevant section.
 
-## Settings Validation Errors (mapSettingsSaveError)
+## Settings Validation Errors (`mapSettingsSaveError`)
 
 | Backend code            | User message                                  |
 | ----------------------- | --------------------------------------------- |
@@ -35,7 +34,7 @@ When a `CommandError` is received:
 | `IO:`                   | Не записался файл настроек                    |
 | `JSON`                  | Сбой записи настроек                          |
 
-## Pipeline Error Heuristics (userSafePipelineError)
+## Pipeline Error Heuristics (`userSafePipelineError`)
 
 | Pattern match           | User message                                      |
 | ----------------------- | ------------------------------------------------- |
@@ -47,6 +46,12 @@ When a `CommandError` is received:
 | `Card output invalid`   | Карточка слишком расплывчатая                     |
 | `gateway / 401 / fetch` | Нет ответа шлюза: адрес, модель, ключ → Настройки |
 | _(fallback)_            | Цепочка оборвалась: настройки, ключи, сеть        |
+
+## Privacy and Provider-Body Safety
+
+- Provider HTTP response bodies are not surfaced in user-facing messages.
+- Pipeline logging uses sanitized summaries (`safe_preview`, error class/code, bounded detail).
+- Secrets and raw provider payloads must never be emitted into UI strings.
 
 ## Diagnostic Runtime Event Contract
 
@@ -67,8 +72,8 @@ This contract is exported into bundle file `diagnostics/runtime-events.json`.
 
 ## Adding New Error Types
 
-1. Add variant to `CommandError` in `src-tauri/src/types.rs`
-2. Add mapping in `settingsAnchorForCommandErrorKind()` in `src/app/model.ts`
-3. Add user-facing pattern match in the relevant `userSafe*Error()` function
-4. Update IPC handler count in `scripts/check-ipc-handler-contract.mjs`
-5. Update this catalog
+1. Add variant to `CommandError` in `src-tauri/src/types.rs`.
+2. Add mapping in `settingsAnchorForCommandErrorKind()` in `src/app/model.ts`.
+3. Add user-facing pattern match in the relevant `userSafe*Error()` function.
+4. Ensure IPC command categorization/registration checks stay green in `scripts/check-ipc-handler-contract.mjs`.
+5. Update this catalog.

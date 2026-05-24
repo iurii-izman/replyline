@@ -486,6 +486,22 @@ fn is_local_http_host(host: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn fixture_json(name: &str) -> serde_json::Value {
+        let raw = match name {
+            "settings-v7-legacy.json" => {
+                include_str!("../../tests/fixtures/runtime/settings-v7-legacy.json")
+            }
+            "settings-v8-legacy.json" => {
+                include_str!("../../tests/fixtures/runtime/settings-v8-legacy.json")
+            }
+            "settings-v9-invalid-retention.json" => {
+                include_str!("../../tests/fixtures/runtime/settings-v9-invalid-retention.json")
+            }
+            other => panic!("unknown fixture: {other}"),
+        };
+        serde_json::from_str(raw).expect("valid fixture json")
+    }
     use std::sync::{Mutex, OnceLock};
 
     fn settings_override_env_lock() -> &'static Mutex<()> {
@@ -668,6 +684,34 @@ mod tests {
         assert_eq!(migrated["schemaVersion"], 9);
         assert_eq!(migrated["debugTraceMode"], "redacted");
         assert_eq!(migrated["debugTraceRetentionDays"], 3);
+    }
+
+    #[test]
+    fn fixture_v7_migrates_to_v9_shape() {
+        let migrated = super::migrate_settings(fixture_json("settings-v7-legacy.json"));
+        assert_eq!(migrated["schemaVersion"], 9);
+        assert_eq!(migrated["debugTraceMode"], "redacted");
+        assert_eq!(migrated["debugTraceRetentionDays"], 3);
+    }
+
+    #[test]
+    fn fixture_v8_migrates_to_v9_shape() {
+        let migrated = super::migrate_settings(fixture_json("settings-v8-legacy.json"));
+        assert_eq!(migrated["schemaVersion"], 9);
+        assert_eq!(migrated["debugTraceMode"], "redacted");
+        assert_eq!(migrated["debugTraceRetentionDays"], 3);
+        assert!(migrated.get("traceIncludeContent").is_none());
+    }
+
+    #[test]
+    fn fixture_v9_invalid_retention_is_rejected() {
+        let value = fixture_json("settings-v9-invalid-retention.json");
+        let settings: AppSettings =
+            serde_json::from_value(value).expect("fixture must deserialize into AppSettings");
+        assert!(matches!(
+            validate(&settings),
+            Err(SettingsError::RetentionPolicyInvalid)
+        ));
     }
 
     #[test]

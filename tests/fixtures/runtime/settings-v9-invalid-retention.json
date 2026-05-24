@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 9,
+  "hotkey": "Ctrl+Alt+Space",
+  "llmBaseUrl": "https://openrouter.ai/api/v1",
+  "llmModel": "openai/gpt-4o-mini",
+  "selectedModelPreset": "openrouter_gpt_4o_mini",
+  "captureMaxSeconds": 45,
+  "activeAnswerProfile": "interview_default",
+  "windowOpacity": 100,
+  "hideToTrayOnClose": true,
+  "keepOnTopDuringCapture": false,
+  "interviewCompactMode": false,
+  "interviewReportRetentionDays": 15,
+  "debugTraceMode": "redacted",
+  "debugTraceRetentionDays": 5
+}
