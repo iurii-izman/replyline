@@ -49,6 +49,8 @@
     "package.json",
     "reports/release/release-readiness-2026-05-21.md",
     "docs/README.md",
+    "docs/max-upgrade-execution-prompts.md",
+    "docs/max-upgrade-implementation-plan.md",
     "docs/release-local-readiness.md",
     "docs/script-lifecycle-matrix.md",
     "scripts/check-report-secret-leaks.mjs",
