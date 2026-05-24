@@ -15,6 +15,15 @@ Use this quick template per workstation/session:
 
 If current signals are unknown, keep app-level claims as `pending verification`.
 
+### Session snapshot (2026-05-24)
+
+- Workstation: Windows (`C:\Dev\replyline`)
+- Microsoft Teams: `unknown` (not verified in this run)
+- Zoom: `unknown` (not verified in this run)
+- Yandex Telemost: `unknown` (not verified in this run)
+- browser clients (Chrome/Edge): `unknown` (not verified in this run)
+- Runtime live-source command status: completed with generated artifacts, but all scenario runs failed because `pnpm probe:runtime` returned `DEEPGRAM_API_KEY is missing.`
+
 ## What can be tested automatically today
 
 - TTS-driven loopback runtime proof

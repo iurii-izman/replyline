@@ -14,6 +14,7 @@ const matrix = {
     "verify:fast",
     "verify:full",
     "verify:extended",
+    "scripts:lifecycle",
     "test:quick",
     "beta:preflight",
     "test:security-lanes",
@@ -44,7 +45,6 @@ const matrix = {
     "serve",
     "tauri",
     "test:rust",
-    "test:consistency",
     "test:doc-links",
     "test:manual-closure-pack",
     "test:fixture-gate",
@@ -62,6 +62,7 @@ const matrix = {
     "evidence:bundle",
     "runtime:preflight",
     "check:slo",
+    "test:slo-budget",
     "parse:latency",
     "test:latency-parser",
     "test:runtime-answer-quality",
@@ -104,7 +105,6 @@ const matrix = {
     "test:optional:e2e:web",
     "test:optional:e2e:desktop",
     "test:optional:ux:lighthouse",
-    "scripts:lifecycle",
   ],
   experimental: [
     "test:perf:k6",
@@ -117,8 +117,16 @@ const matrix = {
 };
 
 const missing = [];
-for (const list of Object.values(matrix)) {
+const duplicateAcrossClasses = [];
+const classByScript = new Map();
+for (const [className, list] of Object.entries(matrix)) {
   for (const name of list) {
+    const prevClass = classByScript.get(name);
+    if (prevClass) {
+      duplicateAcrossClasses.push(`${name} (${prevClass} + ${className})`);
+    } else {
+      classByScript.set(name, className);
+    }
     if (!scripts[name]) missing.push(name);
   }
 }
@@ -126,8 +134,13 @@ for (const list of Object.values(matrix)) {
 const classified = new Set(Object.values(matrix).flat());
 const unclassified = Object.keys(scripts).filter((name) => !classified.has(name));
 
-if (missing.length > 0 || unclassified.length > 0) {
+if (missing.length > 0 || unclassified.length > 0 || duplicateAcrossClasses.length > 0) {
   console.error(`[script-lifecycle] missing scripts: ${missing.join(", ")}`);
+  if (duplicateAcrossClasses.length > 0) {
+    console.error(
+      `[script-lifecycle] duplicate lifecycle classification: ${duplicateAcrossClasses.join(", ")}`,
+    );
+  }
   if (unclassified.length > 0) {
     console.error(`[script-lifecycle] unclassified scripts: ${unclassified.join(", ")}`);
   }

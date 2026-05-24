@@ -12,6 +12,7 @@ const REQUIRED_SCRIPTS = [
   "verify:fast",
   "verify:full",
   "verify:release-local",
+  "scripts:lifecycle",
   "test:security-lanes",
   "test:public-footprint",
   "test:runtime-quality",
@@ -263,9 +264,17 @@ export function runReleaseReadiness(options = {}) {
 
   const blockers = [];
   const warnings = [];
+  const staticGateBlockers = [];
+  const dependencySecurityBlockers = [];
+  const runtimeArtifactBlockers = [];
+  const releaseFreezeBlockers = [];
 
   for (const scriptName of REQUIRED_SCRIPTS) {
-    if (!hasScript(pkg, scriptName)) blockers.push(`Missing required script: ${scriptName}`);
+    if (!hasScript(pkg, scriptName)) {
+      const msg = `Missing required script: ${scriptName}`;
+      blockers.push(msg);
+      staticGateBlockers.push(msg);
+    }
   }
 
   if (!hasScript(pkg, "test:product-scenarios")) {
@@ -273,7 +282,9 @@ export function runReleaseReadiness(options = {}) {
   }
 
   if (!hasScript(pkg, "report:release-readiness")) {
-    blockers.push("Missing required script: report:release-readiness");
+    const msg = "Missing required script: report:release-readiness";
+    blockers.push(msg);
+    staticGateBlockers.push(msg);
   }
 
   const verifyFast = pkg.scripts?.["verify:fast"] ?? "";
@@ -283,32 +294,45 @@ export function runReleaseReadiness(options = {}) {
     !verifyFast.includes("pnpm test:security-lanes") ||
     !verifyFast.includes("pnpm test:public-footprint")
   ) {
-    blockers.push(
-      "verify:fast is missing or weakened (must include smoke + security-lanes + public-footprint).",
-    );
+    const msg =
+      "verify:fast is missing or weakened (must include smoke + security-lanes + public-footprint).";
+    blockers.push(msg);
+    staticGateBlockers.push(msg);
   }
 
   if (!sonarConfigPresent) {
-    blockers.push("Missing sonar-project.properties while Sonar readiness is part of policy.");
+    const msg = "Missing sonar-project.properties while Sonar readiness is part of policy.";
+    blockers.push(msg);
+    dependencySecurityBlockers.push(msg);
   }
   if (!sonarResidualReport.pass) {
-    blockers.push("Sonar residual readiness report generation failed policy checks.");
+    const msg = "Sonar residual readiness report generation failed policy checks.";
+    blockers.push(msg);
+    dependencySecurityBlockers.push(msg);
   }
 
   if (!runtimeSummaryToday) {
-    blockers.push("Missing runtime quality summary for today.");
+    const msg = "Missing runtime quality summary for today.";
+    blockers.push(msg);
+    runtimeArtifactBlockers.push(msg);
   }
 
   const hasProductScenarioScript = hasScript(pkg, "test:product-scenarios");
   if (hasProductScenarioScript && !productScenarioToday) {
-    blockers.push("Missing product scenario benchmark report for today.");
+    const msg = "Missing product scenario benchmark report for today.";
+    blockers.push(msg);
+    runtimeArtifactBlockers.push(msg);
   }
 
   if (!existsSync(join(root, "scripts", "check-public-footprint.mjs"))) {
-    blockers.push("Public footprint test config missing: scripts/check-public-footprint.mjs");
+    const msg = "Public footprint test config missing: scripts/check-public-footprint.mjs";
+    blockers.push(msg);
+    dependencySecurityBlockers.push(msg);
   }
   if (!existsSync(join(root, "scripts", "check-report-secret-leaks.mjs"))) {
-    blockers.push("Report secret leak scan script missing: scripts/check-report-secret-leaks.mjs");
+    const msg = "Report secret leak scan script missing: scripts/check-report-secret-leaks.mjs";
+    blockers.push(msg);
+    dependencySecurityBlockers.push(msg);
   }
 
   const freezePresent = Boolean(freeze);
@@ -317,14 +341,20 @@ export function runReleaseReadiness(options = {}) {
     ((freeze.outsideGuardrails?.length ?? 0) > 0 || (freeze.outsideFreeze?.length ?? 0) > 0),
   );
   if (freezeHasOutsideGuardrails) {
-    blockers.push("Release freeze report has files outside guardrails.");
+    const msg = "Release freeze report has files outside guardrails.";
+    blockers.push(msg);
+    releaseFreezeBlockers.push(msg);
   }
 
   if (!sonarResidualToday && sonarConfigPresent) {
-    blockers.push("Sonar residual readiness report for today is missing after auto-generation.");
+    const msg = "Sonar residual readiness report for today is missing after auto-generation.";
+    blockers.push(msg);
+    dependencySecurityBlockers.push(msg);
   }
   if (!liveEvidencePack.pass) {
-    blockers.push("Live evidence pack is missing required automated artifacts.");
+    const msg = "Live evidence pack is missing required automated artifacts.";
+    blockers.push(msg);
+    runtimeArtifactBlockers.push(msg);
   }
 
   warnings.push(
@@ -336,13 +366,15 @@ export function runReleaseReadiness(options = {}) {
 
   const secretLeakScan = scanReportSecretLeaks({ repoRoot: root });
   if (secretLeakScan.violations.length > 0) {
-    blockers.push("Secret-like patterns detected in reports/docs/.env.docker.example.");
+    const msg = "Secret-like patterns detected in reports/docs/.env.docker.example.";
+    blockers.push(msg);
+    dependencySecurityBlockers.push(msg);
   }
 
   if (existsSync(join(root, ".env"))) {
-    blockers.push(
-      "Tracked/working .env file detected in repository root; keep secrets local-only.",
-    );
+    const msg = "Tracked/working .env file detected in repository root; keep secrets local-only.";
+    blockers.push(msg);
+    dependencySecurityBlockers.push(msg);
   }
 
   const envDockerExample = readText(join(root, ".env.docker.example"));
@@ -350,7 +382,9 @@ export function runReleaseReadiness(options = {}) {
     const suspiciousEnvValue =
       /(?:OPENAI_API_KEY|DEEPGRAM_API_KEY|LANGFUSE_SECRET_KEY|POSTGRES_PASSWORD)\s*=\s*(?!\s*(?:\[redacted\]|change-me|placeholder|example|<value>|your[_-]|fake|local-id))/i;
     if (suspiciousEnvValue.test(envDockerExample)) {
-      blockers.push(".env.docker.example contains non-placeholder secret-looking values.");
+      const msg = ".env.docker.example contains non-placeholder secret-looking values.";
+      blockers.push(msg);
+      dependencySecurityBlockers.push(msg);
     }
   }
 
@@ -391,6 +425,12 @@ export function runReleaseReadiness(options = {}) {
     `- warnings: ${warnings.length}`,
     `- overall score: ${risk.overallScore}`,
     `- overall status: ${risk.overallStatus}`,
+    "",
+    "## Gate Domains",
+    `- static gate blockers: ${staticGateBlockers.length}`,
+    `- dependency/security blockers: ${dependencySecurityBlockers.length}`,
+    `- runtime evidence blockers: ${runtimeArtifactBlockers.length}`,
+    `- release-freeze blockers: ${releaseFreezeBlockers.length}`,
     "",
     "## Required Script Presence",
     ...REQUIRED_SCRIPTS.map((name) => `- ${name}: ${hasScript(pkg, name) ? "present" : "missing"}`),
@@ -447,6 +487,17 @@ export function runReleaseReadiness(options = {}) {
       },
       freezeReportPresent: freezePresent,
       dockerHardeningReport,
+    },
+    gateDomains: {
+      staticGates: staticGateBlockers,
+      dependencySecurity: dependencySecurityBlockers,
+      runtimeEvidence: runtimeArtifactBlockers,
+      releaseFreeze: releaseFreezeBlockers,
+      missingRuntimeArtifacts: {
+        runtimeQualitySummaryToday: !runtimeSummaryToday,
+        productScenarioBenchmarkToday: hasProductScenarioScript && !productScenarioToday,
+        liveEvidencePackAutomation: !liveEvidencePack.pass,
+      },
     },
     scriptFileValidation: scriptRefValidation,
     secretLeakScan,

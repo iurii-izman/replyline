@@ -68,3 +68,11 @@ Collector output:
 
 - `PASS` from verifier means evidence chain is complete and safe.
 - Any `FAIL` from verifier is a blocking gap; fix root cause and rerun the live scenario.
+
+## Latest session note
+
+Date: 2026-05-24.
+
+- Automated preflight was available (`pnpm runtime:preflight`).
+- Live runtime/provider execution was blocked in this session by missing `DEEPGRAM_API_KEY` for `pnpm probe:runtime`.
+- Treat GUI/provider live attestation rows as required follow-up for release readiness on this workstation.

@@ -107,6 +107,7 @@
     "release:freeze:check:strict": "node scripts/check-release-freeze.mjs --strict",
     "probe:soak": "pwsh -File scripts/runtime-soak.ps1",
     "check:slo": "node scripts/check-slo-budget.mjs",
+    "test:slo-budget": "pnpm check:slo",
     "parse:latency": "node scripts/parse-pipeline-latency.mjs",
     "test:latency-parser": "node scripts/parse-pipeline-latency.test.mjs",
     "test:runtime-answer-quality": "node scripts/evaluate-runtime-answer-quality.mjs",
@@ -123,7 +124,7 @@
     "test:report-secret-leaks": "node scripts/check-report-secret-leaks.mjs",
     "report:release-readiness": "node scripts/report-release-readiness.mjs",
     "report:release-readiness:strict": "node scripts/report-release-readiness.mjs --strict",
-    "verify:release-local": "pnpm verify:fast && pnpm test:doc-links && pnpm report:runtime-quality && pnpm test:product-scenarios && pnpm test:manual-closure-pack && pnpm release:freeze:check && pnpm report:release-readiness:strict"
+    "verify:release-local": "pnpm verify:fast && pnpm scripts:lifecycle && pnpm test:doc-links && pnpm report:runtime-quality && pnpm test:product-scenarios && pnpm test:manual-closure-pack && pnpm release:freeze:check && pnpm report:release-readiness:strict"
   },
   "license": "MIT",
   "dependencies": {

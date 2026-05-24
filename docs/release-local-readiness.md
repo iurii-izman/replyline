@@ -8,83 +8,40 @@ Run:
 pnpm verify:release-local
 ```
 
-This gate is local and non-manual. It does not require GUI actions, Sonar token, live credentials, or destructive Docker commands.
+Этот lane не требует GUI действий, live credentials или внешних CI токенов.
 
 ## Gate composition
 
 `verify:release-local` runs:
 
 1. `pnpm verify:fast`
-2. `pnpm test:doc-links`
-3. `pnpm report:runtime-quality`
-4. `pnpm test:product-scenarios`
-5. `pnpm test:manual-closure-pack`
-6. `pnpm release:freeze:check`
-7. `pnpm report:release-readiness:strict`
+2. `pnpm scripts:lifecycle`
+3. `pnpm test:doc-links`
+4. `pnpm report:runtime-quality`
+5. `pnpm test:product-scenarios`
+6. `pnpm test:manual-closure-pack`
+7. `pnpm release:freeze:check`
+8. `pnpm report:release-readiness:strict`
 
-## Strict mode behavior
+## Why `scripts:lifecycle` is here
 
-`report:release-readiness:strict`:
+- Гарантирует, что каждый script из `package.json` имеет lifecycle-класс.
+- Ловит конфликтную двойную классификацию script команд.
+- Делает release-local lane объяснимым и воспроизводимым.
 
-- always generates Markdown + JSON reports in `reports/release/`
-- auto-generates same-day Sonar residual and structured live evidence pack artifacts
-- prints blockers/warnings summary
-- exits `1` when blockers exist
-- exits `0` when only warnings exist
+## Strict readiness report model
 
-## Blockers vs warnings
+`report:release-readiness:strict` отделяет домены:
+- static gates
+- dependency/security gates
+- runtime evidence artifacts
+- missing runtime artifacts
+- release-freeze status
 
-Blockers (fail strict local gate):
+Strict mode exits with `1` when blockers exist.
 
-- missing required scripts (`verify:fast`, `verify:full`, `verify:release-local`, `test:security-lanes`, `test:public-footprint`, `test:runtime-quality`, `report:release-readiness:strict`)
-- weakened `verify:fast`
-- missing required script files or broken `package.json` script file references
-- missing `sonar-project.properties`
-- missing same-day runtime quality summary
-- missing same-day product scenario benchmark when product scenario lane is configured
-- missing required automated references in same-day live evidence pack
-- release freeze report outside guardrails
-- vulnerable `qs` versions (`>=6.11.1 <=6.15.1`) reintroduced in `pnpm-lock.yaml` while `@lhci/cli` optional lane is enabled
-- missing public footprint / report-secret-leak checks
-- secret-like values detected in `reports/**`, `docs/**`, `.env.docker.example`
+## CI and release-note boundary
 
-Warnings (reported but non-blocking):
-
-- Docker strict check (`docker:replyline:check:strict`) is external-state/manual
-- live GUI/provider evidence is formalized as structured manual attestation rows
-- optional E2E/perf/UX lanes are outside this local baseline
-
-## Risk snapshot scoring
-
-Release readiness report includes `Risk Snapshot` with per-area score (0-100), status (`pass`/`warn`/`block`), and reason.
-
-Weights:
-
-- runtime quality automation: 20
-- product scenario coverage: 15
-- security/public footprint: 20
-- Sonar readiness: 15
-- release gates/freeze: 20
-- Docker optional stack: 5
-- manual evidence gap: 5
-
-Overall score is a weighted average and is included in both Markdown and JSON reports.
-
-## Why Docker strict and live GUI stay manual
-
-- `docker:replyline:check:strict` depends on external compose/runtime state outside repository-only automation.
-- GUI/live-provider evidence requires local environment and credentials by design; strict now enforces structured checklist artifact generation, not free text.
-- Strict local gate remains credential-free and deterministic for repository checks.
-
-## Release handoff profile
-
-For broader release confidence, run:
-
-```bash
-pnpm verify:full
-pnpm report:runtime-quality
-pnpm test:product-scenarios
-pnpm report:release-readiness:strict
-```
-
-Use `verify:release-local` as the baseline automated readiness gate.
+- CI blocking quality lane: `.github/workflows/ci.yml`.
+- Extended non-blocking signal: `.github/workflows/extended-quality.yml`.
+- Tag release workflow (`.github/workflows/release-on-tag.yml`) публикует release notes only и не строит installers.

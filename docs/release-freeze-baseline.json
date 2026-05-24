@@ -59,6 +59,8 @@
     "docs/interview-mode.md",
     "docs/third-party-providers.md",
     "docs/runtime-evidence.md",
+    "docs/runtime-live-qa.md",
+    "docs/live-runtime-matrix.md",
     "docs/troubleshooting.md",
     "docs/script-lifecycle-matrix.md",
     "scripts/check-report-secret-leaks.mjs",

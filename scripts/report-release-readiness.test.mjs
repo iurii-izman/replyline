@@ -27,6 +27,7 @@ function setupFixture({
       : "pnpm smoke",
     "verify:full": "pnpm verify:fast",
     "verify:release-local": "pnpm verify:fast && pnpm report:release-readiness:strict",
+    "scripts:lifecycle": "node scripts/check-script-lifecycle.mjs",
     "test:security-lanes": "node scripts/check-security-lanes.mjs",
     "test:public-footprint":
       "node scripts/check-public-footprint.mjs && node scripts/check-report-secret-leaks.mjs",
@@ -85,6 +86,7 @@ function setupFixture({
     "utf8",
   );
   writeFileSync(join(root, "scripts", "check-security-lanes.mjs"), "console.log('ok')\n", "utf8");
+  writeFileSync(join(root, "scripts", "check-script-lifecycle.mjs"), "console.log('ok')\n", "utf8");
   writeFileSync(
     join(root, "scripts", "evaluate-product-scenarios.mjs"),
     "console.log('ok')\n",

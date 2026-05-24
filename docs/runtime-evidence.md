@@ -102,6 +102,27 @@ Bundle acceptance:
 - `reports/runtime-evidence-*/manifest.json` (timestamped evidence bundles)
 - `reports/beta-handoff-*/manifest.json` (compact beta handoff manifest)
 
+## Latest measured session (machine-local)
+
+Session date: 2026-05-24 (Windows workstation, `C:\Dev\replyline`).
+
+- Preflight signal: `pnpm runtime:preflight` passed; settings file detected and parsed.
+- Credential signal: env-based `DEEPGRAM_API_KEY` and `OPENAI_API_KEY` were not present in this session.
+- Runtime probe status: `pnpm probe:runtime` failed with `DEEPGRAM_API_KEY is missing.`
+- Bench status: `pnpm probe:bench` completed and produced artifacts, but all scenarios ended as errors because runtime probe could not start provider path.
+- Live-source status: `pnpm probe:live-source` produced matrix artifacts, but all runs failed for the same missing-key reason.
+- Bundle status: `pnpm evidence:bundle` created `reports/runtime-evidence-20260524-190354`.
+
+Artifacts from this session:
+
+- `reports/runtime/latency-comparison.json`
+- `reports/runtime/latency-comparison.md`
+- `reports/runtime/manual-live-source-live-comparison.json`
+- `reports/runtime/manual-live-source-live-comparison.md`
+- `reports/runtime-evidence-20260524-190354/manifest.json`
+
+Claim label for this session: `pending verification` for live/provider latency claims.
+
 ## See also
 
 - [verification-lanes.md](verification-lanes.md) — 4 lane модель (compile / mock / prompt / runtime).
