@@ -196,13 +196,23 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
             when={controller().candidatePackPreview()}
             fallback={
               <div class="candidate-pack-empty-state" data-testid="candidate-pack-empty-state">
-                <p class="candidate-pack-empty-title">{st().settings.noPreviewTitle}</p>
-                <p class="field-help">{st().settings.noPreview}</p>
-                <ul class="candidate-pack-empty-list">
-                  <li>{st().settings.noPreviewStepInput}</li>
-                  <li>{st().settings.noPreviewStepPrepare}</li>
-                  <li>{st().settings.noPreviewStepResult}</li>
-                </ul>
+                <Show
+                  when={controller().candidatePackStatus().exists}
+                  fallback={
+                    <>
+                      <p class="candidate-pack-empty-title">{st().settings.noPreviewTitle}</p>
+                      <p class="field-help">{st().settings.noPreview}</p>
+                      <ul class="candidate-pack-empty-list">
+                        <li>{st().settings.noPreviewStepInput}</li>
+                        <li>{st().settings.noPreviewStepPrepare}</li>
+                        <li>{st().settings.noPreviewStepResult}</li>
+                      </ul>
+                    </>
+                  }
+                >
+                  <p class="candidate-pack-empty-title">{st().settings.statusReady}</p>
+                  <p class="field-help">{st().settings.savedProfileHint}</p>
+                </Show>
               </div>
             }
           >

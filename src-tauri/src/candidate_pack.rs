@@ -80,6 +80,7 @@ Rules:
 - Build reusable answer anchors.
 - Extract role keywords from the job description.
 - Extract company values only from provided company values text.
+- Follow the requested output language for all human-readable fields.
 - Add missing data warnings:
   - add metrics
   - add conflict example
@@ -291,9 +292,14 @@ pub fn build_prepare_prompt(
     raw_resume: &str,
     job_description: &str,
     company_values: &str,
+    output_language: &str,
 ) -> String {
+    let language_instruction = match output_language.trim().to_ascii_lowercase().as_str() {
+        "en" => "English",
+        _ => "Russian",
+    };
     format!(
-        "Resume:\n{}\n\nJob description:\n{}\n\nCompany values/about text:\n{}",
+        "Output language: {language_instruction}\n\nResume:\n{}\n\nJob description:\n{}\n\nCompany values/about text:\n{}",
         raw_resume.trim(),
         job_description.trim(),
         company_values.trim()

@@ -85,6 +85,31 @@ function draftFactsToText(facts: CandidatePackDraft["candidateFacts"]): string {
     .join("\n");
 }
 
+function normalizeOutputLanguage(value: string): "ru" | "en" {
+  return value.trim().toLowerCase() === "en" ? "en" : "ru";
+}
+
+function translateSuggestedLine(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  const map: Record<string, string> = {
+    "add metrics": "Добавить метрики (процент, сроки, масштаб, эффект).",
+    "add conflict example": "Добавить пример конфликта и как он был решён.",
+    "add leadership example": "Добавить пример лидерства или ведения команды.",
+    "add failure example": "Добавить пример неудачи и полученные уроки.",
+    "add system design/product examples, if relevant":
+      "Добавить пример system design или продуктовой разработки (если релевантно).",
+  };
+  return map[normalized] ?? value.trim();
+}
+
+function extractResponsibilities(jobDescription: string): string[] {
+  return lines(jobDescription)
+    .filter((line) => line.startsWith("-") || line.startsWith("•"))
+    .slice(0, 8)
+    .map((line) => line.replace(/^[-•]\s*/, "").trim())
+    .filter(Boolean);
+}
+
 export function useReplylineController(platform: AppPlatform) {
   // ── State ──────────────────────────────────────────────────────────────
   const [phase, setPhase] = createSignal<Phase>("booting");
@@ -512,9 +537,13 @@ export function useReplylineController(platform: AppPlatform) {
           rawResume: candidateRawResume(),
           jobDescription: candidateJobDescription(),
           companyValuesText: candidateCompanyValues(),
+          outputLanguage: normalizeOutputLanguage(candidatePackDraft.language),
         },
       });
       const generatedSummary = summarizeFromFacts(draft.candidateFacts);
+      const translatedSuggestions = draft.suggestedMissingInfo.map(translateSuggestedLine);
+      const inferredResponsibilities = extractResponsibilities(candidateJobDescription());
+      const inferredRequirements = lines(candidateJobDescription()).slice(0, 8);
       setCandidatePackPreview(draft);
       setCandidatePackDraft({
         candidateSummary: generatedSummary,
@@ -522,15 +551,16 @@ export function useReplylineController(platform: AppPlatform) {
         factsText: draftFactsToText(draft.candidateFacts),
         jobTitle: draft.roleKeywords[0] ?? "",
         jobCompany: "",
-        requirementsText: lines(candidateJobDescription()).slice(0, 8).join("\n"),
-        responsibilitiesText: "",
+        requirementsText: inferredRequirements.join("\n"),
+        responsibilitiesText: inferredResponsibilities.join("\n"),
         keywordsText: draft.roleKeywords.join("\n"),
         companyValuesText: draft.companyValues.length
           ? draft.companyValues.join("\n")
           : lines(candidateCompanyValues()).join("\n"),
-        avoidClaimsText: "",
-        preferredExamplesText: draft.suggestedMissingInfo.join("\n"),
-        language: "ru",
+        avoidClaimsText:
+          "Не придумывать компании, даты, роли, результаты и метрики.\nКаждое утверждение подтверждать фактом из резюме/вакансии.",
+        preferredExamplesText: translatedSuggestions.join("\n"),
+        language: normalizeOutputLanguage(candidatePackDraft.language),
       });
       setCandidatePackError(null);
       notices.pushNotice({ tone: "info", message: strings().notices.candidatePackPrepared });
@@ -543,49 +573,31 @@ export function useReplylineController(platform: AppPlatform) {
     }
   }
   async function savePreparedCandidatePack() {
-    const draft = candidatePackPreview();
-    if (!draft) return;
+    const preview = candidatePackPreview();
+    if (!preview) return;
     void emitUiEvent(platform, "candidate_profile_save_clicked", { phase: "candidate_pack" });
     setCandidatePackSaving(true);
     setCandidatePackError(null);
     setError(null);
     try {
-      await platform.invoke("save_prepared_candidate_pack", { draft });
-      const resumeFacts: CandidatePackDto["resumeFacts"] = draft.candidateFacts.map(
-        (fact, index) => {
-          const claim = fact.fact.trim();
-          const evidence = fact.evidence.trim();
-          return {
-            id: `fact-${index + 1}`,
-            title: asFactTitle(claim),
-            claim,
-            description: "",
-            evidence,
-            skills: [],
-            metrics: fact.metrics ?? [],
-            strength: fact.strength,
-            suitableForQuestions: [],
-          };
-        },
-      );
+      await platform.invoke("save_prepared_candidate_pack", { draft: preview });
+      const resumeFacts = parseFactsText(candidatePackDraft.factsText);
       const input: CandidatePackDto = {
-        candidateSummary: summarizeFromFacts(draft.candidateFacts),
-        targetRole: draft.roleKeywords.slice(0, 3).join(", "),
+        candidateSummary: candidatePackDraft.candidateSummary,
+        targetRole: candidatePackDraft.targetRole,
         resumeFacts,
         jobDescription: {
-          title: draft.roleKeywords[0] ?? "",
-          company: "",
-          requirements: lines(candidateJobDescription()).slice(0, 8),
-          responsibilities: [],
-          keywords: draft.roleKeywords,
+          title: candidatePackDraft.jobTitle,
+          company: candidatePackDraft.jobCompany,
+          requirements: lines(candidatePackDraft.requirementsText),
+          responsibilities: lines(candidatePackDraft.responsibilitiesText),
+          keywords: lines(candidatePackDraft.keywordsText),
         },
-        companyValues: draft.companyValues.length
-          ? draft.companyValues
-          : lines(candidateCompanyValues()),
+        companyValues: lines(candidatePackDraft.companyValuesText),
         answerConstraints: {
-          avoidClaims: [],
-          preferredExamples: draft.suggestedMissingInfo,
-          language: "ru",
+          avoidClaims: lines(candidatePackDraft.avoidClaimsText),
+          preferredExamples: lines(candidatePackDraft.preferredExamplesText),
+          language: normalizeOutputLanguage(candidatePackDraft.language),
         },
       };
       await platform.invoke("save_candidate_pack", { input });

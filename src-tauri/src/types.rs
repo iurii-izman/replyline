@@ -314,6 +314,8 @@ pub struct PrepareCandidatePackInputDto {
     pub job_description: String,
     #[serde(default)]
     pub company_values_text: String,
+    #[serde(default)]
+    pub output_language: String,
 }
 
 #[derive(Debug, Clone, Copy)]

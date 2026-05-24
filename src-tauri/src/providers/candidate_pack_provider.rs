@@ -22,9 +22,14 @@ pub async fn prepare_candidate_pack(
     raw_resume: &str,
     job_description: &str,
     company_values_text: &str,
+    output_language: &str,
 ) -> Result<CandidatePackDraftDto, String> {
-    let user_prompt =
-        candidate_pack::build_prepare_prompt(raw_resume, job_description, company_values_text);
+    let user_prompt = candidate_pack::build_prepare_prompt(
+        raw_resume,
+        job_description,
+        company_values_text,
+        output_language,
+    );
     let (raw_text, _prefix, _telemetry) = openai_compatible::request_card_raw_text(
         None,
         settings.debug_trace_full_enabled(),

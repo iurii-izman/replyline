@@ -808,6 +808,10 @@ pub async fn prepare_candidate_pack(
     let raw_resume = input.raw_resume.trim();
     let job_description = input.job_description.trim();
     let company_values_text = input.company_values_text.trim();
+    let output_language = match input.output_language.trim().to_ascii_lowercase().as_str() {
+        "en" => "en",
+        _ => "ru",
+    };
     if raw_resume.is_empty() || job_description.is_empty() {
         return Err(CommandError::Settings(
             "raw_resume and job_description are required".to_string(),
@@ -831,6 +835,7 @@ pub async fn prepare_candidate_pack(
         raw_resume,
         job_description,
         company_values_text,
+        output_language,
     )
     .await;
     let draft = match draft_result {

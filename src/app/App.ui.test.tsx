@@ -1465,7 +1465,7 @@ describe("Interview card rendering", () => {
     expect(screen.getByTestId("studio-accordion-summary")).toBeTruthy();
     const roleCompany = screen.getByTestId("studio-accordion-role-company");
     fireEvent.click(within(roleCompany).getByRole("button"));
-    expect(within(roleCompany).getByLabelText("Target role")).toBeTruthy();
+    expect(within(roleCompany).getByLabelText("Целевая роль")).toBeTruthy();
   });
 
   it("candidate studio action dock wires clear and back actions", async () => {
