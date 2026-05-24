@@ -637,6 +637,7 @@ describe("App UX stabilization", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Профиль кандидата/i }));
     fireEvent.click(screen.getByRole("button", { name: "Открыть студию профиля кандидата" }));
     expect(screen.getByTestId("candidate-pack-studio")).toBeTruthy();
+    expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain("Пусто");
     expect(screen.getByTestId("candidate-pack-ai-section")).toBeTruthy();
     expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("Пусто");
   });

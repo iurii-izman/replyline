@@ -57,8 +57,9 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
     );
   });
   const hasPreview = createMemo(() => Boolean(controller().candidatePackPreview()));
+  const hasSavedPack = createMemo(() => controller().candidatePackStatus().exists);
   const stepIndex = createMemo(() => {
-    if (controller().candidatePackStatus().exists || hasDraftContent()) return 3;
+    if (hasSavedPack() || hasDraftContent()) return 3;
     if (hasPreview()) return 2;
     return 1;
   });
@@ -113,9 +114,31 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
     if (err.includes("LLM_REQUEST_FAILED")) return st().settings.candidatePackErrorHintNetwork;
     return st().settings.candidatePackErrorHintGeneric;
   });
+  const statusLabel = createMemo(() => {
+    if (controller().candidatePackPreparing()) return st().settings.candidatePackStateProcessing;
+    if (controller().candidatePackSaving()) return st().settings.candidatePackStateSaving;
+    if (hasSavedPack()) return st().settings.candidatePackStateSaved;
+    if (hasPreview()) return st().settings.candidatePackStatePrepared;
+    if (hasDraftContent()) return st().settings.candidatePackStateDraft;
+    return st().settings.candidatePackStateEmpty;
+  });
+  const statusTone = createMemo(() => {
+    if (controller().candidatePackPreparing() || controller().candidatePackSaving()) return "is-busy";
+    if (hasSavedPack()) return "is-saved";
+    if (hasPreview()) return "is-prepared";
+    if (hasDraftContent()) return "is-draft";
+    return "is-empty";
+  });
 
   return (
     <div class="candidate-pack-studio" data-testid="candidate-pack-studio">
+      <section class="candidate-pack-status-banner" data-testid="candidate-pack-status-banner">
+        <div class="result-label">{st().settings.candidatePackStatus}</div>
+        <div class="candidate-pack-status-row">
+          <span class={`status-rail-chip ${statusTone()}`}>{statusLabel()}</span>
+          <span class="field-help">{st().settings.candidatePackStorageHint}</span>
+        </div>
+      </section>
       <nav
         class="candidate-pack-stepper"
         aria-label={st().settings.candidateStudioStepperLabel}
@@ -191,7 +214,7 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
           <h4 class="candidate-pack-panel-title">{st().settings.previewPanelTitle}</h4>
           <p class="field-help">
             {st().settings.candidatePackStatus}:{" "}
-            {controller().candidatePackStatus().exists
+            {hasSavedPack()
               ? `${controller().candidatePackStatus().factCount} / ${st().settings.candidatePackWeakFactsShort} ${controller().candidatePackStatus().weakFactCount}`
               : st().settings.candidatePackEmpty}
           </p>
@@ -200,7 +223,7 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
             fallback={
               <div class="candidate-pack-empty-state" data-testid="candidate-pack-empty-state">
                 <Show
-                  when={controller().candidatePackStatus().exists}
+                  when={hasSavedPack()}
                   fallback={
                     <>
                       <p class="candidate-pack-empty-title">{st().settings.noPreviewTitle}</p>
@@ -569,6 +592,7 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
         <button
           class="btn-danger btn-ghost"
           type="button"
+          title={st().settings.clearCandidatePackHint}
           onClick={() => void controller().clearCandidatePack()}
         >
           {st().settings.clearCandidatePack}

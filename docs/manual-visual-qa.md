@@ -23,7 +23,9 @@ This checklist locks the visual direction after the warm precision redesign cycl
 | Settings LLM              | Key/provider controls use product styles (not browser-default); warning/danger copy remains legible and calm.                                                 |           |       |
 | Settings hotkey           | Hotkey capture state is clear; no fake glass/random shadows; disabled style only where truly blocked.                                                         |           |       |
 | Settings reports          | Report/export section keeps visual hierarchy and spacing; no excessive bordered-card fragmentation.                                                           |           |       |
+| Settings reports IA       | Everyday report/privacy controls are visually separated from diagnostics/ops (`debugTrace*`), and `full_local` warning is clear.                              |           |       |
 | Candidate Studio empty    | 3-step workflow visible (`Исходные данные -> Подготовка -> Профиль`), concise empty guidance, no giant blank preview slab.                                    |           |       |
+| Candidate Studio states   | Status banner distinguishes empty/draft/prepared/saved/processing states with readable chips and no ambiguity around local/cloud boundary.                      |           |       |
 | Candidate Studio prepared | Quality summary/facts/keywords/warnings are readable and grouped; saved profile section remains styled and structured.                                        |           |       |
 | Error/recovery            | Error and recovery states are clearly distinguished with semantic danger/safe affordances; actions remain discoverable and not visually disabled by accident. |           |       |
 

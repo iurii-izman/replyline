@@ -20,6 +20,10 @@ Replyline stores:
 - settings: `%APPDATA%\com.replyline.app\settings.json`
 - secrets: Windows Credential Manager service `com.replyline.app.credentials`
 
+First-run UX expectation:
+
+- when setup is incomplete, main surface should show actionable setup steps (`Speech`, `LLM`, `Hotkey`) and direct links into corresponding Settings sections.
+
 ## 3. Real provider proof
 
 Run:

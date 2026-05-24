@@ -40,6 +40,13 @@ No Advanced Mode fields in user-facing settings contract.
 - Full report markdown export includes transcript and must be treated as sensitive.
 - Redacted report markdown export excludes raw/full transcript and is the safer sharing path.
 
+## Settings IA (everyday vs diagnostics)
+
+- `Reports` now separates two groups:
+- Everyday reports/privacy: interview report retention and manual report clearing.
+- Diagnostics/ops: `debugTraceMode`, trace retention, trace folder open/clear actions.
+- `debugTraceMode=full_local` is explicitly high-sensitivity local diagnostics and should be enabled only for incident troubleshooting.
+
 ## Local diagnostics controls
 
 - `debugTraceMode=off`: no local debug trace artifacts.

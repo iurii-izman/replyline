@@ -46,12 +46,19 @@ function SetupFocusState(props: Readonly<{ controller: ReplylineController }>) {
   return (
     <section class="setup-focus-state" data-testid="main-state-setup">
       <h2 class="setup-focus-title">{st().setup.wizardTitle}</h2>
-      <p class="setup-focus-subtitle">{st().setup.focusSubtitle}</p>
+      <p class="setup-focus-subtitle" data-testid="setup-overall-hint">
+        {st().setup.focusSubtitle}
+      </p>
       <ul class="setup-focus-list" data-testid="setup-focus-list">
         <For each={controller().setupSteps()}>
           {(step) => (
             <li class={`setup-focus-row ${step.ready ? "is-ready" : "is-missing"}`}>
-              <span>{step.label}</span>
+              <div class="setup-focus-copy">
+                <strong>{step.label}</strong>
+                <span class="empty-flow-hint">
+                  {step.ready ? step.readyLabel : step.missingLabel}
+                </span>
+              </div>
               <span>{step.ready ? st().settings.statusReady : st().settings.statusMissing}</span>
               <button
                 class="btn-ghost btn-compact"
@@ -66,6 +73,7 @@ function SetupFocusState(props: Readonly<{ controller: ReplylineController }>) {
       </ul>
       <button
         class="btn-primary"
+        data-testid="setup-first-missing-cta"
         type="button"
         onClick={() => controller().openSettingsPanel(firstMissingSection())}
       >
@@ -202,6 +210,7 @@ function LiveAnswerCard(props: Readonly<{ controller: ReplylineController }>) {
       <p class="result-text result-text--speak" data-testid="section-say-now">
         {controller().card()?.sayNow?.trim()}
       </p>
+      <p class="empty-flow-hint">{st().card.sayNowHint}</p>
     </article>
   );
 }
@@ -213,10 +222,12 @@ function InsightStrip(props: Readonly<{ controller: ReplylineController }>) {
     <section class="secondary-insights" data-testid="secondary-insight-cards">
       <section class="result-section result-section--compact" data-testid="section-gist">
         <div class="result-label">{st().card.gistLabel}</div>
+        <p class="result-meta">{st().card.gistHint}</p>
         <p class="result-text">{controller().card()?.gist?.trim() || st().card.emptyGistCompact}</p>
       </section>
       <section class="result-section result-section--compact" data-testid="section-next-move">
         <div class="result-label">{st().card.nextMoveLabel}</div>
+        <p class="result-meta">{st().card.nextMoveHint}</p>
         <p class="result-text">
           {controller().card()?.nextMove?.trim() || st().card.emptyNextMoveCompact}
         </p>
@@ -241,10 +252,20 @@ function WorkspaceSidePanel(props: Readonly<{ controller: ReplylineController }>
     );
   const exportDisabledReason = () =>
     hasInterviewReport() ? "" : st().card.interview.sessionActions.exportDisabledNoReport;
+  const modeToneClass = () => (hasInterviewSession() ? "is-interview" : "is-work");
 
   return (
     <aside class="cockpit-side app-page-aside app-sidebar" data-testid="main-side-panel">
       <div class="workspace-aside-stack" data-testid="workspace-aside-stack">
+        <section
+          class={`result-section result-section--compact mode-banner ${modeToneClass()}`}
+          data-testid="mode-state-banner"
+        >
+          <div class="result-label">{st().card.modeStateLabel}</div>
+          <p class="result-text">
+            {hasInterviewSession() ? st().card.modeInterviewActive : st().card.modeWorkDefault}
+          </p>
+        </section>
         <section class="result-section result-section--compact" data-testid="session-panel">
           <div class="result-label">{st().card.interview.report.session}</div>
           <div class="session-metrics" data-testid="session-metrics">

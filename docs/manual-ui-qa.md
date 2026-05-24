@@ -35,6 +35,7 @@ For each size, check layout landmarks:
 4. interview session active
 
 - Expected: session controls work, interview state is visible, and end session remains available.
+- Expected: mode banner in side panel clearly indicates Interview Mode vs WorkConversation default.
 
 5. reports full/redacted
 
@@ -44,7 +45,9 @@ For each size, check layout landmarks:
 6. candidate pack
 
 - Expected (empty): preview shows empty status, save prepared profile is disabled.
+- Expected (empty): top status banner shows `Пусто` and local/cloud boundary hint is visible.
 - Expected (preview/saved): preview metrics/chips render and saved status counters update.
+- Expected (draft/prepared/saved/processing): status chip changes accordingly and primary action label reflects current stage.
 
 ## Suggested Manual Capture Flow
 

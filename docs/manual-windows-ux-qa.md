@@ -28,6 +28,7 @@ Use this checklist for manual Windows desktop UX validation before beta handoff.
 | no awkward floating footer      | Main/Settings/Studio footers stay attached to page context and do not look like detached full-width strips.                    | `<PASS/FAIL>` | `<notes>` |
 | setup missing flow              | Missing setup state is clearly shown with actionable guidance to required sections.                                            | `<PASS/FAIL>` | `<notes>` |
 | settings navigation             | Settings section navigation works (sidebar/chips + active section switching).                                                  | `<PASS/FAIL>` | `<notes>` |
+| settings IA separation          | In `Reports`, everyday retention/clear controls are separate from diagnostics/ops controls and labels are unambiguous.        | `<PASS/FAIL>` | `<notes>` |
 | settings sidebar labels         | Sidebar statuses are localized and clear (`Не заполнено/Сохранено/Готово/Опционально`), no mixed raw EN text.                  | `<PASS/FAIL>` | `<notes>` |
 | LLM/Speech sections             | Speech and LLM sections are reachable and editable as independent sections.                                                    | `<PASS/FAIL>` | `<notes>` |
 | check results card              | Check results render in dedicated card; status labels and open-step action are readable and styled.                            | `<PASS/FAIL>` | `<notes>` |
@@ -42,6 +43,7 @@ Use this checklist for manual Windows desktop UX validation before beta handoff.
 | retry/clear                     | Retry and clear actions are available where expected and update UI state correctly.                                            | `<PASS/FAIL>` | `<notes>` |
 | disabled critical buttons       | Disabled critical actions show clear disabled state/title (no raw default button look).                                        | `<PASS/FAIL>` | `<notes>` |
 | start/end interview session     | Interview session start/end controls work and state transitions are reflected in UI.                                           | `<PASS/FAIL>` | `<notes>` |
+| mode clarity banner             | Side panel mode banner clearly shows Interview Mode active vs WorkConversation default.                                        | `<PASS/FAIL>` | `<notes>` |
 | full markdown export warning    | Full markdown export path shows expected sensitivity/warning semantics before sharing.                                         | `<PASS/FAIL>` | `<notes>` |
 | redacted markdown export        | Redacted export works and omits sensitive content according to contract.                                                       | `<PASS/FAIL>` | `<notes>` |
 | clear reports                   | Clear reports action is accessible and removes stored reports as expected.                                                     | `<PASS/FAIL>` | `<notes>` |
