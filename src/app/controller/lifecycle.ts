@@ -1,5 +1,12 @@
 import { onCleanup, onMount, type Accessor, type Setter } from "solid-js";
-import type { Phase, Panel, AnalysisCard, StatusEvent, AppSettings } from "../model";
+import type {
+  Phase,
+  Panel,
+  AnalysisCard,
+  StatusEvent,
+  AppSettings,
+  SetupReadinessState,
+} from "../model";
 import type { UiStrings } from "../locale";
 import type { AppPlatform } from "../platform";
 import type { NoticeApi } from "./notices";
@@ -10,6 +17,8 @@ export interface LifecycleDeps {
   platform: AppPlatform;
   strings: Accessor<UiStrings>;
   activeRunId: Accessor<string | null>;
+  setupRequired: Accessor<boolean>;
+  setupReadinessState: Accessor<SetupReadinessState>;
   setPhase: Setter<Phase>;
   setStatusDetail: Setter<string | null>;
   setContextActive: Setter<boolean>;
@@ -46,6 +55,18 @@ export function setupLifecycle(deps: LifecycleDeps): void {
       void deps.platform.shortcuts.unregisterAll();
     });
     void deps.settingsActions.reloadBootstrap();
+    let startupProbeAttempts = 0;
+    const maxStartupProbeAttempts = 8;
+    const startupSetupFallback = window.setInterval(() => {
+      startupProbeAttempts += 1;
+      void deps.settingsActions.refreshSetupStatus();
+      if (
+        deps.setupReadinessState() !== "checking" ||
+        startupProbeAttempts >= maxStartupProbeAttempts
+      ) {
+        window.clearInterval(startupSetupFallback);
+      }
+    }, 1200);
     void (async () => {
       cleanups.push(
         await deps.platform.listen<StatusEvent>("replyline://status", (event) => {
@@ -84,5 +105,8 @@ export function setupLifecycle(deps: LifecycleDeps): void {
         }),
       );
     })();
+    onCleanup(() => {
+      window.clearInterval(startupSetupFallback);
+    });
   });
 }

@@ -332,6 +332,16 @@ function createSetupMockPlatform(
       if (slot === "llmApiKey") llmPresent = true;
       return null;
     }
+    if (command === "get_setup_status") {
+      const routeReady = Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim());
+      const runtimePathReady = deepgramPresent && routeReady;
+      return {
+        deepgramKeyPresent: deepgramPresent,
+        llmKeyPresent: llmPresent,
+        llmRouteConfigured: routeReady,
+        runtimePathReady,
+      };
+    }
     if (command === "get_context_status") {
       return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
     }
@@ -393,6 +403,17 @@ describe("App UX stabilization", () => {
         return { ...input, schemaVersion: 9 };
       }
       if (command === "save_secret") return null;
+      if (command === "get_setup_status") {
+        const routeReady = Boolean(
+          (overrides.llmBaseUrl ?? "").trim() && (overrides.llmModel ?? "gpt-4o-mini").trim(),
+        );
+        return {
+          deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
+          llmKeyPresent: overrides.llmKeyPresent ?? false,
+          llmRouteConfigured: routeReady,
+          runtimePathReady: overrides.runtimeReady ?? false,
+        };
+      }
       return origInvoke(command, args);
     });
     base.platform.invoke = patchedInvoke;
@@ -489,16 +510,20 @@ describe("App UX stabilization", () => {
     });
     render(() => <App platform={setupMock.platform} />);
 
-    const phase = await screen.findByTestId("app-header-phase");
-    expect(phase.textContent).toContain("Нужно завершить настройку");
-    expect(phase.className).toContain("app-header-phase--setup");
+    await waitFor(() =>
+      expect(screen.getByTestId("app-header-phase").textContent).toContain(
+        "Нужно завершить настройку",
+      ),
+    );
+    expect(screen.getByTestId("app-header-phase").className).toContain("app-header-phase--setup");
   });
 
   it("renders idle-ready phase label in header", async () => {
     render(() => <App platform={mock.platform} />);
-    const phase = await screen.findByTestId("app-header-phase");
-    expect(phase.textContent).toContain("Готово к записи");
-    expect(phase.className).toContain("app-header-phase--idle");
+    await waitFor(() =>
+      expect(screen.getByTestId("app-header-phase").textContent).toContain("Готово к записи"),
+    );
+    expect(screen.getByTestId("app-header-phase").className).toContain("app-header-phase--idle");
   });
 
   it("header settings action opens settings panel", async () => {
@@ -1292,7 +1317,7 @@ describe("Interview card rendering", () => {
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((c) => c[0] === "save_candidate_pack")).toBe(true),
     );
-    expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("9 / weak 2");
+    expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("Слабые факты:");
   });
 
   it("renders styled check results and open-step action class", async () => {
@@ -1330,6 +1355,14 @@ describe("Interview card rendering", () => {
           stt: { ok: false, code: "missing_key", message: "Deepgram key missing" },
           llm: { ok: true, code: "ok", message: "OK" },
           settings: { ok: false, code: "config_error", message: "Hotkey invalid" },
+        };
+      }
+      if (command === "get_setup_status") {
+        return {
+          deepgramKeyPresent: false,
+          llmKeyPresent: false,
+          llmRouteConfigured: false,
+          runtimePathReady: false,
         };
       }
       return invoke(command, args);
@@ -1371,6 +1404,14 @@ describe("Interview card rendering", () => {
           contextActive: false,
           contextEntryCount: 0,
           runtimeReady: false,
+        };
+      }
+      if (command === "get_setup_status") {
+        return {
+          deepgramKeyPresent: false,
+          llmKeyPresent: false,
+          llmRouteConfigured: false,
+          runtimePathReady: false,
         };
       }
       return invoke(command, args);
@@ -1558,14 +1599,8 @@ describe("Setup wizard (first-run guidance)", () => {
       expect(screen.getAllByText("1. Речь").length).toBeGreaterThanOrEqual(1);
     });
 
-    // All steps show done hints
-    expect(screen.getByText("Ключ Deepgram сохранён.")).toBeTruthy();
-    expect(screen.getByText("Маршрут LLM настроен.")).toBeTruthy();
-    expect(screen.getByText("Горячая клавиша задана.")).toBeTruthy();
-
-    // Overall hint shows ready
-    expect(screen.getByTestId("setup-overall-hint").textContent).toContain("Проверьте готовность");
-    expect(screen.getByText("Горячая клавиша задана.")).toBeTruthy();
+    // Overview stays available with ready setup and manual checks
+    expect(screen.getByTestId("settings-surface")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Проверить настройки" })).toBeTruthy();
   });
 
@@ -1746,5 +1781,104 @@ describe("Setup wizard (first-run guidance)", () => {
           c[0] === "log_client_event" && (c[1] as { event?: string })?.event === "ui_answer_ready",
       ),
     ).toBe(true);
+  });
+
+  it("startup probes setup status automatically without manual settings check", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmKeyPresent: true,
+      llmBaseUrl: "https://api.example.com/v1",
+      llmModel: "gpt-4o-mini",
+      runtimeReady: true,
+    });
+
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
+
+    await waitFor(
+      () =>
+        expect(mock.invoke.mock.calls.some((call) => call[0] === "get_setup_status")).toBe(true),
+      { timeout: 3500 },
+    );
+  });
+
+  it("does not show setup-required while startup readiness is still checking", async () => {
+    let resolveBootstrap: ((value: unknown) => void) | null = null;
+    const bootstrapPromise = new Promise((resolve) => {
+      resolveBootstrap = resolve;
+    });
+    const mock = createMockPlatform();
+    const origInvoke = mock.platform.invoke;
+    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "load_bootstrap") {
+        return bootstrapPromise;
+      }
+      return origInvoke(command, args);
+    });
+    mock.platform.invoke = patchedInvoke;
+    mock.invoke = patchedInvoke;
+
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(screen.getByTestId("startup-checking")).toBeTruthy());
+    expect(screen.queryByText("Нужно завершить настройку")).toBeNull();
+
+    resolveBootstrap?.({
+      settings: {
+        schemaVersion: 9,
+        hotkey: "Ctrl+Alt+Space",
+        llmBaseUrl: "https://api.example.com/v1",
+        llmModel: "gpt-4o-mini",
+        selectedModelPreset: "custom_openai_compatible",
+        captureMaxSeconds: 45,
+        activeAnswerProfile: "interview_default",
+        windowOpacity: 100,
+        hideToTrayOnClose: true,
+        keepOnTopDuringCapture: false,
+        interviewCompactMode: false,
+        interviewReportRetentionDays: 0,
+        debugTraceMode: "redacted",
+        debugTraceRetentionDays: 3,
+      },
+      deepgramKeyPresent: true,
+      llmKeyPresent: true,
+      contextActive: false,
+      contextEntryCount: 0,
+      runtimeReady: true,
+      logStatus: { logPath: "", lastLine: null },
+      canRetryLastTranscript: false,
+    });
+    await waitFor(() => expect(screen.queryByTestId("startup-checking")).toBeNull());
+  });
+
+  it("startup ready opens working state without setup-required and without network check", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmKeyPresent: true,
+      llmBaseUrl: "https://api.example.com/v1",
+      llmModel: "gpt-4o-mini",
+      runtimeReady: true,
+    });
+
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(screen.getByTestId("main-state-idle")).toBeTruthy());
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    expect(screen.queryByTestId("main-state-setup")).toBeNull();
+    expect(screen.queryByText("Нужно завершить настройку")).toBeNull();
+    expect(screen.getAllByText("Готово к записи").length).toBeGreaterThan(0);
+    expect(mock.invoke.mock.calls.some((c) => c[0] === "check_runtime_config")).toBe(false);
+  });
+
+  it("shows setup-required only after backend resolves startup as missing", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmKeyPresent: false,
+      llmBaseUrl: "",
+      llmModel: "",
+      runtimeReady: false,
+    });
+
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(screen.getByTestId("main-state-setup")).toBeTruthy());
+    expect(screen.getAllByText("Нужно завершить настройку").length).toBeGreaterThan(0);
   });
 });

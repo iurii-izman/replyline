@@ -126,7 +126,7 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
             {(step, index) => {
               const stepNumber = index() + 1;
               const isCurrent = stepIndex() === stepNumber;
-              const isComplete = stepIndex() > stepNumber;
+              const isComplete = stepIndex() > stepNumber || (stepNumber === 2 && hasPreview());
               return (
                 <li
                   class={`candidate-pack-stepper-item ${isCurrent ? "is-current" : ""} ${isComplete ? "is-complete" : ""}`}

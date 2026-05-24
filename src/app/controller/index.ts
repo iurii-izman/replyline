@@ -12,10 +12,13 @@ import {
   type InterviewReportDto,
   type InterviewSessionStateDto,
   type Panel,
+  type PersistenceDiagnosticsDto,
   type Phase,
   type RuntimeCheckDto,
   type SettingsSectionId,
+  type SetupReadinessState,
   invokeErrorMessage,
+  isConfiguredLlmRoute,
 } from "../model";
 import { getUi, type UiStrings } from "../locale";
 import { currentLanguage } from "../language_profile";
@@ -72,6 +75,16 @@ function asFactTitle(value: string): string {
   return trimmed.length > 72 ? `${trimmed.slice(0, 72)}...` : trimmed;
 }
 
+function draftFactsToText(facts: CandidatePackDraft["candidateFacts"]): string {
+  return facts
+    .map((fact, index) =>
+      [`fact-${index + 1}`, asFactTitle(fact.fact), fact.fact.trim(), fact.evidence.trim()].join(
+        " | ",
+      ),
+    )
+    .join("\n");
+}
+
 export function useReplylineController(platform: AppPlatform) {
   // ── State ──────────────────────────────────────────────────────────────
   const [phase, setPhase] = createSignal<Phase>("booting");
@@ -85,6 +98,11 @@ export function useReplylineController(platform: AppPlatform) {
   const [captureQuality, setCaptureQuality] = createSignal<"short" | "normal" | "long">("normal");
   const [deepgramSaved, setDeepgramSaved] = createSignal(false);
   const [llmKeySaved, setLlmKeySaved] = createSignal(false);
+  const [llmRouteConfigured, setLlmRouteConfigured] = createSignal(false);
+  const [setupReadinessState, setSetupReadinessState] =
+    createSignal<SetupReadinessState>("checking");
+  const [startupPanelDecisionPending, setStartupPanelDecisionPending] = createSignal(true);
+  const [userSelectedPanel, setUserSelectedPanel] = createSignal(false);
   const [contextActive, setContextActive] = createSignal(false);
   const [contextEntryCount, setContextEntryCount] = createSignal(0);
   const [lastTranscriptPreview, setLastTranscriptPreview] = createSignal<string | null>(null);
@@ -100,6 +118,11 @@ export function useReplylineController(platform: AppPlatform) {
   );
   const [runtimeCheckResult, setRuntimeCheckResult] = createSignal<RuntimeCheckDto | null>(null);
   const [runtimeCheckRunning, setRuntimeCheckRunning] = createSignal(false);
+  const [persistenceDiagnostics, setPersistenceDiagnostics] =
+    createSignal<PersistenceDiagnosticsDto | null>(null);
+  const [persistenceDiagnosticsError, setPersistenceDiagnosticsError] = createSignal<string | null>(
+    null,
+  );
   const [candidatePackStatus, setCandidatePackStatus] = createSignal<CandidatePackStatusDto>({
     exists: false,
     factCount: 0,
@@ -261,6 +284,12 @@ export function useReplylineController(platform: AppPlatform) {
 
   async function showWindow(panelName?: Panel) {
     if (panelName) setPanel(panelName);
+    await emitUiEvent(platform, "window_show_setup_status_refresh_start", { phase: "window" });
+    await settingsActions.refreshSetupStatus();
+    await emitUiEvent(platform, "window_show_setup_status_refresh_ok", {
+      phase: "window",
+      runtime_path_ready: String(setupReadinessState() === "ready"),
+    });
     void emitUiEvent(platform, "panel_open", { panel: panelName ?? panel(), phase: "navigation" });
     await platform.window.show();
     await platform.window.setFocus();
@@ -274,8 +303,8 @@ export function useReplylineController(platform: AppPlatform) {
     deepgramSaved,
     hotkeyFailed,
     contextActive,
-    settingsLlmBaseUrl: () => settings.llmBaseUrl,
-    settingsLlmModel: () => settings.llmModel,
+    llmRouteConfigured,
+    setupReadinessState,
     strings,
   });
   const canCopyCurrentCard = createMemo(
@@ -300,6 +329,7 @@ export function useReplylineController(platform: AppPlatform) {
     setHotkeyFailed,
     setDeepgramSaved,
     setLlmKeySaved,
+    setLlmRouteConfigured,
     setLastCommandErrorKind,
     setActiveRunId,
     notices,
@@ -330,6 +360,7 @@ export function useReplylineController(platform: AppPlatform) {
     platform,
     strings,
     setupRequired: selectors.setupRequired,
+    panel,
     settings,
     setSettings,
     draftSecrets,
@@ -339,9 +370,17 @@ export function useReplylineController(platform: AppPlatform) {
     setPanel,
     setDeepgramSaved,
     setLlmKeySaved,
+    setLlmRouteConfigured,
+    setupReadinessState,
+    setSetupReadinessState,
+    startupPanelDecisionPending,
+    setStartupPanelDecisionPending,
+    userSelectedPanel,
     setContextActive,
     setContextEntryCount,
     setLastTranscriptPreview,
+    setPersistenceDiagnostics,
+    setPersistenceDiagnosticsError,
     setSaving,
     setSettingsFormHint,
     setHotkeyFailed,
@@ -356,6 +395,8 @@ export function useReplylineController(platform: AppPlatform) {
     platform,
     strings,
     activeRunId,
+    setupRequired: selectors.setupRequired,
+    setupReadinessState,
     setPhase,
     setStatusDetail,
     setContextActive,
@@ -473,7 +514,24 @@ export function useReplylineController(platform: AppPlatform) {
           companyValuesText: candidateCompanyValues(),
         },
       });
+      const generatedSummary = summarizeFromFacts(draft.candidateFacts);
       setCandidatePackPreview(draft);
+      setCandidatePackDraft({
+        candidateSummary: generatedSummary,
+        targetRole: draft.roleKeywords.slice(0, 3).join(", "),
+        factsText: draftFactsToText(draft.candidateFacts),
+        jobTitle: draft.roleKeywords[0] ?? "",
+        jobCompany: "",
+        requirementsText: lines(candidateJobDescription()).slice(0, 8).join("\n"),
+        responsibilitiesText: "",
+        keywordsText: draft.roleKeywords.join("\n"),
+        companyValuesText: draft.companyValues.length
+          ? draft.companyValues.join("\n")
+          : lines(candidateCompanyValues()).join("\n"),
+        avoidClaimsText: "",
+        preferredExamplesText: draft.suggestedMissingInfo.join("\n"),
+        language: "ru",
+      });
       setCandidatePackError(null);
       notices.pushNotice({ tone: "info", message: strings().notices.candidatePackPrepared });
     } catch (err) {
@@ -487,26 +545,29 @@ export function useReplylineController(platform: AppPlatform) {
   async function savePreparedCandidatePack() {
     const draft = candidatePackPreview();
     if (!draft) return;
+    void emitUiEvent(platform, "candidate_profile_save_clicked", { phase: "candidate_pack" });
     setCandidatePackSaving(true);
     setCandidatePackError(null);
     setError(null);
     try {
       await platform.invoke("save_prepared_candidate_pack", { draft });
-      const resumeFacts: CandidatePackDto["resumeFacts"] = draft.candidateFacts.map((fact, index) => {
-        const claim = fact.fact.trim();
-        const evidence = fact.evidence.trim();
-        return {
-          id: `fact-${index + 1}`,
-          title: asFactTitle(claim),
-          claim,
-          description: "",
-          evidence,
-          skills: [],
-          metrics: fact.metrics ?? [],
-          strength: fact.strength,
-          suitableForQuestions: [],
-        };
-      });
+      const resumeFacts: CandidatePackDto["resumeFacts"] = draft.candidateFacts.map(
+        (fact, index) => {
+          const claim = fact.fact.trim();
+          const evidence = fact.evidence.trim();
+          return {
+            id: `fact-${index + 1}`,
+            title: asFactTitle(claim),
+            claim,
+            description: "",
+            evidence,
+            skills: [],
+            metrics: fact.metrics ?? [],
+            strength: fact.strength,
+            suitableForQuestions: [],
+          };
+        },
+      );
       const input: CandidatePackDto = {
         candidateSummary: summarizeFromFacts(draft.candidateFacts),
         targetRole: draft.roleKeywords.slice(0, 3).join(", "),
@@ -603,6 +664,8 @@ export function useReplylineController(platform: AppPlatform) {
     captureQuality,
     deepgramSaved,
     llmKeySaved,
+    llmRouteConfigured,
+    setupReadinessState,
     contextActive,
     contextEntryCount,
     lastTranscriptPreview,
@@ -617,6 +680,8 @@ export function useReplylineController(platform: AppPlatform) {
     lastCommandErrorKind,
     runtimeCheckResult,
     runtimeCheckRunning,
+    persistenceDiagnostics,
+    persistenceDiagnosticsError,
     candidatePackStatus,
     candidatePackDraft,
     candidateRawResume,
@@ -653,18 +718,33 @@ export function useReplylineController(platform: AppPlatform) {
         setRuntimeCheckRunning(false);
       }
     },
+    refreshPersistenceDiagnostics: async () => {
+      setPersistenceDiagnosticsError(null);
+      try {
+        const diagnostics = await platform.invoke<PersistenceDiagnosticsDto>(
+          "get_persistence_diagnostics",
+        );
+        setPersistenceDiagnostics(diagnostics);
+      } catch (err) {
+        setPersistenceDiagnostics(null);
+        setPersistenceDiagnosticsError(invokeErrorMessage(err));
+      }
+    },
     reloadBootstrap: settingsActions.reloadBootstrap,
+    refreshSetupStatus: settingsActions.refreshSetupStatus,
     persistSettings: settingsActions.persistSettings,
     clearContext: pipelineActions.clearContext,
     retryAnalysis: pipelineActions.retryAnalysis,
     copyCurrentCard: pipelineActions.copyCurrentCard,
     settingsActiveSection,
     toggleSettingsPanel: () => {
+      setUserSelectedPanel(true);
       const target = panel() === "settings" ? "main" : "settings";
       void emitUiEvent(platform, "panel_open", { panel: target, phase: "navigation" });
       setPanel(target);
     },
     openSettingsPanel: (section?: SettingsSectionId) => {
+      setUserSelectedPanel(true);
       void emitUiEvent(platform, "settings_opened", { phase: "settings" });
       if (section) {
         void emitUiEvent(platform, "settings_section_opened", { section, phase: "settings" });
@@ -673,11 +753,13 @@ export function useReplylineController(platform: AppPlatform) {
       setPanel("settings");
     },
     openCandidatePackStudioPanel: () => {
+      setUserSelectedPanel(true);
       void emitUiEvent(platform, "candidate_studio_opened", { phase: "candidate_pack" });
       setSettingsActiveSection("candidatePack");
       setPanel("candidatePackStudio");
     },
     openMainPanel: () => {
+      setUserSelectedPanel(true);
       void emitUiEvent(platform, "panel_open", { panel: "main", phase: "navigation" });
       setPanel("main");
     },
@@ -699,8 +781,14 @@ export function useReplylineController(platform: AppPlatform) {
     },
     setDeepgramApiKeyDraft: (value: string) => setDraftSecrets("deepgramApiKey", value),
     setLlmApiKeyDraft: (value: string) => setDraftSecrets("llmApiKey", value),
-    setLlmBaseUrl: (value: string) => setSettings("llmBaseUrl", value),
-    setLlmModel: (value: string) => setSettings("llmModel", value),
+    setLlmBaseUrl: (value: string) => {
+      setSettings("llmBaseUrl", value);
+      setLlmRouteConfigured(isConfiguredLlmRoute(value, settings.llmModel));
+    },
+    setLlmModel: (value: string) => {
+      setSettings("llmModel", value);
+      setLlmRouteConfigured(isConfiguredLlmRoute(settings.llmBaseUrl, value));
+    },
     setWindowOpacity,
     setCompactMode: (value: boolean) => setSettings("interviewCompactMode", value),
     setHideToTrayOnClose: (value: boolean) => setSettings("hideToTrayOnClose", value),
@@ -733,6 +821,12 @@ export function useReplylineController(platform: AppPlatform) {
         setSettings("llmBaseUrl", preset.baseUrl);
         setSettings("llmModel", preset.primaryModel);
       }
+      setLlmRouteConfigured(
+        isConfiguredLlmRoute(
+          preset.id !== "custom_openai_compatible" ? preset.baseUrl : settings.llmBaseUrl,
+          preset.id !== "custom_openai_compatible" ? preset.primaryModel : settings.llmModel,
+        ),
+      );
     },
     setActiveAnswerProfile: (value: string) => setSettings("activeAnswerProfile", value),
     setCandidatePackDraft: (key: keyof typeof candidatePackDraft, value: string) =>

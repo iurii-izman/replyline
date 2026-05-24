@@ -25,6 +25,7 @@ export function ShellChrome(props: Readonly<{ controller: ReplylineController }>
     return st().header.sectionMain;
   };
   const headerStatus = () => {
+    if (controller().setupReadinessState() === "checking") return st().phase.booting;
     if (controller().phase() === "capturing") return st().header.statusCapturing;
     if (controller().phase() === "transcribing") return st().header.statusTranscribing;
     if (controller().phase() === "analyzing") return st().header.statusAnalyzing;
@@ -34,6 +35,7 @@ export function ShellChrome(props: Readonly<{ controller: ReplylineController }>
     return st().header.statusReady;
   };
   const phaseTone = () => {
+    if (controller().setupReadinessState() === "checking") return "busy";
     if (controller().phase() === "capturing") return "capturing";
     if (controller().phase() === "transcribing" || controller().phase() === "analyzing")
       return "busy";

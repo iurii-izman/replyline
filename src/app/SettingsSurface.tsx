@@ -113,6 +113,17 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
   ];
 
   const activeSection = () => controller().settingsActiveSection();
+  const persistenceDiagnostics = () =>
+    controller().persistenceDiagnostics ? controller().persistenceDiagnostics() : null;
+  const persistenceDiagnosticsError = () =>
+    controller().persistenceDiagnosticsError ? controller().persistenceDiagnosticsError() : null;
+  const refreshPersistenceDiagnostics = () => {
+    if (controller().refreshPersistenceDiagnostics) {
+      void controller().refreshPersistenceDiagnostics();
+    }
+  };
+  const yesNo = (value: boolean): string =>
+    value ? st().settings.persistenceValueYes : st().settings.persistenceValueNo;
 
   const focusSectionByOffset = (delta: number) => {
     const currentIndex = sections.findIndex((section) => section.id === activeSection());
@@ -257,6 +268,91 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     </button>
                   )}
                 </Show>
+
+                <article class="settings-section-card settings-section-card--compact">
+                  <h4 class="settings-section-title">{st().settings.persistenceTitle}</h4>
+                  <Show when={persistenceDiagnosticsError()}>
+                    <p class="settings-note settings-note-warning">
+                      {st().settings.persistenceUnavailable}
+                    </p>
+                  </Show>
+                  <Show when={persistenceDiagnostics()}>
+                    {(diag) => {
+                      const stateHealthy = () =>
+                        diag().settingsFileExists &&
+                        diag().settingsParseOk &&
+                        diag().settingsValidationOk &&
+                        diag().runtimePathReady &&
+                        diag().corruptBackupsCount === 0;
+                      return (
+                        <>
+                          <p
+                            class={`settings-note ${stateHealthy() ? "" : "settings-note-warning"}`}
+                          >
+                            {stateHealthy()
+                              ? st().settings.persistenceStateOk
+                              : st().settings.persistenceStateNeedsAttention}
+                          </p>
+                          <div class="field-help">
+                            {st().settings.persistenceFieldSettingsFile}:{" "}
+                            {yesNo(diag().settingsFileExists)} ·{" "}
+                            {st().settings.persistenceFieldSettingsParse}:{" "}
+                            {yesNo(diag().settingsParseOk)} ·{" "}
+                            {st().settings.persistenceFieldSettingsValidation}:{" "}
+                            {yesNo(diag().settingsValidationOk)}
+                          </div>
+                          <div class="field-help">
+                            {st().settings.persistenceFieldLlmRoute}:{" "}
+                            {yesNo(diag().llmBaseUrlPresent && diag().llmModelPresent)} ·{" "}
+                            {st().settings.persistenceFieldLlmKey}: {yesNo(diag().llmKeyPresent)} ·{" "}
+                            {st().settings.persistenceFieldDeepgramKey}:{" "}
+                            {yesNo(diag().deepgramKeyPresent)} ·{" "}
+                            {st().settings.persistenceFieldRuntimeReady}:{" "}
+                            {yesNo(diag().runtimePathReady)}
+                          </div>
+                          <div class="field-help">
+                            {st().settings.persistenceFieldCorruptBackups}:{" "}
+                            {String(diag().corruptBackupsCount)}
+                          </div>
+                          <div class="field-help">
+                            {st().settings.persistenceFieldSettingsPath}: {diag().settingsPath}
+                          </div>
+                          <Show when={diag().appLogPath}>
+                            <div class="field-help">
+                              {st().settings.persistenceFieldAppLogPath}: {diag().appLogPath}
+                            </div>
+                          </Show>
+                        </>
+                      );
+                    }}
+                  </Show>
+                  <Show when={!controller().allSetupReady()}>
+                    <div class="settings-note settings-note-warning">
+                      {st().settings.persistenceCauseTitle}
+                      <ul>
+                        <Show when={!controller().settings.llmBaseUrl.trim()}>
+                          <li>{st().settings.persistenceCauseLlmBaseUrlMissing}</li>
+                        </Show>
+                        <Show when={!controller().settings.llmModel.trim()}>
+                          <li>{st().settings.persistenceCauseLlmModelMissing}</li>
+                        </Show>
+                        <Show when={!controller().deepgramSaved()}>
+                          <li>{st().settings.persistenceCauseDeepgramMissing}</li>
+                        </Show>
+                        <Show when={!controller().llmKeySaved()}>
+                          <li>{st().settings.persistenceCauseLlmKeyMissing}</li>
+                        </Show>
+                      </ul>
+                    </div>
+                  </Show>
+                  <button
+                    class="btn-secondary btn-compact"
+                    type="button"
+                    onClick={refreshPersistenceDiagnostics}
+                  >
+                    {st().settings.persistenceRefresh}
+                  </button>
+                </article>
               </article>
             </Show>
 

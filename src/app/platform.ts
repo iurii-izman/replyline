@@ -118,6 +118,18 @@ export function getDefaultPlatform(): AppPlatform {
   }
 
   const windowRef = getCurrentWindow();
+  const rawWindowRef = windowRef as unknown as {
+    setOpacity?: (value: number) => Promise<void>;
+    setAlwaysOnTop?: (value: boolean) => Promise<void>;
+  };
+  const maybeSetOpacity =
+    typeof rawWindowRef.setOpacity === "function"
+      ? (value: number) => rawWindowRef.setOpacity!(value)
+      : undefined;
+  const maybeSetAlwaysOnTop =
+    typeof rawWindowRef.setAlwaysOnTop === "function"
+      ? (value: boolean) => rawWindowRef.setAlwaysOnTop!(value)
+      : undefined;
   defaultPlatform = {
     invoke: (command, args) => invokeWithDevTiming(command, args),
     listen: (event, handler) => tauriListen(event, handler),
@@ -134,8 +146,8 @@ export function getDefaultPlatform(): AppPlatform {
       setFocus: () => windowRef.setFocus(),
       hide: () => windowRef.hide(),
       startDragging: () => windowRef.startDragging(),
-      setOpacity: (value) => windowRef.setOpacity(value),
-      setAlwaysOnTop: (value) => windowRef.setAlwaysOnTop(value),
+      setOpacity: maybeSetOpacity,
+      setAlwaysOnTop: maybeSetAlwaysOnTop,
       onCloseRequested: (handler) => windowRef.onCloseRequested(handler),
     },
   };

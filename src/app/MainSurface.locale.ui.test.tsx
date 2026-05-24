@@ -11,6 +11,7 @@ function createController(strings: UiStrings, overrides: Record<string, unknown>
     compactMode: () => false,
     phase: () => "idle",
     mainUiState: () => "idle",
+    setupReadinessState: () => "ready",
     setupRequired: () => false,
     setupSteps: () => [
       { label: strings.setup.stepSpeech, readyLabel: "", missingLabel: "", ready: true },

@@ -641,6 +641,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
   ]);
   localeCoverage();
   const compactLayout = createMemo(() => controller().compactMode());
+  const readinessState = createMemo(() => controller().setupReadinessState());
+  const isStartupChecking = createMemo(() => readinessState() === "checking");
+  const isStartupError = createMemo(() => readinessState() === "error");
   const isSetup = createMemo(() => controller().setupRequired());
   const isProcessing = createMemo(
     () =>
@@ -653,7 +656,12 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
   );
   const isIdleReady = createMemo(
     () =>
-      !isSetup() && !isProcessing() && !isAnswerReady() && controller().mainUiState() !== "error",
+      !isStartupChecking() &&
+      !isStartupError() &&
+      !isSetup() &&
+      !isProcessing() &&
+      !isAnswerReady() &&
+      controller().mainUiState() !== "error",
   );
   const isError = createMemo(() => controller().mainUiState() === "error");
   const showSidePanel = createMemo(
@@ -680,7 +688,37 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
           </section>
         </div>
         <div class="main-card-body app-page-body" data-testid="main-card-body">
-          <Show when={isSetup()}>
+          <Show when={isStartupChecking()}>
+            <section
+              class="readiness-state readiness-state--centered"
+              data-testid="startup-checking"
+            >
+              <h2 class="readiness-title">{st().phase.booting}</h2>
+            </section>
+          </Show>
+          <Show when={isStartupError()}>
+            <section class="phase-card phase-card--error" data-testid="startup-readiness-error">
+              <strong>{controller().strings().phase.error}</strong>
+              <p class="empty-flow-hint">{controller().strings().card.errorHint}</p>
+              <div class="action-group">
+                <button
+                  class="btn-secondary"
+                  type="button"
+                  onClick={() => controller().openSettingsPanel()}
+                >
+                  {controller().strings().card.errorFixAction}
+                </button>
+                <button
+                  class="btn-primary"
+                  type="button"
+                  onClick={() => void controller().reloadBootstrap()}
+                >
+                  {controller().strings().settings.checkSettings}
+                </button>
+              </div>
+            </section>
+          </Show>
+          <Show when={!isStartupChecking() && !isStartupError() && isSetup()}>
             <SetupFocusState controller={controller()} />
           </Show>
           <Show when={isIdleReady()}>

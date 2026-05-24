@@ -241,22 +241,51 @@ fn migrate_v8_to_v9(value: &mut serde_json::Value) {
 }
 
 pub fn save(settings: &AppSettings) -> Result<AppSettings, SettingsError> {
+    let mut normalized = settings.clone();
+    preserve_existing_llm_route_if_accidentally_cleared(&mut normalized);
     let _ = crate::app_log::append_event(
         "settings_save_attempt",
         format!(
             "schema={} llm_url_present={} llm_model_present={} hotkey_present={}",
-            settings.schema_version,
-            !settings.llm_base_url.trim().is_empty(),
-            !settings.llm_model.trim().is_empty(),
-            !settings.hotkey.trim().is_empty()
+            normalized.schema_version,
+            !normalized.llm_base_url.trim().is_empty(),
+            !normalized.llm_model.trim().is_empty(),
+            !normalized.hotkey.trim().is_empty()
         ),
     );
-    validate(settings)?;
+    validate(&normalized)?;
     let path = settings_path()?;
-    fs_atomic::write_json_atomically(&path, settings)?;
+    fs_atomic::write_json_atomically(&path, &normalized)?;
     let bytes = fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
     let _ = crate::app_log::append_event("settings_save_ok", format!("bytes={bytes}"));
-    Ok(settings.clone())
+    Ok(normalized)
+}
+
+fn preserve_existing_llm_route_if_accidentally_cleared(settings: &mut AppSettings) {
+    if !settings.llm_base_url.trim().is_empty() {
+        return;
+    }
+    let Ok(existing) = load() else {
+        return;
+    };
+    if existing.llm_base_url.trim().is_empty() {
+        return;
+    }
+    settings.llm_base_url = existing.llm_base_url.clone();
+    if settings.llm_model.trim().is_empty() {
+        settings.llm_model = existing.llm_model.clone();
+    }
+    let _ = crate::app_log::append_event(
+        "settings_save_guard_preserve_llm_route",
+        format!(
+            "llm_base_url_host_preserved={} llm_model_present={}",
+            Url::parse(existing.llm_base_url.trim())
+                .ok()
+                .and_then(|url| url.host_str().map(|h| h.to_string()))
+                .unwrap_or_else(|| "invalid".to_string()),
+            !settings.llm_model.trim().is_empty()
+        ),
+    );
 }
 
 pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
@@ -709,6 +738,35 @@ mod tests {
             let path = settings_path().expect("settings_path");
             let backups = list_corrupt_backups(&path);
             assert!(backups.is_empty());
+        });
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn save_preserves_existing_llm_route_when_incoming_url_is_empty() {
+        let dir = std::env::temp_dir().join(format!(
+            "replyline-settings-preserve-route-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("time")
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).expect("mkdir");
+        with_settings_override_env(&dir, || {
+            let original = AppSettings {
+                llm_base_url: "https://api.openai.com/v1".to_string(),
+                llm_model: "gpt-4o-mini".to_string(),
+                selected_model_preset: "custom_openai_compatible".to_string(),
+                ..AppSettings::default()
+            };
+            save(&original).expect("seed save");
+
+            let mut incoming = original.clone();
+            incoming.llm_base_url = "".to_string();
+            let saved = save(&incoming).expect("guard save");
+
+            assert_eq!(saved.llm_base_url, original.llm_base_url);
+            assert_eq!(saved.llm_model, original.llm_model);
         });
         let _ = std::fs::remove_dir_all(&dir);
     }

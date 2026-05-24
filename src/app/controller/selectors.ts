@@ -1,7 +1,6 @@
 import { createMemo, type Accessor } from "solid-js";
-import type { Phase, AnalysisCard, MainUiState } from "../model";
+import type { Phase, AnalysisCard, MainUiState, SetupReadinessState } from "../model";
 import type { UiStrings } from "../locale";
-import { isConfiguredLlmRoute } from "../model";
 import { phaseLabelFor } from "../controller_status";
 
 export interface SelectorDeps {
@@ -11,8 +10,8 @@ export interface SelectorDeps {
   deepgramSaved: Accessor<boolean>;
   hotkeyFailed: Accessor<boolean>;
   contextActive: Accessor<boolean>;
-  settingsLlmBaseUrl: Accessor<string>;
-  settingsLlmModel: Accessor<string>;
+  llmRouteConfigured: Accessor<boolean>;
+  setupReadinessState: Accessor<SetupReadinessState>;
   strings: Accessor<UiStrings>;
 }
 
@@ -39,16 +38,10 @@ export interface Selectors {
 }
 
 export function createSelectors(deps: SelectorDeps): Selectors {
-  const setupRequired = createMemo(
-    () =>
-      !deps.deepgramSaved() ||
-      !isConfiguredLlmRoute(deps.settingsLlmBaseUrl(), deps.settingsLlmModel()),
-  );
+  const setupRequired = createMemo(() => deps.setupReadinessState() === "missing");
 
   const sttReady = createMemo(() => deps.deepgramSaved());
-  const llmRouteReady = createMemo(() =>
-    isConfiguredLlmRoute(deps.settingsLlmBaseUrl(), deps.settingsLlmModel()),
-  );
+  const llmRouteReady = createMemo(() => deps.llmRouteConfigured());
   const hotkeyReady = createMemo(() => true);
 
   const setupSteps = createMemo<SetupStepState[]>(() => {

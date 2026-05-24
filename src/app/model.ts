@@ -297,6 +297,8 @@ export type SetupStatusDto = {
   runtimePathReady: boolean;
 };
 
+export type SetupReadinessState = "checking" | "ready" | "missing" | "error";
+
 export type PersistenceDiagnosticsDto = {
   settingsPath: string;
   settingsPathHash: string;

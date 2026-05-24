@@ -40,6 +40,7 @@ export interface HotkeyDeps {
   setHotkeyFailed: Setter<boolean>;
   setDeepgramSaved: Setter<boolean>;
   setLlmKeySaved: Setter<boolean>;
+  setLlmRouteConfigured: Setter<boolean>;
   setLastCommandErrorKind: Setter<CommandErrorKind | null>;
   setActiveRunId: Setter<string | null>;
   notices: NoticeApi;
@@ -99,6 +100,7 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
       });
       deps.setDeepgramSaved(setupStatus.deepgramKeyPresent);
       deps.setLlmKeySaved(setupStatus.llmKeyPresent);
+      deps.setLlmRouteConfigured(setupStatus.llmRouteConfigured);
       if (!setupStatus.runtimePathReady || deps.setupRequired()) {
         void emitClientEvent("setup_missing_redirect", {
           phase: "settings",
