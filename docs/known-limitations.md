@@ -51,3 +51,10 @@
 ## Advanced Mode
 
 Advanced Mode is an ops-only diagnostics track, not part of the normal stable-beta user flow. There is no Advanced Mode toggle in the current Settings UI. The stable-beta Settings surface is: hotkey, capture max seconds, model preset, Deepgram API key, LLM base URL, LLM model, optional LLM API key, and interview compact mode.
+
+## Future tracks (explicitly non-shipped)
+
+- Memory layer remains future-only (no shipped memory UI/commands/persistence flow).
+- Local STT path (Whisper/faster-whisper or custom STT endpoint) remains future-only.
+- Broad provider expansion beyond current stable-beta route is future-only unless explicitly documented as shipped.
+- Packaging/public binary distribution expansion remains future-only for the current cycle.

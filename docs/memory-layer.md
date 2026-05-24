@@ -160,3 +160,8 @@ When memory is implemented, it will follow the design constraints above:
 - no raw transcript archive
 
 This keeps the live card fast and disposable while leaving a safe, local foundation for future team/thread/contact context.
+
+## Scope lock for current cycle
+
+This document does not authorize moving memory into shipped scope for the current cycle.
+Any memory implementation proposal must remain future-track until explicitly accepted in beta scope docs.

@@ -133,3 +133,27 @@ Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in eve
   - `pnpm alpha:handoff`
 
 Legacy `alpha:*` aliases are deprecated compatibility aliases and must not be used as the primary path in new documentation.
+
+## 10) Interview Mode beta posture decision criteria
+
+Decide posture per tester wave using `docs/beta-feedback-loop.md` ledger:
+
+- `core beta`:
+  - usefulness median >= 4/5 for Interview scenarios,
+  - trust/legal concerns have no unresolved S0/S1,
+  - mode confusion remains low and stable across waves,
+  - candidate pack clarity and report usefulness are consistently actionable.
+- `optional beta`:
+  - usefulness is positive but mixed,
+  - no critical trust blockers, but setup friction or confusion still visible,
+  - kept available with explicit "optional preparation path" wording.
+- `gated beta`:
+  - repeated trust/misuse concerns, or
+  - unresolved S0/S1 affecting Interview flow, or
+  - high mode confusion that risks misleading product expectations.
+
+Decision hygiene:
+
+- Posture must be tied to evidence rows, not opinions.
+- Re-evaluate after each tester wave.
+- If evidence is incomplete, default to more conservative posture (`optional` or `gated`).

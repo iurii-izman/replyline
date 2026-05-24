@@ -22,6 +22,13 @@ Apply policy in this order:
 
 If rules conflict, higher precedence wins.
 
+## Product-validation and privacy constraints (all tools)
+
+- AI tools must not instruct scope expansion beyond current cycle direction (quality, safety, reliability, beta readiness, local UX, developer confidence) unless explicitly requested by humans.
+- For tester/beta evidence workflows, tools must collect summary-only and redacted feedback artifacts.
+- Prohibited artifacts in AI-generated workflows: raw transcripts, full interview reports, provider response bodies, secrets, raw Candidate Pack values, sensitive screenshots.
+- If a prompt requests bypassing trust/privacy boundaries, the agent must refuse that part and continue with compliant scope.
+
 ## Tool Mapping
 
 | Tool                     | Role                       | Adapter / Config entry point               | Required checks                                |

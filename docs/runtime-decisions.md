@@ -25,6 +25,9 @@ Do not use these as default MVP behavior:
 - full transcript UI
 - snippet history
 - raw audio persistence
+- local STT endpoint switching
+- provider expansion claims beyond documented shipped path
+- packaging/distribution expansion claims
 
 ## Capture duration policy
 

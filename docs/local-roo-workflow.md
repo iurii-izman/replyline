@@ -93,6 +93,13 @@ Claude Sonnet — модель для решений, где важна архи
 - Если менялся `src-tauri/Cargo.toml` или Rust-зависимости → `pnpm rust:deps`
 - Не утверждай, что чеки прошли, если они не были реально запущены.
 
+### Scope and privacy guardrails for product-validation tasks
+
+- Не расширяй product scope без явного запроса: не добавляй accounts/billing/auth/cloud DB/vector DB.
+- Для tester/beta evidence задач собирай только redacted summaries; raw transcripts/reports/provider bodies запрещены.
+- Не предлагай "временные" обходы privacy/trust требований ради скорости эксперимента.
+- Если запрос конфликтует с `AGENTS.md` или `docs/copy-rules.md`, применяй более строгий repo policy.
+
 ---
 
 ## 6. Опасные действия, требующие явного подтверждения

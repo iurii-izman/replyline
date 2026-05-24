@@ -27,3 +27,40 @@ Maintain a single session note with:
 - class (audio routing, hotkey, latency, bad say_now, trust/legal, other)
 - frequency/severity/reproducibility/action
 - owner + target date
+
+## PMF evidence ledger (summary-only, no sensitive raw content)
+
+Maintain `PMF Evidence Ledger` as a compact table per tester wave:
+
+- wave id/date
+- tester count
+- scenarios covered (`WorkConversation`, `Interview`)
+- setup friction trend (none/low/medium/high counts)
+- usefulness trend (median and p25 for overall/card usefulness)
+- trust concerns count (and resolved/unresolved split)
+- latency tolerance vs perceived wait (summary)
+- mode confusion rate
+- candidate pack clarity trend
+- interview report usefulness trend
+- top 3 blockers
+- decisions taken + owner + date
+
+Rules:
+
+- Store only summarized findings and redacted short excerpts.
+- Never store raw transcripts, full reports, provider bodies, raw candidate data, or secrets.
+
+## Interview Mode posture decision log
+
+For each wave, evaluate Interview Mode posture:
+
+- `core beta`: Interview metrics consistently meet acceptance criteria and trust risk remains controlled.
+- `optional beta`: useful for a subset, but not yet stable enough for core claim.
+- `gated beta`: trust/misuse/confusion risks are material; enable only for explicitly scoped testers.
+
+Record:
+
+- decision (`core beta` / `optional beta` / `gated beta`)
+- evidence refs (ledger rows)
+- risks and mitigations
+- recheck date

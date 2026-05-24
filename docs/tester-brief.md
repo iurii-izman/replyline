@@ -42,6 +42,35 @@ Replyline — Windows-first tray app для сложных рабочих раз
 4. Отправить фидбек по шаблону: `docs/test-feedback-template.md`.
 5. Для trusted beta triage пометить frequency/severity/reproducibility/action по `docs/beta-feedback-loop.md`.
 
+## Безопасный протокол тестирования (redacted-only)
+
+- Перед сессией подтвердить, что тест идёт на синтетических или безопасно-обезличенных репликах.
+- Не использовать реальные персональные данные кандидатов, клиентов, сотрудников или коммерчески чувствительные фрагменты.
+- В фидбеке разрешены только summary-level наблюдения и короткие redacted примеры.
+- Запрещено прикладывать raw transcript, полный interview report, provider response body, API keys, raw Candidate Pack values, или скриншоты с чувствимым контентом.
+
+## Сценарии для Block 8A
+
+### WorkConversation scenario (safe)
+
+1. Смоделировать рабочий диалог с deadline/pushback/escalation (2-3 реплики).
+2. Удержать hotkey, получить карточку, оценить speakability `say_now`.
+3. Проверить, что ответ пришёл вовремя для "reply-now" момента.
+4. Зафиксировать только redacted feedback по шаблону.
+
+### Interview Mode scenario (allowed-use)
+
+1. Запустить Interview Mode только для подготовки и тренировки формулировок, без cheating-сценариев.
+2. Использовать synthetic или redacted Candidate Pack input.
+3. Оценить полезность Candidate Pack guidance и session report для подготовки, не публикуя полный report.
+4. Если есть сомнение в этичности/границах use-case, пометить как trust concern в шаблоне.
+
+## Если нет ключей или аудио источника
+
+- Если нет Deepgram/LLM credentials: отметить как setup friction, не блокировать весь batch, перейти к UX/trust walkthrough и документировать препятствие.
+- Если нет доступного playback device или routing не работает: зафиксировать как `audio routing issue`, добавить шаги воспроизведения, продолжить сценарии где возможно.
+- Не выдумывать результаты недоступных runtime шагов; отмечать `not validated` в отчёте.
+
 ## Что обязательно сообщать как отдельные классы проблем
 
 - audio routing issues

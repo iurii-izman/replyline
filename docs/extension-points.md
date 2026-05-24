@@ -4,6 +4,8 @@ Guide for developers adding new providers, features, or integrations.
 
 ## Provider Layer (`src-tauri/src/providers/`)
 
+> Scope note: provider/memory expansion described here is an extension reference, not shipped stable-beta scope by default.
+
 ### Adding a New STT Provider
 
 1. Create `src-tauri/src/new_stt.rs` with a `transcribe_*` function

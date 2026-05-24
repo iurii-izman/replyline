@@ -49,6 +49,11 @@ Replyline's LLM path can be pointed to a local server via `llmBaseUrl`. This is 
 
 > **Note:** Local STT (e.g. Whisper.cpp / faster-whisper-server) is not available in the current stable beta. The only shipped STT path is Deepgram. There is no STT endpoint setting in the current AppSettings. Local STT is a future consideration.
 
+Provider expansion note:
+
+- Additional STT/LLM provider tracks are extension/future work until explicitly marked shipped in beta scope docs.
+- Do not message future provider options as currently available product capability.
+
 With a local LLM and Deepgram STT, audio still leaves the machine via the Deepgram API. Full local-only operation (no audio leaving the machine) is not currently supported.
 
 ## Operator checklist before runtime tests
