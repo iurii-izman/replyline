@@ -45,6 +45,7 @@
 
 - [max-upgrade-implementation-plan.md](max-upgrade-implementation-plan.md)
 - [max-upgrade-execution-prompts.md](max-upgrade-execution-prompts.md)
+- [postman-audit-execution-prompts.md](postman-audit-execution-prompts.md)
 - [tester-brief.md](tester-brief.md)
 - [test-feedback-template.md](test-feedback-template.md)
 - [beta-feedback-loop.md](beta-feedback-loop.md)

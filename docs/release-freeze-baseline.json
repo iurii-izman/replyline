@@ -55,6 +55,7 @@
     "docs/README.md",
     "docs/max-upgrade-execution-prompts.md",
     "docs/max-upgrade-implementation-plan.md",
+    "docs/postman-audit-execution-prompts.md",
     "docs/release-local-readiness.md",
     "docs/beta-ops-diagnostics.md",
     "docs/known-limitations.md",
@@ -123,7 +124,10 @@
     ".github/ISSUE_TEMPLATE/feature_request.md",
     ".github/ISSUE_TEMPLATE/beta_handoff_release.md"
   ],
-  "guardrailPathRegexes": ["^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"],
+  "guardrailPathRegexes": [
+    "^reports/release/release-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$",
+    "^reports/sonar/sonar-residual-readiness-\\d{4}-\\d{2}-\\d{2}\\.md$"
+  ],
   "allowlistPrefixes": [
     ".github/",
     ".roo/",
