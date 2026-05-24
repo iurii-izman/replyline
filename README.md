@@ -27,7 +27,7 @@ Also out of scope in current stable beta:
 - no hidden cheating workflow
 - no click-through hidden overlay
 - no Advanced Mode user surface
-- no memory/diagnostics user surface
+- no memory user surface
 
 ## Supported Runtime Path
 
@@ -68,6 +68,7 @@ pnpm verify:full
 - API keys are stored in OS keyring (Windows Credential Manager), not in plain-text settings.
 - Logging pipeline applies layered sanitization and secret redaction.
 - Full transcript / full prompt are not logged by default (`redact_transcript_like` + `safe_preview`).
+- Settings includes a local diagnostics surface via `debugTraceMode` and `debugTraceRetentionDays` (`off` / `redacted` / `full_local`).
 - STT/LLM providers can receive audio/text when configured by user.
 - Runtime/evidence artifacts may contain sensitive content when explicitly generated under `reports/`.
 

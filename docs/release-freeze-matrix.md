@@ -15,7 +15,6 @@ Manual closure static assets are part of this baseline: `docs/manual-closure-pac
 | settings-save-and-reload               | save settings + restart                       | persisted values survive restart                                       |
 | secrets-persist-separate-from-settings | save keys                                     | secrets not written into `settings.json`                               |
 | clear-context                          | clear from UI/tray                            | context flags reset to inactive/0                                      |
-| collect-diagnostic-bundle              | collect diagnostic bundle                     | bundle path + manifest produced                                        |
 | runtime-probe-and-evidence             | `pnpm probe:runtime` + `pnpm evidence:bundle` | runtime JSON artifact exists                                           |
 
 ## Freeze guardrails

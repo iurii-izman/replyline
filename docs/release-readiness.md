@@ -15,7 +15,8 @@ Release gate for Slim Stable Beta.
 
 - only `capture -> stt -> llm -> card`
 - Settings only: hotkey, capture max seconds, Deepgram key, LLM base URL/model/key(optional)
-- no Advanced Mode / memory UI / diagnostic UI in user path
+- no Advanced Mode / memory UI in user path
+- diagnostics surface is limited to local debug trace controls (`debugTraceMode`, `debugTraceRetentionDays`) in Settings
 
 ## Strict readiness evidence model
 

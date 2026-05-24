@@ -19,7 +19,7 @@
 
 - Отдельные runtime/evidence команды могут сохранять локальные диагностические артефакты в `reports/` (включая transcript в отчётах), если вы запускаете эти команды вручную.
 - Это часть верификации, а не фонового продуктового хранения.
-- Локальный `app.log` и диагностический bundle проходят санитизацию/редакцию (секреты, токены, потенциальные PII маскируются).
+- Локальный `app.log`, trace artifacts, и runtime evidence bundle проходят санитизацию/редакцию (секреты, токены, потенциальные PII маскируются).
 - Interview reports хранятся только локально в профиле пользователя (`%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json`).
 - Interview report может включать raw transcript content как часть explicit Interview Session flow.
 - Retention policy для interview reports настраивается пользователем в Settings (`manual clear`, `7`, `30`, `90` дней).
@@ -29,6 +29,10 @@
 - Есть два явных export-действия:
   - `Export full markdown (includes transcript)` — включает raw/full transcript и считается sensitive.
   - `Export redacted markdown (no transcript)` — safer share copy, исключает raw/full transcript.
+- Settings diagnostics surface:
+  - `debugTraceMode=redacted` (default) пишет только санитизированные traces.
+  - `debugTraceMode=full_local` может сохранять более чувствительный локальный контент и должен использоваться только для локального triage.
+  - `debugTraceRetentionDays=0` означает manual cleanup only.
 
 ### Redaction v1 (Privacy)
 

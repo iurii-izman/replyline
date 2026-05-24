@@ -16,6 +16,7 @@
 - Нет transcript UI, history UI, team workflows, speaker detection, tone analysis или эмоциональной интерпретации.
 - Нет скрытых cheating сценариев.
 - Нет click-through скрытого overlay режима.
+- Settings diagnostics surface ограничен только debug traces (`off`, `redacted`, `full_local`) и retention (0/1/3/7 дней); отдельного diagnostics dashboard нет.
 
 ## Runtime certainty
 

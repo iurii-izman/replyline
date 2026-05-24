@@ -60,16 +60,16 @@ Constraint:
 
 - diagnostics should be useful for debugging, but never rely on raw secrets or transcript dumps in logs.
 
-## 4) Diagnostic bundle structure
+## 4) Runtime evidence bundle structure
 
-`collect_diagnostic_bundle` creates:
+`pnpm evidence:bundle` creates:
 
 - `runtime/` — runtime artifacts copied from local repo `reports/runtime` when available
 - `logs/` — `app.log` copy when available
 - `diagnostics/runtime-events.json` — extracted `diag_runtime_event` entries
 - `manifest.json` — provenance, counts, honesty boundaries, section map
 
-Bundle is valid even if runtime reports are absent. App log + manifest are sufficient minimum for blocker triage.
+Bundle is valid even if some runtime reports are absent. App log + manifest are sufficient minimum for blocker triage.
 
 ## 5) How to collect diagnostics
 
@@ -78,7 +78,7 @@ From command:
 1. `pnpm evidence:bundle`.
 2. Attach generated `reports/runtime-evidence-*` folder.
 
-The diagnostic bundle collection UI is not exposed in the current stable-beta Settings surface. Use the command-line path above.
+There is no separate diagnostic bundle UI in Settings. Use `pnpm evidence:bundle` from command line.
 
 ## 6) How to read signals quickly
 
@@ -111,7 +111,7 @@ Scenario A: STT key missing
 
 1. Remove/clear Deepgram key in Settings.
 2. Hold/release hotkey once.
-3. Collect diagnostic bundle.
+3. Run `pnpm evidence:bundle`.
 4. Validate latest fail event:
    - `stage=stt`
    - `outcome=fail`
@@ -121,7 +121,7 @@ Scenario B: Retry without prior transcript
 
 1. Restart app (fresh session).
 2. Click `Rebuild card` before any capture.
-3. Collect diagnostic bundle.
+3. Run `pnpm evidence:bundle`.
 4. Validate latest fail event:
    - `stage=retry`
    - `outcome=fail`
@@ -131,7 +131,7 @@ Scenario C: Invalid LLM route or unreachable gateway
 
 1. Set non-working `llmBaseUrl` and save.
 2. Run one capture cycle.
-3. Collect diagnostic bundle.
+3. Run `pnpm evidence:bundle`.
 4. Validate latest fail event:
    - `stage=llm`
    - `outcome=fail`

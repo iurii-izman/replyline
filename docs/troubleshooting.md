@@ -99,21 +99,23 @@
 - Temperature is internally fixed at 0.25 (deterministic). Not exposed as a user setting in the current stable beta.
 - If using a custom system prompt, try clearing it to use the built-in prompt.
 
-## 7. Streaming STT produces no transcript
+## 7. STT returns no transcript
 
-**Symptoms:** With `useStreamingStt` enabled, capture completes but transcript is empty.
+**Symptoms:** Capture completes but transcript is empty.
+
+**Current STT path:** Replyline stable beta uses Deepgram batch HTTP STT (no user-facing streaming STT toggle in Settings).
 
 **Causes:**
 
-- WebSocket connection to Deepgram failed silently.
-- The Deepgram plan does not support streaming API access.
-- Network firewall blocks WebSocket connections (`wss://`).
+- Audio snippet is too short or mostly silence.
+- Deepgram request failed due to network/provider issue.
+- Deepgram key is missing/invalid.
 
 **Fix:**
 
-- Disable `useStreamingStt` in settings to fall back to batch HTTP mode.
-- Verify your Deepgram plan supports the streaming API at [console.deepgram.com](https://console.deepgram.com).
-- Check firewall/proxy settings for WebSocket (`wss://api.deepgram.com`).
+- Keep at least 5-10 seconds of clear system audio in the snippet.
+- Re-check Deepgram key and run the settings health check.
+- Retry after network recovery; if needed, collect local diagnostics via `pnpm evidence:bundle`.
 
 ## 8. High latency (> 10 seconds from release to card)
 
@@ -128,7 +130,6 @@
 **Fix:**
 
 - Reduce `captureMaxSeconds` in settings (shorter captures = faster processing).
-- Enable `useStreamingStt` for parallel transcription during capture.
 - Use a faster/smaller LLM model.
 - For lowest latency on the LLM side, use a local LLM provider (Ollama with GPU). Local STT (e.g. Whisper.cpp) is not available in the current stable beta.
 
@@ -160,7 +161,7 @@ pnpm smoke
 
 ## 10. How to triage with diagnostic events
 
-If runtime fails unpredictably, collect a diagnostic bundle and inspect:
+If runtime fails unpredictably, run `pnpm evidence:bundle` and inspect:
 
 - `diagnostics/runtime-events.json` for `stage/outcome/code`
 - `logs/app.log` for nearby context

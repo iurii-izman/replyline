@@ -66,7 +66,6 @@ Fixture/probe gate policy:
 These are engineering targets used for trend tracking, not universal guarantees:
 
 - capture stop to transcript: target <= 3500 ms (batch STT lane)
-- capture stop to transcript: target <= 2500 ms (streaming STT lane)
 - transcript to card: target <= 2500 ms
 - release-to-card total: target <= 6000 ms
 
