@@ -1262,6 +1262,9 @@ describe("Interview card rendering", () => {
         true,
       ),
     );
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "save_candidate_pack")).toBe(true),
+    );
   });
 
   it("shows saved status state after saving candidate pack", async () => {
@@ -1285,6 +1288,9 @@ describe("Interview card rendering", () => {
       expect(mock.invoke.mock.calls.some((c) => c[0] === "save_prepared_candidate_pack")).toBe(
         true,
       ),
+    );
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((c) => c[0] === "save_candidate_pack")).toBe(true),
     );
     expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("9 / weak 2");
   });

@@ -821,7 +821,7 @@ pub async fn prepare_candidate_pack(
     let api_key = credentials::load(SecretSlot::LlmApiKey)
         .map_err(CommandError::from)?
         .unwrap_or_default();
-    let draft = candidate_pack_provider::prepare_candidate_pack(
+    let draft_result = candidate_pack_provider::prepare_candidate_pack(
         &settings,
         if api_key.trim().is_empty() {
             None
@@ -832,8 +832,16 @@ pub async fn prepare_candidate_pack(
         job_description,
         company_values_text,
     )
-    .await
-    .map_err(CommandError::Pipeline)?;
+    .await;
+    let draft = match draft_result {
+        Ok(value) => value,
+        Err(err) => {
+            let safe_err = crate::privacy::safe_preview(&err, 240);
+            let _ =
+                app_log::append_event("candidate_pack_prepare_fail", format!("error={safe_err}"));
+            return Err(CommandError::Pipeline(err));
+        }
+    };
 
     let _ = app_log::append_event(
         "candidate_pack_prepare_ok",

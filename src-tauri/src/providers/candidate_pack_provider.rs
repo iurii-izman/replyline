@@ -3,6 +3,19 @@ use crate::types::{AppSettings, CandidatePackDraftDto};
 
 use super::openai_compatible;
 
+fn candidate_pack_request_policy() -> openai_compatible::LlmRequestPolicy {
+    // Candidate Pack prompts are significantly larger than runtime answer prompts.
+    // Use a wider budget to reduce false timeouts on long resume/JD inputs.
+    openai_compatible::LlmRequestPolicy {
+        total_budget_ms: 45_000,
+        per_attempt_timeout_ms: 25_000,
+        max_retries: 1,
+        retry_base_ms: 500,
+        retry_max_backoff_ms: 1_500,
+        enable_fast_fallback: true,
+    }
+}
+
 pub async fn prepare_candidate_pack(
     settings: &AppSettings,
     api_key: Option<&str>,
@@ -22,7 +35,7 @@ pub async fn prepare_candidate_pack(
         candidate_pack::system_prompt(),
         &user_prompt,
         candidate_pack::max_tokens(),
-        openai_compatible::LlmRequestPolicy::default(),
+        candidate_pack_request_policy(),
     )
     .await?;
     candidate_pack::normalize_from_raw(&raw_text)

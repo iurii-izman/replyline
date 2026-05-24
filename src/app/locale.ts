@@ -319,6 +319,15 @@ export const ui_ru = {
     noPreviewStepInput: "1. Вставьте резюме и описание вакансии.",
     noPreviewStepPrepare: "2. Нажмите «Подготовить профиль».",
     noPreviewStepResult: "3. Появятся качество, факты, ключевые слова и предупреждения.",
+    candidatePackErrorLabel: "Ошибка подготовки профиля",
+    candidatePackErrorHintBudget:
+      "LLM не успел за лимит времени. Попробуйте ещё раз или сократите исходные тексты.",
+    candidatePackErrorHintHttp:
+      "LLM endpoint вернул HTTP-ошибку. Проверьте URL/модель/ключ в настройках.",
+    candidatePackErrorHintNetwork:
+      "Ошибка сети/таймаута при запросе к LLM. Проверьте доступность провайдера.",
+    candidatePackErrorHintGeneric:
+      "Подробности ошибки сохранены в app.log. Проверьте настройки провайдера и повторите.",
     candidatePackPreview: {
       score: "Оценка",
       facts: "Факты",
@@ -679,6 +688,15 @@ export const ui_en: UiStrings = {
     noPreviewStepInput: "1. Paste resume and job description.",
     noPreviewStepPrepare: '2. Click "Prepare profile".',
     noPreviewStepResult: "3. You will get quality, facts, keywords, and warnings.",
+    candidatePackErrorLabel: "Profile preparation error",
+    candidatePackErrorHintBudget:
+      "The LLM request exceeded the time budget. Retry or shorten the input texts.",
+    candidatePackErrorHintHttp:
+      "The LLM endpoint returned an HTTP error. Check URL/model/key in settings.",
+    candidatePackErrorHintNetwork:
+      "Network/timeout error while calling the LLM endpoint. Check provider availability.",
+    candidatePackErrorHintGeneric:
+      "Detailed error is written to app.log. Review provider settings and retry.",
     candidatePackPreview: {
       score: "Score",
       facts: "Facts",

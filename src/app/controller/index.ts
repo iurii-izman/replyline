@@ -58,6 +58,20 @@ function parseFactsText(value: string): CandidatePackDto["resumeFacts"] {
   });
 }
 
+function summarizeFromFacts(facts: CandidatePackDraft["candidateFacts"]): string {
+  const topFacts = facts
+    .map((fact) => fact.fact.trim())
+    .filter(Boolean)
+    .slice(0, 2);
+  return topFacts.join(" ");
+}
+
+function asFactTitle(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  return trimmed.length > 72 ? `${trimmed.slice(0, 72)}...` : trimmed;
+}
+
 export function useReplylineController(platform: AppPlatform) {
   // ── State ──────────────────────────────────────────────────────────────
   const [phase, setPhase] = createSignal<Phase>("booting");
@@ -113,6 +127,7 @@ export function useReplylineController(platform: AppPlatform) {
   );
   const [candidatePackPreparing, setCandidatePackPreparing] = createSignal(false);
   const [candidatePackSaving, setCandidatePackSaving] = createSignal(false);
+  const [candidatePackError, setCandidatePackError] = createSignal<string | null>(null);
   const [activeInterviewCardIndex, setActiveInterviewCardIndex] = createSignal(0);
   const [pinnedInterviewCard, setPinnedInterviewCard] = createSignal<InterviewCardKey | null>(null);
   const [interviewSession, setInterviewSession] = createSignal<InterviewSessionStateDto | null>(
@@ -380,6 +395,7 @@ export function useReplylineController(platform: AppPlatform) {
 
   // ── Public API ─────────────────────────────────────────────────────────
   async function loadCandidatePack() {
+    setCandidatePackError(null);
     const pack = await platform.invoke<CandidatePackDto | null>("load_candidate_pack");
     const status = await platform.invoke<CandidatePackStatusDto>("get_candidate_pack_status");
     setCandidatePackStatus(status);
@@ -442,10 +458,12 @@ export function useReplylineController(platform: AppPlatform) {
       language: "ru",
     });
     setCandidatePackStatus({ exists: false, factCount: 0, weakFactCount: 0 });
+    setCandidatePackError(null);
   }
   async function prepareCandidatePack() {
     void emitUiEvent(platform, "candidate_profile_prepare_clicked", { phase: "candidate_pack" });
     setCandidatePackPreparing(true);
+    setCandidatePackError(null);
     setError(null);
     try {
       const draft = await platform.invoke<CandidatePackDraft>("prepare_candidate_pack", {
@@ -456,9 +474,12 @@ export function useReplylineController(platform: AppPlatform) {
         },
       });
       setCandidatePackPreview(draft);
+      setCandidatePackError(null);
       notices.pushNotice({ tone: "info", message: strings().notices.candidatePackPrepared });
     } catch (err) {
-      setError(invokeErrorMessage(err));
+      const message = invokeErrorMessage(err);
+      setCandidatePackError(message);
+      setError(message);
     } finally {
       setCandidatePackPreparing(false);
     }
@@ -467,13 +488,52 @@ export function useReplylineController(platform: AppPlatform) {
     const draft = candidatePackPreview();
     if (!draft) return;
     setCandidatePackSaving(true);
+    setCandidatePackError(null);
     setError(null);
     try {
       await platform.invoke("save_prepared_candidate_pack", { draft });
+      const resumeFacts: CandidatePackDto["resumeFacts"] = draft.candidateFacts.map((fact, index) => {
+        const claim = fact.fact.trim();
+        const evidence = fact.evidence.trim();
+        return {
+          id: `fact-${index + 1}`,
+          title: asFactTitle(claim),
+          claim,
+          description: "",
+          evidence,
+          skills: [],
+          metrics: fact.metrics ?? [],
+          strength: fact.strength,
+          suitableForQuestions: [],
+        };
+      });
+      const input: CandidatePackDto = {
+        candidateSummary: summarizeFromFacts(draft.candidateFacts),
+        targetRole: draft.roleKeywords.slice(0, 3).join(", "),
+        resumeFacts,
+        jobDescription: {
+          title: draft.roleKeywords[0] ?? "",
+          company: "",
+          requirements: lines(candidateJobDescription()).slice(0, 8),
+          responsibilities: [],
+          keywords: draft.roleKeywords,
+        },
+        companyValues: draft.companyValues.length
+          ? draft.companyValues
+          : lines(candidateCompanyValues()),
+        answerConstraints: {
+          avoidClaims: [],
+          preferredExamples: draft.suggestedMissingInfo,
+          language: "ru",
+        },
+      };
+      await platform.invoke("save_candidate_pack", { input });
       await loadCandidatePack();
       notices.pushNotice({ tone: "info", message: strings().notices.candidatePackSaved });
     } catch (err) {
-      setError(invokeErrorMessage(err));
+      const message = invokeErrorMessage(err);
+      setCandidatePackError(message);
+      setError(message);
     } finally {
       setCandidatePackSaving(false);
     }
@@ -565,6 +625,7 @@ export function useReplylineController(platform: AppPlatform) {
     candidatePackPreview,
     candidatePackPreparing,
     candidatePackSaving,
+    candidatePackError,
     activeInterviewCardIndex,
     activeInterviewCardKey,
     interviewCardKeys,

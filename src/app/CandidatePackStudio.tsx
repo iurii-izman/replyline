@@ -105,6 +105,14 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
     if (controller().candidatePackPreparing()) return st().settings.preparing;
     return st().settings.prepare;
   });
+  const candidatePackErrorHint = createMemo(() => {
+    const err = controller().candidatePackError();
+    if (!err) return "";
+    if (err.includes("LLM_BUDGET_EXCEEDED")) return st().settings.candidatePackErrorHintBudget;
+    if (err.includes("LLM_HTTP_ERROR")) return st().settings.candidatePackErrorHintHttp;
+    if (err.includes("LLM_REQUEST_FAILED")) return st().settings.candidatePackErrorHintNetwork;
+    return st().settings.candidatePackErrorHintGeneric;
+  });
 
   return (
     <div class="candidate-pack-studio" data-testid="candidate-pack-studio">
@@ -557,6 +565,16 @@ export function CandidatePackStudio(props: CandidatePackStudioProps) {
           {st().settings.backToSettings}
         </button>
       </div>
+      <Show when={controller().candidatePackError()}>
+        {(err) => (
+          <div class="notice-item is-error" role="alert" data-testid="candidate-pack-error">
+            <output class="notice-item-text">
+              {st().settings.candidatePackErrorLabel}: {err()}
+            </output>
+            <p class="field-help">{candidatePackErrorHint()}</p>
+          </div>
+        )}
+      </Show>
     </div>
   );
 }
