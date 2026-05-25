@@ -39,3 +39,15 @@ pnpm install --include=optional
 - `pnpm test:optional:e2e:web`
 - `pnpm test:optional:e2e:desktop`
 - `pnpm test:optional:ux:lighthouse`
+
+## Frontend Test Strategy
+
+- `pnpm test:ui` is the default frontend regression lane for PR/local changes touching `src/app/*`.
+- Keep tests deterministic: mock platform IPC (`invoke`, shortcuts, listeners), avoid timers unless controlled with fake timers, and avoid full snapshots.
+- Coverage intent:
+  - `src/app/controller/*`: direct unit tests for pure/action modules plus integration coverage via `App.ui.test.tsx`.
+  - Critical UI states: mode state banner, Candidate Pack state machine, Settings diagnostics warnings, and export safety copy.
+- Run `pnpm test:ui:coverage` when:
+  - changing controller orchestration or setup/mode/privacy flows;
+  - adding/removing UI states in `MainSurface`, `SettingsSurface`, or `CandidatePackStudio`;
+  - preparing risk-sensitive handoff where proof of frontend coverage delta is required.
