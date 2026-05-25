@@ -48,3 +48,25 @@ Release gate for Slim Stable Beta.
 - `release-on-tag.yml` creates GitHub release notes only.
 
 `release-on-tag.yml` currently does **not** build or upload desktop installers/binaries.
+
+## Windows packaging posture (current vs future)
+
+- Current (implemented): release publication is notes-only via `release-on-tag.yml`.
+- Current (implemented): `.github/workflows/windows-packaging-manual.yml` provides a manual `workflow_dispatch` packaging lane for Windows artifacts and uploads workflow artifacts for operator review.
+- Future (not implemented): publish-capable release packaging with explicit operator approval.
+- Forbidden until explicit approval: signing secrets setup, code-signing enablement in CI, and automatic artifact publication on tag push.
+
+## Packaging prerequisites before public beta
+
+- Signing readiness:
+  - choose signing certificate source and operator workflow;
+  - document signing step ownership and failure handling;
+  - verify SmartScreen/Defender first-run behavior on fresh Windows profile.
+- Checksum and integrity:
+  - generate SHA-256 checksums for each packaged artifact;
+  - publish checksum files together with artifact naming convention and verification command examples.
+- Measured evidence (must be collected, not assumed):
+  - installer success rate on clean Windows 10/11 profiles;
+  - launch success and tray/open/quit behavior after installation;
+  - uninstall behavior (what is removed vs preserved in `%APPDATA%`);
+  - packaged build runtime sanity (`capture -> stt -> llm -> card`) with same-day evidence report.

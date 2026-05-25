@@ -19,7 +19,7 @@ The external audit is broadly aligned with the current repository state, with a 
 | Rust tests | about 148 annotations | Current: 151 `#[test]` / `#[tokio::test]` annotations |
 | TS tests | 7 files | Confirmed: 7 files |
 | Reports | 984 generated artifacts | Current local tree after cleanup/report generation: 12 files under `reports/` |
-| `authors = ["you"]` | Still present | Confirmed in `src-tauri/Cargo.toml` |
+| `authors = ["<placeholder>"]` | Still present | Confirmed in `src-tauri/Cargo.toml` |
 | CSP `https://*` | Needs justification / narrowing | Justification now exists in `docs/privacy-and-trust.md`; security lane checks it |
 | Release binaries | Not published by `release-on-tag.yml` | Confirmed and documented |
 | Candidate Pack boundary | Earlier risk | Now fixed by tests: WorkConversation excludes Candidate Pack by default |
@@ -201,7 +201,7 @@ Prepare Replyline for eventual public binary release while preserving the curren
 
 ### Why This Matters
 
-The current internal stable beta can function without binary publishing. Public beta cannot. The first non-controversial fix is manifest hygiene: `authors = ["you"]` should not ship in public metadata.
+The current internal stable beta can function without binary publishing. Public beta cannot. The first non-controversial fix is manifest hygiene: placeholder `authors` metadata should not ship in public metadata.
 
 ### Target Files
 
@@ -224,7 +224,7 @@ The current internal stable beta can function without binary publishing. Public 
 
 ### Implementation Scope
 
-1. Replace `authors = ["you"]` with the correct owner/organization value.
+1. Replace placeholder `authors` value with the correct owner/organization value.
 2. Document release metadata decisions: product name, identifier, author, versioning.
 3. Create a packaging design doc for Windows installer/portable artifact, signing, checksums, and release artifact retention.
 4. Optionally add a dry-run workflow or disabled/manual packaging workflow if approved.
@@ -278,7 +278,7 @@ Implementation requirements:
 5. Do not add secrets, signing config, or artifact publication without explicit approval.
 
 Acceptance criteria:
-- No `authors = ["you"]` remains.
+- No placeholder `authors` value remains.
 - Docs do not imply installer artifacts exist.
 - Public beta packaging path is concrete enough to implement later.
 - verify:fast and release-freeze strict pass.
@@ -874,4 +874,3 @@ Stop and ask the operator before continuing if:
 - A proposed CSP change breaks custom LLM endpoints.
 - A docs archive move would hide still-current release instructions.
 - A Postman lane requires adding a production API surface.
-

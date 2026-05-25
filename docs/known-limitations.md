@@ -7,6 +7,8 @@
 - Стадия: публичный beta posture (Windows-first, Russian-first).
 - Фокус: Windows-first (Tauri + Rust + Solid).
 - Публичный binary release не является целью текущего этапа.
+- Текущий `release-on-tag` workflow публикует release notes only (без installer/binary artifacts).
+- Manual packaging workflow есть только для внутренней проверки artifacts и не публикует binaries в GitHub Releases.
 - Main window работает как обычное Windows desktop window (taskbar + Alt+Tab + native titlebar controls).
 - Полный выход остаётся через tray action `Quit`; native close скрывает окно в tray.
 

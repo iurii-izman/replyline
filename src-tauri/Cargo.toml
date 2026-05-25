@@ -2,7 +2,7 @@
 name = "replyline"
 version = "0.1.0"
 description = "Replyline desktop shell"
-authors = ["you"]
+authors = ["iurii-izman"]
 edition = "2021"
 default-run = "replyline"
 

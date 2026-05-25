@@ -114,6 +114,29 @@ Release handoff is blocked unless all items are complete:
 4. Model presets and caveats are reviewed.
 5. Known limitations are reviewed and updated.
 
+## 7.1) Public beta packaging staging plan (truthful, non-shipped)
+
+Current state:
+
+- `.github/workflows/release-on-tag.yml` publishes GitHub release notes only.
+- `.github/workflows/windows-packaging-manual.yml` builds Windows artifacts by manual run and uploads workflow artifacts for internal review only.
+- No installer/binary artifacts are currently published to GitHub Releases from CI.
+
+Future staged path (implementation-ready, not yet active):
+
+1. Keep packaging manual-only (`workflow_dispatch`) until public release approval.
+2. Keep workflow non-publishing by default: no automatic `gh release upload` and no tag-triggered artifact publication.
+3. Add signing stage only after explicit approval and secret onboarding.
+4. Add checksums (`SHA-256`) and verification notes alongside each reviewed artifact.
+5. After evidence passes, explicitly approve transition to publish-capable release workflow.
+
+Minimum measurements required before public beta installer claims:
+
+- fresh install/uninstall pass on Windows 10 and Windows 11;
+- first-launch success and tray lifecycle behavior (`open/hide/quit`);
+- SmartScreen/Defender prompts documented for signed/unsigned states;
+- runtime sanity after install (`capture -> stt -> llm -> card`) with same-day evidence.
+
 ## 8) Known limitations
 
 Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in every beta handoff:

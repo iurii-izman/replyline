@@ -1,0 +1,50 @@
+name: Windows Packaging Manual (Non-Publishing)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to package (branch, tag, or commit SHA)"
+        required: false
+        default: "main"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  package-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Windows artifacts (no publish)
+        run: pnpm tauri build
+
+      - name: Upload Windows bundle artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: replyline-windows-bundle-${{ github.run_id }}
+          retention-days: 14
+          path: |
+            src-tauri/target/release/bundle/**
+            src-tauri/target/release/*.exe
