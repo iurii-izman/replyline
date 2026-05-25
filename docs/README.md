@@ -49,6 +49,7 @@
 
 ## 6) Internal operations and templates (active)
 
+- [audit-scorecard-2026-05-25.md](audit-scorecard-2026-05-25.md)
 - [max-upgrade-implementation-plan.md](max-upgrade-implementation-plan.md)
 - [max-upgrade-execution-prompts.md](max-upgrade-execution-prompts.md)
 - [postman-audit-execution-prompts.md](postman-audit-execution-prompts.md)

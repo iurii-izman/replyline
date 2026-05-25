@@ -54,6 +54,7 @@
     "package.json",
     "reports/release/release-readiness-2026-05-21.md",
     "docs/README.md",
+    "docs/audit-scorecard-2026-05-25.md",
     "docs/max-upgrade-execution-prompts.md",
     "docs/max-upgrade-implementation-plan.md",
     "docs/postman-audit-execution-prompts.md",
