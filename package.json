@@ -122,9 +122,11 @@
     "report:product-quality": "node scripts/evaluate-product-scenarios.mjs --report-only",
     "report:sonar-residual": "node scripts/report-sonar-residual-readiness.mjs",
     "report:live-evidence-pack": "node scripts/report-live-evidence-pack.mjs",
+    "report:internal-beta-seal": "node scripts/report-internal-beta-seal.mjs",
     "test:report-secret-leaks": "node scripts/check-report-secret-leaks.mjs",
     "report:release-readiness": "node scripts/report-release-readiness.mjs",
     "report:release-readiness:strict": "node scripts/report-release-readiness.mjs --strict",
+    "beta:seal": "pnpm report:internal-beta-seal",
     "verify:release-local": "pnpm verify:fast && pnpm scripts:lifecycle && pnpm test:doc-links && pnpm test:e2e:web && pnpm report:runtime-quality && pnpm test:product-scenarios && pnpm test:manual-closure-pack && pnpm release:freeze:check && pnpm report:release-readiness:strict",
     "verify:release-local:required-e2e": "pnpm verify:release-local && pnpm test:e2e:web:required"
   },

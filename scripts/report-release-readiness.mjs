@@ -272,7 +272,11 @@ export function runReleaseReadiness(options = {}) {
   const hasReleaseArtifactBuild =
     releaseWorkflowText.includes("windows-artifact") &&
     releaseWorkflowText.includes("pnpm tauri build");
-  const hasUnsignedReleasePath = releaseWorkflowText.includes("windows-internal-unsigned");
+  const hasUnsignedReleasePath =
+    releaseWorkflowText.includes("windows-internal-unsigned") ||
+    (releaseWorkflowText.includes("internal-unsigned") &&
+      releaseWorkflowText.includes("artifactName") &&
+      releaseWorkflowText.includes("posture"));
   const hasSignedReleasePath =
     releaseWorkflowText.includes("windows-signed") &&
     releaseWorkflowText.includes("Get-AuthenticodeSignature");

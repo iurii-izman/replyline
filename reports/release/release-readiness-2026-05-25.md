@@ -1,11 +1,12 @@
 # Release Readiness Summary
 
-Generated at: 2026-05-25T10:11:41.076Z
+Generated at: 2026-05-25T19:11:57.546Z
 Strict mode: enabled
+Release stage: internal
 
 ## Release Gate Snapshot
 - blockers: 0
-- warnings: 2
+- warnings: 3
 - overall score: 97
 - overall status: warn
 
@@ -25,9 +26,11 @@ Strict mode: enabled
 - test:runtime-quality: present
 - report:sonar-residual: present
 - report:live-evidence-pack: present
+- test:e2e:desktop (optional lane): present
+- test:e2e:desktop:required (required lane): present
 
 ## Script File Link Validation
-- scanned referenced script files: 50
+- scanned referenced script files: 53
 - missing referenced files: 0
 
 ## Artifact Presence
@@ -37,6 +40,9 @@ Strict mode: enabled
 - live evidence pack (2026-05-25): present+structured
 - release freeze report: present
 - docker hardening report: present
+- release-on-tag windows artifact build path: present
+- release-on-tag internal unsigned labeling: present
+- release-on-tag signed+verified path: missing
 
 ## Risk Snapshot
 | Area | Score | Status | Reason |
@@ -54,5 +60,7 @@ Strict mode: enabled
 - none
 
 ## Warnings
+- release-on-tag workflow is missing verified signed artifact path (naming + Authenticode check). (required only for RC/public beta stage)
 - docker:replyline:check:strict is external-state/manual and not part of strict local blocker.
 - Live GUI/provider evidence requires manual attestation rows in reports/manual/live-evidence-pack-YYYY-MM-DD.json.
+

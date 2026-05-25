@@ -6,6 +6,7 @@
 
 | Lane | Main command | Role |
 | --- | --- | --- |
+| internal beta seal | `pnpm beta:seal` | One-command internal tester readiness report with explicit blockers/warnings/skips |
 | fast default | `pnpm verify` / `pnpm verify:fast` | Обязательный PR/local baseline: compile + lint + tests + security/public footprint checks |
 | full release profile | `pnpm verify:full` | Усиленный release профиль: `verify:fast` + freeze/dependency/security/release reporting lanes |
 | extended quality | `pnpm verify:extended` | Неразрушающий расширенный quality lane (coverage/fixtures/scenario/runtime-quality) |
@@ -37,6 +38,11 @@
 5. `verify:release-local:required-e2e`
 - Состав: `verify:release-local` + `test:e2e:web:required`.
 - Это decision lane для релиз-оператора, когда нужен явный non-skipped E2E сигнал в локальном handoff.
+
+6. `beta:seal`
+- Состав (operator command): `verify:fast`, `test:doc-links`, `copy:check`, `test:manual-closure-pack`, `report:runtime-quality`, `report:product-quality`, `report:live-evidence-pack`, `report:release-readiness:strict`, плюс optional lanes `test:e2e:desktop` и `test:api:postman`.
+- Выход: `reports/release/internal-beta-seal-YYYY-MM-DD.md` (`ready` / `ready-with-warnings` / `blocked`).
+- Не доказывает public beta readiness; signed binary / required desktop E2E остаются RC/public gates.
 
 ## Supporting lanes
 

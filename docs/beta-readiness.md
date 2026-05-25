@@ -81,6 +81,7 @@ Supported provider/runtime path for stable beta:
 8. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
 9. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
 10. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
+11. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
 
 Additional conditional gates:
 
@@ -89,8 +90,15 @@ Additional conditional gates:
 - `pnpm release:freeze:check` before merge/release handoff
 - Desktop E2E gate split:
   - PR/dev baseline: `pnpm test:e2e:desktop` can `SKIP` when desktop artifact is unavailable
-  - internal beta handoff: `pnpm test:e2e:desktop:required` is recommended when artifact exists
+  - internal beta handoff: `pnpm beta:seal` is required; `pnpm test:e2e:desktop:required` remains recommended when artifact exists
   - RC/public beta handoff: `pnpm test:e2e:desktop:required` is required (non-skipped)
+
+Internal beta seal boundaries:
+
+- `pnpm beta:seal` confirms internal tester readiness only (ready / ready-with-warnings / blocked).
+- `pnpm beta:seal` does not prove RC/public beta readiness.
+- missing signed binary is a warning for internal beta, blocker for RC/public.
+- live evidence remains mandatory to collect during tester cycle; seal report marks pending dimensions explicitly.
 
 Runtime preflight has two modes:
 

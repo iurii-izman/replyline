@@ -7,6 +7,7 @@
 - [internal-beta-tester-kit.md](internal-beta-tester-kit.md) - основной tester runbook (setup -> scenarios -> evidence -> feedback -> stop conditions).
 - [tester-brief.md](tester-brief.md) - короткий вход для tester wave.
 - [test-feedback-template.md](test-feedback-template.md) - обязательный structured feedback шаблон.
+- Internal beta seal command before sending tester instructions: `pnpm beta:seal` (report: `reports/release/internal-beta-seal-YYYY-MM-DD.md`).
 
 ## 1) Canonical shipped-beta docs (primary truth)
 

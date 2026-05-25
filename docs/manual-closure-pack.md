@@ -2,6 +2,8 @@
 
 `docs/manual-closure-pack.html` - интерактивный статический чеклист для финального beta-seal.
 
+Перед отправкой tester instructions сначала выполните `pnpm beta:seal`.
+
 ## Что это
 
 Manual Closure Pack нужен для финальной ручной валидации того, что не покрывается автопроверками: hotkey/runtime evidence, manual quality review, privacy audit и финальный Go/No-Go.
@@ -85,6 +87,7 @@ start docs/manual-closure-pack.html
 ## Desktop E2E evidence rule
 
 - Для PR/dev допустим optional lane: `pnpm test:e2e:desktop` (`SKIP` разрешён).
+- Для internal beta seal `pnpm beta:seal` допускает `SKIP` в desktop E2E и помечает это как warning, а не block.
 - Для RC/public beta closure обязателен non-skipped запуск:
   - `pnpm tauri build`
   - `set TAURI_APP_PATH=<path-to-built-app>`
@@ -95,6 +98,7 @@ start docs/manual-closure-pack.html
 - `release-on-tag.yml` now builds and publishes Windows release artifacts.
 - Unsigned artifacts are acceptable only for internal trusted beta when explicitly approved.
 - RC/public beta requires signed installer evidence (valid Authenticode signature + release gates).
+- `pnpm beta:seal` не требует signed binary для internal beta, но фиксирует это как warning в отчёте.
 
 ## Ссылка
 
