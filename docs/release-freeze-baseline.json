@@ -35,6 +35,7 @@
     "docs/prompt-contract-lane.md",
     "docs/local-roo-workflow.md",
     "scripts/check-consistency.mjs",
+    "scripts/check-security-lanes.mjs",
     "scripts/check-prompt-contract.mjs",
     "scripts/check-release-freeze.mjs",
     "infra/replyline-ai-stack.override.yml",

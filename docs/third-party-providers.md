@@ -56,6 +56,11 @@ Provider expansion note:
 
 With a local LLM and Deepgram STT, audio still leaves the machine via the Deepgram API. Full local-only operation (no audio leaving the machine) is not currently supported.
 
+## Local vs Cloud URL policy
+
+- Для удалённых LLM endpoint ожидается `https://`.
+- `http://` поддерживается только для локального/local-network режима (loopback, private network ranges, `.local` hostnames), чтобы сохранить local-only сценарии (например Ollama / LM Studio) без TLS.
+
 ## Operator checklist before runtime tests
 
 - Проверьте актуальность ключей и тарифных ограничений провайдеров.

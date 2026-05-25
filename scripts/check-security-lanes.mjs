@@ -144,8 +144,10 @@ function checkDangerousLogPatterns() {
 
 function checkCspDecision() {
   const tauriConfPath = resolve(repoRoot, "src-tauri", "tauri.conf.json");
-  const content = readFileSync(tauriConfPath, "utf8");
-  const hasWideCsp = content.includes("https://*");
+  const rawContent = readFileSync(tauriConfPath, "utf8");
+  const conf = JSON.parse(rawContent);
+  const csp = String(conf?.app?.security?.csp ?? "");
+  const hasWideCsp = csp.includes("https://*");
 
   if (!hasWideCsp) {
     console.error(
@@ -156,28 +158,45 @@ function checkCspDecision() {
     return false;
   }
 
-  // Verify the CSP comment exists in relevant docs
-  const docsToCheck = ["docs/privacy-and-trust.md", "README.md"];
-  const cspKeywords = ["https://*", "connect-src", "CSP"];
-  let documented = false;
-  for (const docPath of docsToCheck) {
-    try {
-      const docContent = readFileSync(resolve(repoRoot, docPath), "utf8");
-      if (cspKeywords.some((kw) => docContent.includes(kw))) {
-        documented = true;
-        break;
-      }
-    } catch {
-      // Doc may not exist yet
-    }
+  const privacyDoc = readFileSync(resolve(repoRoot, "docs/privacy-and-trust.md"), "utf8");
+  const providersDoc = readFileSync(resolve(repoRoot, "docs/third-party-providers.md"), "utf8");
+  const settingsDoc = readFileSync(resolve(repoRoot, "docs/settings-reference.md"), "utf8");
+
+  const requiredPrivacyMarkers = [
+    "https://*",
+    "connect-src",
+    "https://* — обоснование",
+    "Пользователь сам настраивает `llm_base_url`",
+    "Tauri CSP статичен на этапе сборки",
+  ];
+  const missingPrivacyMarkers = requiredPrivacyMarkers.filter((marker) => !privacyDoc.includes(marker));
+  if (missingPrivacyMarkers.length > 0) {
+    console.error(
+      `[privacy-lane] docs/privacy-and-trust.md is missing CSP rationale marker(s): ${missingPrivacyMarkers.join(", ")}`,
+    );
+    return false;
   }
 
-  if (!documented) {
-    console.log(
-      "[privacy-lane] CSP 'https://*' is present but not yet documented in README or docs/privacy-and-trust.md. " +
-        "This is expected during v1 rollout.",
+  const requiredProviderMarkers = [
+    "Local vs Cloud URL policy",
+    "Для удалённых LLM endpoint ожидается `https://`",
+    "`http://` поддерживается только для локального/local-network режима",
+  ];
+  const missingProviderMarkers = requiredProviderMarkers.filter(
+    (marker) => !providersDoc.includes(marker),
+  );
+  if (missingProviderMarkers.length > 0) {
+    console.error(
+      `[privacy-lane] docs/third-party-providers.md is missing URL policy marker(s): ${missingProviderMarkers.join(", ")}`,
     );
-    // Non-blocking in v1
+    return false;
+  }
+
+  if (!settingsDoc.includes("`llmBaseUrl`") || !settingsDoc.includes("Local vs Cloud URL policy")) {
+    console.error(
+      "[privacy-lane] docs/settings-reference.md must mention `llmBaseUrl` and link to Local vs Cloud URL policy rationale.",
+    );
+    return false;
   }
 
   return true;

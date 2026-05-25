@@ -2,7 +2,7 @@ import { For, Show } from "solid-js";
 import { ANSWER_PROFILE_OPTIONS, resolveAnswerProfileOption } from "./answerProfiles";
 import type { ReplylineController } from "./controller";
 import { MODEL_PRESETS, resolveModelPreset } from "./modelPresets";
-import type { CheckItemDto, SettingsSectionId } from "./model";
+import { detectLlmRouteModeFromHost, type CheckItemDto, type SettingsSectionId } from "./model";
 import type { UiStrings } from "./locale";
 import { CheckIcon, CircleIcon, XIcon } from "./ui/icons";
 
@@ -304,6 +304,15 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                           <div class="field-help">
                             {st().settings.persistenceFieldLlmRoute}:{" "}
                             {yesNo(diag().llmBaseUrlPresent && diag().llmModelPresent)} ·{" "}
+                            {st().settings.persistenceFieldLlmHost}: {diag().llmBaseUrlHost ?? "-"} ·{" "}
+                            {st().settings.persistenceFieldLlmImplication}:{" "}
+                            {(() => {
+                              const mode = detectLlmRouteModeFromHost(diag().llmBaseUrlHost);
+                              if (mode === "local") return st().settings.persistenceLlmModeLocal;
+                              if (mode === "cloud") return st().settings.persistenceLlmModeCloud;
+                              return st().settings.persistenceLlmModeUnknown;
+                            })()}{" "}
+                            ·{" "}
                             {st().settings.persistenceFieldLlmKey}: {yesNo(diag().llmKeyPresent)} ·{" "}
                             {st().settings.persistenceFieldDeepgramKey}:{" "}
                             {yesNo(diag().deepgramKeyPresent)} ·{" "}

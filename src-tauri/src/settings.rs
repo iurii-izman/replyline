@@ -586,6 +586,13 @@ mod tests {
     }
 
     #[test]
+    fn allows_remote_https_llm_base_url() {
+        let mut settings = AppSettings::default();
+        settings.llm_base_url = "https://api.openai.com/v1".to_string();
+        assert!(validate(&settings).is_ok());
+    }
+
+    #[test]
     fn allows_local_http_llm_base_url() {
         let mut settings = AppSettings::default();
         settings.llm_base_url = "http://localhost:11434/v1".to_string();
@@ -597,6 +604,16 @@ mod tests {
         let mut settings = AppSettings::default();
         settings.llm_base_url = "http://192.168.1.25:11434/v1".to_string();
         assert!(validate(&settings).is_ok());
+    }
+
+    #[test]
+    fn rejects_malformed_llm_base_url_safely() {
+        let mut settings = AppSettings::default();
+        settings.llm_base_url = "https://[::1".to_string();
+        assert!(matches!(
+            validate(&settings),
+            Err(SettingsError::InvalidUrl)
+        ));
     }
 
     #[test]

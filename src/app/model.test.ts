@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SETTINGS,
   asAnalysisCard,
+  detectLlmRouteModeFromHost,
   formatHotkeyFromEvent,
   isConfiguredLlmRoute,
   parseCommandInvokeError,
@@ -60,6 +61,31 @@ describe("model", () => {
     it("checks llm route readiness", () => {
       expect(isConfiguredLlmRoute("", "model")).toBe(false);
       expect(isConfiguredLlmRoute("https://api.example/v1", "gpt-4o-mini")).toBe(true);
+    });
+  });
+
+  describe("detectLlmRouteModeFromHost", () => {
+    it("detects unknown mode when host is empty", () => {
+      expect(detectLlmRouteModeFromHost()).toBe("unknown");
+      expect(detectLlmRouteModeFromHost("")).toBe("unknown");
+    });
+
+    it("detects local mode for localhost and private ranges", () => {
+      expect(detectLlmRouteModeFromHost("localhost")).toBe("local");
+      expect(detectLlmRouteModeFromHost("api.local")).toBe("local");
+      expect(detectLlmRouteModeFromHost("127.0.0.1")).toBe("local");
+      expect(detectLlmRouteModeFromHost("10.0.0.25")).toBe("local");
+      expect(detectLlmRouteModeFromHost("192.168.1.7")).toBe("local");
+      expect(detectLlmRouteModeFromHost("172.16.10.9")).toBe("local");
+      expect(detectLlmRouteModeFromHost("169.254.22.10")).toBe("local");
+      expect(detectLlmRouteModeFromHost("::1")).toBe("local");
+    });
+
+    it("detects cloud mode for public domains and ips", () => {
+      expect(detectLlmRouteModeFromHost("api.openai.com")).toBe("cloud");
+      expect(detectLlmRouteModeFromHost("8.8.8.8")).toBe("cloud");
+      expect(detectLlmRouteModeFromHost("172.32.0.1")).toBe("cloud");
+      expect(detectLlmRouteModeFromHost("999.999.999.999")).toBe("cloud");
     });
   });
 

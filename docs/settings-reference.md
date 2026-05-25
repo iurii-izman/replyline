@@ -30,6 +30,12 @@ Recommendations are not fixed forever: model quality/cost/latency can change ove
 
 No Advanced Mode fields in user-facing settings contract.
 
+## Local vs Cloud URL policy
+
+- Remote/provider-hosted LLM routes are expected to use `https://`.
+- `http://` is accepted only for local/local-network routes (`localhost`, loopback/private ranges, `.local`) to keep local provider scenarios working.
+- This policy aligns with CSP `connect-src` rationale in `docs/privacy-and-trust.md` (`https://*` retained for user-configured OpenAI-compatible endpoints).
+
 ## Mode boundary reminders
 
 - Candidate Pack is prepared/saved locally but preparation can call the configured cloud LLM provider.

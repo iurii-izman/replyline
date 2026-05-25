@@ -62,7 +62,7 @@ connect-src 'self' ipc: http://ipc.localhost http://localhost:* ws://localhost:*
              http://127.0.0.1:* wss://*.deepgram.com https://*
 ```
 
-**`https://*` — обоснование:**
+https://* — обоснование:
 
 Нельзя сузить до конкретных доменов, потому что:
 
