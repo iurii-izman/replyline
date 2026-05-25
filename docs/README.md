@@ -28,12 +28,13 @@
 - [runtime-evidence.md](runtime-evidence.md) - evidence model and claim labeling (`measured` / `target` / `pending verification`).
 - [runtime-quality-harness.md](runtime-quality-harness.md) - fixture/CI quality harness; not live-provider proof.
 - [runtime-live-qa.md](runtime-live-qa.md) - manual live GUI/runtime QA.
+- [live-runtime-matrix.md](live-runtime-matrix.md) - cross-machine + cross-call-app operator matrix and JSON row template.
 - [smoke-checks.md](smoke-checks.md) - smoke and pre-handoff command map.
+- Live evidence pack report command: `pnpm report:live-evidence-pack` -> `reports/manual/live-evidence-pack-YYYY-MM-DD.md`.
 
 ## 3) Release governance and policy docs
 
 - [runtime-decisions.md](runtime-decisions.md)
-- [live-runtime-matrix.md](live-runtime-matrix.md)
 - [benchmark-policy.md](benchmark-policy.md)
 - [rust-dependency-security.md](rust-dependency-security.md)
 - [script-lifecycle-matrix.md](script-lifecycle-matrix.md)

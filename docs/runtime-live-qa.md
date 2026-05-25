@@ -1,78 +1,103 @@
 # Runtime Live QA (Windows)
 
-## Purpose
-
-Live QA closes the last persistence gap that cannot be proven only by unit/integration tests: real GUI runtime behavior with hotkey, restart, and local artifact checks.
+Step-by-step operator flow for real live evidence collection.
 
 ## Paths
 
 - Settings file: `%APPDATA%\com.replyline.app\settings.json`
 - App log: `%APPDATA%\com.replyline.app\logs\app.log`
+- Matrix: `docs/live-runtime-matrix.md`
+- Feedback template: `docs/test-feedback-template.md`
 
-## Manual live scenario
+## 1) Prepare machine
 
-1. Run `pnpm tauri dev`.
-2. Open Settings and verify required runtime fields are saved.
-3. Run `Проверить настройки` and confirm ready status.
-4. In main screen, perform hotkey cycle (`Ctrl+Alt+Space` hold/release), wait for answer card.
-5. Close app, launch again, ensure settings persist.
-6. Repeat hotkey cycle after restart.
+1. Confirm Windows 10/11 build, CPU/RAM, and primary audio device.
+2. Confirm call app and version/browser are recorded for this run.
+3. Start a safe test conversation/media source (no sensitive content).
 
-## Required app.log events
+## 2) Configure providers
 
-- `app_boot_start`
-- `settings_load_attempt`
-- `settings_parse_ok`
-- `settings_validation_ok`
-- `bootstrap_loaded`
-- `hotkey_registered`
-- `hotkey_pressed`
-- `setup_preflight_check_start`
-- `setup_preflight_check_result`
-- `capture_start_requested`
-- `capture_start_ok` or `capture_start_client_ok`
-- `capture_stop_requested`
-- `analysis_start`
-- `analysis_stt_ok`
-- `analysis_llm_ok`
-- `analysis_ok` or `ui_answer_ready`
+1. Open Replyline Settings.
+2. Fill Deepgram key + LLM base URL/model (+ optional LLM key).
+3. Save settings and keep credentials only in local/keyring storage.
 
-## Forbidden patterns
+## 3) Run runtime preflight
 
-- Unexpected `settings_quarantine`
-- `setup_missing_redirect` after ready runtime signal
-- Raw secrets in logs/artifacts: `sk-`, `dg_`, `Bearer <token>`, `api_key=<value>`
-- Raw full transcript dumps
-
-## Collector and verifier
-
-1. Collect runtime artifacts:
+Run:
 
 ```powershell
+pnpm runtime:preflight
+```
+
+If preflight fails, mark matrix row as `pending verification` with blocker reason.
+
+## 4) Run WorkConversation short capture
+
+1. Hold `Ctrl+Alt+Space` for ~5-10s.
+2. Wait for card.
+3. Record STT/LLM/card success + latency (if measured).
+
+## 5) Run WorkConversation medium capture
+
+1. Hold `Ctrl+Alt+Space` for ~20-30s.
+2. Wait for card.
+3. Record usefulness and any regressions.
+
+## 6) Run retry
+
+1. Trigger retry (`retry_last_analysis` / UI retry).
+2. Record if retry succeeds and if card quality changed.
+
+## 7) Run Interview Mode scenario
+
+1. Start interview session.
+2. Ask at least one question.
+3. End session and verify interview card/report path.
+
+## 8) Export redacted report
+
+1. Export redacted markdown only for sharing.
+2. Keep full transcript export internal-sensitive.
+
+## 9) Generate evidence bundle
+
+Run:
+
+```powershell
+pnpm evidence:bundle
 powershell -ExecutionPolicy Bypass -File scripts/collect-live-runtime-evidence.ps1
 ```
 
-2. Verify evidence folder:
+Optional verification:
 
 ```bash
 node scripts/verify-live-runtime-evidence.mjs reports/runtime-live-evidence-YYYYMMDD-HHMMSS
 ```
 
-Collector output:
+## 10) Fill feedback template
 
-- `app.log` (redacted copy)
-- `diagnostics.json` (when direct diagnostics snapshot is available)
-- `runtime-live-qa.md` (checklist + leak-scan summary)
+Fill `docs/test-feedback-template.md` and add artifact paths only (no secret values, no raw transcript dumps).
 
-## Interpreting result
+## 11) Mark evidence as measured/pending
 
-- `PASS` from verifier means evidence chain is complete and safe.
-- Any `FAIL` from verifier is a blocking gap; fix root cause and rerun the live scenario.
+Use strict status:
 
-## Latest session note
+- `measured`: real run succeeded and measured fields are present.
+- `partial`: run exists but dimensions are incomplete (apps/machines/scenarios).
+- `pending verification`: no measured latency or provider path failed.
 
-Date: 2026-05-24.
+Then run:
 
-- Automated preflight was available (`pnpm runtime:preflight`).
-- Live runtime/provider execution was blocked in this session by missing `DEEPGRAM_API_KEY` for `pnpm probe:runtime`.
-- Treat GUI/provider live attestation rows as required follow-up for release readiness on this workstation.
+```powershell
+pnpm report:live-evidence-pack
+```
+
+Generated report:
+
+- `reports/manual/live-evidence-pack-YYYY-MM-DD.md`
+
+Security guardrails:
+
+- Never put raw keys/tokens in notes or artifacts.
+- Never include raw transcript in shared/public artifacts.
+- Do not claim cross-machine/cross-call-app readiness from a single successful run.

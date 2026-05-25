@@ -127,15 +127,20 @@ Feedback fields:
 
 ## 8) Cross-call-app matrix
 
-Заполняйте таблицу на каждый прогон:
+Заполняйте canonical matrix из `docs/live-runtime-matrix.md`.
 
-| tester | machine | OS | app | audio source | STT success | LLM success | card useful? | latency impression | blocker? |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| name | device model | Windows 10/11 | Zoom | call/system | yes/no/partial | yes/no/partial | 1-5 + note | fast/ok/slow | yes/no |
-| name | device model | Windows 10/11 | Microsoft Teams | call/system | yes/no/partial | yes/no/partial | 1-5 + note | fast/ok/slow | yes/no |
-| name | device model | Windows 10/11 | Google Meet | browser tab/system | yes/no/partial | yes/no/partial | 1-5 + note | fast/ok/slow | yes/no |
-| name | device model | Windows 10/11 | Yandex Telemost / Telemost | call/system | yes/no/partial | yes/no/partial | 1-5 + note | fast/ok/slow | yes/no |
-| name | device model | Windows 10/11 | Browser/system audio scenario | browser/system media | yes/no/partial | yes/no/partial | 1-5 + note | fast/ok/slow | yes/no |
+Минимальный coverage для первой internal wave:
+
+- Zoom
+- Microsoft Teams
+- Google Meet
+- Yandex Telemost / Telemost (если доступно)
+- Browser audio
+- Local media playback/system audio fallback
+
+Для агрегации в `pnpm report:live-evidence-pack` храните structured rows в:
+
+- `reports/manual/live-evidence/*.json`
 
 Правило честности: не переносите результат с одной app/машины на universal claim.
 
@@ -205,3 +210,5 @@ Feedback fields:
 7. Interview details: `docs/interview-mode.md`
 8. Candidate Pack details: `docs/candidate-pack.md`
 9. Manual closure checklist: `docs/manual-closure-pack.md` + `docs/manual-closure-pack.html`
+10. Live runtime matrix: `docs/live-runtime-matrix.md`
+11. Live runtime QA flow: `docs/runtime-live-qa.md`

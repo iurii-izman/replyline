@@ -1,70 +1,52 @@
 # Replyline Live Runtime Matrix
 
-This file keeps the live-source testing story honest.
+Matrix for first internal tester cycle. Fill rows with real measured runs only.
 
-## Current workstation state
+Safety rules:
 
-This section is intentionally machine-specific and must be updated by the operator.
+- Do not add fake measurements.
+- Do not store raw transcript, raw provider payloads, or secrets in matrix artifacts.
+- Keep cross-machine/cross-call-app claims as `pending verification` until evidence exists.
 
-Use this quick template per workstation/session:
+## Operator matrix (copy template)
 
-- Microsoft Teams: `<detected | not detected | unknown>`
-- Zoom: `<detected | not detected | unknown>`
-- Yandex Telemost: `<detected | not detected | unknown>`
-- browser clients (Chrome/Edge): `<available | not available | unknown>`
+| testerId | machineProfile | windowsVersion | cpuRam | audioDevice | callApp | appVersionOrBrowser | scenarioType | captureDuration | sttProvider | llmProviderModel | sttSuccess | llmSuccess | cardGenerated | releaseToCardLatencyMs | usefulnessScore(1-5) | privacyConcern | blocker | artifactPath | notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| tester-01 | Lenovo T14 Gen2 | Windows 11 23H2 | i7 / 32GB | Realtek + USB headset | Zoom | desktop 6.x | WorkConversation short capture | 5-10s | Deepgram | OpenAI-compatible:gpt-4o-mini | pending | pending | pending | n/a | n/a | low/medium/high | none/S0/S1/S2/S3 | reports/... | pending verification |
+| tester-01 | Lenovo T14 Gen2 | Windows 11 23H2 | i7 / 32GB | Realtek + USB headset | Microsoft Teams | desktop 241xx | WorkConversation medium capture | 20-30s | Deepgram | OpenAI-compatible:gpt-4o-mini | pending | pending | pending | n/a | n/a | low/medium/high | none/S0/S1/S2/S3 | reports/... | pending verification |
+| tester-01 | Lenovo T14 Gen2 | Windows 11 23H2 | i7 / 32GB | Realtek + USB headset | Google Meet | Chrome 136+ | Retry | 20-30s | Deepgram | OpenAI-compatible:gpt-4o-mini | pending | pending | pending | n/a | n/a | low/medium/high | none/S0/S1/S2/S3 | reports/... | pending verification |
+| tester-01 | Lenovo T14 Gen2 | Windows 11 23H2 | i7 / 32GB | Realtek + USB headset | Yandex Telemost | desktop/web build | Interview Mode | 20-30s | Deepgram | OpenAI-compatible:gpt-4o-mini | pending | pending | pending | n/a | n/a | low/medium/high | none/S0/S1/S2/S3 | reports/... | use if Telemost is available |
+| tester-01 | Lenovo T14 Gen2 | Windows 11 23H2 | i7 / 32GB | Realtek + USB headset | Browser audio | Edge 136+ | WorkConversation short capture | 5-10s | Deepgram | OpenAI-compatible:gpt-4o-mini | pending | pending | pending | n/a | n/a | low/medium/high | none/S0/S1/S2/S3 | reports/... | signed-in browser call or web player |
+| tester-01 | Lenovo T14 Gen2 | Windows 11 23H2 | i7 / 32GB | Realtek + USB headset | Local media playback/system audio fallback | VLC/Windows Media Player | WorkConversation medium capture | 20-30s | Deepgram | OpenAI-compatible:gpt-4o-mini | pending | pending | pending | n/a | n/a | low/medium/high | none/S0/S1/S2/S3 | reports/... | fallback when live call app is blocked |
 
-If current signals are unknown, keep app-level claims as `pending verification`.
+## Structured JSON row template
 
-### Session snapshot (2026-05-24)
+Store structured rows as JSON in `reports/manual/live-evidence/` (recommended for aggregation script):
 
-- Workstation: Windows (`C:\Dev\replyline`)
-- Microsoft Teams: `unknown` (not verified in this run)
-- Zoom: `unknown` (not verified in this run)
-- Yandex Telemost: `unknown` (not verified in this run)
-- browser clients (Chrome/Edge): `unknown` (not verified in this run)
-- Runtime live-source command status: completed with generated artifacts, but all scenario runs failed because `pnpm probe:runtime` returned `DEEPGRAM_API_KEY is missing.`
-
-## What can be tested automatically today
-
-- TTS-driven loopback runtime proof
-- repeated duration comparisons with mean/min/max (`15s / 30s / 60s`)
-- external-command audio sources
-
-## What still needs an operator
-
-- real Teams call audio
-- real Google Meet audio in a signed-in browser session
-- real Zoom / Telemost audio if those clients or sessions are available
-
-## Recommended command
-
-Manual live-source capture:
-
-```powershell
-pnpm probe:live-source -- -SourceName teams -AudioMode manual-wait -DurationsCsv 15,30,60 -Repeats 2
+```json
+{
+  "schemaVersion": "replyline.live-runtime-matrix.row.v1",
+  "row": {
+    "testerId": "tester-01",
+    "machineProfile": "Lenovo T14 Gen2",
+    "windowsVersion": "Windows 11 23H2",
+    "cpuRam": "i7 / 32GB",
+    "audioDevice": "Realtek + USB headset",
+    "callApp": "Microsoft Teams",
+    "appVersionOrBrowser": "desktop 241xx",
+    "scenarioType": "WorkConversation medium capture",
+    "captureDuration": "20-30s",
+    "sttProvider": "Deepgram",
+    "llmProviderModel": "OpenAI-compatible:gpt-4o-mini",
+    "sttSuccess": false,
+    "llmSuccess": false,
+    "cardGenerated": false,
+    "releaseToCardLatencyMs": null,
+    "usefulnessScore": null,
+    "privacyConcern": "low",
+    "blocker": "DEEPGRAM_API_KEY is missing",
+    "artifactPath": "reports/runtime/manual-live-source-live-comparison.json",
+    "notes": "pending verification"
+  }
+}
 ```
-
-How to use it:
-
-1. Start the real call audio first.
-2. Run the command.
-3. Press Enter when prompted.
-4. Let the other side speak for the selected window.
-5. Repeat for each duration and run index.
-6. Review summary stats (`mean / min / max`) in the generated Markdown report.
-
-Generated artifacts:
-
-- `reports/runtime/<source>-live-comparison.json`
-- `reports/runtime/<source>-live-comparison.md`
-
-Honesty rule:
-
-- treat live-source outputs as `pending verification` until there are repeated successful runs on the specific app/session you want to claim.
-- do not claim cross-platform proof from a single app or single session.
-
-## Why this is separate from the default bench
-
-The default runtime bench proves the pipeline.
-The live-source bench proves the pipeline against real call audio on this workstation.
-Both are needed, and neither replaces the other.
