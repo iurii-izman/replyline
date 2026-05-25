@@ -88,7 +88,7 @@
     "test:api:postman": "node scripts/run-optional-lane.mjs --tool postman --checkPath tests/api/postman/Replyline.postman_collection.json --checkPackage newman --exec pnpm -- exec newman run tests/api/postman/Replyline.postman_collection.json -e tests/api/postman/Replyline.local.postman_environment.json",
     "test:e2e:web": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage playwright --exec pnpm -- exec playwright test",
     "test:e2e:web:ui": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage playwright --exec pnpm -- exec playwright test --ui",
-    "test:e2e:desktop": "pnpm exec wdio run tests/e2e/desktop/wdio.tauri.conf.mjs",
+    "test:e2e:desktop": "node scripts/run-optional-lane.mjs --tool tauri-desktop-e2e --checkPackage webdriverio --checkEnv TAURI_APP_PATH --exec pnpm -- exec wdio run tests/e2e/desktop/wdio.tauri.conf.mjs",
     "test:perf:k6": "node scripts/run-optional-lane.mjs --tool k6 --checkPath tests/perf/k6-smoke.js --exec k6 -- run tests/perf/k6-smoke.js",
     "test:sec:zap": "node scripts/run-optional-lane.mjs --tool zap-baseline --checkPath scripts/run-zap-baseline.ps1 --exec pwsh -- -File scripts/run-zap-baseline.ps1",
     "test:ux:lighthouse": "node scripts/run-optional-lane.mjs --tool lhci --checkPackage lhci --exec pnpm -- exec lhci autorun --config=./lighthouserc.json",
@@ -122,7 +122,7 @@
     "test:report-secret-leaks": "node scripts/check-report-secret-leaks.mjs",
     "report:release-readiness": "node scripts/report-release-readiness.mjs",
     "report:release-readiness:strict": "node scripts/report-release-readiness.mjs --strict",
-    "verify:release-local": "pnpm verify:fast && pnpm scripts:lifecycle && pnpm test:doc-links && pnpm report:runtime-quality && pnpm test:product-scenarios && pnpm test:manual-closure-pack && pnpm release:freeze:check && pnpm report:release-readiness:strict"
+    "verify:release-local": "pnpm verify:fast && pnpm scripts:lifecycle && pnpm test:doc-links && pnpm test:e2e:web && pnpm report:runtime-quality && pnpm test:product-scenarios && pnpm test:manual-closure-pack && pnpm release:freeze:check && pnpm report:release-readiness:strict"
   },
   "license": "MIT",
   "dependencies": {

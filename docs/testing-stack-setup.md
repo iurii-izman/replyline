@@ -41,6 +41,16 @@ pnpm install --include=optional
 - `pnpm test:optional:e2e:desktop`
 - `pnpm test:optional:ux:lighthouse`
 
+### Desktop/Web E2E policy
+
+- Deterministic credential-free happy path: `pnpm test:e2e:web` (Playwright + injected mock platform, no real Deepgram/LLM keys).
+- Web E2E auto-starts local Vite server (`127.0.0.1:4173`) from Playwright config; no separate manual server step is required.
+- Desktop E2E (`pnpm test:e2e:desktop`) is still optional and returns `SKIP` when `TAURI_APP_PATH` is not set.
+- Flake policy:
+  - keep `retries: 0` for fast failure and reproducible diagnosis;
+  - use deterministic selectors (`data-testid`) and mocked IPC payloads;
+  - any flaky E2E must be fixed or isolated before making that lane blocking.
+
 ## Frontend Test Strategy
 
 - `pnpm test:ui` is the default frontend regression lane for PR/local changes touching `src/app/*`.

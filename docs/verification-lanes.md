@@ -38,9 +38,21 @@
   - Decision log (2026-05-25): removed stale `pnpm.overrides` entries (`handlebars`, `node-forge`, `underscore`) after evidence that they were absent from `pnpm-lock.yaml` during `deps:review`; blocking audit gates remain unchanged.
 - Runtime evidence lanes: `pnpm report:runtime-quality`, `pnpm test:product-scenarios`, `pnpm report:live-evidence-pack`.
 - Lifecycle governance: `pnpm scripts:lifecycle` (coverage и конфликт классификации scripts).
+- E2E lanes:
+  - `pnpm test:e2e:web` is a deterministic credential-free lane and is included in `verify:release-local`.
+  - `pnpm test:e2e:desktop` remains optional (`SKIP` when `TAURI_APP_PATH` is absent) until stable Windows runner provisioning is standardized.
 
 ## CI alignment
 
 - `.github/workflows/ci.yml`: блокирующий fast CI lane + `release:freeze:check:strict`, публикует freeze/test artifacts.
 - `.github/workflows/extended-quality.yml`: non-blocking extended signal, публикует summary artifact с failed lane списком.
 - `.github/workflows/release-on-tag.yml`: создаёт GitHub Release notes по тегу; не строит и не публикует installers/binaries.
+
+## Public beta blocking decision (optional lanes)
+
+- Make blocking before public beta:
+  - `pnpm test:e2e:web` in Windows CI (deterministic, credential-free).
+- Keep non-blocking before public beta:
+  - `pnpm test:e2e:desktop` (depends on packaged app + driver env on runner/dev machine).
+  - `pnpm test:api:postman` (local collection/environment can be intentionally absent in public footprint).
+  - `pnpm test:perf:k6`, `pnpm test:sec:zap`, `pnpm test:ux:lighthouse` (heavier operator lanes, best as scheduled signal).

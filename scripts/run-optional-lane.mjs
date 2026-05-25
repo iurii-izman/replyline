@@ -12,6 +12,7 @@ function parseArgs(argv) {
     tool: "",
     checkPath: "",
     checkPackage: "",
+    checkEnv: "",
     exec: "",
     execArgs: [],
   };
@@ -25,6 +26,7 @@ function parseArgs(argv) {
     if (token === "--tool") out.tool = argv[++i] ?? "";
     else if (token === "--checkPath") out.checkPath = argv[++i] ?? "";
     else if (token === "--checkPackage") out.checkPackage = argv[++i] ?? "";
+    else if (token === "--checkEnv") out.checkEnv = argv[++i] ?? "";
     else if (token === "--exec") out.exec = argv[++i] ?? "";
     i += 1;
   }
@@ -52,6 +54,12 @@ function hasOptionalPackage(pkgName) {
   return run.status === 0;
 }
 
+function hasRequiredEnvVar(name) {
+  if (!name) return true;
+  const raw = process.env[name];
+  return typeof raw === "string" && raw.trim().length > 0;
+}
+
 const opts = parseArgs(process.argv.slice(2));
 if (!opts.exec) fail("missing --exec");
 if (!opts.tool) fail("missing --tool");
@@ -67,6 +75,11 @@ if (!hasOptionalPackage(opts.checkPackage)) {
   console.log(
     `[optional-lane] SKIP ${opts.tool}: optional package "${opts.checkPackage}" is not installed.`,
   );
+  process.exit(0);
+}
+
+if (!hasRequiredEnvVar(opts.checkEnv)) {
+  console.log(`[optional-lane] SKIP ${opts.tool}: required env "${opts.checkEnv}" is not set.`);
   process.exit(0);
 }
 

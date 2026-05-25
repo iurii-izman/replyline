@@ -77,6 +77,16 @@ jobs:
       - name: Local quality and security gate (fail-fast)
         run: pnpm verify:fast
 
+      - name: Install optional Playwright tooling
+        if: success()
+        run: |
+          pnpm install --frozen-lockfile --include=optional
+          pnpm exec playwright install chromium
+
+      - name: Credential-free web e2e (blocking)
+        if: success()
+        run: pnpm test:e2e:web
+
       - name: Fetch base ref for release-freeze check
         if: success() || failure()
         shell: pwsh
