@@ -8,6 +8,8 @@ Manual Closure Pack нужен для финальной ручной валид
 
 Это tooling/runbook артефакт для QA и release-handoff, а не часть runtime UI Replyline.
 
+Tester-facing сквозной runbook находится в `docs/internal-beta-tester-kit.md`.
+
 ## Почему это не часть app runtime
 
 - не меняет Tauri/Solid runtime и не внедряется в продуктовый UI;

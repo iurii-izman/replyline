@@ -1,78 +1,73 @@
 # Replyline Test Feedback Template
 
-Используйте шаблон как есть. Коротко и по делу.
+Используйте шаблон как есть. Все поля ниже обязательны, кроме явно помеченных optional.
 
-## 1) Test context
+## 1) Scenario
 
+- Scenario ID/title:
+- Mode: `WorkConversation` / `Interview Mode` / `Candidate Pack`
+- Date/time (local):
 - Tester:
-- Date/time:
-- Windows version:
-- Call app/context:
-- Scenario type (deadline / pushback / escalation / другое):
-- Mode tested (WorkConversation / Interview / both):
-- Setup friction (none / low / medium / high + note):
-- Missing prerequisites (credentials / audio source / other):
 
-## 2) Core flow result
-
-- Hotkey worked? (yes/no/unstable):
-- Capture start/stop behaved predictably? (yes/no):
-- Card appeared? (yes/no):
-
-## 3) Usefulness score (главное)
-
-- Was this a real "I need reply now" moment? (yes/no):
-- Was `say_now` speakable without rewrite? (yes/no/partial):
-- Did it reduce response time? (yes/no, approx seconds):
-- Card usefulness by field (`gist`, `say_now`, `next_move`) 0-5:
-- Overall usefulness (0-5):
-- Latency tolerance (acceptable wait in seconds):
-- Actual wait felt acceptable? (yes/no + why):
-
-## 4) Problem classification (выберите всё релевантное)
-
-- [ ] audio routing issue
-- [ ] hotkey issue
-- [ ] latency issue
-- [ ] bad `say_now`
-- [ ] trust/legal concern
-- [ ] other
-
-## 5) If problem happened
+## 2) Expected vs Actual
 
 - Expected:
 - Actual:
-- How often (once / sometimes / always):
-- Repro steps:
-- Any runtime artifact/report file (if available):
 
-## 5.1) Triage tags (trusted beta ops)
+## 3) Environment
 
-- Frequency (once / sometimes / always):
-- Severity (S0/S1/S2/S3):
-- Reproducibility (high / medium / low):
-- Action (fix now / schedule / monitor):
+- App / call tool: `Zoom` / `Microsoft Teams` / `Google Meet` / `Yandex Telemost` / `Browser-system-audio` / other
+- Machine profile: device model, CPU, RAM
+- OS: Windows 10/11 build
+- Audio source path: loopback/system/call-device
 
-## 6) Trust and scope check
+## 4) Provider setup
 
-- Did product behavior match trust docs? (yes/no + why):
-- Any wording that sounded misleading? (quote):
-- Any request that pushes to transcript/history/team workflow? (yes/no + short note):
-- Any mode confusion between WorkConversation and Interview Mode? (yes/no + where):
-- Candidate Pack clarity (clear / partial / unclear + short note):
-- Interview report usefulness for prep (0-5, Interview Mode only):
+- Deepgram configured: yes/no
+- LLM base URL:
+- LLM model:
+- LLM API key configured (optional): yes/no
+- Local LLM used: yes/no
 
-## 6.1) Redaction and privacy compliance (required)
+## 5) Core result
 
-- Confirm this feedback is redacted-only (yes/no):
-- Confirm no raw transcript included (yes/no):
-- Confirm no full interview report included (yes/no):
-- Confirm no API keys/tokens/provider bodies included (yes/no):
-- Confirm no raw Candidate Pack values included (yes/no):
-- Confirm no sensitive screenshots included (yes/no):
+- STT success: yes/no/partial
+- LLM success: yes/no/partial
+- Card/report received: yes/no
+- Usefulness score (1-5):
+- If WorkConversation: `gist` (1-5), `say_now` (1-5), `next_move` (1-5)
+- If Interview Mode: interview answer usefulness (1-5), report usefulness (1-5)
 
-## 7) Blocker decision
+## 6) Severity and privacy
 
-- Is this a blocker for wider testing? (yes/no):
-- If yes, why exactly:
-- Minimal fix expected before next tester wave:
+- Severity: `S0` / `S1` / `S2` / `S3`
+- Privacy sensitivity: `low` / `medium` / `high`
+- Suspected secret leakage: yes/no
+- Includes sensitive transcript data: yes/no
+
+## 7) Reproduction
+
+- Reproduction steps:
+1.
+2.
+3.
+- Reproducibility: once / sometimes / always
+
+## 8) Evidence
+
+- Evidence path(s) (local files only):
+- Screenshots/log snippets redacted: yes/no
+- Full interview export attached: yes/no (if yes, mark as sensitive internal only)
+- Redacted export attached: yes/no
+
+## 9) Blocker decision
+
+- Blocker for next tester wave: yes/no
+- If yes, stop condition triggered:
+- Minimal fix expected before re-test:
+
+## 10) Notes (optional)
+
+- Latency impression (fast/ok/slow + note):
+- Boundary confusion (WorkConversation vs Interview vs Candidate Pack):
+- Additional trust concern:

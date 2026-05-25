@@ -2,6 +2,12 @@
 
 Карта документации Replyline для текущей stable beta.
 
+## 0) Internal tester entry point
+
+- [internal-beta-tester-kit.md](internal-beta-tester-kit.md) - основной tester runbook (setup -> scenarios -> evidence -> feedback -> stop conditions).
+- [tester-brief.md](tester-brief.md) - короткий вход для tester wave.
+- [test-feedback-template.md](test-feedback-template.md) - обязательный structured feedback шаблон.
+
 ## 1) Canonical shipped-beta docs (primary truth)
 
 - [beta-readiness.md](beta-readiness.md)
@@ -53,8 +59,6 @@
 - [max-upgrade-implementation-plan.md](max-upgrade-implementation-plan.md)
 - [max-upgrade-execution-prompts.md](max-upgrade-execution-prompts.md)
 - [postman-audit-execution-prompts.md](postman-audit-execution-prompts.md)
-- [tester-brief.md](tester-brief.md)
-- [test-feedback-template.md](test-feedback-template.md)
 - [beta-feedback-loop.md](beta-feedback-loop.md)
 - [beta-ops-diagnostics.md](beta-ops-diagnostics.md)
 
