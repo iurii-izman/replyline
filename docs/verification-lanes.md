@@ -10,6 +10,7 @@
 | full release profile | `pnpm verify:full` | Усиленный release профиль: `verify:fast` + freeze/dependency/security/release reporting lanes |
 | extended quality | `pnpm verify:extended` | Неразрушающий расширенный quality lane (coverage/fixtures/scenario/runtime-quality) |
 | local release readiness | `pnpm verify:release-local` | Строгий локальный pre-handoff lane без live credentials и GUI шагов |
+| local release readiness + required web E2E | `pnpm verify:release-local:required-e2e` | Operator lane: `verify:release-local` + non-skipped web E2E execution |
 
 ## Lane semantics
 
@@ -31,6 +32,10 @@
 - Это основной локальный lane перед handoff в `main`.
 - `pnpm test:e2e:web` в этом lane остаётся optional-wrapper lane и может корректно завершиться как `SKIP` (например, если Playwright runtime отсутствует в локальном окружении).
 - Для release operator есть required путь без skip-wrapper: `pnpm test:e2e:web:required` (должен дать `PASS` или `FAIL`, но не `SKIP`).
+
+5. `verify:release-local:required-e2e`
+- Состав: `verify:release-local` + `test:e2e:web:required`.
+- Это decision lane для релиз-оператора, когда нужен явный non-skipped E2E сигнал в локальном handoff.
 
 ## Supporting lanes
 

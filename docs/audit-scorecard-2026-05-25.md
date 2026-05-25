@@ -233,7 +233,7 @@ Baseline column uses the previous audit table from the planning conversation. It
 
 ## 10. What Is Still Riskier Than It Looks
 
-1. Optional E2E/Postman lanes passing with skip is not the same as scenario execution.
+1. Optional desktop E2E/Postman lanes passing with skip is not the same as scenario execution; web E2E now has a required non-skipped operator lane.
 2. Internal stable beta readiness is much stronger than public beta readiness.
 3. Live-call and cross-app claims still require more measured tester evidence.
 4. Broad CSP remains a deliberate trade-off, not a solved security problem.
@@ -246,7 +246,7 @@ Baseline column uses the previous audit table from the planning conversation. It
 | P0 | Public beta binary posture | Add Windows artifact build/signing strategy or explicitly keep release notes-only for internal beta. | tag dry-run or release workflow review |
 | P1 | Desktop E2E operator setup | Document/install WebdriverIO path and `TAURI_APP_PATH` handoff so one desktop happy path can run. | `pnpm test:e2e:desktop` non-skipped |
 | P1 | Live evidence refresh | Run a fresh real provider/manual GUI pass and update live evidence pack. | `pnpm report:live-evidence-pack`, manual attestation |
-| P1 | Dependency freshness | Review `vite 8.0.14` and update if low-risk. | `pnpm deps:review`, `pnpm verify:fast` |
+| P1 | Release-local operator enforcement | Use `pnpm verify:release-local:required-e2e` for handoff runs that must include non-skipped web E2E. | `pnpm verify:release-local:required-e2e` |
 | P2 | Accessibility closure | Add a targeted a11y or Lighthouse local lane and at least one manual a11y checklist pass. | optional Lighthouse/a11y report |
 | P2 | Public-support/legal readiness | Prepare public beta support, allowed-use, privacy, and sensitive artifact disclaimers. | docs checks, copy check |
 

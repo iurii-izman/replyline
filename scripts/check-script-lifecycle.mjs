@@ -38,6 +38,7 @@ const matrix = {
     "report:release-readiness",
     "test:runtime-quality",
     "verify:release-local",
+    "verify:release-local:required-e2e",
   ],
   optional: [
     "start",

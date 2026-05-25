@@ -13,7 +13,7 @@
 
 ## Required
 
-`smoke`, `verify`, `verify:fast`, `verify:full`, `verify:extended`, `verify:release-local`, `scripts:lifecycle`, `test:quick`, `beta:preflight`, `typecheck`, `lint`, `build`, `test:ui`, `test:consistency`, `test:ipc-contract`, `test:locale-keys`, `test:prompt-contract`, `test:observability-contract`, `copy:check`, `test:interview-quality`, `test:security-lanes`, `test:public-footprint`, `test:report-secret-leaks`, `test:runtime-quality`, `release:freeze:check`, `release:freeze:check:strict`, `report:interview-quality`, `report:release-readiness`, `report:release-readiness:strict`
+`smoke`, `verify`, `verify:fast`, `verify:full`, `verify:extended`, `verify:release-local`, `verify:release-local:required-e2e`, `scripts:lifecycle`, `test:quick`, `beta:preflight`, `typecheck`, `lint`, `build`, `test:ui`, `test:consistency`, `test:ipc-contract`, `test:locale-keys`, `test:prompt-contract`, `test:observability-contract`, `copy:check`, `test:interview-quality`, `test:security-lanes`, `test:public-footprint`, `test:report-secret-leaks`, `test:runtime-quality`, `release:freeze:check`, `release:freeze:check:strict`, `report:interview-quality`, `report:release-readiness`, `report:release-readiness:strict`
 
 ## Optional
 
