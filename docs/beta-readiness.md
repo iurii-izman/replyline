@@ -87,6 +87,10 @@ Additional conditional gates:
 - `pnpm rust:deps` when Rust dependencies changed
 - `pnpm audit:npm` when `package.json` or `pnpm-lock.yaml` changed
 - `pnpm release:freeze:check` before merge/release handoff
+- Desktop E2E gate split:
+  - PR/dev baseline: `pnpm test:e2e:desktop` can `SKIP` when desktop artifact is unavailable
+  - internal beta handoff: `pnpm test:e2e:desktop:required` is recommended when artifact exists
+  - RC/public beta handoff: `pnpm test:e2e:desktop:required` is required (non-skipped)
 
 Runtime preflight has two modes:
 
@@ -126,17 +130,19 @@ Release handoff is blocked unless all items are complete:
 
 Current state:
 
-- `.github/workflows/release-on-tag.yml` publishes GitHub release notes only.
+- `.github/workflows/release-on-tag.yml` publishes GitHub release notes and a Windows artifact package on `v*` tags.
 - `.github/workflows/windows-packaging-manual.yml` builds Windows artifacts by manual run and uploads workflow artifacts for internal review only.
-- No installer/binary artifacts are currently published to GitHub Releases from CI.
+- `release-on-tag.yml` artifact naming is signing-aware:
+  - `Replyline-vX.Y.Z-windows-internal-unsigned.zip` when signing is unavailable or signature validation fails.
+  - `Replyline-vX.Y.Z-windows-signed.zip` only when Authenticode signature validation passes.
 
 Future staged path (implementation-ready, not yet active):
 
-1. Keep packaging manual-only (`workflow_dispatch`) until public release approval.
-2. Keep workflow non-publishing by default: no automatic `gh release upload` and no tag-triggered artifact publication.
-3. Add signing stage only after explicit approval and secret onboarding.
+1. Keep public-beta messaging conservative even though tag workflow now publishes an artifact.
+2. Treat unsigned tag artifacts as internal trusted beta artifacts only.
+3. Keep signing path behind explicit secret onboarding and certificate ownership.
 4. Add checksums (`SHA-256`) and verification notes alongside each reviewed artifact.
-5. After evidence passes, explicitly approve transition to publish-capable release workflow.
+5. After evidence passes, explicitly approve public-beta installer claims.
 
 Minimum measurements required before public beta installer claims:
 
@@ -144,6 +150,10 @@ Minimum measurements required before public beta installer claims:
 - first-launch success and tray lifecycle behavior (`open/hide/quit`);
 - SmartScreen/Defender prompts documented for signed/unsigned states;
 - runtime sanity after install (`capture -> stt -> llm -> card`) with same-day evidence.
+- desktop E2E required lane executed on built artifact:
+  - `pnpm tauri build`
+  - `set TAURI_APP_PATH=<path-to-built-app>`
+  - `pnpm test:e2e:desktop:required`
 
 ## 8) Known limitations
 

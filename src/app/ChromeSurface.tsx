@@ -79,6 +79,7 @@ export function ShellChrome(props: Readonly<{ controller: ReplylineController }>
             class="icon-btn"
             type="button"
             title={st().settings.title}
+            aria-label={st().settings.title}
             data-testid="app-header-settings-action"
             onClick={() => controller().toggleSettingsPanel()}
           >
@@ -88,6 +89,7 @@ export function ShellChrome(props: Readonly<{ controller: ReplylineController }>
             class="icon-btn"
             type="button"
             title={st().chrome.hideToTray}
+            aria-label={st().chrome.hideToTray}
             data-testid="app-header-hide-action"
             onClick={() => void controller().hideWindow()}
           >

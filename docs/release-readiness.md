@@ -53,21 +53,21 @@ Release gate for Slim Stable Beta.
 
 - `ci.yml` validates fast lane + freeze and uploads CI artifacts.
 - `extended-quality.yml` reports non-blocking extended failures via artifact summary.
-- `release-on-tag.yml` creates GitHub release notes only.
+- `release-on-tag.yml` creates GitHub release notes and a Windows release artifact.
 
-`release-on-tag.yml` currently does **not** build or upload desktop installers/binaries.
+`release-on-tag.yml` now builds Windows bundle output on tag and attaches an artifact (`Replyline-vX.Y.Z-windows-*.zip`) to the GitHub Release.
 
 ## Windows packaging posture (current vs future)
 
-- Current (implemented): release publication is notes-only via `release-on-tag.yml`.
+- Current (implemented): `release-on-tag.yml` publishes generated release notes and a Windows artifact package.
 - Current (implemented): `.github/workflows/windows-packaging-manual.yml` provides a manual `workflow_dispatch` packaging lane for Windows artifacts and uploads workflow artifacts for operator review.
-- Future (not implemented): publish-capable release packaging with explicit operator approval.
-- Forbidden until explicit approval: signing secrets setup, code-signing enablement in CI, and automatic artifact publication on tag push.
+- Current signing posture: if signing secrets are absent, tag release artifacts are published as `internal-unsigned`; if secrets are present and Authenticode validation succeeds, artifacts are published as `signed`.
+- Forbidden claim: public beta readiness from unsigned artifacts.
 
 ## Packaging prerequisites before public beta
 
 - Signing readiness:
-  - choose signing certificate source and operator workflow;
+  - configure signing certificate source and operator workflow in GitHub secrets (`WINDOWS_CERTIFICATE`, `WINDOWS_CERTIFICATE_PASSWORD`);
   - document signing step ownership and failure handling;
   - verify SmartScreen/Defender first-run behavior on fresh Windows profile.
 - Checksum and integrity:

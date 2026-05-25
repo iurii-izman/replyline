@@ -11,6 +11,7 @@
 | extended quality | `pnpm verify:extended` | Неразрушающий расширенный quality lane (coverage/fixtures/scenario/runtime-quality) |
 | local release readiness | `pnpm verify:release-local` | Строгий локальный pre-handoff lane без live credentials и GUI шагов |
 | local release readiness + required web E2E | `pnpm verify:release-local:required-e2e` | Operator lane: `verify:release-local` + non-skipped web E2E execution |
+| desktop E2E required lane | `pnpm test:e2e:desktop:required` | Operator lane для built desktop artifact: не допускает `SKIP`, даёт только `PASS`/`FAIL` |
 
 ## Lane semantics
 
@@ -48,19 +49,34 @@
 - E2E lanes:
   - `pnpm test:e2e:web` is an optional-wrapper deterministic credential-free lane and is included in `verify:release-local`.
   - `pnpm test:e2e:web:required` is a non-wrapper operator lane for explicit non-skipped evidence.
-  - `pnpm test:e2e:desktop` remains optional (`SKIP` when `TAURI_APP_PATH` is absent) until stable Windows runner provisioning is standardized.
+  - `pnpm test:e2e:desktop` remains optional (`SKIP` when `TAURI_APP_PATH` is absent) for normal PR/dev flow.
+  - `pnpm test:e2e:desktop:required` is a non-wrapper operator lane for release validation and fails if `TAURI_APP_PATH` is missing.
 
 ## CI alignment
 
 - `.github/workflows/ci.yml`: блокирующий fast CI lane + `release:freeze:check:strict`, публикует freeze/test artifacts.
 - `.github/workflows/extended-quality.yml`: non-blocking extended signal, публикует summary artifact с failed lane списком.
-- `.github/workflows/release-on-tag.yml`: создаёт GitHub Release notes по тегу; не строит и не публикует installers/binaries.
+- `.github/workflows/release-on-tag.yml`: создаёт GitHub Release notes по тегу, строит Windows artifact и прикрепляет его к релизу; помечает `signed` только при валидной Authenticode подписи.
 
 ## Public beta blocking decision (optional lanes)
 
 - Make blocking before public beta:
   - `pnpm test:e2e:web` in Windows CI (deterministic, credential-free).
 - Keep non-blocking before public beta:
-  - `pnpm test:e2e:desktop` (depends on packaged app + driver env on runner/dev machine).
+  - `pnpm test:e2e:desktop` (optional wrapper lane for dev/PR when artifact/env is unavailable).
   - `pnpm test:api:postman` (local collection/environment can be intentionally absent in public footprint; lane must stay local/mock-only and must not carry real secrets, raw transcripts, or production endpoints).
   - `pnpm test:perf:k6`, `pnpm test:sec:zap`, `pnpm test:ux:lighthouse` (heavier operator lanes, best as scheduled signal).
+
+## Desktop E2E release policy
+
+- PR/dev: use `pnpm test:e2e:desktop` (optional, safe `SKIP`).
+- Internal beta handoff: `pnpm test:e2e:desktop:required` is recommended when built artifact is available.
+- RC/public beta handoff: `pnpm test:e2e:desktop:required` is required and must be non-skipped.
+
+Windows local run example:
+
+```powershell
+pnpm tauri build
+$env:TAURI_APP_PATH = "src-tauri\\target\\release\\replyline.exe"
+pnpm test:e2e:desktop:required
+```

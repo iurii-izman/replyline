@@ -20,6 +20,8 @@ const REQUIRED_SCRIPTS = [
   "report:live-evidence-pack",
 ];
 
+const RELEASE_STAGES = new Set(["internal", "rc", "public"]);
+
 const REQUIRED_SCRIPT_FILES = [
   "scripts/check-public-footprint.mjs",
   "scripts/check-report-secret-leaks.mjs",
@@ -235,12 +237,18 @@ function buildRiskSnapshot(state, blockers, warnings) {
 
 export function runReleaseReadiness(options = {}) {
   const strict = Boolean(options.strict);
+  const betaStageRaw = (options.betaStage ?? process.env.RELEASE_BETA_STAGE ?? "internal")
+    .toString()
+    .toLowerCase();
+  const betaStage = RELEASE_STAGES.has(betaStageRaw) ? betaStageRaw : "internal";
   const root = options.root ?? DEFAULT_ROOT;
   const now = options.now ?? new Date();
   const stamp = now.toISOString().slice(0, 10);
 
   const pkgPath = join(root, "package.json");
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+  const releaseWorkflowPath = join(root, ".github", "workflows", "release-on-tag.yml");
+  const releaseWorkflowText = readText(releaseWorkflowPath) ?? "";
   const releaseDir = join(root, "reports", "release");
   const jsonOutPath = join(releaseDir, `release-readiness-${stamp}.json`);
   const mdOutPath = join(releaseDir, `release-readiness-${stamp}.md`);
@@ -261,6 +269,13 @@ export function runReleaseReadiness(options = {}) {
   const dockerHardeningReport = existsSync(
     join(root, "reports", "docker", "docker-stack-hardening-2026-05-21.md"),
   );
+  const hasReleaseArtifactBuild =
+    releaseWorkflowText.includes("windows-artifact") &&
+    releaseWorkflowText.includes("pnpm tauri build");
+  const hasUnsignedReleasePath = releaseWorkflowText.includes("windows-internal-unsigned");
+  const hasSignedReleasePath =
+    releaseWorkflowText.includes("windows-signed") &&
+    releaseWorkflowText.includes("Get-AuthenticodeSignature");
 
   const blockers = [];
   const warnings = [];
@@ -285,6 +300,23 @@ export function runReleaseReadiness(options = {}) {
     const msg = "Missing required script: report:release-readiness";
     blockers.push(msg);
     staticGateBlockers.push(msg);
+  }
+
+  const hasDesktopOptionalLane = hasScript(pkg, "test:e2e:desktop");
+  const hasDesktopRequiredLane = hasScript(pkg, "test:e2e:desktop:required");
+  if (!hasDesktopOptionalLane) {
+    const msg = "Desktop optional lane script is missing: test:e2e:desktop";
+    blockers.push(msg);
+    staticGateBlockers.push(msg);
+  }
+  if (!hasDesktopRequiredLane) {
+    const msg = "Desktop required lane script is missing: test:e2e:desktop:required";
+    if (betaStage === "rc" || betaStage === "public") {
+      blockers.push(msg);
+      staticGateBlockers.push(msg);
+    } else {
+      warnings.push(`${msg} (required only for RC/public beta stage)`);
+    }
   }
 
   const verifyFast = pkg.scripts?.["verify:fast"] ?? "";
@@ -357,6 +389,31 @@ export function runReleaseReadiness(options = {}) {
     runtimeArtifactBlockers.push(msg);
   }
 
+  if (!hasReleaseArtifactBuild) {
+    const msg =
+      "release-on-tag workflow is missing Windows release artifact build/upload path.";
+    blockers.push(msg);
+    staticGateBlockers.push(msg);
+  }
+
+  if (!hasUnsignedReleasePath) {
+    const msg =
+      "release-on-tag workflow is missing explicit internal-unsigned artifact labeling.";
+    blockers.push(msg);
+    staticGateBlockers.push(msg);
+  }
+
+  if (!hasSignedReleasePath) {
+    const msg =
+      "release-on-tag workflow is missing verified signed artifact path (naming + Authenticode check).";
+    if (betaStage === "rc" || betaStage === "public") {
+      blockers.push(msg);
+      staticGateBlockers.push(msg);
+    } else {
+      warnings.push(`${msg} (required only for RC/public beta stage)`);
+    }
+  }
+
   warnings.push(
     "docker:replyline:check:strict is external-state/manual and not part of strict local blocker.",
   );
@@ -419,6 +476,7 @@ export function runReleaseReadiness(options = {}) {
     "",
     `Generated at: ${now.toISOString()}`,
     `Strict mode: ${strict ? "enabled" : "disabled"}`,
+    `Release stage: ${betaStage}`,
     "",
     "## Release Gate Snapshot",
     `- blockers: ${blockers.length}`,
@@ -434,6 +492,8 @@ export function runReleaseReadiness(options = {}) {
     "",
     "## Required Script Presence",
     ...REQUIRED_SCRIPTS.map((name) => `- ${name}: ${hasScript(pkg, name) ? "present" : "missing"}`),
+    `- test:e2e:desktop (optional lane): ${hasDesktopOptionalLane ? "present" : "missing"}`,
+    `- test:e2e:desktop:required (required lane): ${hasDesktopRequiredLane ? "present" : "missing"}`,
     "",
     "## Script File Link Validation",
     `- scanned referenced script files: ${scriptRefValidation.scannedScriptFiles.length}`,
@@ -446,6 +506,9 @@ export function runReleaseReadiness(options = {}) {
     `- live evidence pack (${stamp}): ${liveEvidencePack.pass ? "present+structured" : "missing-required-automation"}`,
     `- release freeze report: ${freezePresent ? "present" : "missing"}`,
     `- docker hardening report: ${dockerHardeningReport ? "present" : "missing"}`,
+    `- release-on-tag windows artifact build path: ${hasReleaseArtifactBuild ? "present" : "missing"}`,
+    `- release-on-tag internal unsigned labeling: ${hasUnsignedReleasePath ? "present" : "missing"}`,
+    `- release-on-tag signed+verified path: ${hasSignedReleasePath ? "present" : "missing"}`,
     "",
     "## Risk Snapshot",
     "| Area | Score | Status | Reason |",
@@ -466,6 +529,7 @@ export function runReleaseReadiness(options = {}) {
   const jsonReport = {
     generatedAt: now.toISOString(),
     strict,
+    betaStage,
     pass: blockers.length === 0,
     overallScore: risk.overallScore,
     overallStatus: risk.overallStatus,
@@ -475,6 +539,11 @@ export function runReleaseReadiness(options = {}) {
     requiredScripts: Object.fromEntries(
       REQUIRED_SCRIPTS.map((name) => [name, hasScript(pkg, name)]),
     ),
+    desktopE2EPolicy: {
+      optionalLaneScriptPresent: hasDesktopOptionalLane,
+      requiredLaneScriptPresent: hasDesktopRequiredLane,
+      requiredForStage: betaStage === "rc" || betaStage === "public",
+    },
     artifacts: {
       runtimeQualitySummaryToday: runtimeSummaryToday,
       productScenarioBenchmarkToday: productScenarioToday,
@@ -487,6 +556,12 @@ export function runReleaseReadiness(options = {}) {
       },
       freezeReportPresent: freezePresent,
       dockerHardeningReport,
+      releaseWorkflow: {
+        path: releaseWorkflowPath,
+        windowsArtifactBuildPath: hasReleaseArtifactBuild,
+        internalUnsignedLabeling: hasUnsignedReleasePath,
+        signedVerifiedPath: hasSignedReleasePath,
+      },
     },
     gateDomains: {
       staticGates: staticGateBlockers,
@@ -519,7 +594,12 @@ export function runReleaseReadiness(options = {}) {
 
 function runCli() {
   const strict = process.argv.includes("--strict");
-  const result = runReleaseReadiness({ strict });
+  const betaStageArgIndex = process.argv.findIndex((arg) => arg === "--beta-stage");
+  const betaStage =
+    betaStageArgIndex >= 0 && process.argv[betaStageArgIndex + 1]
+      ? process.argv[betaStageArgIndex + 1]
+      : undefined;
+  const result = runReleaseReadiness({ strict, betaStage });
 
   console.log(`[release-readiness] markdown: ${result.mdOutPath}`);
   console.log(`[release-readiness] json: ${result.jsonOutPath}`);

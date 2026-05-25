@@ -154,8 +154,11 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
               <button
                 class={`settings-nav-chip ${activeSection() === section.id ? "is-active" : ""}`}
                 type="button"
+                id={`settings-mobile-tab-${section.id}`}
                 role="tab"
                 aria-selected={activeSection() === section.id}
+                aria-controls={`settings-panel-${section.id}`}
+                tabindex={activeSection() === section.id ? 0 : -1}
                 onClick={() => controller().setSettingsActiveSection(section.id)}
               >
                 {section.label}
@@ -174,6 +177,7 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     <button
                       class={`settings-sidebar-link ${activeSection() === section.id ? "is-active" : ""}`}
                       type="button"
+                      id={`settings-sidebar-tab-${section.id}`}
                       role="tab"
                       aria-selected={activeSection() === section.id}
                       aria-controls={`settings-panel-${section.id}`}

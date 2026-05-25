@@ -201,6 +201,7 @@ function LiveAnswerCard(props: Readonly<{ controller: ReplylineController }>) {
         <div class="result-label">{st().card.sayNowLabel}</div>
         <button
           class={`btn-primary answer-copy-btn ${copied() ? "is-copied" : ""}`}
+          type="button"
           aria-label={st().card.copySayNow}
           onClick={() => void handleCopy()}
         >
@@ -398,6 +399,7 @@ function ActionDock(props: Readonly<{ controller: ReplylineController }>) {
     <div class="action-bar sticky-action-footer app-sticky-footer" data-testid="action-row">
       <button
         class="btn-secondary"
+        type="button"
         disabled={!controller().canRetry()}
         title={controller().retryDisabledReason() ?? ""}
         aria-label={st().card.retryCard}
@@ -407,6 +409,7 @@ function ActionDock(props: Readonly<{ controller: ReplylineController }>) {
       </button>
       <button
         class="btn-danger btn-ghost"
+        type="button"
         disabled={!controller().canClear()}
         title={controller().clearDisabledReason() ?? ""}
         aria-label={st().card.clearContext}

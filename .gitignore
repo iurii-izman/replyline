@@ -31,6 +31,10 @@ artifacts/
 test-results/
 playwright-report/
 msedgedriver.exe
+*.har
+*.trace
+*.pcap
+*.pcapng
 
 # Personal / AI-assistant config (not project code)
 AI/
@@ -50,6 +54,12 @@ postman/
 scratch/
 tests/api/postman/
 test-out.txt
+exports/
+interview-exports/
+*-interview-report-full.md
+*-interview-report-redacted.md
+*-full-interview-export.md
+*-redacted-interview-export.md
 
 # Secrets — never commit
 .env

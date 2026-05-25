@@ -46,6 +46,7 @@ WorkConversation generation excludes Candidate Pack context by default.
 - Candidate Pack data can leave the machine when you use cloud LLM providers.
 - Provider-side retention/logging policies are controlled by provider terms, not by Replyline.
 - Treat local pack files and interview reports as sensitive and redact before sharing.
+- Never commit raw Candidate Pack examples, full interview exports, or provider payload dumps into the public repository footprint.
 
 ## AI preparation boundary
 

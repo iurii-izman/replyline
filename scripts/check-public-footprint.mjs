@@ -9,6 +9,12 @@ const blockedPrefixes = [
   "postman/",
   "scratch/",
   "tests/api/postman/",
+  "reports/runtime/",
+  "reports/runtime-evidence-",
+  "reports/beta-handoff-",
+  "reports/manual/live-evidence/",
+  "artifacts/",
+  "test-results/",
 ];
 
 const blockedFiles = new Set(["docs-cleanup-task.md", "test-out.txt"]);

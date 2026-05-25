@@ -29,6 +29,15 @@ Minimal policy for what should be tracked in GitHub vs kept local-only.
 - local infrastructure overrides: `infra/`
 - ad-hoc helper scripts/notebooks: `scratch/`
 - Postman assets and local API environments: `postman/`, `tests/api/postman/`
+- generated runtime evidence and manual live evidence: `reports/runtime/`, `reports/runtime-evidence-*`, `reports/beta-handoff-*`, `reports/manual/live-evidence/`
+- generated interview exports and ad-hoc export folders: `exports/`, `interview-exports/`, `*-interview-report-full.md`, `*-full-interview-export.md`
+- debug and packet captures from local troubleshooting: `*.har`, `*.trace`, `*.pcap`, `*.pcapng`
+
+## Sensitive vs safer artifacts
+
+- sensitive (do not commit/share publicly): full transcript exports, raw transcript snippets, raw Candidate Pack values, provider response payload dumps, Authorization/Bearer headers, local credentials.
+- safer but still review-before-share: redacted interview markdown export (`no transcript`) and redacted runtime notes.
+- always sanitize absolute machine paths in reports before sharing outside internal need-to-know.
 
 ## Guardrail
 
@@ -40,3 +49,4 @@ Minimal policy for what should be tracked in GitHub vs kept local-only.
 - Local-only does not mean deleted from workstation: files can exist locally and stay ignored.
 - If a local-only path becomes required for public usage, move it explicitly into tracked scope and update this doc in the same PR.
 - Runtime `.env` files remain local-only and must never be committed; only `.env.docker.example` is versioned.
+- Release binaries/installers are distributed as GitHub Actions artifacts/Release assets; they must not be committed into this repository.

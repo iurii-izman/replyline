@@ -21,6 +21,7 @@ Use this checklist for manual Windows desktop UX validation before beta handoff.
 | no custom overlay behavior      | Window does not behave like overlay tool by default (not pinned on top, normal focus/restore semantics).                       | `<PASS/FAIL>` | `<notes>` |
 | close/hide-to-tray behavior     | Closing window follows configured hide-to-tray behavior; app remains available from tray if enabled.                           | `<PASS/FAIL>` | `<notes>` |
 | tray open main window           | Tray action restores/open main window and focus is usable.                                                                     | `<PASS/FAIL>` | `<notes>` |
+| tray quit exits app             | Tray `Quit` fully exits app process (no background UI state left).                                                             | `<PASS/FAIL>` | `<notes>` |
 | resize to compact width         | Window can be resized down to compact width and layout remains usable (no broken overlap).                                     | `<PASS/FAIL>` | `<notes>` |
 | maximize/fullscreen             | Maximize/fullscreen/restore keep layout landmarks and controls accessible.                                                     | `<PASS/FAIL>` | `<notes>` |
 | fullscreen dead space           | Fullscreen does not show empty dead-space bands; workspace uses full height with readable capped content.                      | `<PASS/FAIL>` | `<notes>` |
@@ -38,14 +39,24 @@ Use this checklist for manual Windows desktop UX validation before beta handoff.
 | candidate studio prepared state | After prepare, quality summary/facts/weak facts/keywords/warnings render correctly; no oversized blank panel.                  | `<PASS/FAIL>` | `<notes>` |
 | candidate studio accordion      | Saved profile editor uses styled accordion (no default browser triangle), opened section is visually clear.                    | `<PASS/FAIL>` | `<notes>` |
 | candidate studio action dock    | Primary/secondary/danger/back actions map to current state: prepare/save/save draft/clear/back to settings.                    | `<PASS/FAIL>` | `<notes>` |
+| candidate pack prepare/save/clear | Candidate Pack prepare, save (draft/prepared), and clear actions work with expected confirmations/copy.                      | `<PASS/FAIL>` | `<notes>` |
 | candidate studio responsive     | Fullscreen/wide/compact layouts keep workflow readable: wide can split sections, compact is single-column.                     | `<PASS/FAIL>` | `<notes>` |
 | record/analyze/copy             | Core workflow actions (record/analyze/copy) are reachable and functional in UI flow.                                           | `<PASS/FAIL>` | `<notes>` |
+| hotkey capture start            | `Ctrl+Alt+Space` press starts capture and visible capturing state is shown.                                                    | `<PASS/FAIL>` | `<notes>` |
+| hotkey capture release          | `Ctrl+Alt+Space` release stops capture and transitions to analyze/result flow.                                                 | `<PASS/FAIL>` | `<notes>` |
+| no-capture state                | No-capture baseline keeps app in ready/idle state with no stale recording indicators.                                          | `<PASS/FAIL>` | `<notes>` |
+| copy say_now                    | `Copy reply` / `Скопировать ответ` copies current `say_now` text and shows copied feedback.                                   | `<PASS/FAIL>` | `<notes>` |
 | retry/clear                     | Retry and clear actions are available where expected and update UI state correctly.                                            | `<PASS/FAIL>` | `<notes>` |
+| clear context                   | Clear context action resets context-dependent state and does not break next capture cycle.                                     | `<PASS/FAIL>` | `<notes>` |
+| settings save                   | Save in Settings persists values and returns stable ready/setup state without broken focus flow.                               | `<PASS/FAIL>` | `<notes>` |
+| provider error state            | Invalid provider route/key shows understandable error copy and recovery action to Settings.                                    | `<PASS/FAIL>` | `<notes>` |
 | disabled critical buttons       | Disabled critical actions show clear disabled state/title (no raw default button look).                                        | `<PASS/FAIL>` | `<notes>` |
 | start/end interview session     | Interview session start/end controls work and state transitions are reflected in UI.                                           | `<PASS/FAIL>` | `<notes>` |
 | mode clarity banner             | Side panel mode banner clearly shows Interview Mode active vs WorkConversation default.                                        | `<PASS/FAIL>` | `<notes>` |
 | full markdown export warning    | Full markdown export path shows expected sensitivity/warning semantics before sharing.                                         | `<PASS/FAIL>` | `<notes>` |
 | redacted markdown export        | Redacted export works and omits sensitive content according to contract.                                                       | `<PASS/FAIL>` | `<notes>` |
 | clear reports                   | Clear reports action is accessible and removes stored reports as expected.                                                     | `<PASS/FAIL>` | `<notes>` |
+| report retention                | Retention setting (`0/7/30/90`) behaves as documented; manual clear path remains explicit.                                    | `<PASS/FAIL>` | `<notes>` |
+| privacy warning review          | Privacy/sensitivity copy for transcript/report exports is visible and understandable before sharing.                           | `<PASS/FAIL>` | `<notes>` |
 | footer overlap                  | Sticky footers do not overlap final form fields/content in Main, Settings, and Candidate Studio.                               | `<PASS/FAIL>` | `<notes>` |
 | scrollbars                      | Scroll behavior is single-owner and predictable; no conflicting nested full-height scrollbars.                                 | `<PASS/FAIL>` | `<notes>` |

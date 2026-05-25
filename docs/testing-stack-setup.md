@@ -58,6 +58,11 @@ pnpm install --include=optional
 - Deterministic credential-free happy path: `pnpm test:e2e:web` (Playwright + injected mock platform, no real Deepgram/LLM keys).
 - Web E2E auto-starts local Vite server (`127.0.0.1:4173`) from Playwright config; no separate manual server step is required.
 - Desktop E2E (`pnpm test:e2e:desktop`) is still optional and returns `SKIP` when `TAURI_APP_PATH` is not set.
+- Desktop E2E required lane (`pnpm test:e2e:desktop:required`) is for release/operator validation and fails when prerequisites are missing.
+- Required lane prerequisites:
+  - build app artifact: `pnpm tauri build`
+  - set desktop binary path: `set TAURI_APP_PATH=<path-to-built-app>`
+  - run lane: `pnpm test:e2e:desktop:required`
 - Flake policy:
   - keep `retries: 0` for fast failure and reproducible diagnosis;
   - use deterministic selectors (`data-testid`) and mocked IPC payloads;

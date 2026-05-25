@@ -82,6 +82,20 @@ start docs/manual-closure-pack.html
 3. Сохранить отчёт в `reports/manual/`.
 4. При необходимости приложить JSON state.
 
+## Desktop E2E evidence rule
+
+- Для PR/dev допустим optional lane: `pnpm test:e2e:desktop` (`SKIP` разрешён).
+- Для RC/public beta closure обязателен non-skipped запуск:
+  - `pnpm tauri build`
+  - `set TAURI_APP_PATH=<path-to-built-app>`
+  - `pnpm test:e2e:desktop:required`
+
+## Release artifact truth rule
+
+- `release-on-tag.yml` now builds and publishes Windows release artifacts.
+- Unsigned artifacts are acceptable only for internal trusted beta when explicitly approved.
+- RC/public beta requires signed installer evidence (valid Authenticode signature + release gates).
+
 ## Ссылка
 
 - [Manual Closure Pack HTML](manual-closure-pack.html)

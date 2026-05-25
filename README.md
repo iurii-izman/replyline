@@ -110,6 +110,9 @@ For manual beta seal and local QA, use:
 ## Releases
 
 - Tag format: `vX.Y.Z` (for example: `v0.2.0`)
-- On push of a `v*` tag, GitHub Action `Release On Tag` creates a release with auto-generated notes.
+- On push of a `v*` tag, GitHub Action `Release On Tag` creates a release with auto-generated notes and uploads a Windows artifact package.
 - Notes are grouped by labels via `.github/release.yml`.
-- Current `release-on-tag.yml` publishes release notes only and does not attach desktop installers or binaries.
+- Artifact naming is signing-aware:
+  - `Replyline-vX.Y.Z-windows-internal-unsigned.zip` for internal trusted beta only.
+  - `Replyline-vX.Y.Z-windows-signed.zip` only when signing secrets are configured and Authenticode signature validation succeeds.
+- Do not treat unsigned artifacts as public beta installers.

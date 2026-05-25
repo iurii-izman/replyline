@@ -234,4 +234,23 @@ describe("MainSurface state-driven view", () => {
     );
     expect(screen.getByTestId("main-side-panel")).toBeTruthy();
   });
+
+  it("error state renders recovery card without answer actions", () => {
+    render(
+      () =>
+        (
+          <MainSurface
+            controller={
+              createController(ui_ru, {
+                mainUiState: () => "error",
+                phase: () => "error",
+              }) as never
+            }
+          />
+        ) as never,
+    );
+    expect(screen.getByTestId("error-recovery-card")).toBeTruthy();
+    expect(screen.queryByTestId("answer-hero-card")).toBeNull();
+    expect(screen.queryByTestId("action-row")).toBeNull();
+  });
 });

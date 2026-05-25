@@ -61,6 +61,8 @@ Storage and export boundaries:
 - Reports are never exported unless user explicitly calls `export_interview_report_markdown`.
 - Safer sharing path: prefer `export_interview_report_redacted_markdown` for external sharing.
 - Full export warning: `export_interview_report_markdown` can include raw transcript text and should be treated as sensitive.
+- Redacted export warning: even redacted markdown is a share candidate only after manual review for residual identifiers/context.
+- Public repo rule: generated interview exports must stay local-only and must not be committed.
 
 ## Prompt profiles
 

@@ -90,6 +90,7 @@
     "test:e2e:web:required": "pnpm exec playwright test",
     "test:e2e:web:ui": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage @playwright/test --exec pnpm -- exec playwright test --ui",
     "test:e2e:desktop": "node scripts/run-optional-lane.mjs --tool tauri-desktop-e2e --checkPackage webdriverio --checkEnv TAURI_APP_PATH --exec pnpm -- exec wdio run tests/e2e/desktop/wdio.tauri.conf.mjs",
+    "test:e2e:desktop:required": "node scripts/run-required-desktop-e2e.mjs",
     "test:perf:k6": "node scripts/run-optional-lane.mjs --tool k6 --checkPath tests/perf/k6-smoke.js --exec k6 -- run tests/perf/k6-smoke.js",
     "test:sec:zap": "node scripts/run-optional-lane.mjs --tool zap-baseline --checkPath scripts/run-zap-baseline.ps1 --exec pwsh -- -File scripts/run-zap-baseline.ps1",
     "test:ux:lighthouse": "node scripts/run-optional-lane.mjs --tool lhci --checkPackage lhci --exec pnpm -- exec lhci autorun --config=./lighthouserc.json",

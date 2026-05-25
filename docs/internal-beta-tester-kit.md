@@ -160,12 +160,18 @@ Feedback fields:
 - full interview markdown export (без внутреннего need-to-know)
 - raw Candidate Pack values
 - provider response bodies
+- local absolute machine paths that reveal user profile/workstation layout (sanitize before external sharing)
 
 Где генерируются отчёты:
 
 - runtime/evidence: локально в `reports/`
 - interview store: `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json`
 - markdown exports: локально по явному действию пользователя
+
+Safe sharing rule:
+
+- Для баг-репорта по умолчанию используйте redacted export + redacted notes.
+- Full transcript export и raw evidence разрешены только внутри внутреннего need-to-know канала.
 
 ## 10) Stop conditions
 
@@ -210,5 +216,6 @@ Feedback fields:
 7. Interview details: `docs/interview-mode.md`
 8. Candidate Pack details: `docs/candidate-pack.md`
 9. Manual closure checklist: `docs/manual-closure-pack.md` + `docs/manual-closure-pack.html`
-10. Live runtime matrix: `docs/live-runtime-matrix.md`
-11. Live runtime QA flow: `docs/runtime-live-qa.md`
+10. Windows UX checklist: `docs/manual-windows-ux-qa.md`
+11. Live runtime matrix: `docs/live-runtime-matrix.md`
+12. Live runtime QA flow: `docs/runtime-live-qa.md`

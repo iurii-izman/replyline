@@ -533,6 +533,12 @@ describe("App UX stabilization", () => {
     expect(await screen.findByTestId("settings-surface")).toBeTruthy();
   });
 
+  it("header icon actions expose accessible names", async () => {
+    render(() => <App platform={mock.platform} />);
+    expect(await screen.findByRole("button", { name: "Настройки" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Скрыть" })).toBeTruthy();
+  });
+
   it("header hide action calls hideWindow", async () => {
     render(() => <App platform={mock.platform} />);
 
@@ -618,6 +624,20 @@ describe("App UX stabilization", () => {
     expect(screen.getByLabelText("Поверх окон только во время захвата и анализа")).toBeTruthy();
   });
 
+  it("settings can be submitted from form keyboard path", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
+
+    const form = document.querySelector("form.settings-content");
+    expect(form).toBeTruthy();
+    fireEvent.submit(form!);
+
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "save_settings")).toBe(true),
+    );
+  });
+
   it("renders setup-required fixture with settings nav landmarks", async () => {
     const setupMock = createSetupStatePlatform({
       deepgramKeyPresent: false,
@@ -628,6 +648,9 @@ describe("App UX stabilization", () => {
 
     await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
     expect(screen.getByTestId("settings-sidebar")).toBeTruthy();
+    expect(screen.getByRole("tab", { name: /Обзор/i }).getAttribute("aria-controls")).toBe(
+      "settings-panel-overview",
+    );
   });
 
   it("renders candidate studio empty fixture", async () => {
@@ -715,6 +738,14 @@ describe("App UX stabilization", () => {
     expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Скопировать ответ" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Пересобрать" })).toBeNull();
+  });
+
+  it("does not expose stealth or cheating copy in visible UI", async () => {
+    render(() => <App platform={mock.platform} />);
+    const text = document.body.textContent?.toLowerCase() ?? "";
+    expect(text).not.toContain("stealth");
+    expect(text).not.toContain("cheat");
+    expect(text).not.toContain("hidden overlay");
   });
 
   it("renders answer action dock only in ready state", async () => {

@@ -30,6 +30,7 @@ Contract note: this document keeps `Internal Stable Beta` wording for compatibil
 - Есть два явных export-действия:
   - `Export full markdown (includes transcript)` — включает raw/full transcript и считается sensitive.
   - `Export redacted markdown (no transcript)` — safer share copy, исключает raw/full transcript.
+  - Даже redacted export требует user review перед внешним шарингом (проверить отсутствие случайных PII/контекстных утечек).
 - В WorkConversation Candidate Pack context по умолчанию не добавляется.
 - Candidate Pack context включается только в Interview Mode при активной interview session.
 - Settings diagnostics surface:
@@ -84,6 +85,7 @@ https://* — обоснование:
 - Какие cloud STT/LLM провайдеры получают audio/text, определяется вашей конфигурацией в Settings.
 - Для Candidate Pack: raw resume/JD/company значения локальны до явного запуска preparation; при preparation релевантный контент может уйти в LLM-провайдер; сохранённый compact context хранится локально.
 - Политики хранения/логирования у этих провайдеров определяются их условиями, а не Replyline.
+- Raw provider response body dumps, transcript exports и локальные debug traces считаются sensitive operational artifacts и должны оставаться local-only.
 
 ### Local vs Cloud URL policy
 
