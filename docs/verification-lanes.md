@@ -34,6 +34,8 @@
 
 - `pnpm smoke`: compile/unit + policy/contract baseline.
 - Security/dependency lanes: `pnpm test:security-lanes`, `pnpm test:public-footprint`, `pnpm rust:deps`, `pnpm audit:npm`.
+- Dependency maintenance lane (operator/scheduled, non-blocking): `pnpm deps:review` (`pnpm outdated --recursive` + override freshness review).
+  - Decision log (2026-05-25): removed stale `pnpm.overrides` entries (`handlebars`, `node-forge`, `underscore`) after evidence that they were absent from `pnpm-lock.yaml` during `deps:review`; blocking audit gates remain unchanged.
 - Runtime evidence lanes: `pnpm report:runtime-quality`, `pnpm test:product-scenarios`, `pnpm report:live-evidence-pack`.
 - Lifecycle governance: `pnpm scripts:lifecycle` (coverage и конфликт классификации scripts).
 

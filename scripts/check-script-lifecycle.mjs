@@ -92,6 +92,7 @@ const matrix = {
     "rust:audit",
     "rust:deps",
     "audit:npm",
+    "deps:review",
     "lint:fix",
     "format",
     "format:check",

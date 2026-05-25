@@ -35,6 +35,7 @@ pnpm install --include=optional
 ```
 
 - `pnpm verify:extended`
+- `pnpm deps:review` (dependency freshness + override maintenance review; non-blocking lane)
 - `pnpm test:optional:api`
 - `pnpm test:optional:e2e:web`
 - `pnpm test:optional:e2e:desktop`
