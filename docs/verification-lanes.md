@@ -29,6 +29,8 @@
 4. `verify:release-local`
 - Состав: `verify:fast` + `scripts:lifecycle` + docs/link checks + runtime/product reports + manual closure pack + freeze + strict readiness report.
 - Это основной локальный lane перед handoff в `main`.
+- `pnpm test:e2e:web` в этом lane остаётся optional-wrapper lane и может корректно завершиться как `SKIP` (например, если Playwright runtime отсутствует в локальном окружении).
+- Для release operator есть required путь без skip-wrapper: `pnpm test:e2e:web:required` (должен дать `PASS` или `FAIL`, но не `SKIP`).
 
 ## Supporting lanes
 
@@ -39,7 +41,8 @@
 - Runtime evidence lanes: `pnpm report:runtime-quality`, `pnpm test:product-scenarios`, `pnpm report:live-evidence-pack`.
 - Lifecycle governance: `pnpm scripts:lifecycle` (coverage и конфликт классификации scripts).
 - E2E lanes:
-  - `pnpm test:e2e:web` is a deterministic credential-free lane and is included in `verify:release-local`.
+  - `pnpm test:e2e:web` is an optional-wrapper deterministic credential-free lane and is included in `verify:release-local`.
+  - `pnpm test:e2e:web:required` is a non-wrapper operator lane for explicit non-skipped evidence.
   - `pnpm test:e2e:desktop` remains optional (`SKIP` when `TAURI_APP_PATH` is absent) until stable Windows runner provisioning is standardized.
 
 ## CI alignment

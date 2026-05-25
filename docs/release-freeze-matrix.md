@@ -33,8 +33,11 @@ pnpm release:freeze:check
 
 The check emits:
 
-- changed files in current worktree;
+- changed files in local scope (`unstaged + staged + untracked`);
 - files outside the freeze allowlist/guardrails;
 - a machine-readable artifact at `reports/release-freeze-check.json`.
+
+When `--base <ref>` is provided (CI path), the check keeps three-dot comparison semantics
+(`<base>...HEAD`) and does not include local untracked files.
 
 `pnpm release:freeze:check:strict` fails if out-of-freeze files are detected.

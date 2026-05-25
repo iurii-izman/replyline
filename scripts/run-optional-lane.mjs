@@ -54,12 +54,7 @@ function findMissingPaths(checkPaths) {
 
 function hasOptionalPackage(pkgName) {
   if (!pkgName) return true;
-  const run = spawnSync("pnpm", ["exec", "node", "-e", `require.resolve("${pkgName}")`], {
-    stdio: "ignore",
-    shell: false,
-    windowsHide: true,
-  });
-  return run.status === 0;
+  return canReadPath(resolve("node_modules", pkgName, "package.json"));
 }
 
 function hasRequiredEnvVar(name) {
@@ -92,10 +87,20 @@ if (!hasRequiredEnvVar(opts.checkEnv)) {
   process.exit(0);
 }
 
-const run = spawnSync(opts.exec, opts.execArgs, {
-  stdio: "inherit",
-  shell: false,
-  windowsHide: true,
-});
+let run;
+if (process.platform === "win32" && opts.exec === "pnpm") {
+  const command = [opts.exec, ...opts.execArgs].join(" ");
+  run = spawnSync("cmd.exe", ["/d", "/s", "/c", command], {
+    stdio: "inherit",
+    shell: false,
+    windowsHide: true,
+  });
+} else {
+  run = spawnSync(opts.exec, opts.execArgs, {
+    stdio: "inherit",
+    shell: false,
+    windowsHide: true,
+  });
+}
 if (run.error) fail(`failed to run ${opts.exec}: ${run.error.message}`);
 process.exit(run.status ?? 1);

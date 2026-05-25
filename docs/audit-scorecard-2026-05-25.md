@@ -3,7 +3,7 @@
 Status: current audit artifact
 Repo: `iurii-izman/replyline`
 Branch: `main`
-Audited HEAD: `d4500824dc2edb9c4539a24a9c31e8c16551fae1`
+Audited HEAD: `04853d8374c9249d3922280706523fa345e08121`
 Audit date: 2026-05-25
 Scope: confirmation of completed max-upgrade and Postman-audit follow-up blocks, release readiness, truth consistency, privacy/trust, runtime evidence, test coverage, and score update.
 
@@ -17,11 +17,11 @@ Confidence: **medium-high**.
 
 Why not higher:
 
-- Web E2E, desktop E2E, and Postman/Newman lanes are present but optional locally; this audit observed web/desktop/Postman lanes skipping because local tooling or local Postman assets were absent.
+- Desktop E2E and Postman/Newman lanes remain optional locally and can skip when local tooling/assets are absent.
 - `release-on-tag` still does not publish signed Windows binaries.
 - Live GUI/provider readiness depends on structured manual evidence; this audit did not perform a fresh external live-provider call.
 - CSP still allows `connect-src https://*`; it is documented and guarded, but still broader than ideal.
-- Local `release:freeze:check` compares unstaged working-tree diff against `HEAD`; after staging, a separate staged-diff guardrail check is still needed until the script handles index/untracked files directly.
+- Local `release:freeze:check` now includes unstaged + staged + untracked files; CI `--base` three-dot semantics stay unchanged.
 - Cross-machine and cross-call-app confidence still needs more real tester evidence.
 
 Why not lower:
@@ -65,6 +65,8 @@ Validation commands executed:
 | `pnpm test:ui:coverage` | PASS | 15 test files, 136 tests, 81.92% statements, 72.62% branches |
 | `pnpm deps:review` | PASS with review signal | `vite` latest signal `8.0.13 -> 8.0.14`, non-blocking |
 | `pnpm test:api:postman` | PASS/SKIP controlled optional lane | skipped because local Postman collection/environment are absent |
+| `pnpm test:e2e:web` | PASS (non-skipped) | Playwright web lane executed: 2 tests passed |
+| `pnpm test:e2e:web:required` | PASS (non-skipped required lane) | explicit operator lane executed without optional wrapper |
 | `pnpm test:e2e:desktop` | PASS/SKIP controlled optional lane | skipped because `webdriverio` and `TAURI_APP_PATH` are absent |
 | staged release-freeze guardrail check | PASS | 5 staged files, all in explicit guardrails or report regex |
 | `rg` claim checks | PASS by interpretation | hits are banlists, historical docs, future-track docs, or explicit unsupported claims |
@@ -85,7 +87,7 @@ Important generated artifacts:
 | B3 CSP/provider endpoint hardening | Confirmed | commit `dcbbc7a`, CSP rationale in privacy docs, security lane guard |
 | B4 Docs rationalization | Confirmed | commit `21d2fb1`, `docs/README.md` separates shipped, historical, future-track, ops docs |
 | B5 Dependency freshness lane | Confirmed | commit `7ce621f`, `pnpm deps:review` exists and passes with non-blocking review signal |
-| B6 Deterministic web E2E lane | Confirmed as implemented, not run here | commit `81deaf5`, `tests/e2e/web/smoke.spec.ts`, lane skipped locally because Playwright package is absent |
+| B6 Deterministic web E2E lane | Confirmed and executed locally | `tests/e2e/web/smoke.spec.ts`, `tests/e2e/web/visual.spec.ts`, non-skipped run (`2 passed`) |
 | B7 Optional Postman/Newman lane | Confirmed as implemented, not run here | commit `d4500824`, lane skips safely when local collection/environment are absent |
 
 Interpretation: the prompts were implemented in repo history and backed by scripts/tests/docs. Optional tool-dependent lanes are correctly wired but were not executed as real scenario runs in this local audit because the required local tools/assets were not installed or present.
@@ -207,7 +209,7 @@ Baseline column uses the previous audit table from the planning conversation. It
 | Supply chain security | 82 | 88 | +6 | npm/Rust gates pass; dependency review lane added. | `pnpm audit:npm`, `pnpm rust:deps`, `pnpm deps:review` |
 | Public footprint hygiene | 86 | 92 | +6 | Public footprint and report secret scans pass over tracked files/reports. | `scripts/check-public-footprint.mjs`, `scripts/check-report-secret-leaks.mjs` |
 | CI quality gates | 82 | 90 | +8 | CI/release/local gates are stronger; optional lanes still skip without local tooling. | `.github/workflows/ci.yml`, `package.json` |
-| Release-freeze governance | 72 | 86 | +14 | CI/base-ref path is strong, but local mode ignores staged/untracked files unless checked separately. | `docs/release-freeze-baseline.json`, `scripts/check-release-freeze.mjs` |
+| Release-freeze governance | 72 | 92 | +20 | CI/base-ref path is strong and local mode now covers unstaged/staged/untracked in one check. | `docs/release-freeze-baseline.json`, `scripts/check-release-freeze.mjs`, `scripts/check-release-freeze.test.mjs` |
 | Release readiness | 62 | 88 | +26 | Strict readiness score is 97 with two warnings; no signed binary release yet. | `reports/release/release-readiness-2026-05-25.md` |
 | Test coverage | 78 | 87 | +9 | TS tests doubled and coverage is acceptable; real E2E is still optional/skipped locally. | `pnpm test:ui:coverage`, `tests/e2e/` |
 | Documentation quality | 70 | 89 | +19 | Docs portfolio is categorized; planning/history docs remain intentionally verbose. | `docs/README.md` |
@@ -241,9 +243,7 @@ Baseline column uses the previous audit table from the planning conversation. It
 
 | Priority | Block | Goal | Verification |
 | --- | --- | --- | --- |
-| P0 | Non-skipped E2E setup | Install/enable Playwright in the intended release-local environment and make `pnpm test:e2e:web` execute, not skip. | `pnpm test:e2e:web` |
 | P0 | Public beta binary posture | Add Windows artifact build/signing strategy or explicitly keep release notes-only for internal beta. | tag dry-run or release workflow review |
-| P1 | Freeze local-mode hardening | Make `scripts/check-release-freeze.mjs` include staged and untracked files in local mode, or add a first-class `--cached` option. | staged diff + untracked fixture test |
 | P1 | Desktop E2E operator setup | Document/install WebdriverIO path and `TAURI_APP_PATH` handoff so one desktop happy path can run. | `pnpm test:e2e:desktop` non-skipped |
 | P1 | Live evidence refresh | Run a fresh real provider/manual GUI pass and update live evidence pack. | `pnpm report:live-evidence-pack`, manual attestation |
 | P1 | Dependency freshness | Review `vite 8.0.14` and update if low-risk. | `pnpm deps:review`, `pnpm verify:fast` |

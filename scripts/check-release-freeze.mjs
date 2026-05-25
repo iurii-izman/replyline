@@ -19,6 +19,7 @@ if (hasBaseArg && !baseRef) {
 // Determine diff target and label for traceability
 let diffArgs;
 let diffLabel;
+let localMode = false;
 if (baseRef) {
   // Compare changes introduced by HEAD since merge-base with baseRef.
   // Three-dot diff shows what HEAD introduced relative to the common ancestor.
@@ -27,16 +28,17 @@ if (baseRef) {
   diffArgs = ["diff", "--name-only", `${baseRef}...HEAD`, "--", "."];
   diffLabel = `${baseRef}...HEAD`;
 } else {
-  // Local / legacy mode: working tree against HEAD
+  // Local mode: combine unstaged + staged + untracked for full visibility.
+  localMode = true;
   diffArgs = ["diff", "--name-only", "--", "."];
-  diffLabel = "working tree vs HEAD";
+  diffLabel = "local changes (unstaged + staged + untracked)";
 }
 
-run(diffArgs, diffLabel);
+run(diffArgs, diffLabel, localMode);
 
 // --- Main ---
 
-function run(args, label) {
+function run(args, label, isLocalMode) {
   const diff = spawnSync("git", args, {
     cwd,
     encoding: "utf8",
@@ -97,13 +99,54 @@ function run(args, label) {
   }
 
   // Normal path
-  processChangedFiles(
-    diff.stdout
-      .split(/\r?\n/u)
-      .map((l) => l.trim())
-      .filter(Boolean),
-    label,
-  );
+  const diffFiles = diff.stdout
+    .split(/\r?\n/u)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (isLocalMode) {
+    processChangedFiles(collectLocalChangedFiles(diffFiles), label);
+    return;
+  }
+
+  processChangedFiles(diffFiles, label);
+}
+
+function collectLocalChangedFiles(unstagedFiles) {
+  const staged = spawnSync("git", ["diff", "--cached", "--name-only", "--", "."], {
+    cwd,
+    encoding: "utf8",
+    windowsHide: true,
+    shell: false,
+  });
+  if (staged.status !== 0) {
+    console.error("[release-freeze] git diff --cached failed");
+    if (staged.stderr) console.error(staged.stderr.trim());
+    process.exit(staged.status ?? 1);
+  }
+
+  const untracked = spawnSync("git", ["ls-files", "--others", "--exclude-standard"], {
+    cwd,
+    encoding: "utf8",
+    windowsHide: true,
+    shell: false,
+  });
+  if (untracked.status !== 0) {
+    console.error("[release-freeze] git ls-files --others failed");
+    if (untracked.stderr) console.error(untracked.stderr.trim());
+    process.exit(untracked.status ?? 1);
+  }
+
+  const stagedFiles = staged.stdout
+    .split(/\r?\n/u)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const untrackedFiles = untracked.stdout
+    .split(/\r?\n/u)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const uniqueFiles = new Set([...unstagedFiles, ...stagedFiles, ...untrackedFiles]);
+  return [...uniqueFiles].sort((a, b) => a.localeCompare(b));
 }
 
 // --- Processing ---
