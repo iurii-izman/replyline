@@ -1,5 +1,13 @@
 # Runtime Quality Harness
 
+## Status and purpose
+
+- Status: active fixture-based quality lane for CI/local regression control.
+- Purpose: validate card quality/contracts and synthetic latency without real provider keys.
+- Not a substitute:
+  - does not prove live STT/LLM provider behavior;
+  - does not replace [runtime-bringup.md](runtime-bringup.md) + [runtime-evidence.md](runtime-evidence.md) artifacts.
+
 ## Purpose
 
 `runtime-quality` harness is an automated evidence layer for core flow quality on synthetic fixtures:

@@ -1,5 +1,8 @@
 # Replyline Internal Alpha Checklist
 
+> Historical note: this document is kept for internal alpha traceability.
+> It is not the current stable-beta release runbook.
+
 Операционный чеклист для команды перед подключением внешних ранних тестеров.
 
 ## 0) Цель прогона

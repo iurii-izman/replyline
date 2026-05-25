@@ -2,6 +2,14 @@
 
 Single handoff doc for preparing a public-beta-ready build posture.
 
+## Status and purpose
+
+- Status: active beta handoff context doc for current cycle.
+- Purpose: product scope, validation matrix, and packaging-truth boundaries for beta communication.
+- Relationship:
+  - release blockers and hard gates remain in [release-readiness.md](release-readiness.md);
+  - strict local gate composition remains in [release-local-readiness.md](release-local-readiness.md).
+
 ## 1) Product scope
 
 Replyline stable beta supports two bounded paths:

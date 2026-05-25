@@ -2,6 +2,14 @@
 
 Release gate for Slim Stable Beta.
 
+## Status and purpose
+
+- Status: canonical release-governance gate for current stable-beta scope.
+- Purpose: defines required quality/security/runtime-evidence domains for release decisions.
+- Relationship:
+  - use with [release-local-readiness.md](release-local-readiness.md) for strict local non-manual baseline;
+  - use with [beta-readiness.md](beta-readiness.md) for wider beta handoff context.
+
 ## Must pass
 
 - `pnpm verify:fast`

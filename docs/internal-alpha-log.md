@@ -1,5 +1,8 @@
 # Replyline Internal Alpha Log
 
+> Historical note: this is an archived alpha execution log.
+> It is evidence history, not a live stable-beta readiness source.
+
 Рабочий журнал внутренней alpha.
 Используйте его для фиксации baseline, daily runs и go/no-go решений.
 

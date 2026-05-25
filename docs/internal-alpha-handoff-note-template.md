@@ -1,5 +1,8 @@
 # Internal Alpha Handoff Note Template
 
+> Historical note: template retained for alpha-era records.
+> For current cycle handoff/readiness, use beta/release docs from `docs/README.md`.
+
 Используйте рядом с `pnpm alpha:handoff` артефактами.
 
 ```text

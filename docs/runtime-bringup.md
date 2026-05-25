@@ -2,6 +2,14 @@
 
 This is the minimum real-runtime path for Replyline on Windows.
 
+## Status and purpose
+
+- Status: active operator runbook for workstation-level runtime bring-up.
+- Purpose: prove one real provider path (`capture -> stt -> llm -> card`) on a конкретной машине.
+- Relationship:
+  - evidence interpretation and claim labels live in [runtime-evidence.md](runtime-evidence.md);
+  - fixture/CI quality gate is documented separately in [runtime-quality-harness.md](runtime-quality-harness.md).
+
 ## 1. Provider readiness
 
 The shell running Replyline should have:

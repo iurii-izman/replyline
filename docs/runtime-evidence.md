@@ -2,6 +2,14 @@
 
 Replyline keeps runtime evidence local. The goal is to avoid "it probably works" and replace it with a small set of reproducible files.
 
+## Status and purpose
+
+- Status: active evidence and claim-label policy for current stable beta.
+- Purpose: define what runtime artifacts prove and how to label claims honestly.
+- Relationship:
+  - bring-up procedure is in [runtime-bringup.md](runtime-bringup.md);
+  - synthetic fixture quality harness is in [runtime-quality-harness.md](runtime-quality-harness.md) and is not live-provider proof.
+
 ## Evidence sources
 
 - `pnpm probe:runtime`

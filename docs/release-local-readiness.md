@@ -1,5 +1,13 @@
 # Local Release Readiness
 
+## Status and purpose
+
+- Status: active strict local lane for current stable-beta release preparation.
+- Purpose: one-command reproducible non-manual local readiness baseline.
+- Relationship:
+  - complements [release-readiness.md](release-readiness.md), not a replacement for full release governance;
+  - does not prove installer publication or live-provider call quality on its own.
+
 ## One-command strict local gate
 
 Run:
