@@ -54,5 +54,5 @@
   - `pnpm test:e2e:web` in Windows CI (deterministic, credential-free).
 - Keep non-blocking before public beta:
   - `pnpm test:e2e:desktop` (depends on packaged app + driver env on runner/dev machine).
-  - `pnpm test:api:postman` (local collection/environment can be intentionally absent in public footprint).
+  - `pnpm test:api:postman` (local collection/environment can be intentionally absent in public footprint; lane must stay local/mock-only and must not carry real secrets, raw transcripts, or production endpoints).
   - `pnpm test:perf:k6`, `pnpm test:sec:zap`, `pnpm test:ux:lighthouse` (heavier operator lanes, best as scheduled signal).

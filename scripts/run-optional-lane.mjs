@@ -10,7 +10,7 @@ function fail(message) {
 function parseArgs(argv) {
   const out = {
     tool: "",
-    checkPath: "",
+    checkPaths: [],
     checkPackage: "",
     checkEnv: "",
     exec: "",
@@ -24,7 +24,7 @@ function parseArgs(argv) {
       break;
     }
     if (token === "--tool") out.tool = argv[++i] ?? "";
-    else if (token === "--checkPath") out.checkPath = argv[++i] ?? "";
+    else if (token === "--checkPath") out.checkPaths.push(argv[++i] ?? "");
     else if (token === "--checkPackage") out.checkPackage = argv[++i] ?? "";
     else if (token === "--checkEnv") out.checkEnv = argv[++i] ?? "";
     else if (token === "--exec") out.exec = argv[++i] ?? "";
@@ -42,6 +42,14 @@ function canReadPath(inputPath) {
   } catch {
     return false;
   }
+}
+
+function findMissingPaths(checkPaths) {
+  const missing = [];
+  for (const checkPath of checkPaths) {
+    if (!canReadPath(checkPath)) missing.push(resolve(checkPath));
+  }
+  return missing;
 }
 
 function hasOptionalPackage(pkgName) {
@@ -64,9 +72,10 @@ const opts = parseArgs(process.argv.slice(2));
 if (!opts.exec) fail("missing --exec");
 if (!opts.tool) fail("missing --tool");
 
-if (!canReadPath(opts.checkPath)) {
+const missingPaths = findMissingPaths(opts.checkPaths);
+if (missingPaths.length > 0) {
   console.log(
-    `[optional-lane] SKIP ${opts.tool}: required path is missing (${resolve(opts.checkPath)}).`,
+    `[optional-lane] SKIP ${opts.tool}: required path is missing (${missingPaths.join(", ")}).`,
   );
   process.exit(0);
 }

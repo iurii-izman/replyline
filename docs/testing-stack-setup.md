@@ -20,10 +20,22 @@
 Replyline keeps one API stack: **Postman/Newman**.
 
 - API smoke: `pnpm test:api:postman`
-- In this minimal public footprint, Postman collection/environment files may remain local-only.
-- If local Postman files are absent, `pnpm test:api:postman` exits with `SKIP` and does not fail the pipeline.
+- In this minimal public footprint, Postman collection/environment files stay local-only by default.
+- If either local Postman asset is absent (`Replyline.postman_collection.json` or `Replyline.local.postman_environment.json`), `pnpm test:api:postman` exits with `SKIP` and does not fail the pipeline.
+- The lane is optional and intentionally excluded from `verify:fast`.
+- If assets are present, they must target only local/mock harness endpoints and contain no real secrets or transcript payloads.
 
 Bruno assets and scripts were removed to avoid duplicate maintenance.
+
+### Postman lane scope
+
+`pnpm test:api:postman` validates only an optional API harness contract (request/response shape, local regression checks against mock/local endpoints).
+
+It does **not** validate:
+
+- desktop UI behavior or WorkConversation/Interview flows;
+- production provider integrations;
+- release readiness (it is not a blocking lane).
 
 ## Optional Lanes
 
