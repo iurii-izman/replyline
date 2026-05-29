@@ -11,6 +11,7 @@ $appLogPath = Join-Path $env:APPDATA "com.replyline.app\logs\app.log"
 $diagOutPath = Join-Path $outDir "diagnostics.json"
 $logOutPath = Join-Path $outDir "app.log"
 $reportPath = Join-Path $outDir "runtime-live-qa.md"
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 
 Write-Host "Expected settings path: $settingsPath"
 Write-Host "Expected app log path: $appLogPath"
@@ -25,14 +26,14 @@ if ($appLogExists) {
   $safeLog = [regex]::Replace($safeLog, "(?i)\b(dg_[A-Za-z0-9_\-]+)\b", "[redacted]")
   $safeLog = [regex]::Replace($safeLog, "(?i)\bBearer\s+[A-Za-z0-9._\-+/=]+\b", "Bearer [redacted]")
   $safeLog = [regex]::Replace($safeLog, "(?i)\bapi_key\s*=\s*[^&\s]+", "api_key=[redacted]")
-  Set-Content -LiteralPath $logOutPath -Value $safeLog -Encoding UTF8
+  [System.IO.File]::WriteAllText($logOutPath, $safeLog, $utf8NoBom)
 }
 
 $diagCaptured = $false
 try {
   $diagJson = cargo run --quiet --manifest-path src-tauri/Cargo.toml --bin persistence_diagnostics
   if ($LASTEXITCODE -eq 0 -and $diagJson) {
-    $diagJson | Set-Content -LiteralPath $diagOutPath -Encoding UTF8
+    [System.IO.File]::WriteAllText($diagOutPath, $diagJson, $utf8NoBom)
     $diagCaptured = $true
   }
 } catch {
@@ -82,7 +83,7 @@ if ($scanFindings.Count -eq 0) {
     $report += "- $line"
   }
 }
-$report | Set-Content -LiteralPath $reportPath -Encoding UTF8
+[System.IO.File]::WriteAllText($reportPath, ($report -join [Environment]::NewLine), $utf8NoBom)
 
 Write-Host "Collected files:"
 if (Test-Path -LiteralPath $logOutPath) { Write-Host " - $logOutPath" }

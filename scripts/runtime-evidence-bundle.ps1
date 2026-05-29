@@ -4,7 +4,7 @@ $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
 $runtimeDir = Join-Path $root "reports\runtime"
-$logPath = Join-Path $env:LOCALAPPDATA "com.replyline.app\logs\app.log"
+$logPath = Join-Path $env:APPDATA "com.replyline.app\logs\app.log"
 
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $bundleDir = Join-Path $root "reports\runtime-evidence-$timestamp"

@@ -42,6 +42,10 @@ function hasUnsafeApiKey(raw) {
   return !/\[redacted\]/i.test(raw);
 }
 
+function readText(pathname) {
+  return readFileSync(pathname, "utf8").replace(/^\uFEFF/, "");
+}
+
 const evidenceDir = process.argv[2];
 if (!evidenceDir) {
   fail("Usage: node scripts/verify-live-runtime-evidence.mjs <evidence_dir>");
@@ -54,7 +58,7 @@ const diagnosticsPath = path.join(evidenceDir, "diagnostics.json");
 if (!existsSync(appLogPath)) fail("Missing required file: app.log");
 if (!existsSync(reportPath)) fail("Missing required file: runtime-live-qa.md");
 
-const appLog = readFileSync(appLogPath, "utf8");
+const appLog = readText(appLogPath);
 const events = parseEvents(appLog);
 
 for (const event of requiredEvents) {
@@ -94,7 +98,7 @@ for (const pattern of maybeForbidden) {
 }
 
 if (existsSync(diagnosticsPath)) {
-  const diagnostics = JSON.parse(readFileSync(diagnosticsPath, "utf8"));
+  const diagnostics = JSON.parse(readText(diagnosticsPath));
   if (diagnostics.settingsFileExists !== true) fail("diagnostics.settingsFileExists must be true");
   if (diagnostics.settingsParseOk !== true) fail("diagnostics.settingsParseOk must be true");
   if (diagnostics.settingsValidationOk !== true)

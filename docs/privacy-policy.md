@@ -32,8 +32,8 @@ Candidate Pack boundary:
 | ------------------------------------------------- | ------------------------------------------- | -------------------------- | ----------------------------------------- |
 | Settings (hotkey, provider URLs, model, language) | `%APPDATA%\com.replyline.app\settings.json` | Plaintext JSON             | Until user changes or deletes             |
 | API keys (Deepgram, LLM)                          | Windows Credential Manager                  | OS-managed encrypted store | Until user revokes                        |
-| App event log                                     | `%LOCALAPPDATA%\com.replyline.app\app.log`  | Line-delimited text        | 5 MB rotation (oldest lines dropped)      |
-| Debug WAV files                                   | `%LOCALAPPDATA%\com.replyline.app\debug\`   | WAV                        | Written only on STT failure; user manages |
+| App event log                                     | `%APPDATA%\com.replyline.app\logs\app.log`  | Line-delimited text        | 5 MB rotation (oldest lines dropped)      |
+| Debug WAV files                                   | `%LOCALAPPDATA%\com.replyline.app\capture-debug\` | WAV                | Written only on STT failure; user manages |
 | Interview report store                            | `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json` | JSON             | User-controlled (`manual clear`, `7`, `30`, `90` days) |
 
 ## What is NOT stored
