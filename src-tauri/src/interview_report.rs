@@ -202,19 +202,23 @@ pub fn retention_log_detail(
     policy: InterviewReportRetentionPolicy,
     result: RetentionPurgeResult,
 ) -> String {
-    let policy_label = match policy {
-        InterviewReportRetentionPolicy::KeepUntilManualClear => "manual",
-        InterviewReportRetentionPolicy::KeepForDays(days) => {
-            return format!(
-                "policy_days={days} removed={} remaining={}",
-                result.removed_reports, result.remaining_reports
+    match policy {
+        InterviewReportRetentionPolicy::KeepUntilManualClear => {
+            crate::app_log::safe_report_summary(
+                "manual",
+                result.removed_reports,
+                result.remaining_reports,
             )
         }
-    };
-    format!(
-        "policy={} removed={} remaining={}",
-        policy_label, result.removed_reports, result.remaining_reports
-    )
+        InterviewReportRetentionPolicy::KeepForDays(days) => format!(
+            "{} days={days}",
+            crate::app_log::safe_report_summary(
+                "days",
+                result.removed_reports,
+                result.remaining_reports
+            )
+        ),
+    }
 }
 
 pub fn get_latest_report() -> Result<Option<InterviewReportDto>, String> {
@@ -756,7 +760,8 @@ mod tests {
                 remaining_reports: 5,
             },
         );
-        assert!(detail.contains("policy_days=30"));
+        assert!(detail.contains("policy=days"));
+        assert!(detail.contains("days=30"));
         assert!(detail.contains("removed=2"));
         assert!(detail.contains("remaining=5"));
         assert!(!detail.contains("transcript"));

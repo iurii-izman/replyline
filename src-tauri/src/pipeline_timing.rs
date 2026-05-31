@@ -43,8 +43,11 @@ pub fn log_stage_timing(timing: &StageTiming) -> Result<(), String> {
     app_log::append_event(
         "pipeline_timing",
         format!(
-            "stage={} duration_ms={} outcome={} code={}",
-            timing.stage, timing.duration_ms, timing.outcome, timing.code
+            "stage={} {} outcome={} code={}",
+            timing.stage,
+            app_log::safe_duration_detail("duration", timing.duration_ms as u64),
+            timing.outcome,
+            timing.code
         ),
     )
 }

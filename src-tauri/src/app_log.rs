@@ -32,6 +32,81 @@ pub fn append_event(event: &str, detail: impl AsRef<str>) -> Result<(), String> 
     writeln!(file, "{ts} [{event}] {detail}").map_err(|err| err.to_string())
 }
 
+pub fn append_metadata_event(
+    event: &str,
+    metadata: impl IntoIterator<Item = (&'static str, String)>,
+) -> Result<(), String> {
+    let chunks = metadata
+        .into_iter()
+        .map(|(k, v)| format!("{k}={}", sanitize_metadata_value(&v)))
+        .collect::<Vec<_>>();
+    let detail = if chunks.is_empty() {
+        "-".to_string()
+    } else {
+        chunks.join(" ")
+    };
+    append_event(event, detail)
+}
+
+pub fn safe_count_detail(key: &str, count: usize) -> String {
+    format!("{key}={count}")
+}
+
+pub fn safe_duration_detail(key: &str, millis: u64) -> String {
+    format!("{key}_ms={millis}")
+}
+
+pub fn safe_status_detail(status: &str) -> String {
+    let normalized = status
+        .trim()
+        .to_lowercase()
+        .chars()
+        .filter(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || *ch == '_' || *ch == '-')
+        .take(32)
+        .collect::<String>();
+    if normalized.is_empty() {
+        "status=unknown".to_string()
+    } else {
+        format!("status={normalized}")
+    }
+}
+
+pub fn safe_provider_error_preview(err: &str) -> String {
+    let preview = privacy::safe_preview(err, 80);
+    format!("provider_error_preview={preview}")
+}
+
+pub fn safe_candidate_pack_summary(
+    facts: usize,
+    weak_facts: usize,
+    summary_chars: usize,
+    role_chars: usize,
+) -> String {
+    format!(
+        "facts={facts} weak_facts={weak_facts} summary_chars={summary_chars} role_chars={role_chars}"
+    )
+}
+
+pub fn safe_report_summary(
+    policy_label: &str,
+    removed_reports: usize,
+    remaining_reports: usize,
+) -> String {
+    let policy = policy_label
+        .trim()
+        .to_lowercase()
+        .chars()
+        .filter(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || *ch == '_' || *ch == '-')
+        .take(24)
+        .collect::<String>();
+    let normalized_policy = if policy.is_empty() {
+        "unknown"
+    } else {
+        &policy
+    };
+    format!("policy={normalized_policy} removed={removed_reports} remaining={remaining_reports}")
+}
+
 fn log_write_lock() -> &'static Mutex<()> {
     static LOG_WRITE_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
     LOG_WRITE_LOCK.get_or_init(|| Mutex::new(()))
@@ -76,6 +151,9 @@ fn sanitize(value: &str) -> String {
     if trimmed.is_empty() {
         return "-".to_string();
     }
+    if looks_like_sensitive_content(trimmed) {
+        return "[REDACTED_METADATA_ONLY]".to_string();
+    }
     // R1: privacy::redact_secrets replaces the legacy redact_known_secrets
     // and covers bearer tokens, api_key=, JSON secret fields, URL credentials.
     privacy::redact_secrets(trimmed)
@@ -86,6 +164,38 @@ fn sanitize(value: &str) -> String {
         .chars()
         .take(400)
         .collect()
+}
+
+fn sanitize_metadata_value(value: &str) -> String {
+    let redacted = sanitize(value);
+    if redacted == "[REDACTED_METADATA_ONLY]" {
+        "redacted".to_string()
+    } else {
+        redacted.replace(' ', "_")
+    }
+}
+
+fn looks_like_sensitive_content(value: &str) -> bool {
+    let lower = value.to_lowercase();
+    let has_sensitive_marker = [
+        "transcript:",
+        "raw_transcript",
+        "prompt:",
+        "raw prompt",
+        "candidate pack",
+        "resume:",
+        "job description",
+        "company values",
+        "authorization:",
+        "bearer ",
+        "sk-",
+        "or-",
+        "dg_",
+    ]
+    .iter()
+    .any(|marker| lower.contains(marker));
+    let looks_like_multiline_content = value.lines().count() > 3 && value.chars().count() > 200;
+    has_sensitive_marker || looks_like_multiline_content
 }
 
 fn sanitize_event(value: &str) -> String {
@@ -193,7 +303,7 @@ mod tests {
         assert!(!sanitized.contains("xyz"));
         assert!(!sanitized.contains("qwe"));
         assert!(!sanitized.contains("api"));
-        assert!(sanitized.contains("[redacted]"));
+        assert!(sanitized.contains("[redacted]") || sanitized == "[REDACTED_METADATA_ONLY]");
     }
 
     #[test]
@@ -203,7 +313,7 @@ mod tests {
         assert!(!sanitized.contains("secret-key-123"));
         assert!(!sanitized.contains("Bearer tok"));
         assert!(!sanitized.contains("alice@example.com"));
-        assert!(sanitized.contains("[redacted_email]"));
+        assert!(sanitized.contains("[redacted_email]") || sanitized == "[REDACTED_METADATA_ONLY]");
     }
 
     #[test]
@@ -230,5 +340,26 @@ mod tests {
         let sanitized = sanitize(value);
         assert!(sanitized.contains("hotkey=Ctrl+Alt+Space"));
         assert!(sanitized.contains("model=gpt-4o-mini"));
+    }
+
+    #[test]
+    fn sanitize_blocks_raw_transcript_like_payload() {
+        let payload = "transcript: candidate said they led migration and shared numbers";
+        let sanitized = sanitize(payload);
+        assert_eq!(sanitized, "[REDACTED_METADATA_ONLY]");
+    }
+
+    #[test]
+    fn sanitize_blocks_resume_and_jd_payload() {
+        let resume = "resume: Senior engineer at ACME with confidential impact";
+        let jd = "job description: looking for principal level leader";
+        assert_eq!(sanitize(resume), "[REDACTED_METADATA_ONLY]");
+        assert_eq!(sanitize(jd), "[REDACTED_METADATA_ONLY]");
+    }
+
+    #[test]
+    fn sanitize_blocks_authorization_header() {
+        let auth = "Authorization: Bearer sk-live-super-secret";
+        assert_eq!(sanitize(auth), "[REDACTED_METADATA_ONLY]");
     }
 }

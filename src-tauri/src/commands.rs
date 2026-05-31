@@ -40,12 +40,11 @@ fn candidate_pack_save_ok_detail(saved: &candidate_pack::CandidatePackDto) -> St
         .iter()
         .filter(|fact| fact.strength == candidate_pack::CandidateFactStrength::Weak)
         .count();
-    format!(
-        "facts={} weak_facts={} summary_len={} role_len={}",
+    crate::app_log::safe_candidate_pack_summary(
         saved.resume_facts.len(),
         weak_count,
         saved.candidate_summary.chars().count(),
-        saved.target_role.chars().count()
+        saved.target_role.chars().count(),
     )
 }
 
@@ -146,7 +145,10 @@ pub fn get_trace_status() -> Result<TraceStatusDto, CommandError> {
 #[tauri::command]
 pub fn clear_debug_traces() -> Result<(), CommandError> {
     let removed = crate::trace_manifest::clear_all_traces().map_err(CommandError::Internal)?;
-    let _ = app_log::append_event("debug_traces_cleared", format!("removed={removed}"));
+    let _ = app_log::append_event(
+        "debug_traces_cleared",
+        app_log::safe_count_detail("removed", removed),
+    );
     Ok(())
 }
 
@@ -180,8 +182,14 @@ pub fn open_trace_folder() -> Result<(), CommandError> {
 
 #[tauri::command]
 pub fn log_client_event(event: String, detail: Option<String>) -> Result<(), CommandError> {
-    app_log::append_event(&event, detail.unwrap_or_else(|| "-".to_string()))
-        .map_err(CommandError::Internal)
+    app_log::append_metadata_event(
+        &event,
+        vec![
+            ("source", "client".to_string()),
+            ("detail_present", detail.is_some().to_string()),
+        ],
+    )
+    .map_err(CommandError::Internal)
 }
 
 #[tauri::command]
@@ -232,7 +240,10 @@ pub fn save_settings(input: AppSettings) -> Result<AppSettings, CommandError> {
             Ok(saved)
         }
         Err(err) => {
-            let _ = app_log::append_event("settings_save_failed", err.to_string());
+            let _ = app_log::append_event(
+                "settings_save_failed",
+                app_log::safe_provider_error_preview(&err.to_string()),
+            );
             Err(CommandError::from(err))
         }
     }
@@ -289,7 +300,10 @@ pub fn save_candidate_pack(
             Ok(saved)
         }
         Err(err) => {
-            let _ = app_log::append_event("candidate_pack_save_failed", "status=failed");
+            let _ = app_log::append_event(
+                "candidate_pack_save_failed",
+                app_log::safe_status_detail("failed"),
+            );
             Err(CommandError::Internal(err))
         }
     }
@@ -369,7 +383,10 @@ mod tests {
 #[tauri::command]
 pub fn clear_candidate_pack() -> Result<(), CommandError> {
     candidate_pack::clear().map_err(CommandError::Internal)?;
-    let _ = app_log::append_event("candidate_pack_clear_ok", "status=cleared");
+    let _ = app_log::append_event(
+        "candidate_pack_clear_ok",
+        app_log::safe_status_detail("cleared"),
+    );
     Ok(())
 }
 
@@ -414,7 +431,16 @@ pub fn save_secret(slot: String, value: String) -> Result<(), CommandError> {
             Ok(())
         }
         Err(err) => {
-            let _ = app_log::append_event("secret_save_failed", format!("{slot_name}: {err}"));
+            let _ = app_log::append_metadata_event(
+                "secret_save_failed",
+                vec![
+                    ("slot", slot_name.to_string()),
+                    (
+                        "error",
+                        app_log::safe_provider_error_preview(&err.to_string()),
+                    ),
+                ],
+            );
             Err(CommandError::from(err))
         }
     }

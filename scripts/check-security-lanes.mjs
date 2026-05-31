@@ -43,6 +43,14 @@ const DANGEROUS_LOG_PATTERNS = [
     excludeFiles: ["src-tauri/src/privacy.rs"],
   },
   {
+    label: "append_event with suspicious raw-content variables",
+    patterns: [
+      /append_event\s*\([^,]+,\s*format!\([^)]*\b(transcript|prompt|raw_resume|job_description|company_values|authorization|bearer)\b/i,
+      /append_event\s*\([^,]+,\s*&?\b(transcript|prompt|raw_resume|job_description|company_values)\b/i,
+    ],
+    excludeFiles: ["src-tauri/src/privacy.rs", "src-tauri/src/app_log.rs"],
+  },
+  {
     label: "response.text() result logged instead of discarded",
     patterns: [
       /append_event\s*\([^)]*response\.text\(\)/i,
