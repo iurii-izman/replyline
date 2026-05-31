@@ -329,13 +329,13 @@ describe("model", () => {
       expect(Array.isArray(card.interview.followUps)).toBe(true);
     });
 
-    it("normalizes legacy interviewCard and malformed legacy fields", () => {
+    it("normalizes malformed fields in interviewCardSchemaV1", () => {
       const dto = {
         gist: "legacy gist",
         sayNow: "legacy say",
         nextMove: "legacy next",
         charsBand: "normal",
-        interviewCard: {
+        interviewCardSchemaV1: {
           mode: "interview",
           question: {
             rawTranscript: "raw",

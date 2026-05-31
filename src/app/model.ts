@@ -263,7 +263,6 @@ export type InterviewAnalysisCard = LegacyAnalysisCard & {
 export type AnalysisCard = WorkConversationCard | InterviewAnalysisCard;
 
 export type AnalysisCardDto = LegacyAnalysisCard & {
-  interviewCard?: InterviewCardDto | null;
   interviewCardSchemaV1?: InterviewCardDto | null;
 };
 
@@ -353,10 +352,7 @@ function normalizeLegacyInterviewCard(input: unknown): InterviewCardDto | null {
 }
 
 export function asAnalysisCard(input: AnalysisCardDto): AnalysisCard {
-  const interview =
-    normalizeLegacyInterviewCard(input.interviewCardSchemaV1) ??
-    normalizeLegacyInterviewCard(input.interviewCard) ??
-    null;
+  const interview = normalizeLegacyInterviewCard(input.interviewCardSchemaV1) ?? null;
   if (interview) {
     return {
       ...input,
