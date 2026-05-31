@@ -62,10 +62,11 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
         message: deps.strings().notices.contextCleared,
       });
     } catch (err) {
-      deps.setError(userSafeClearContextError(deps.strings()));
+      const message = userSafeClearContextError(deps.strings());
+      deps.setError(message);
       deps.notices.pushNotice({
         tone: "error",
-        message: userSafeClearContextError(deps.strings()),
+        message,
       });
       deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
     }
@@ -101,10 +102,11 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
         message: deps.strings().notices.retryDone,
       });
     } catch (err) {
-      deps.setError(userSafePipelineError(err, deps.strings()));
+      const message = userSafePipelineError(err, deps.strings());
+      deps.setError(message);
       deps.notices.pushNotice({
         tone: "error",
-        message: userSafePipelineError(err, deps.strings()),
+        message,
       });
       deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
       deps.setPhase("idle");
