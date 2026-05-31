@@ -87,7 +87,9 @@ Additional conditional gates:
 
 - `pnpm rust:deps` when Rust dependencies changed
 - `pnpm audit:npm` when `package.json` or `pnpm-lock.yaml` changed
-- `pnpm release:freeze:check` before merge/release handoff
+- Release-freeze semantics:
+  - `pnpm release:freeze:check` = advisory visibility report (always collect and summarize findings)
+  - `pnpm release:freeze:check:strict` = blocking freeze gate for final handoff / release-quality decisions
 - Desktop E2E gate split:
   - PR/dev baseline: `pnpm test:e2e:desktop` can `SKIP` when desktop artifact is unavailable
   - internal beta handoff: `pnpm beta:seal` is required; `pnpm test:e2e:desktop:required` remains recommended when artifact exists
@@ -133,6 +135,10 @@ Release handoff is blocked unless all items are complete:
 3. Privacy checklist is passed.
 4. Model presets and caveats are reviewed.
 5. Known limitations are reviewed and updated.
+6. Freeze gate evidence is explicit:
+   - include `Advisory findings: ...` from `pnpm release:freeze:check` artifact,
+   - include `Blocking findings: none` only if `pnpm release:freeze:check:strict` exited `0`,
+   - include `Deferred with reason: ...` for any unresolved advisory items.
 
 ## 7.1) Public beta packaging staging plan (truthful, non-shipped)
 

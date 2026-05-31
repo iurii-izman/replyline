@@ -42,6 +42,10 @@
 - [release-freeze-matrix.md](release-freeze-matrix.md)
 - [release-freeze-baseline.json](release-freeze-baseline.json)
 
+Freeze semantics shorthand:
+- advisory freeze visibility: `pnpm release:freeze:check`
+- blocking freeze gate: `pnpm release:freeze:check:strict`
+
 ## 4) Product contracts and trust docs
 
 - [third-party-providers.md](third-party-providers.md)

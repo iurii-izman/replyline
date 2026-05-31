@@ -73,6 +73,11 @@ Legend:
 - Current signal: freeze checks pass in normal and strict modes.
 - Residual risk: interpretation of which checks are blocking vs advisory can drift without a single documented matrix per block.
 
+Update (Block 9, release gate honesty):
+- `release:freeze:check` is explicitly documented as advisory visibility output.
+- `release:freeze:check:strict` is explicitly documented and wired as blocking in `verify:full`.
+- PR handoff template now requires explicit `Advisory findings`, `Blocking findings`, and `Deferred with reason`.
+
 ## Baseline Conclusion
 
 Baseline is fully green at this snapshot.

@@ -140,7 +140,9 @@
     ".github/SUPPORT.md",
     ".github/ISSUE_TEMPLATE/bug_report.md",
     ".github/ISSUE_TEMPLATE/feature_request.md",
-    ".github/ISSUE_TEMPLATE/beta_handoff_release.md"
+    ".github/ISSUE_TEMPLATE/beta_handoff_release.md",
+    ".github/PULL_REQUEST_TEMPLATE/beta-handoff.md",
+    "docs/consolidation-hardening-map.md"
   ],
   "guardrailPathRegexes": [],
   "allowlistPrefixes": [

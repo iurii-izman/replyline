@@ -22,7 +22,7 @@
 - Это baseline для локальной и PR-проверки.
 
 2. `verify:full`
-- Состав: `verify:fast` + `release:freeze:check` + `rust:deps` + `audit:npm` + `report:interview-quality`.
+- Состав: `verify:fast` + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + `report:interview-quality`.
 - Дублирование security/dependency сигналов относительно `verify:fast` намеренно: release lane должен оставаться самодостаточным и читаемым без догадок о транзитивных шагах.
 
 3. `verify:extended`

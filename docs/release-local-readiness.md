@@ -31,6 +31,10 @@ pnpm verify:release-local
 7. `pnpm release:freeze:check`
 8. `pnpm report:release-readiness:strict`
 
+Freeze semantics inside this lane:
+- `pnpm release:freeze:check` is advisory visibility output.
+- blocking decision is enforced by `pnpm report:release-readiness:strict`.
+
 ## Why `scripts:lifecycle` is here
 
 - Гарантирует, что каждый script из `package.json` имеет lifecycle-класс.

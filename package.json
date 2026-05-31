@@ -82,7 +82,7 @@
     "alpha:preflight": "pnpm beta:preflight",
     "smoke": "pnpm typecheck && pnpm lint && pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo test --manifest-path src-tauri/Cargo.toml && pnpm test:ui && pnpm test:consistency && pnpm test:ipc-contract && pnpm test:locale-keys && pnpm test:prompt-contract && pnpm copy:check && pnpm test:interview-quality",
     "verify:fast": "pnpm smoke && pnpm test:security-lanes && pnpm test:public-footprint",
-    "verify:full": "pnpm verify:fast && pnpm release:freeze:check && pnpm rust:deps && pnpm audit:npm && pnpm report:interview-quality",
+    "verify:full": "pnpm verify:fast && pnpm release:freeze:check:strict && pnpm rust:deps && pnpm audit:npm && pnpm report:interview-quality",
     "verify": "pnpm verify:fast",
     "verify:extended": "pnpm verify:full && pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:say-now-scenarios && pnpm test:runtime-quality && pnpm test:product-scenarios",
     "test:api:postman": "node scripts/run-optional-lane.mjs --tool postman --checkPath tests/api/postman/Replyline.postman_collection.json --checkPath tests/api/postman/Replyline.local.postman_environment.json --checkPackage newman --exec pnpm -- exec newman run tests/api/postman/Replyline.postman_collection.json -e tests/api/postman/Replyline.local.postman_environment.json",

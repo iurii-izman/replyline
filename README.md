@@ -60,8 +60,12 @@ pnpm verify:full
 ## Validation Profiles
 
 - `pnpm verify:fast` - default local/PR profile (`smoke` + security lane + public-footprint guard)
-- `pnpm verify:full` - release profile (`verify:fast` + freeze + dependency/security checks)
+- `pnpm verify:full` - release profile (`verify:fast` + strict freeze gate + dependency/security checks)
 - `pnpm verify:extended` - full profile + extra coverage/fixtures/say-now lanes
+
+Release-freeze command semantics:
+- advisory: `pnpm release:freeze:check` (captures attention-required findings for handoff text)
+- blocking: `pnpm release:freeze:check:strict` (non-zero exit when findings exist)
 
 ## Privacy Baseline
 

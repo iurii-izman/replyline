@@ -21,4 +21,7 @@
 ### Notes
 
 - Relevant artifacts/paths:
+- Advisory findings:
+- Blocking findings:
+- Deferred with reason:
 - Follow-ups (if any):
