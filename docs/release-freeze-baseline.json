@@ -145,7 +145,7 @@
   "allowlistPrefixes": [
     ".github/",
     "docs/",
-    "reports/",
+    "reports/docker/",
     "scripts/",
     "tests/",
     "src/",
