@@ -6,6 +6,7 @@ export type Phase =
   | "analyzing"
   | "ready"
   | "error";
+import type { UiStrings } from "./locale";
 
 export type SettingsSectionId =
   | "overview"
@@ -606,41 +607,41 @@ export function formatHotkeyFromEvent(ev: KeyboardEvent): string | null {
   return parts.length >= 2 ? parts.join("+") : null;
 }
 
-export function userSafeCaptureStartError(): string {
-  return "Запись не началась. Повторите удержание горячей клавиши.";
+export function userSafeCaptureStartError(strings: UiStrings): string {
+  return strings.errors.captureStart;
 }
 
-export function userSafePipelineError(err: unknown): string {
+export function userSafePipelineError(err: unknown, strings: UiStrings): string {
   const s = invokeErrorMessage(err);
   if (/Nothing to retry|nothing to retry/i.test(s)) {
-    return "Сначала сделайте захват — пересобирать пока нечего.";
+    return strings.errors.pipelineNothingToRetry;
   }
   if (/Deepgram|API key|missing|распознаван/i.test(s)) {
-    return "Нет текста из звука: проверьте ключ Deepgram.";
+    return strings.errors.pipelineDeepgram;
   }
   if (/LLM|gateway|401|403|http|timeout/i.test(s)) {
-    return "Нет ответа LLM-шлюза: проверьте URL, модель и ключ.";
+    return strings.errors.pipelineLlm;
   }
   if (/SHORT_CAPTURE|слишком короткий фрагмент/i.test(s)) {
-    return "Слишком короткий фрагмент, запишите 5-10 секунд. Этот кусок будет учтен в следующем захвате.";
+    return strings.errors.pipelineShortCapture;
   }
-  return "Цепочка прервалась. Повторите захват.";
+  return strings.errors.pipelineGeneric;
 }
 
-export function userSafeBootstrapLoadError(): string {
-  return "Не удалось загрузить приложение. Повторите и проверьте настройки.";
+export function userSafeBootstrapLoadError(strings: UiStrings): string {
+  return strings.errors.bootstrapLoad;
 }
 
-export function userSafeClearContextError(): string {
-  return "Сброс контекста не выполнен. Повторите.";
+export function userSafeClearContextError(strings: UiStrings): string {
+  return strings.errors.clearContext;
 }
 
-export function mapSettingsSaveError(err: unknown): string | null {
+export function mapSettingsSaveError(err: unknown, strings: UiStrings): string | null {
   const s = invokeErrorMessage(err);
-  if (s.includes("HOTKEY_REQUIRED")) return "Укажите горячую клавишу.";
-  if (s.includes("MODEL_REQUIRED")) return "Укажите модель LLM.";
-  if (s.includes("INVALID_URL") || /^URL:/i.test(s)) return "Неверный URL LLM.";
-  if (s.includes("CAPTURE_RANGE_INVALID")) return "Лимит записи: 5-180 секунд.";
-  if (s.includes("EMPTY_SECRET_NOT_SAVED")) return "Пустой ключ не сохранён. Введите значение.";
+  if (s.includes("HOTKEY_REQUIRED")) return strings.errors.settingsHotkeyRequired;
+  if (s.includes("MODEL_REQUIRED")) return strings.errors.settingsModelRequired;
+  if (s.includes("INVALID_URL") || /^URL:/i.test(s)) return strings.errors.settingsInvalidUrl;
+  if (s.includes("CAPTURE_RANGE_INVALID")) return strings.errors.settingsCaptureRange;
+  if (s.includes("EMPTY_SECRET_NOT_SAVED")) return strings.errors.settingsEmptySecret;
   return null;
 }

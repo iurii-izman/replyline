@@ -156,10 +156,10 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         armed = false;
         deps.setActiveRunId(null);
         currentRunId = null;
-        deps.setError(userSafeCaptureStartError());
+        deps.setError(userSafeCaptureStartError(deps.strings()));
         deps.notices.pushNotice({
           tone: "error",
-          message: userSafeCaptureStartError(),
+          message: userSafeCaptureStartError(deps.strings()),
         });
         deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
         deps.setPhase("idle");
@@ -217,11 +217,11 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
           phase: "capture",
         });
         deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
-        deps.setError(userSafePipelineError(err));
+        deps.setError(userSafePipelineError(err, deps.strings()));
         if (invokeErrorMessage(err).includes("SHORT_CAPTURE")) deps.setCaptureQuality("short");
         deps.notices.pushNotice({
           tone: "error",
-          message: userSafePipelineError(err),
+          message: userSafePipelineError(err, deps.strings()),
         });
         deps.setPhase("idle");
         deps.setActiveRunId(null);

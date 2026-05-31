@@ -92,15 +92,15 @@ function normalizeOutputLanguage(value: string): "ru" | "en" {
   return value.trim().toLowerCase() === "en" ? "en" : "ru";
 }
 
-function translateSuggestedLine(value: string): string {
+function translateSuggestedLine(value: string, strings: UiStrings): string {
   const normalized = value.trim().toLowerCase();
   const map: Record<string, string> = {
-    "add metrics": "Добавить метрики (процент, сроки, масштаб, эффект).",
-    "add conflict example": "Добавить пример конфликта и как он был решён.",
-    "add leadership example": "Добавить пример лидерства или ведения команды.",
-    "add failure example": "Добавить пример неудачи и полученные уроки.",
+    "add metrics": strings.settings.candidatePackSuggestedAddMetrics,
+    "add conflict example": strings.settings.candidatePackSuggestedAddConflict,
+    "add leadership example": strings.settings.candidatePackSuggestedAddLeadership,
+    "add failure example": strings.settings.candidatePackSuggestedAddFailure,
     "add system design/product examples, if relevant":
-      "Добавить пример system design или продуктовой разработки (если релевантно).",
+      strings.settings.candidatePackSuggestedAddSystemDesign,
   };
   return map[normalized] ?? value.trim();
 }
@@ -588,7 +588,9 @@ export function useReplylineController(platform: AppPlatform) {
         },
       });
       const generatedSummary = summarizeFromFacts(draft.candidateFacts);
-      const translatedSuggestions = draft.suggestedMissingInfo.map(translateSuggestedLine);
+      const translatedSuggestions = draft.suggestedMissingInfo.map((item) =>
+        translateSuggestedLine(item, strings()),
+      );
       const inferredResponsibilities = extractResponsibilities(candidateJobDescription());
       const inferredRequirements = lines(candidateJobDescription()).slice(0, 8);
       setCandidatePackPreview(draft);
@@ -604,8 +606,7 @@ export function useReplylineController(platform: AppPlatform) {
         companyValuesText: draft.companyValues.length
           ? draft.companyValues.join("\n")
           : lines(candidateCompanyValues()).join("\n"),
-        avoidClaimsText:
-          "Не придумывать компании, даты, роли, результаты и метрики.\nКаждое утверждение подтверждать фактом из резюме/вакансии.",
+        avoidClaimsText: strings().settings.candidatePackDefaultAvoidClaims,
         preferredExamplesText: translatedSuggestions.join("\n"),
         language: normalizeOutputLanguage(candidatePackDraft.language),
       });

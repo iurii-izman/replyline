@@ -849,7 +849,7 @@ describe("App UX stabilization", () => {
     expect(screen.getByTestId("answer-profile-field")).toBeTruthy();
     fireEvent.click(screen.getByRole("tab", { name: /Отчёты/i }));
     expect(screen.getByText("Срок хранения отчётов интервью")).toBeTruthy();
-    expect(screen.getByText("Только ручная очистка")).toBeTruthy();
+    expect(screen.getAllByText("Только ручная очистка").length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/raw prompt/i)).toBeNull();
   });
 

@@ -134,6 +134,12 @@ const hardcodedAllowlist = new Set([
   "URL",
   "Ctrl+Alt+Space",
   "manual",
+  "add metrics",
+  "add conflict example",
+  "add leadership example",
+  "add failure example",
+  "add system design/product examples, if relevant",
+  "input, textarea, select, [contenteditable='true'], [contenteditable='']",
 ]);
 
 const hardcodedAllowRegex = [
@@ -188,12 +194,41 @@ function extractHardcodedCandidates(content) {
   return hits;
 }
 
+function extractStringLiteralCandidates(content) {
+  const hits = [];
+  const literalPattern = /(["'`])([^\n\r\\]{1,180}?)\1/g;
+  for (const match of content.matchAll(literalPattern)) {
+    const text = match[2].replace(/\s+/g, " ").trim();
+    if (!text) continue;
+    if (text.includes("${")) continue;
+    if (/[=<>]/.test(text)) continue;
+    const looksUserFacing =
+      /[А-Яа-яЁё]/.test(text) || (/[A-Za-z]/.test(text) && /\s/.test(text) && text.length >= 8);
+    if (!looksUserFacing) continue;
+    hits.push(text);
+  }
+  return hits;
+}
+
 const tsxFiles = collectFiles(srcDir, /\.tsx$/);
 const hardcodedViolations = [];
 
 for (const file of tsxFiles) {
   const content = readFileSync(file, "utf8");
   const candidates = extractHardcodedCandidates(content);
+  for (const candidate of candidates) {
+    if (!isAllowedHardcoded(candidate)) {
+      hardcodedViolations.push(`${relative(root, file)}: "${candidate}"`);
+    }
+  }
+}
+
+const controllerDir = join(srcDir, "app", "controller");
+const controllerTsFiles = collectFiles(controllerDir, /\.ts$/);
+
+for (const file of controllerTsFiles) {
+  const content = readFileSync(file, "utf8");
+  const candidates = extractStringLiteralCandidates(content);
   for (const candidate of candidates) {
     if (!isAllowedHardcoded(candidate)) {
       hardcodedViolations.push(`${relative(root, file)}: "${candidate}"`);
@@ -209,7 +244,7 @@ if (missingKeys.length > 0) {
   failures.push(`Source files reference non-existent locale keys: ${missingKeys.join(", ")}`);
 }
 if (hardcodedViolations.length > 0) {
-  failures.push(`Hardcoded user-visible TSX strings: ${hardcodedViolations.join(", ")}`);
+  failures.push(`Hardcoded user-visible strings (TSX/controller): ${hardcodedViolations.join(", ")}`);
 }
 
 if (failures.length > 0) {
@@ -219,5 +254,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Locale key contract OK. ${uiRuKeys.length} keys defined, ${usedKeys.size} keys referenced, hardcoded TSX violations: 0.`,
+  `Locale key contract OK. ${uiRuKeys.length} keys defined, ${usedKeys.size} keys referenced, hardcoded TSX/controller violations: 0.`,
 );

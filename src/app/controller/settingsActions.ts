@@ -138,7 +138,7 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
       await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
       deps.setPhase("idle");
     } catch (err) {
-      deps.setError(userSafeBootstrapLoadError());
+      deps.setError(userSafeBootstrapLoadError(deps.strings()));
       deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
       deps.setPhase("error");
     }
@@ -206,7 +206,7 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
       if (boot.runtimeReady && !setupRequiredFromBoot) deps.setPanel("main");
     } catch (err) {
       deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
-      deps.setSettingsFormHint(mapSettingsSaveError(err) ?? invokeErrorMessage(err));
+      deps.setSettingsFormHint(mapSettingsSaveError(err, deps.strings()) ?? invokeErrorMessage(err));
       deps.setHotkeyFailed(true);
     } finally {
       deps.setSaving(false);
