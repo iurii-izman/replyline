@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@solidjs/testing-library";
+import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
 import { describe, expect, it, vi } from "vitest";
 import { MainSurface } from "./MainSurface";
 import { SettingsSurface } from "./SettingsSurface";
@@ -30,6 +30,27 @@ function mainController(overrides: Record<string, unknown> = {}) {
       { label: ui_ru.setup.stepHotkey, readyLabel: "", missingLabel: "", ready: true },
     ],
     compactMode: () => false,
+    settings: { bilingualInterviewEnabled: false },
+    bilingualActive: () => false,
+    bilingualInterviewState: () => ({
+      active: false,
+      status: "idle",
+      transcriptLane: "idle",
+      translationLane: "idle",
+      degraded: false,
+      sessionId: null,
+      startedAt: null,
+      latestPartial: null,
+      finalizedSegments: [],
+      transcriptSegments: [],
+      translationSegments: [],
+      displaySegments: [],
+      translationsBySourceSegmentId: {},
+      latency: null,
+      lastAnswerCard: null,
+      answerInFlight: false,
+      lastError: null,
+    }),
     card: () => ({ mode: "work", gist: "g", sayNow: "say", nextMove: "next", charsBand: "normal" }),
     statusDetail: () => null,
     openSettingsPanel: vi.fn(),
@@ -82,6 +103,10 @@ function settingsController(overrides: Record<string, unknown> = {}) {
       hideToTrayOnClose: true,
       keepOnTopDuringCapture: false,
       interviewCompactMode: false,
+      bilingualInterviewEnabled: false,
+      liveTranslationEnabled: true,
+      translationDebounceMs: 600,
+      translationMinWordCount: 3,
       interviewReportRetentionDays: 0,
       debugTraceMode: "full_local",
       debugTraceRetentionDays: 3,
@@ -99,6 +124,8 @@ function settingsController(overrides: Record<string, unknown> = {}) {
     setHotkeyFromInput: vi.fn(),
     setCaptureMaxSecondsFromInput: vi.fn(),
     setCompactMode: vi.fn(),
+    setBilingualInterviewEnabled: vi.fn(),
+    setLiveTranslationEnabled: vi.fn(),
     setWindowOpacity: vi.fn(),
     setHideToTrayOnClose: vi.fn(),
     setKeepOnTopDuringCapture: vi.fn(),
@@ -196,6 +223,33 @@ describe("frontend critical state coverage", () => {
   it("shows full_local diagnostics warning", () => {
     render(() => <SettingsSurface controller={settingsController() as never} />);
     expect(screen.getByText(ui_ru.settings.debugTraceFullWarning)).toBeTruthy();
+  });
+
+  it("renders bilingual toggles in hotkey section and wires handlers", () => {
+    const setBilingualInterviewEnabled = vi.fn();
+    const setLiveTranslationEnabled = vi.fn();
+    render(
+      () =>
+        (
+          <SettingsSurface
+            controller={
+              settingsController({
+                settingsActiveSection: () => "hotkey",
+                setBilingualInterviewEnabled,
+                setLiveTranslationEnabled,
+              }) as never
+            }
+          />
+        ) as never,
+    );
+
+    const bilingualToggle = screen.getByLabelText(ui_ru.settings.bilingualInterviewEnabledLabel);
+    const translationToggle = screen.getByLabelText(ui_ru.settings.liveTranslationEnabledLabel);
+    fireEvent.click(bilingualToggle);
+    fireEvent.click(translationToggle);
+    expect(setBilingualInterviewEnabled).toHaveBeenCalled();
+    expect(setLiveTranslationEnabled).toHaveBeenCalled();
+    expect(screen.getByText(ui_ru.settings.bilingualInterviewDisclaimer)).toBeTruthy();
   });
 
   it("covers Candidate Pack empty/preparing/prepared/saved states", () => {

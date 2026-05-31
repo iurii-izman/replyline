@@ -86,7 +86,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
         return Ok(AppSettings::default());
     }
 
-    let settings: AppSettings = match serde_json::from_value(migrated) {
+    let mut settings: AppSettings = match serde_json::from_value(migrated) {
         Ok(s) => s,
         Err(err) => {
             quarantine_corrupt(&path, &format!("migration_deserialize_error={err}"));
@@ -97,6 +97,8 @@ pub fn load() -> Result<AppSettings, SettingsError> {
             return Ok(AppSettings::default());
         }
     };
+
+    sanitize_bilingual_settings(&mut settings);
 
     match validate(&settings) {
         Ok(()) => {
@@ -121,7 +123,7 @@ pub fn load() -> Result<AppSettings, SettingsError> {
     }
 }
 
-const CURRENT_SCHEMA_VERSION: u32 = 9;
+const CURRENT_SCHEMA_VERSION: u32 = 10;
 
 fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     let version = value
@@ -152,6 +154,9 @@ fn migrate_settings(mut value: serde_json::Value) -> serde_json::Value {
     }
     if version < 9 {
         migrate_v8_to_v9(&mut value);
+    }
+    if version < 10 {
+        migrate_v9_to_v10(&mut value);
     }
 
     value
@@ -240,9 +245,32 @@ fn migrate_v8_to_v9(value: &mut serde_json::Value) {
     }
 }
 
+fn migrate_v9_to_v10(value: &mut serde_json::Value) {
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("schemaVersion".to_string(), serde_json::json!(10));
+        obj.entry("bilingualInterviewEnabled")
+            .or_insert(serde_json::json!(false));
+        obj.entry("interviewInputLanguage")
+            .or_insert(serde_json::json!("en"));
+        obj.entry("translationLanguage")
+            .or_insert(serde_json::json!("ru"));
+        obj.entry("liveTranslationEnabled")
+            .or_insert(serde_json::json!(true));
+        obj.entry("translationDebounceMs")
+            .or_insert(serde_json::json!(600));
+        obj.entry("translationMinWordCount")
+            .or_insert(serde_json::json!(3));
+        obj.entry("bilingualRetentionBehavior")
+            .or_insert(serde_json::json!("session_only"));
+        obj.entry("bilingualAnswerStyle")
+            .or_insert(serde_json::json!("b2_conversational"));
+    }
+}
+
 pub fn save(settings: &AppSettings) -> Result<AppSettings, SettingsError> {
     let mut normalized = settings.clone();
     preserve_existing_llm_route_if_accidentally_cleared(&mut normalized);
+    sanitize_bilingual_settings(&mut normalized);
     let _ = crate::app_log::append_event(
         "settings_save_attempt",
         format!(
@@ -320,7 +348,44 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     if !ALLOWED_DEBUG_TRACE_RETENTION_DAYS.contains(&settings.debug_trace_retention_days) {
         return Err(SettingsError::RetentionPolicyInvalid);
     }
+    if !["en", "ru"].contains(&settings.interview_input_language.as_str()) {
+        return Err(SettingsError::PartialConfigInvalid);
+    }
+    if !["en", "ru"].contains(&settings.translation_language.as_str()) {
+        return Err(SettingsError::PartialConfigInvalid);
+    }
     Ok(())
+}
+
+fn sanitize_bilingual_settings(settings: &mut AppSettings) {
+    settings.schema_version = CURRENT_SCHEMA_VERSION;
+    let interview_lang = settings
+        .interview_input_language
+        .trim()
+        .to_ascii_lowercase();
+    settings.interview_input_language = if ["en", "ru"].contains(&interview_lang.as_str()) {
+        interview_lang
+    } else {
+        "en".to_string()
+    };
+    let translation_lang = settings.translation_language.trim().to_ascii_lowercase();
+    settings.translation_language = if ["en", "ru"].contains(&translation_lang.as_str()) {
+        translation_lang
+    } else {
+        "ru".to_string()
+    };
+    if !(300..=1500).contains(&settings.translation_debounce_ms) {
+        settings.translation_debounce_ms = 600;
+    }
+    if !(1..=10).contains(&settings.translation_min_word_count) {
+        settings.translation_min_word_count = 3;
+    }
+    if settings.bilingual_retention_behavior.trim().is_empty() {
+        settings.bilingual_retention_behavior = "session_only".to_string();
+    }
+    if settings.bilingual_answer_style.trim().is_empty() {
+        settings.bilingual_answer_style = "b2_conversational".to_string();
+    }
 }
 
 fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError> {
@@ -342,6 +407,14 @@ fn ensure_required_fields(value: &serde_json::Value) -> Result<(), SettingsError
         "interviewReportRetentionDays",
         "debugTraceMode",
         "debugTraceRetentionDays",
+        "bilingualInterviewEnabled",
+        "interviewInputLanguage",
+        "translationLanguage",
+        "liveTranslationEnabled",
+        "translationDebounceMs",
+        "translationMinWordCount",
+        "bilingualRetentionBehavior",
+        "bilingualAnswerStyle",
     ] {
         if !obj.contains_key(key) {
             return Err(SettingsError::PartialConfigInvalid);
@@ -617,7 +690,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v1_settings_to_v9_with_default_profile_and_preset() {
+    fn migrates_v1_settings_to_v10_with_default_profile_and_preset() {
         let v1 = serde_json::json!({
             "schemaVersion": 1,
             "hotkey": "Ctrl+Alt+Space",
@@ -626,7 +699,7 @@ mod tests {
             "captureMaxSeconds": 30
         });
         let migrated = super::migrate_settings(v1);
-        assert_eq!(migrated["schemaVersion"], 9);
+        assert_eq!(migrated["schemaVersion"], 10);
         assert_eq!(
             migrated["activeAnswerProfile"],
             crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID
@@ -639,14 +712,22 @@ mod tests {
         assert_eq!(migrated["interviewReportRetentionDays"], 0);
         assert_eq!(migrated["debugTraceMode"], "redacted");
         assert_eq!(migrated["debugTraceRetentionDays"], 3);
+        assert_eq!(migrated["bilingualInterviewEnabled"], false);
+        assert_eq!(migrated["interviewInputLanguage"], "en");
+        assert_eq!(migrated["translationLanguage"], "ru");
+        assert_eq!(migrated["liveTranslationEnabled"], true);
+        assert_eq!(migrated["translationDebounceMs"], 600);
+        assert_eq!(migrated["translationMinWordCount"], 3);
+        assert_eq!(migrated["bilingualRetentionBehavior"], "session_only");
+        assert_eq!(migrated["bilingualAnswerStyle"], "b2_conversational");
         // llmTemperature must NOT be injected — the field is not part of the current schema.
         assert!(migrated.get("llmTemperature").is_none());
     }
 
     #[test]
-    fn v9_settings_pass_through_unchanged() {
+    fn v10_settings_pass_through_unchanged() {
         let v8 = serde_json::json!({
-            "schemaVersion": 9,
+            "schemaVersion": 10,
             "hotkey": "Ctrl+Alt+Space",
             "llmBaseUrl": "https://openrouter.ai/api/v1",
             "llmModel": "gpt-4o-mini",
@@ -659,10 +740,18 @@ mod tests {
             "interviewCompactMode": true,
             "interviewReportRetentionDays": 30,
             "debugTraceMode": "full_local",
-            "debugTraceRetentionDays": 7
+            "debugTraceRetentionDays": 7,
+            "bilingualInterviewEnabled": false,
+            "interviewInputLanguage": "en",
+            "translationLanguage": "ru",
+            "liveTranslationEnabled": true,
+            "translationDebounceMs": 600,
+            "translationMinWordCount": 3,
+            "bilingualRetentionBehavior": "session_only",
+            "bilingualAnswerStyle": "b2_conversational"
         });
         let migrated = super::migrate_settings(v8);
-        assert_eq!(migrated["schemaVersion"], 9);
+        assert_eq!(migrated["schemaVersion"], 10);
         assert_eq!(migrated["hotkey"], "Ctrl+Alt+Space");
         assert_eq!(migrated["llmBaseUrl"], "https://openrouter.ai/api/v1");
         assert_eq!(migrated["llmModel"], "gpt-4o-mini");
@@ -681,7 +770,7 @@ mod tests {
     }
 
     #[test]
-    fn migrates_v8_to_v9_with_trace_mode_defaults() {
+    fn migrates_v8_to_v10_with_trace_mode_defaults() {
         let v7 = serde_json::json!({
             "schemaVersion": 8,
             "hotkey": "Ctrl+Alt+Space",
@@ -698,23 +787,24 @@ mod tests {
             "traceIncludeContent": false
         });
         let migrated = super::migrate_settings(v7);
-        assert_eq!(migrated["schemaVersion"], 9);
+        assert_eq!(migrated["schemaVersion"], 10);
         assert_eq!(migrated["debugTraceMode"], "redacted");
         assert_eq!(migrated["debugTraceRetentionDays"], 3);
+        assert_eq!(migrated["bilingualInterviewEnabled"], false);
     }
 
     #[test]
-    fn fixture_v7_migrates_to_v9_shape() {
+    fn fixture_v7_migrates_to_v10_shape() {
         let migrated = super::migrate_settings(fixture_json("settings-v7-legacy.json"));
-        assert_eq!(migrated["schemaVersion"], 9);
+        assert_eq!(migrated["schemaVersion"], 10);
         assert_eq!(migrated["debugTraceMode"], "redacted");
         assert_eq!(migrated["debugTraceRetentionDays"], 3);
     }
 
     #[test]
-    fn fixture_v8_migrates_to_v9_shape() {
+    fn fixture_v8_migrates_to_v10_shape() {
         let migrated = super::migrate_settings(fixture_json("settings-v8-legacy.json"));
-        assert_eq!(migrated["schemaVersion"], 9);
+        assert_eq!(migrated["schemaVersion"], 10);
         assert_eq!(migrated["debugTraceMode"], "redacted");
         assert_eq!(migrated["debugTraceRetentionDays"], 3);
         assert!(migrated.get("traceIncludeContent").is_none());
@@ -801,6 +891,22 @@ mod tests {
             assert!(backups.is_empty());
         });
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn sanitize_bilingual_ranges_and_languages_to_defaults() {
+        let mut settings = AppSettings {
+            interview_input_language: "de".to_string(),
+            translation_language: "fr".to_string(),
+            translation_debounce_ms: 100,
+            translation_min_word_count: 42,
+            ..AppSettings::default()
+        };
+        sanitize_bilingual_settings(&mut settings);
+        assert_eq!(settings.interview_input_language, "en");
+        assert_eq!(settings.translation_language, "ru");
+        assert_eq!(settings.translation_debounce_ms, 600);
+        assert_eq!(settings.translation_min_word_count, 3);
     }
 
     #[test]

@@ -42,7 +42,7 @@ Supported provider/runtime path for stable beta:
 
 ## 3) Runtime contracts to verify in docs/code review
 
-- Settings schema: `schemaVersion = 9` (`src/app/model.ts`, `src-tauri/src/settings.rs`)
+- Settings schema: `schemaVersion = 10` (`src/app/model.ts`, `src-tauri/src/settings.rs`)
 - Work card path: `CardSchemaV3` (`src-tauri/src/card_v3.rs`)
 - Interview card path: `InterviewCardSchemaV1` (`src-tauri/src/interview_card_v1.rs`)
 - Interview session/report commands:

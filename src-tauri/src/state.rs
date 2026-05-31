@@ -1,6 +1,7 @@
 use std::sync::Mutex;
 
 use crate::audio::CaptureRun;
+use crate::bilingual::session::BilingualSessionState;
 use crate::context::ConversationContext;
 use crate::interview_report::InterviewSessionState;
 
@@ -14,6 +15,7 @@ pub struct ReplylineState {
     pub capture: Mutex<CaptureController>,
     pub context: Mutex<ConversationContext>,
     pub interview_session: Mutex<InterviewSessionState>,
+    pub bilingual_session: Mutex<BilingualSessionState>,
 }
 
 impl Default for ReplylineState {
@@ -22,6 +24,7 @@ impl Default for ReplylineState {
             capture: Mutex::new(CaptureController::default()),
             context: Mutex::new(ConversationContext::default()),
             interview_session: Mutex::new(InterviewSessionState::default()),
+            bilingual_session: Mutex::new(BilingualSessionState::default()),
         }
     }
 }

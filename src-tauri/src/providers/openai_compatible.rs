@@ -98,6 +98,21 @@ struct Usage {
     total_tokens: Option<u32>,
 }
 
+#[derive(Debug, Deserialize)]
+struct StreamChunkResponse {
+    choices: Vec<StreamChoice>,
+}
+
+#[derive(Debug, Deserialize)]
+struct StreamChoice {
+    delta: StreamDelta,
+}
+
+#[derive(Debug, Deserialize)]
+struct StreamDelta {
+    content: Option<serde_json::Value>,
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct RedactedMessageSnapshot<'a> {
@@ -175,6 +190,36 @@ pub async fn request_card_raw_text(
     max_tokens: u16,
     policy: LlmRequestPolicy,
 ) -> Result<(String, String, LlmRequestTelemetry), String> {
+    request_card_raw_text_with_temperature(
+        run_id,
+        include_content,
+        base_url,
+        model,
+        fallback_models,
+        api_key,
+        system_prompt,
+        user_prompt,
+        0.25,
+        max_tokens,
+        policy,
+    )
+    .await
+}
+
+#[allow(clippy::too_many_arguments)]
+pub async fn request_card_raw_text_with_temperature(
+    run_id: Option<&str>,
+    include_content: bool,
+    base_url: &str,
+    model: &str,
+    fallback_models: &[&str],
+    api_key: Option<&str>,
+    system_prompt: &str,
+    user_prompt: &str,
+    temperature: f32,
+    max_tokens: u16,
+    policy: LlmRequestPolicy,
+) -> Result<(String, String, LlmRequestTelemetry), String> {
     let request = ChatRequest {
         model: model.trim(),
         models: fallback_models.to_vec(),
@@ -188,7 +233,7 @@ pub async fn request_card_raw_text(
                 content: user_prompt,
             },
         ],
-        temperature: 0.25,
+        temperature,
         max_tokens,
     };
 
@@ -524,6 +569,131 @@ pub async fn request_card_raw_text(
         "LLM returned invalid JSON: ".to_string(),
         telemetry,
     ))
+}
+
+pub async fn stream_text_response<F>(
+    base_url: &str,
+    model: &str,
+    api_key: Option<&str>,
+    system_prompt: &str,
+    user_prompt: &str,
+    max_tokens: u16,
+    mut on_chunk: F,
+) -> Result<String, String>
+where
+    F: FnMut(&str),
+{
+    fn append_text_from_sse_line<F>(
+        line: &str,
+        output: &mut String,
+        on_chunk: &mut F,
+    ) -> Result<bool, String>
+    where
+        F: FnMut(&str),
+    {
+        let line = line.trim();
+        if !line.starts_with("data:") {
+            return Ok(false);
+        }
+        let payload = line.trim_start_matches("data:").trim();
+        if payload == "[DONE]" {
+            return Ok(true);
+        }
+        let parsed: Result<StreamChunkResponse, _> = serde_json::from_str(payload);
+        let Ok(parsed) = parsed else {
+            return Ok(false);
+        };
+        let Some(choice) = parsed.choices.first() else {
+            return Ok(false);
+        };
+        let Some(content) = choice.delta.content.clone() else {
+            return Ok(false);
+        };
+        match content {
+            serde_json::Value::String(text) => {
+                if !text.is_empty() {
+                    output.push_str(&text);
+                    on_chunk(&text);
+                }
+            }
+            serde_json::Value::Array(parts) => {
+                for part in parts {
+                    if let Some(text) = part.get("text").and_then(|v| v.as_str()) {
+                        if !text.is_empty() {
+                            output.push_str(text);
+                            on_chunk(text);
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+        Ok(false)
+    }
+
+    let endpoint = format!("{}/chat/completions", base_url.trim_end_matches('/'));
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(HTTP_TIMEOUT_SECS))
+        .build()
+        .map_err(|err| format!("LLM client: {err}"))?;
+    let mut req = client.post(&endpoint).json(&serde_json::json!({
+        "model": model.trim(),
+        "messages": [
+            { "role": "system", "content": system_prompt },
+            { "role": "user", "content": user_prompt }
+        ],
+        "temperature": 0.25_f32,
+        "max_tokens": max_tokens,
+        "stream": true
+    }));
+    if let Some(token) = api_key.filter(|value| !value.trim().is_empty()) {
+        req = req.bearer_auth(token);
+    }
+    let mut response = req
+        .send()
+        .await
+        .map_err(|err| format!("LLM_STREAM_REQUEST_FAILED: {err}"))?;
+    if !response.status().is_success() {
+        return Err(format!("LLM_STREAM_HTTP_ERROR: {}", response.status()));
+    }
+    let mut output = String::new();
+    let mut pending = String::new();
+    while let Some(bytes) = response
+        .chunk()
+        .await
+        .map_err(|err| format!("LLM_STREAM_READ_FAILED: {err}"))?
+    {
+        pending.push_str(&String::from_utf8_lossy(&bytes));
+        while let Some(pos) = pending.find('\n') {
+            let mut line = pending[..pos].to_string();
+            pending.drain(..=pos);
+            if line.ends_with('\r') {
+                line.pop();
+            }
+            if append_text_from_sse_line(&line, &mut output, &mut on_chunk)? {
+                return Ok(output);
+            }
+        }
+    }
+    if !pending.trim().is_empty()
+        && append_text_from_sse_line(&pending, &mut output, &mut on_chunk)?
+    {
+        return Ok(output);
+    }
+    if output.trim().is_empty() {
+        return Err("LLM_STREAM_EMPTY: stream ended without text".to_string());
+    }
+    Ok(output)
+}
+
+#[cfg(test)]
+mod stream_tests {
+    use super::stream_text_response;
+
+    #[test]
+    fn keep_module_for_stream_path_compilation() {
+        let _ = stream_text_response::<fn(&str)>;
+    }
 }
 
 #[cfg(test)]

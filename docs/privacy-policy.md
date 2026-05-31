@@ -49,6 +49,10 @@ Candidate Pack boundary:
 - Markdown export is explicit user action only (never automatic).
 - `Export full markdown` includes transcript and is sensitive.
 - `Export redacted markdown` excludes transcript and is the safer share path.
+- Bilingual Interview export is also command-driven only:
+  - `full` may include finalized EN transcript segments, RU translations, and generated answers.
+  - `redacted` includes only metadata (timestamps/duration/counts/hashes/statuses/latencies) and excludes raw transcript text, translated text, full prompts, and raw Candidate Pack values.
+- Streaming sessions do not auto-write transcript files on session start/stop.
 - Debug traces are controlled by Settings (`debugTraceMode`: `off` / `redacted` / `full_local`).
 - `debugTraceMode=full_local` can retain more sensitive local details and should be used only for local triage.
 

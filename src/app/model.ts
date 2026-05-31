@@ -18,7 +18,7 @@ export type SettingsSectionId =
 export type Panel = "main" | "settings" | "candidatePackStudio";
 
 export type AppSettings = {
-  schemaVersion: 9;
+  schemaVersion: 10;
   hotkey: string;
   llmBaseUrl: string;
   llmModel: string;
@@ -32,6 +32,14 @@ export type AppSettings = {
   interviewReportRetentionDays: 0 | 7 | 30 | 90;
   debugTraceMode: "off" | "redacted" | "full_local";
   debugTraceRetentionDays: 0 | 1 | 3 | 7;
+  bilingualInterviewEnabled: boolean;
+  interviewInputLanguage: "en" | "ru";
+  translationLanguage: "en" | "ru";
+  liveTranslationEnabled: boolean;
+  translationDebounceMs: number;
+  translationMinWordCount: number;
+  bilingualRetentionBehavior: "session_only";
+  bilingualAnswerStyle: "b2_conversational";
 };
 
 export type CandidateFactStrength = "strong" | "medium" | "weak";
@@ -225,6 +233,13 @@ export type InterviewClarifierDto = {
   text?: string | null;
 };
 
+export type BilingualMetaDto = {
+  sessionId: string;
+  sourceSegmentIds: string[];
+  questionRu?: string | null;
+  listeningStatus: string;
+};
+
 export type InterviewCardDto = {
   mode: "interview";
   answer: InterviewAnswerDto;
@@ -233,6 +248,7 @@ export type InterviewCardDto = {
   risks: InterviewRisksDto;
   followUps: InterviewFollowUpDto[];
   clarifier: InterviewClarifierDto;
+  bilingualMeta?: BilingualMetaDto | null;
 };
 
 export type WorkConversationCard = LegacyAnalysisCard & {
@@ -363,6 +379,118 @@ export type InterviewSessionStateDto = {
   questions: InterviewQuestionReportDto[];
 };
 
+export type SpeakerSource = "system_audio" | "microphone";
+export type TranslationStrategy = "debounced_batch" | "llm_micro";
+export type ExportType = "full" | "redacted";
+
+export type BilingualSessionSettings = {
+  speakerSource: SpeakerSource;
+  interviewInputLanguage: "en" | "ru";
+  translationLanguage: "en" | "ru";
+  translationStrategy: TranslationStrategy;
+  liveTranslationEnabled: boolean;
+  translationDebounceMs: number;
+  translationMinWordCount: number;
+};
+
+export type LiveTranscriptSegmentDto = {
+  segmentId: string;
+  timestamp: string;
+  text: string;
+  finalized: boolean;
+};
+
+export type LiveTranslationSegmentDto = {
+  segmentId: string;
+  sourceSegmentIds: string[];
+  primarySourceSegmentId: string;
+  timestamp: string;
+  sourceText: string;
+  translatedText: string;
+  sourceLanguage: "en" | "ru";
+  targetLanguage: "en" | "ru";
+  isFinal: boolean;
+  latencyMs: number;
+  isFallback: boolean;
+  strategy: TranslationStrategy;
+  batchSize: number;
+};
+
+export type BilingualErrorDto = {
+  code: string;
+  message: string;
+  recoverable?: boolean | null;
+};
+
+export type BilingualSessionStatus =
+  | "idle"
+  | "starting"
+  | "active"
+  | "stopping"
+  | "reconnecting"
+  | "degraded";
+export type BilingualLaneStatus = "idle" | "active" | "reconnecting" | "degraded" | "error";
+
+export type BilingualLatencyMetricsDto = {
+  latencyMs?: number;
+  sampleRate?: number;
+  durationMs?: number;
+  partialEnMs?: number;
+  translationMs?: number;
+  answerTtftMs?: number;
+  answerTotalMs?: number;
+};
+
+export type BilingualAnswerReadyDto = {
+  answerCard: InterviewCardDto;
+};
+
+export type BilingualAnswerChunkDto = {
+  sessionId: string;
+  text: string;
+  isFinal: boolean;
+  chunkIndex: number;
+};
+
+export type BilingualDisplaySegment = {
+  segmentId: string;
+  timestamp: string;
+  transcriptText: string;
+  translatedText: string | null;
+  sourceSegmentIds: string[];
+};
+
+export type ExportSummary = {
+  exportType: ExportType;
+  sessionId: string;
+  path: string;
+  questionsCount: number;
+  transcriptSegmentsCount: number;
+};
+
+export type BilingualInterviewState = {
+  active: boolean;
+  status: BilingualSessionStatus;
+  transcriptLane: BilingualLaneStatus;
+  translationLane: BilingualLaneStatus;
+  degraded: boolean;
+  sessionId: string | null;
+  startedAt: string | null;
+  latestPartial: LiveTranscriptSegmentDto | null;
+  finalizedSegments: LiveTranscriptSegmentDto[];
+  transcriptSegments: LiveTranscriptSegmentDto[];
+  translationSegments: LiveTranslationSegmentDto[];
+  displaySegments: BilingualDisplaySegment[];
+  translationsBySourceSegmentId: Record<string, LiveTranslationSegmentDto>;
+  latency: BilingualLatencyMetricsDto | null;
+  lastAnswerCard: InterviewCardDto | null;
+  streamedAnswerText: string;
+  answerStatus: "idle" | "streaming" | "ready";
+  lastChunkIndex: number;
+  answerInFlight: boolean;
+  lastError: BilingualErrorDto | null;
+};
+
 export type CandidatePackDraftFact = {
   fact: string;
   evidence: string;
@@ -382,7 +510,7 @@ export type CandidatePackDraft = {
 export type MainUiState = "idle" | "capturing" | "transcribing" | "analyzing" | "ready" | "error";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  schemaVersion: 9,
+  schemaVersion: 10,
   hotkey: "Ctrl+Alt+Space",
   llmBaseUrl: "",
   llmModel: "gpt-4o-mini",
@@ -396,6 +524,37 @@ export const DEFAULT_SETTINGS: AppSettings = {
   interviewReportRetentionDays: 0,
   debugTraceMode: "redacted",
   debugTraceRetentionDays: 3,
+  bilingualInterviewEnabled: false,
+  interviewInputLanguage: "en",
+  translationLanguage: "ru",
+  liveTranslationEnabled: true,
+  translationDebounceMs: 600,
+  translationMinWordCount: 3,
+  bilingualRetentionBehavior: "session_only",
+  bilingualAnswerStyle: "b2_conversational",
+};
+
+export const initialBilingualInterviewState: BilingualInterviewState = {
+  active: false,
+  status: "idle",
+  transcriptLane: "idle",
+  translationLane: "idle",
+  degraded: false,
+  sessionId: null,
+  startedAt: null,
+  latestPartial: null,
+  finalizedSegments: [],
+  transcriptSegments: [],
+  translationSegments: [],
+  displaySegments: [],
+  translationsBySourceSegmentId: {},
+  latency: null,
+  lastAnswerCard: null,
+  streamedAnswerText: "",
+  answerStatus: "idle",
+  lastChunkIndex: -1,
+  answerInFlight: false,
+  lastError: null,
 };
 
 export function isConfiguredLlmRoute(baseUrl: string, model: string): boolean {

@@ -97,7 +97,7 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
   let closeHandler: ((event: { preventDefault(): void }) => void | Promise<void>) | null = null;
 
   let settingsState = {
-    schemaVersion: 9,
+    schemaVersion: 10,
     hotkey: "Ctrl+Alt+Space",
     llmBaseUrl: "https://api.example/v1",
     llmModel: "gpt-4o-mini",
@@ -111,6 +111,14 @@ function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
     interviewReportRetentionDays: 0,
     debugTraceMode: "redacted",
     debugTraceRetentionDays: 3,
+    bilingualInterviewEnabled: false,
+    interviewInputLanguage: "en",
+    translationLanguage: "ru",
+    liveTranslationEnabled: true,
+    translationDebounceMs: 600,
+    translationMinWordCount: 3,
+    bilingualRetentionBehavior: "session_only",
+    bilingualAnswerStyle: "b2_conversational",
   };
   let deepgramPresent = true;
   let llmPresent = true;
@@ -290,7 +298,7 @@ function createSetupMockPlatform(
   let deepgramPresent = overrides.deepgramKeyPresent ?? false;
   let llmPresent = overrides.llmKeyPresent ?? false;
   let settingsState = {
-    schemaVersion: 9,
+    schemaVersion: 10,
     hotkey: "Ctrl+Alt+Space",
     llmBaseUrl: overrides.llmBaseUrl ?? "",
     llmModel: overrides.llmModel ?? "gpt-4o-mini",
@@ -304,6 +312,14 @@ function createSetupMockPlatform(
     interviewReportRetentionDays: 0,
     debugTraceMode: "redacted",
     debugTraceRetentionDays: 3,
+    bilingualInterviewEnabled: false,
+    interviewInputLanguage: "en",
+    translationLanguage: "ru",
+    liveTranslationEnabled: true,
+    translationDebounceMs: 600,
+    translationMinWordCount: 3,
+    bilingualRetentionBehavior: "session_only",
+    bilingualAnswerStyle: "b2_conversational",
   };
   const origInvoke = base.platform.invoke;
   const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
@@ -323,7 +339,7 @@ function createSetupMockPlatform(
     }
     if (command === "save_settings") {
       const input = args?.input as Record<string, unknown> | undefined;
-      settingsState = { ...settingsState, ...(input as typeof settingsState), schemaVersion: 9 };
+      settingsState = { ...settingsState, ...(input as typeof settingsState), schemaVersion: 10 };
       return settingsState;
     }
     if (command === "save_secret") {
@@ -374,7 +390,7 @@ describe("App UX stabilization", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 9,
+            schemaVersion: 10,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: overrides.llmBaseUrl ?? "",
             llmModel: overrides.llmModel ?? "gpt-4o-mini",
@@ -388,6 +404,14 @@ describe("App UX stabilization", () => {
             interviewReportRetentionDays: 0,
             debugTraceMode: "redacted",
             debugTraceRetentionDays: 3,
+    bilingualInterviewEnabled: false,
+    interviewInputLanguage: "en",
+    translationLanguage: "ru",
+    liveTranslationEnabled: true,
+    translationDebounceMs: 600,
+    translationMinWordCount: 3,
+    bilingualRetentionBehavior: "session_only",
+    bilingualAnswerStyle: "b2_conversational",
           },
           deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
           llmKeyPresent: overrides.llmKeyPresent ?? false,
@@ -400,7 +424,7 @@ describe("App UX stabilization", () => {
       }
       if (command === "save_settings") {
         const input = args?.input as Record<string, unknown> | undefined;
-        return { ...input, schemaVersion: 9 };
+        return { ...input, schemaVersion: 10 };
       }
       if (command === "save_secret") return null;
       if (command === "get_setup_status") {
@@ -1013,7 +1037,6 @@ describe("App UX stabilization", () => {
     ).toBeNull();
   });
 });
-
 describe("Interview card rendering", () => {
   it("interview answer renders first", async () => {
     const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
@@ -1359,7 +1382,7 @@ describe("Interview card rendering", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 9,
+            schemaVersion: 10,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: "",
             llmModel: "gpt-4o-mini",
@@ -1373,6 +1396,14 @@ describe("Interview card rendering", () => {
             interviewReportRetentionDays: 0,
             debugTraceMode: "redacted",
             debugTraceRetentionDays: 3,
+    bilingualInterviewEnabled: false,
+    interviewInputLanguage: "en",
+    translationLanguage: "ru",
+    liveTranslationEnabled: true,
+    translationDebounceMs: 600,
+    translationMinWordCount: 3,
+    bilingualRetentionBehavior: "session_only",
+    bilingualAnswerStyle: "b2_conversational",
           },
           deepgramKeyPresent: false,
           llmKeyPresent: false,
@@ -1416,7 +1447,7 @@ describe("Interview card rendering", () => {
       if (command === "load_bootstrap") {
         return {
           settings: {
-            schemaVersion: 9,
+            schemaVersion: 10,
             hotkey: "Ctrl+Alt+Space",
             llmBaseUrl: "",
             llmModel: "gpt-4o-mini",
@@ -1430,6 +1461,14 @@ describe("Interview card rendering", () => {
             interviewReportRetentionDays: 0,
             debugTraceMode: "redacted",
             debugTraceRetentionDays: 3,
+    bilingualInterviewEnabled: false,
+    interviewInputLanguage: "en",
+    translationLanguage: "ru",
+    liveTranslationEnabled: true,
+    translationDebounceMs: 600,
+    translationMinWordCount: 3,
+    bilingualRetentionBehavior: "session_only",
+    bilingualAnswerStyle: "b2_conversational",
           },
           deepgramKeyPresent: false,
           llmKeyPresent: false,
@@ -1716,7 +1755,7 @@ describe("Setup wizard (first-run guidance)", () => {
         bootstrapCount += 1;
         return {
           settings: {
-            schemaVersion: 9,
+            schemaVersion: 10,
             hotkey: "Ctrl+Alt+Shift+S",
             llmBaseUrl: "https://api.example.com/v1",
             llmModel: "gpt-4.1-mini",
@@ -1730,6 +1769,14 @@ describe("Setup wizard (first-run guidance)", () => {
             interviewReportRetentionDays: 0,
             debugTraceMode: "redacted",
             debugTraceRetentionDays: 3,
+    bilingualInterviewEnabled: false,
+    interviewInputLanguage: "en",
+    translationLanguage: "ru",
+    liveTranslationEnabled: true,
+    translationDebounceMs: 600,
+    translationMinWordCount: 3,
+    bilingualRetentionBehavior: "session_only",
+    bilingualAnswerStyle: "b2_conversational",
           },
           deepgramKeyPresent: true,
           llmKeyPresent: true,
@@ -1856,7 +1903,7 @@ describe("Setup wizard (first-run guidance)", () => {
 
     resolveBootstrap?.({
       settings: {
-        schemaVersion: 9,
+        schemaVersion: 10,
         hotkey: "Ctrl+Alt+Space",
         llmBaseUrl: "https://api.example.com/v1",
         llmModel: "gpt-4o-mini",
@@ -1870,6 +1917,14 @@ describe("Setup wizard (first-run guidance)", () => {
         interviewReportRetentionDays: 0,
         debugTraceMode: "redacted",
         debugTraceRetentionDays: 3,
+    bilingualInterviewEnabled: false,
+    interviewInputLanguage: "en",
+    translationLanguage: "ru",
+    liveTranslationEnabled: true,
+    translationDebounceMs: 600,
+    translationMinWordCount: 3,
+    bilingualRetentionBehavior: "session_only",
+    bilingualAnswerStyle: "b2_conversational",
       },
       deepgramKeyPresent: true,
       llmKeyPresent: true,

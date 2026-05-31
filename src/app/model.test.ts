@@ -4,6 +4,7 @@ import {
   asAnalysisCard,
   detectLlmRouteModeFromHost,
   formatHotkeyFromEvent,
+  initialBilingualInterviewState,
   isConfiguredLlmRoute,
   parseCommandInvokeError,
   settingsAnchorForCommandErrorKind,
@@ -211,8 +212,8 @@ describe("model", () => {
   });
 
   describe("settings validation preflight rules", () => {
-    it("DEFAULT_SETTINGS schemaVersion is 9 (matches backend)", () => {
-      expect(DEFAULT_SETTINGS.schemaVersion).toBe(9);
+    it("DEFAULT_SETTINGS schemaVersion is 10 (matches backend)", () => {
+      expect(DEFAULT_SETTINGS.schemaVersion).toBe(10);
     });
 
     it("DEFAULT_SETTINGS hotkey is non-empty", () => {
@@ -244,6 +245,39 @@ describe("model", () => {
     it("DEFAULT_SETTINGS debug trace mode is safe redacted", () => {
       expect(DEFAULT_SETTINGS.debugTraceMode).toBe("redacted");
       expect(DEFAULT_SETTINGS.debugTraceRetentionDays).toBe(3);
+    });
+
+    it("DEFAULT_SETTINGS bilingual mode is safe by default", () => {
+      expect(DEFAULT_SETTINGS.bilingualInterviewEnabled).toBe(false);
+      expect(DEFAULT_SETTINGS.interviewInputLanguage).toBe("en");
+      expect(DEFAULT_SETTINGS.translationLanguage).toBe("ru");
+      expect(DEFAULT_SETTINGS.liveTranslationEnabled).toBe(true);
+      expect(DEFAULT_SETTINGS.translationDebounceMs).toBe(600);
+      expect(DEFAULT_SETTINGS.translationMinWordCount).toBe(3);
+      expect(DEFAULT_SETTINGS.bilingualRetentionBehavior).toBe("session_only");
+      expect(DEFAULT_SETTINGS.bilingualAnswerStyle).toBe("b2_conversational");
+    });
+  });
+
+  describe("bilingual interview state", () => {
+    it("initialBilingualInterviewState starts idle with empty buffers", () => {
+      expect(initialBilingualInterviewState.active).toBe(false);
+      expect(initialBilingualInterviewState.status).toBe("idle");
+      expect(initialBilingualInterviewState.transcriptLane).toBe("idle");
+      expect(initialBilingualInterviewState.translationLane).toBe("idle");
+      expect(initialBilingualInterviewState.degraded).toBe(false);
+      expect(initialBilingualInterviewState.sessionId).toBeNull();
+      expect(initialBilingualInterviewState.startedAt).toBeNull();
+      expect(initialBilingualInterviewState.latestPartial).toBeNull();
+      expect(initialBilingualInterviewState.finalizedSegments).toEqual([]);
+      expect(initialBilingualInterviewState.transcriptSegments).toEqual([]);
+      expect(initialBilingualInterviewState.translationSegments).toEqual([]);
+      expect(initialBilingualInterviewState.displaySegments).toEqual([]);
+      expect(initialBilingualInterviewState.translationsBySourceSegmentId).toEqual({});
+      expect(initialBilingualInterviewState.latency).toBeNull();
+      expect(initialBilingualInterviewState.lastAnswerCard).toBeNull();
+      expect(initialBilingualInterviewState.answerInFlight).toBe(false);
+      expect(initialBilingualInterviewState.lastError).toBeNull();
     });
   });
 

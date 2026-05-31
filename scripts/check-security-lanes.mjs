@@ -29,6 +29,7 @@ const DANGEROUS_LOG_PATTERNS = [
     patterns: [
       // Detects append_event("...", transcript) or append_event("...", &transcript)
       /append_event\s*\([^,]+,\s*&?transcript\b/i,
+      /append_event\s*\([^,]+,\s*[^)]*segment\.(text|translated_text)\b/i,
       /log_diag\s*\([^,]+,[^,]+,[^,]+,\s*&?transcript\b/i,
     ],
     excludeFiles: ["src-tauri/src/privacy.rs"],

@@ -17,6 +17,12 @@ const settingsRustPath = join(root, "src-tauri", "src", "settings.rs");
 const COMMAND_CATEGORIES = {
   user: ["load_bootstrap", "clear_context", "get_context_status", "log_client_event", "quit_app"],
   runtime: ["capture_start", "capture_stop_and_analyze", "retry_last_analysis"],
+  bilingual: [
+    "start_bilingual_session",
+    "stop_bilingual_session",
+    "capture_bilingual_answer",
+    "export_bilingual_interview_report",
+  ],
   settings: ["save_settings", "get_setup_status", "check_stt_config", "check_llm_config", "check_runtime_config"],
   secrets: ["save_secret", "delete_secret"],
   report: [
@@ -102,12 +108,12 @@ if (
 
 const staticContractChecks = [
   {
-    ok: modelText.includes("schemaVersion: 9"),
-    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 9 in src/app/model.ts",
+    ok: modelText.includes("schemaVersion: 10"),
+    message: "Expected DEFAULT_SETTINGS.schemaVersion to be 10 in src/app/model.ts",
   },
   {
-    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 9;"),
-    message: "Expected CURRENT_SCHEMA_VERSION = 9 in src-tauri/src/settings.rs",
+    ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 10;"),
+    message: "Expected CURRENT_SCHEMA_VERSION = 10 in src-tauri/src/settings.rs",
   },
   {
     ok: interviewRustText.includes("pub short: String") && modelText.includes("short: string;"),

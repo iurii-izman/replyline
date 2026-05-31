@@ -785,6 +785,7 @@ mod tests {
                 },
                 follow_ups: vec![],
                 clarifier: crate::interview_card_v1::InterviewClarifier::default(),
+                bilingual_meta: None,
             }),
             repair_used: false,
             fallback_used: false,

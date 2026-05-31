@@ -31,6 +31,12 @@ Contract note: this document keeps `Internal Stable Beta` wording for compatibil
   - `Export full markdown (includes transcript)` — включает raw/full transcript и считается sensitive.
   - `Export redacted markdown (no transcript)` — safer share copy, исключает raw/full transcript.
   - Даже redacted export требует user review перед внешним шарингом (проверить отсутствие случайных PII/контекстных утечек).
+- Bilingual Interview Mode export:
+  - `export_bilingual_interview_report` работает только по явной команде пользователя (`full` или `redacted`), авто-экспорта при start/stop нет.
+  - `full` включает finalized EN segments, RU translations, generated answers и timing/latency поля.
+  - `redacted` включает только safe metadata: timestamps, duration, word counts, hashes, statuses, latencies; без raw transcript, translated text, full prompts и raw Candidate Pack.
+- Streaming lane не пишет trace file на каждый сегмент и не пишет provider response body в export артефакты по умолчанию.
+- Для Bilingual streaming telemetry разрешены только safe metadata поля (`partialEnMs`, `translationMs`, `answerTtftMs`, `answerTotalMs`, counts, durations, sample rates, status codes, hashes); raw transcript/translated text/full prompts/provider bodies в telemetry не логируются.
 - В WorkConversation Candidate Pack context по умолчанию не добавляется.
 - Candidate Pack context включается только в Interview Mode при активной interview session.
 - Settings diagnostics surface:

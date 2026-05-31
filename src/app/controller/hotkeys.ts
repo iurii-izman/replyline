@@ -43,6 +43,9 @@ export interface HotkeyDeps {
   setLlmRouteConfigured: Setter<boolean>;
   setLastCommandErrorKind: Setter<CommandErrorKind | null>;
   setActiveRunId: Setter<string | null>;
+  isBilingualHotkeyMode: () => boolean;
+  isBilingualDegraded: () => boolean;
+  triggerBilingualHotkeyAnswer: () => Promise<void>;
   notices: NoticeApi;
   showWindow: (panelName?: Panel) => Promise<void>;
   applyContextStatus: (status: ContextStatusDto) => void;
@@ -112,6 +115,19 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         await deps.showWindow("settings");
         return;
       }
+      if (deps.isBilingualHotkeyMode()) {
+        if (deps.isBilingualDegraded()) {
+          deps.notices.pushNotice({
+            tone: "info",
+            message: deps.strings().card.bilingual.status.degraded,
+          });
+        } else {
+          armed = true;
+          deps.setPhase("capturing");
+          deps.setCard(null);
+          return;
+        }
+      }
       deps.setPhase("capturing");
       try {
         if (deps.platform.window.setAlwaysOnTop && deps.settings().keepOnTopDuringCapture) {
@@ -159,6 +175,14 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
       armed = false;
       deps.setPhase("transcribing");
       try {
+        if (deps.isBilingualHotkeyMode() && !deps.isBilingualDegraded()) {
+          await deps.triggerBilingualHotkeyAnswer();
+          deps.setPhase("ready");
+          deps.setActiveRunId(null);
+          currentRunId = null;
+          await clearCaptureAlwaysOnTop();
+          return;
+        }
         void emitClientEvent("capture_stop_requested", {
           source: "hotkey_release",
           phase: "capture",

@@ -1,5 +1,7 @@
 mod app_log;
 mod audio;
+mod audio_streaming;
+mod bilingual;
 mod candidate_pack;
 mod capture_debug;
 mod card_v3;
@@ -199,6 +201,10 @@ pub fn run() {
         commands::sync_tray_ui_phase,
         commands::refresh_tray_menu,
         commands::tray_open_main,
+        commands::start_bilingual_session,
+        commands::stop_bilingual_session,
+        commands::capture_bilingual_answer,
+        commands::export_bilingual_interview_report,
         commands::log_client_event,
         commands::quit_app,
         commands::check_stt_config,
@@ -236,6 +242,10 @@ pub fn run() {
         commands::sync_tray_ui_phase,
         commands::refresh_tray_menu,
         commands::tray_open_main,
+        commands::start_bilingual_session,
+        commands::stop_bilingual_session,
+        commands::capture_bilingual_answer,
+        commands::export_bilingual_interview_report,
         commands::log_client_event,
         commands::quit_app,
         commands::check_stt_config,

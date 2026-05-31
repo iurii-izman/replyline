@@ -19,6 +19,20 @@ pub struct InterviewCardDto {
     pub follow_ups: Vec<InterviewFollowUp>,
     #[serde(default)]
     pub clarifier: InterviewClarifier,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bilingual_meta: Option<BilingualMeta>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+pub struct BilingualMeta {
+    pub session_id: String,
+    #[serde(default)]
+    pub source_segment_ids: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub question_ru: Option<String>,
+    pub listening_status: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -350,7 +364,7 @@ pub fn build_interview_system_prompt(language: &str) -> &'static str {
 pub fn build_interview_user_prompt(transcript: &str, context: &str, language: &str) -> String {
     if language == "en" {
         format!(
-            "Context:\n{}\n\nInterview transcript:\n{}\n\nReturn InterviewCardSchemaV1 JSON.",
+            "Context:\n{}\n\nInterview transcript:\n{}\n\nOutput contract:\n- English answer only (B2/C1 conversational).\n- No fillers like \"Great question\", \"Certainly\", \"As an AI\".\n- 2-5 sentences for normal questions, up to 8 for system design.\n- Do not fabricate metrics/projects/employers.\n- If context is missing, answer conceptually and honestly.\n\nReturn InterviewCardSchemaV1 JSON.",
             if context.trim().is_empty() {
                 "(empty)"
             } else {
@@ -753,6 +767,7 @@ fn build_safe_fallback_card(
                 .to_string(),
         }],
         clarifier: InterviewClarifier::default(),
+        bilingual_meta: None,
     }
 }
 
@@ -1089,6 +1104,7 @@ mod tests {
                 needed: true,
                 text: Some("Need scope?".to_string()),
             },
+            bilingual_meta: None,
         };
 
         let value = serde_json::to_value(card).expect("serialize");

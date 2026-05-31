@@ -1,4 +1,10 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import type {
+  BilingualAnswerReadyDto,
+  BilingualSessionSettings,
+  ExportType,
+  ExportSummary,
+} from "./model";
 
 async function invokeWithDevTiming<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   const hasPerf = typeof performance !== "undefined" && typeof performance.now === "function";
@@ -153,4 +159,39 @@ export function getDefaultPlatform(): AppPlatform {
   };
 
   return defaultPlatform;
+}
+
+export function startBilingualSession(
+  platform: AppPlatform,
+  settings?: BilingualSessionSettings,
+): Promise<void> {
+  return platform.invoke<void>("start_bilingual_session", settings ? { settings } : undefined);
+}
+
+export function stopBilingualSession(platform: AppPlatform): Promise<void> {
+  return platform.invoke<void>("stop_bilingual_session");
+}
+
+export function captureBilingualAnswer(
+  platform: AppPlatform,
+): Promise<BilingualAnswerReadyDto | null | void> {
+  return platform.invoke<BilingualAnswerReadyDto | null | void>("capture_bilingual_answer");
+}
+
+export function exportBilingualInterviewReport(
+  platform: AppPlatform,
+  input?: {
+    exportType: ExportType;
+    outputPath?: string;
+  },
+): Promise<ExportSummary | null | void> {
+  const args = input
+    ? {
+        input: {
+          exportType: input.exportType,
+          outputPath: input.outputPath,
+        },
+      }
+    : undefined;
+  return platform.invoke<ExportSummary | null | void>("export_bilingual_interview_report", args);
 }

@@ -450,6 +450,7 @@ mod tests {
                 },
                 follow_ups: vec![],
                 clarifier: InterviewClarifier::default(),
+                bilingual_meta: None,
             },
         );
         let report = end_session(&mut session).expect("end").expect("has report");
@@ -639,6 +640,7 @@ mod tests {
             },
             follow_ups: vec![],
             clarifier: InterviewClarifier::default(),
+            bilingual_meta: None,
         }
     }
 

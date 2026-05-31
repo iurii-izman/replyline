@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, type Accessor } from "solid-js";
+import { createEffect, createMemo, createSignal, onCleanup, type Accessor } from "solid-js";
 import { createStore } from "solid-js/store";
 import {
   type CandidatePackDraft,
@@ -7,10 +7,12 @@ import {
   DEFAULT_SETTINGS,
   type AnalysisCard,
   type AppSettings,
+  type BilingualInterviewState,
   type CommandErrorKind,
   type ContextStatusDto,
   type InterviewReportDto,
   type InterviewSessionStateDto,
+  initialBilingualInterviewState,
   type Panel,
   type PersistenceDiagnosticsDto,
   type Phase,
@@ -34,6 +36,7 @@ import { setupLifecycle } from "./lifecycle";
 import { setupKeyboardShortcuts } from "./keyboardShortcuts";
 import { setupTraySync } from "./traySync";
 import { emitUiEvent } from "../observability";
+import { createBilingualInterviewController } from "./bilingualInterviewController";
 
 type InterviewCardKey = "answer" | "question" | "signals" | "risks" | "followUps" | "clarifier";
 function lines(value: string): string[] {
@@ -187,6 +190,9 @@ export function useReplylineController(platform: AppPlatform) {
   );
   const [interviewReportRedactedMarkdownPath, setInterviewReportRedactedMarkdownPath] =
     createSignal<string | null>(null);
+  const [bilingualInterviewState, setBilingualInterviewState] = createSignal<BilingualInterviewState>(
+    initialBilingualInterviewState,
+  );
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -335,6 +341,7 @@ export function useReplylineController(platform: AppPlatform) {
   const canCopyCurrentCard = createMemo(
     () => selectors.mainUiState() === "ready" && Boolean(copyText().trim()),
   );
+  let triggerBilingualHotkeyAnswerImpl: () => Promise<void> = async () => undefined;
 
   // ── Hotkeys ────────────────────────────────────────────────────────────
   const hotkeys = createHotkeys({
@@ -357,6 +364,12 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmRouteConfigured,
     setLastCommandErrorKind,
     setActiveRunId,
+    isBilingualHotkeyMode: () =>
+      settings.bilingualInterviewEnabled &&
+      bilingualInterviewState().active &&
+      Boolean(bilingualInterviewState().sessionId),
+    isBilingualDegraded: () => bilingualInterviewState().degraded,
+    triggerBilingualHotkeyAnswer: () => triggerBilingualHotkeyAnswerImpl(),
     notices,
     showWindow,
     applyContextStatus,
@@ -458,6 +471,40 @@ export function useReplylineController(platform: AppPlatform) {
     hotkeyFailed,
     hasError: () => Boolean(error()),
   });
+
+  const bilingualController = createBilingualInterviewController({
+    platform,
+    bilingualState: bilingualInterviewState,
+    setBilingualState: setBilingualInterviewState,
+    setCard: applyIncomingCard,
+    setError,
+  });
+  triggerBilingualHotkeyAnswerImpl = bilingualController.triggerHotkeyAnswer;
+  void bilingualController.wireListeners().catch((err) => {
+    setBilingualInterviewState((prev) => ({
+      ...prev,
+      status: "reconnecting",
+      transcriptLane: "reconnecting",
+      translationLane: "reconnecting",
+      lastError: {
+        code: "BILINGUAL_LISTENER_WIRE_FAILED",
+        message: invokeErrorMessage(err),
+        recoverable: true,
+      },
+    }));
+  });
+  onCleanup(() => bilingualController.unwireListeners());
+
+  const bilingualActive = createMemo(
+    () => bilingualInterviewState().active || bilingualInterviewState().status === "active",
+  );
+  const bilingualCanAnswer = createMemo(
+    () =>
+      bilingualActive() &&
+      !bilingualInterviewState().answerInFlight &&
+      bilingualInterviewState().finalizedSegments.length > 0,
+  );
+  const bilingualDegraded = createMemo(() => bilingualInterviewState().degraded);
 
   // ── Public API ─────────────────────────────────────────────────────────
   async function loadCandidatePack() {
@@ -711,6 +758,10 @@ export function useReplylineController(platform: AppPlatform) {
     interviewReport,
     interviewReportMarkdownPath,
     interviewReportRedactedMarkdownPath,
+    bilingualInterviewState,
+    bilingualActive,
+    bilingualCanAnswer,
+    bilingualDegraded,
     compactMode,
     checkRuntimeConfig: async () => {
       void emitUiEvent(platform, "check_settings_clicked", { phase: "settings" });
@@ -805,6 +856,12 @@ export function useReplylineController(platform: AppPlatform) {
     setCompactMode: (value: boolean) => setSettings("interviewCompactMode", value),
     setHideToTrayOnClose: (value: boolean) => setSettings("hideToTrayOnClose", value),
     setKeepOnTopDuringCapture: (value: boolean) => setSettings("keepOnTopDuringCapture", value),
+    setBilingualInterviewEnabled: (value: boolean) => setSettings("bilingualInterviewEnabled", value),
+    setLiveTranslationEnabled: (value: boolean) => setSettings("liveTranslationEnabled", value),
+    setTranslationDebounceMs: (value: number) =>
+      setSettings("translationDebounceMs", Math.max(200, Math.min(4000, Math.round(value)))),
+    setTranslationMinWordCount: (value: number) =>
+      setSettings("translationMinWordCount", Math.max(1, Math.min(20, Math.round(value)))),
     setInterviewReportRetentionDays: (value: AppSettings["interviewReportRetentionDays"]) =>
       setSettings("interviewReportRetentionDays", value),
     setDebugTraceMode: (value: AppSettings["debugTraceMode"]) =>
@@ -826,6 +883,9 @@ export function useReplylineController(platform: AppPlatform) {
     exportInterviewReportMarkdown,
     exportInterviewReportRedactedMarkdown,
     clearInterviewReports,
+    startBilingualSession: bilingualController.startSession,
+    stopBilingualSession: bilingualController.stopSession,
+    triggerBilingualHotkeyAnswer: bilingualController.triggerHotkeyAnswer,
     setSelectedModelPreset: (value: string) => {
       const preset = resolveModelPreset(value);
       setSettings("selectedModelPreset", preset.id);

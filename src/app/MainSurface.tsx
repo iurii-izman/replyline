@@ -1,6 +1,7 @@
 import { For, Show, createMemo, createSignal, onCleanup } from "solid-js";
 import type { SettingsSectionId } from "./model";
 import type { ReplylineController } from "./controller";
+import { BilingualInterviewSurface } from "./BilingualInterviewSurface";
 
 function formatDurationLabel(startIso?: string | null, endIso?: string | null): string | null {
   if (!startIso) return null;
@@ -668,6 +669,27 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
     st().captureQuality.normal,
     st().captureQuality.long,
     st().setup.continueSetup,
+    st().card.bilingual.headerTitle,
+    st().card.bilingual.headerSubtitle,
+    st().card.bilingual.liveTranscriptTitle,
+    st().card.bilingual.liveTranslationTitle,
+    st().card.bilingual.questionTitle,
+    st().card.bilingual.answerTitle,
+    st().card.bilingual.answerEmpty,
+    st().card.bilingual.translationFallbackWarning,
+    st().card.bilingual.sttLatencyLabel,
+    st().card.bilingual.translationLatencyLabel,
+    st().card.bilingual.answerLatencyLabel,
+    st().card.bilingual.status.idle,
+    st().card.bilingual.status.starting,
+    st().card.bilingual.status.active,
+    st().card.bilingual.status.reconnecting,
+    st().card.bilingual.status.degraded,
+    st().card.bilingual.status.stopping,
+    st().card.bilingual.status.error,
+    st().settings.bilingualInterviewEnabledLabel,
+    st().settings.liveTranslationEnabledLabel,
+    st().settings.bilingualInterviewDisclaimer,
   ]);
   localeCoverage();
   const compactLayout = createMemo(() => controller().compactMode());
@@ -691,6 +713,7 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
       !isSetup() &&
       !isProcessing() &&
       !isAnswerReady() &&
+      !controller().bilingualActive() &&
       controller().mainUiState() !== "error",
   );
   const isError = createMemo(() => controller().mainUiState() === "error");
@@ -704,6 +727,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
   );
   const compactInterview = createMemo(
     () => controller().card()?.mode === "interview" && controller().compactMode(),
+  );
+  const showBilingualSurface = createMemo(
+    () => controller().settings.bilingualInterviewEnabled && controller().bilingualActive(),
   );
 
   return (
@@ -753,6 +779,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
           </Show>
           <Show when={isIdleReady()}>
             <IdleReadyState controller={controller()} />
+          </Show>
+          <Show when={showBilingualSurface()}>
+            <BilingualInterviewSurface controller={controller()} />
           </Show>
           <Show when={isProcessing()}>
             <ProcessingState controller={controller()} />

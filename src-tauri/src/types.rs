@@ -32,6 +32,33 @@ pub enum DebugTraceMode {
     FullLocal,
 }
 
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum SpeakerSource {
+    #[default]
+    SystemAudio,
+    Microphone,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum TranslationStrategy {
+    #[default]
+    DebouncedBatch,
+    LlmMicro,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ExportType {
+    #[default]
+    Full,
+    Redacted,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
@@ -50,12 +77,20 @@ pub struct AppSettings {
     pub interview_report_retention_days: u16,
     pub debug_trace_mode: DebugTraceMode,
     pub debug_trace_retention_days: u16,
+    pub bilingual_interview_enabled: bool,
+    pub interview_input_language: String,
+    pub translation_language: String,
+    pub live_translation_enabled: bool,
+    pub translation_debounce_ms: u16,
+    pub translation_min_word_count: u8,
+    pub bilingual_retention_behavior: String,
+    pub bilingual_answer_style: String,
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 9,
+            schema_version: 10,
             hotkey: "Ctrl+Alt+Space".to_string(),
             llm_base_url: "".to_string(),
             llm_model: "gpt-4o-mini".to_string(),
@@ -69,6 +104,14 @@ impl Default for AppSettings {
             interview_report_retention_days: 0,
             debug_trace_mode: DebugTraceMode::Redacted,
             debug_trace_retention_days: 3,
+            bilingual_interview_enabled: false,
+            interview_input_language: "en".to_string(),
+            translation_language: "ru".to_string(),
+            live_translation_enabled: true,
+            translation_debounce_ms: 600,
+            translation_min_word_count: 3,
+            bilingual_retention_behavior: "session_only".to_string(),
+            bilingual_answer_style: "b2_conversational".to_string(),
         }
     }
 }
@@ -281,6 +324,92 @@ pub struct PersistenceDiagnosticsDto {
     pub last_log_event_time: Option<String>,
 }
 
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BilingualSessionSettings {
+    pub speaker_source: SpeakerSource,
+    pub interview_input_language: String,
+    pub translation_language: String,
+    pub translation_strategy: TranslationStrategy,
+    pub live_translation_enabled: bool,
+    pub translation_debounce_ms: u16,
+    pub translation_min_word_count: u8,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LiveTranscriptSegmentDto {
+    pub segment_id: String,
+    pub timestamp: String,
+    pub text: String,
+    pub finalized: bool,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LiveTranslationSegmentDto {
+    pub segment_id: String,
+    pub source_segment_ids: Vec<String>,
+    pub primary_source_segment_id: String,
+    pub timestamp: String,
+    pub source_text: String,
+    pub translated_text: String,
+    pub source_language: String,
+    pub target_language: String,
+    pub is_final: bool,
+    pub latency_ms: u64,
+    pub is_fallback: bool,
+    pub strategy: TranslationStrategy,
+    pub batch_size: usize,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BilingualErrorDto {
+    pub code: String,
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub recoverable: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BilingualAnswerReadyDto {
+    pub answer_card: crate::interview_card_v1::InterviewCardDto,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BilingualAnswerChunkDto {
+    pub session_id: String,
+    pub text: String,
+    pub is_final: bool,
+    pub chunk_index: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BilingualExportInputDto {
+    pub export_type: ExportType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output_path: Option<String>,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportSummary {
+    pub export_type: ExportType,
+    pub session_id: String,
+    pub path: String,
+    pub questions_count: usize,
+    pub transcript_segments_count: usize,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CandidateFactDto {
@@ -336,7 +465,10 @@ impl SecretSlot {
 
 #[cfg(test)]
 mod tests {
-    use super::{AppSettings, CheckItemDto, LogStatusDto, RuntimeCheckDto, StatusEventDto};
+    use super::{
+        AppSettings, CheckItemDto, LiveTranslationSegmentDto, LogStatusDto, RuntimeCheckDto,
+        StatusEventDto,
+    };
 
     #[test]
     fn runtime_path_is_not_ready_for_placeholder_route() {
@@ -508,5 +640,29 @@ mod tests {
         assert!(!parsed.stt.ok);
         assert!(parsed.stt.action.is_some());
         assert!(!parsed.llm.ok);
+    }
+
+    #[test]
+    fn bilingual_translation_segment_uses_camel_case_source_segment_ids() {
+        let dto = LiveTranslationSegmentDto {
+            segment_id: "tr-1".to_string(),
+            source_segment_ids: vec!["en-1".to_string(), "en-2".to_string()],
+            primary_source_segment_id: "en-1".to_string(),
+            timestamp: "2026-05-30T10:00:00Z".to_string(),
+            source_text: "hello world".to_string(),
+            translated_text: "Привет".to_string(),
+            source_language: "en".to_string(),
+            target_language: "ru".to_string(),
+            is_final: true,
+            latency_ms: 100,
+            is_fallback: false,
+            strategy: super::TranslationStrategy::LlmMicro,
+            batch_size: 2,
+        };
+        let raw = serde_json::to_string(&dto).expect("serialize");
+        assert!(raw.contains("sourceSegmentIds"));
+        assert!(raw.contains("primarySourceSegmentId"));
+        let parsed: LiveTranslationSegmentDto = serde_json::from_str(&raw).expect("deserialize");
+        assert_eq!(parsed.source_segment_ids.len(), 2);
     }
 }
