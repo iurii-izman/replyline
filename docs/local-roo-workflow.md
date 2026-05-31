@@ -166,6 +166,6 @@ Claude Sonnet — модель для решений, где важна архи
 ## Связанные документы
 
 - [`AGENTS.md`](../AGENTS.md) — канонические инструкции для AI-агентов.
-- [`ai-tooling-policy-matrix.md`](ai-tooling-policy-matrix.md) — governance для всех AI-инструментов.
+- Internal operator notes and AI tooling governance matrix are local-only and intentionally excluded from public GitHub footprint.
 - [`copy-rules.md`](copy-rules.md) — ограничения на формулировки о продукте.
 - [`CONTRIBUTING.md`](../CONTRIBUTING.md) — contribution workflow и quality gates.

@@ -57,9 +57,7 @@
 
 ## 6) Internal operations and templates (active)
 
-- [audit-scorecard-2026-05-25.md](audit-scorecard-2026-05-25.md)
-- [max-upgrade-implementation-plan.md](max-upgrade-implementation-plan.md)
-- [max-upgrade-execution-prompts.md](max-upgrade-execution-prompts.md)
+Internal operator notes and draft execution plans are local-only and intentionally not part of the public GitHub footprint.
 - [postman-audit-execution-prompts.md](postman-audit-execution-prompts.md)
 - [beta-feedback-loop.md](beta-feedback-loop.md)
 - [beta-ops-diagnostics.md](beta-ops-diagnostics.md)

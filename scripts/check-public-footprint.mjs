@@ -1,14 +1,21 @@
 import { execSync } from "node:child_process";
 
 const blockedPrefixes = [
+  ".cursor/",
+  ".continue/",
+  ".claude/",
+  ".codex/",
+  ".cline/",
   ".roo/",
   ".windsurf/",
   ".zed/",
+  "AI/",
   "docs/archive/",
   "infra/",
   "postman/",
   "scratch/",
   "tests/api/postman/",
+  "reports/",
   "reports/runtime/",
   "reports/runtime-evidence-",
   "reports/beta-handoff-",
@@ -17,7 +24,19 @@ const blockedPrefixes = [
   "test-results/",
 ];
 
-const blockedFiles = new Set(["docs-cleanup-task.md", "test-out.txt"]);
+const blockedFiles = new Set([
+  "docs-cleanup-task.md",
+  "test-out.txt",
+  "CLAUDE.md",
+  "docs/ai-tooling-policy-matrix.md",
+]);
+const blockedPathRegexes = [
+  /^docs\/audit-scorecard-.*\.md$/u,
+  /^docs\/max-upgrade-.*\.md$/u,
+  /^reports\/release\/.*\.md$/u,
+  /^reports\/sonar\/.*\.md$/u,
+  /^reports\/manual\/.*\.md$/u,
+];
 const allowedBlockedPathEntries = new Map([
   [
     "infra/replyline-ai-stack.override.yml",
@@ -29,6 +48,10 @@ const allowedBlockedPathEntries = new Map([
   ],
   [".env.docker.example", "Sanitized Docker env template with placeholders only."],
   ["docs/docker-stack.md", "Public Docker runbook for local stack operations."],
+  [
+    "reports/docker/docker-stack-audit-2026-05-21.md",
+    "Docker stack audit artifact, no secrets.",
+  ],
   [
     "reports/docker/docker-stack-hardening-2026-05-21.md",
     "Docker hardening audit artifact, no secrets.",
@@ -43,6 +66,7 @@ const trackedFiles = execSync("git ls-files", { encoding: "utf8" })
 const violations = trackedFiles.filter((file) => {
   if (allowedBlockedPathEntries.has(file)) return false;
   if (blockedFiles.has(file)) return true;
+  if (blockedPathRegexes.some((pattern) => pattern.test(file))) return true;
   return blockedPrefixes.some((prefix) => file.startsWith(prefix));
 });
 
