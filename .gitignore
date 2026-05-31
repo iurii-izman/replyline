@@ -1,24 +1,15 @@
-node_modules
-dist
-src-tauri/target
+node_modules/
+dist/
+src-tauri/target/
 *.log
-reports/*
+reports/**
+!reports/
 !reports/docker/
 !reports/docker/docker-stack-audit-2026-05-21.md
 !reports/docker/docker-stack-hardening-2026-05-21.md
-!reports/release/
-reports/release/*
-!reports/release/release-gate-topology-*.md
-!reports/release/public-footprint-review-*.md
-!reports/release/release-readiness-*.md
-!reports/manual/
-reports/manual/*
-!reports/manual/.gitkeep
-!reports/sonar/
-reports/sonar/*
-!reports/sonar/sonar-residual-readiness-*.md
-.vscode
-.idea
+!reports/.gitkeep
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
 *.tmp
@@ -41,13 +32,21 @@ AI/
 .claude/
 .codex/
 .roo/
+.cursor/
+.continue/
+.aider*
+.cline/
 
 # Local-only internal artifacts kept out of GitHub footprint
 .windsurf/
 .zed/
 docs/archive/
+docs/ai-tooling-policy-matrix.md
+docs/audit-scorecard-*.md
+docs/max-upgrade-*.md
 docs-cleanup-task.md
-infra/*
+CLAUDE.md
+infra/**
 !infra/replyline-ai-stack.override.yml
 !infra/replyline-ai-stack.pinned.example.yml
 postman/
@@ -64,6 +63,7 @@ interview-exports/
 # Secrets — never commit
 .env
 .env.*
+!.env.keys.example
 !.env.keys
 !.env.docker.example
 scripts/runtime-probe-env.local.ps1
