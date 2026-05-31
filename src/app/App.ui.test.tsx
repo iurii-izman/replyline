@@ -368,6 +368,12 @@ function createSetupMockPlatform(
   return base;
 }
 
+async function triggerAnalysisReady(mock: MockPlatform): Promise<void> {
+  await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+  await mock.emitShortcut({ state: "Pressed" });
+  await mock.emitShortcut({ state: "Released" });
+}
+
 describe("App UX stabilization", () => {
   let mock: MockPlatform;
 
@@ -1572,6 +1578,112 @@ describe("Interview card rendering", () => {
     expect(footer.className).toContain("app-sticky-footer");
     expect(within(footer).getByRole("button", { name: "Подготовить профиль" })).toBeTruthy();
     expect(within(footer).getByRole("button", { name: "Назад в настройки" })).toBeTruthy();
+  });
+});
+
+describe("Work/Interview behavior parity", () => {
+  it("setup required state is shown instead of idle ready content", async () => {
+    const mock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmKeyPresent: false,
+      llmBaseUrl: "",
+      llmModel: "",
+      runtimeReady: false,
+    });
+    render(() => <App platform={mock.platform} />);
+
+    expect(await screen.findByTestId("main-state-setup")).toBeTruthy();
+    expect(screen.queryByTestId("main-state-idle")).toBeNull();
+  });
+
+  it("clear resets interview view and prevents stale pinned content", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
+    render(() => <App platform={mock.platform} />);
+    await triggerAnalysisReady(mock);
+
+    fireEvent.keyDown(globalThis, { key: "3" });
+    fireEvent.click(await screen.findByRole("button", { name: "Закрепить" }));
+    expect(await screen.findByTestId("section-interview-signals")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "clear_context")).toBe(true),
+    );
+    expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
+    expect(screen.queryByTestId("interview-card-controls")).toBeNull();
+    expect(screen.queryByTestId("section-interview-signals")).toBeNull();
+  });
+
+  it("retry keeps interview mode and works with active answer profile", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
+    render(() => <App platform={mock.platform} />);
+    await triggerAnalysisReady(mock);
+
+    fireEvent.keyDown(globalThis, { key: "r" });
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "retry_last_analysis")).toBe(true),
+    );
+    expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
+    expect(screen.queryByTestId("section-gist")).toBeNull();
+  });
+
+  it("compact interview keeps critical states and actions visible", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
+    render(() => <App platform={mock.platform} />);
+    await triggerAnalysisReady(mock);
+
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    fireEvent.click(screen.getByRole("tab", { name: /Горячая клавиша/i }));
+    fireEvent.click(await screen.findByLabelText("Компактный режим интервью"));
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Назад" }));
+
+    expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Пересобрать" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Очистить" })).toBeTruthy();
+  });
+
+  it("switches from interview to work layout without leftover interview controls", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
+    const invoke = mock.platform.invoke;
+    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "retry_last_analysis") {
+        return { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" };
+      }
+      return invoke(command, args);
+    });
+    mock.platform.invoke = patchedInvoke;
+    mock.invoke = patchedInvoke;
+
+    render(() => <App platform={mock.platform} />);
+    await triggerAnalysisReady(mock);
+
+    fireEvent.keyDown(globalThis, { key: "r" });
+    expect(await screen.findByTestId("section-gist")).toBeTruthy();
+    expect(screen.getByTestId("section-say-now")).toBeTruthy();
+    expect(screen.getByTestId("section-next-move")).toBeTruthy();
+    expect(screen.queryByTestId("interview-card-controls")).toBeNull();
+  });
+
+  it("switches from work to interview without inheriting legacy-only output", async () => {
+    const mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    const invoke = mock.platform.invoke;
+    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "retry_last_analysis") return interviewCardFixture();
+      return invoke(command, args);
+    });
+    mock.platform.invoke = patchedInvoke;
+    mock.invoke = patchedInvoke;
+
+    render(() => <App platform={mock.platform} />);
+    await triggerAnalysisReady(mock);
+
+    expect(await screen.findByTestId("section-gist")).toBeTruthy();
+    fireEvent.keyDown(globalThis, { key: "r" });
+    expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
+    expect(screen.queryByTestId("section-gist")).toBeNull();
   });
 });
 
