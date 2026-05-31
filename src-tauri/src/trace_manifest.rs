@@ -68,7 +68,14 @@ pub fn append_run_jsonl<T: Serialize>(
 pub fn sha256_hex(value: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(value.as_bytes());
-    format!("sha256:{:x}", hasher.finalize())
+    let digest = hasher.finalize();
+    format!(
+        "sha256:{}",
+        digest
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+    )
 }
 
 pub fn ensure_run_started(
