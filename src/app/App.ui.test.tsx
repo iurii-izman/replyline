@@ -1713,6 +1713,138 @@ describe("Work/Interview behavior parity", () => {
   });
 });
 
+describe("Runtime scenario matrix (deterministic)", () => {
+  it("Scenario 2: WorkConversation happy path supports capture, copy, retry, and clear", async () => {
+    const mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "capture_start")).toBe(true),
+    );
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "capture_stop_and_analyze")).toBe(
+        true,
+      ),
+    );
+    expect(await screen.findByTestId("section-say-now")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Скопировать ответ" }));
+    await waitFor(() => expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("work say"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Пересобрать" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "retry_last_analysis")).toBe(true),
+    );
+    expect(await screen.findByTestId("section-say-now")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "clear_context")).toBe(true),
+    );
+    expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
+  });
+
+  it("Scenario 4: Candidate Pack signals avoid fabricated metrics and missing anchors", async () => {
+    const cardWithoutEvidence = interviewCardFixture({
+      interviewCardSchemaV1: {
+        ...interviewCardFixture().interviewCardSchemaV1,
+        signals: {
+          mustMention: ["ownership"],
+          keywords: ["impact"],
+          metrics: [],
+          resumeAnchors: [],
+        },
+      },
+    });
+    const mock = createMockPlatform({ analysisCard: cardWithoutEvidence });
+    render(() => <App platform={mock.platform} />);
+    await triggerAnalysisReady(mock);
+
+    fireEvent.keyDown(globalThis, { key: "3" });
+    expect(await screen.findByTestId("section-interview-signals")).toBeTruthy();
+    expect(screen.queryByText("Метрики:")).toBeNull();
+    expect(screen.queryByText(/project x/i)).toBeNull();
+  });
+
+  it("Scenario 5: invalid first pass can recover on next deterministic pass", async () => {
+    let firstAttempt = true;
+    const mock = createMockPlatform();
+    const invoke = mock.platform.invoke;
+    const patchedInvoke = vi.fn(async (command: string, args?: Record<string, unknown>) => {
+      if (command === "capture_stop_and_analyze") {
+        if (firstAttempt) {
+          firstAttempt = false;
+          throw { kind: "Pipeline", message: "LLM timeout" };
+        }
+        return interviewCardFixture();
+      }
+      return invoke(command, args);
+    });
+    mock.platform.invoke = patchedInvoke;
+    mock.invoke = patchedInvoke;
+
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+    expect(
+      await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
+    ).toBeTruthy();
+
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+    expect(await screen.findByTestId("section-interview-answer")).toBeTruthy();
+  });
+
+  it("Scenario 6: session lifecycle supports report export and clear", async () => {
+    const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
+    render(() => <App platform={mock.platform} />);
+    await triggerAnalysisReady(mock);
+
+    fireEvent.click(screen.getByRole("button", { name: "Начать сессию" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "start_interview_session")).toBe(
+        true,
+      ),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Завершить сессию" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "end_interview_session")).toBe(
+        true,
+      ),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Экспортировать Redacted Markdown без транскрипта" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Экспортировать полный Markdown с транскриптом" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Очистить отчёты" }));
+
+    await waitFor(() =>
+      expect(
+        mock.invoke.mock.calls.some((call) => call[0] === "export_interview_report_redacted_markdown"),
+      ).toBe(true),
+    );
+    await waitFor(() =>
+      expect(
+        mock.invoke.mock.calls.some((call) => call[0] === "export_interview_report_markdown"),
+      ).toBe(true),
+    );
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "clear_interview_reports")).toBe(
+        true,
+      ),
+    );
+  });
+});
+
 describe("Setup wizard (first-run guidance)", () => {
   it("shows settings on first launch when not ready", async () => {
     const mock = createSetupMockPlatform({
