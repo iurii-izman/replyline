@@ -105,7 +105,15 @@ $expectedSettingsFields = @(
   "interviewCompactMode",
   "interviewReportRetentionDays",
   "debugTraceMode",
-  "debugTraceRetentionDays"
+  "debugTraceRetentionDays",
+  "bilingualInterviewEnabled",
+  "interviewInputLanguage",
+  "translationLanguage",
+  "liveTranslationEnabled",
+  "translationDebounceMs",
+  "translationMinWordCount",
+  "bilingualRetentionBehavior",
+  "bilingualAnswerStyle"
 )
 
 $settingsFieldNames = @()
@@ -149,6 +157,14 @@ $report = [ordered]@{
       interviewReportRetentionDays = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "interviewReportRetentionDays"
       debugTraceMode = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "debugTraceMode"
       debugTraceRetentionDays = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "debugTraceRetentionDays"
+      bilingualInterviewEnabled = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "bilingualInterviewEnabled"
+      interviewInputLanguage = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "interviewInputLanguage"
+      translationLanguage = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "translationLanguage"
+      liveTranslationEnabled = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "liveTranslationEnabled"
+      translationDebounceMs = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "translationDebounceMs"
+      translationMinWordCount = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "translationMinWordCount"
+      bilingualRetentionBehavior = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "bilingualRetentionBehavior"
+      bilingualAnswerStyle = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "bilingualAnswerStyle"
     }
     schema = [ordered]@{
       schemaVersion = Get-JsonPropertyOrNull -InputObject $settingsData -PropertyName "schemaVersion"

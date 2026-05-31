@@ -22,6 +22,14 @@ const expectedConfiguredFields = [
   "interviewReportRetentionDays",
   "debugTraceMode",
   "debugTraceRetentionDays",
+  "bilingualInterviewEnabled",
+  "interviewInputLanguage",
+  "translationLanguage",
+  "liveTranslationEnabled",
+  "translationDebounceMs",
+  "translationMinWordCount",
+  "bilingualRetentionBehavior",
+  "bilingualAnswerStyle",
 ];
 
 const secretPatterns = [
@@ -43,15 +51,46 @@ const fixtureCases = [
   },
   {
     name: "settings-v7-legacy.json",
-    expectedMissingFields: ["debugTraceMode", "debugTraceRetentionDays"],
+    expectedMissingFields: [
+      "debugTraceMode",
+      "debugTraceRetentionDays",
+      "bilingualInterviewEnabled",
+      "interviewInputLanguage",
+      "translationLanguage",
+      "liveTranslationEnabled",
+      "translationDebounceMs",
+      "translationMinWordCount",
+      "bilingualRetentionBehavior",
+      "bilingualAnswerStyle",
+    ],
   },
   {
     name: "settings-v8-legacy.json",
-    expectedMissingFields: ["debugTraceMode", "debugTraceRetentionDays"],
+    expectedMissingFields: [
+      "debugTraceMode",
+      "debugTraceRetentionDays",
+      "bilingualInterviewEnabled",
+      "interviewInputLanguage",
+      "translationLanguage",
+      "liveTranslationEnabled",
+      "translationDebounceMs",
+      "translationMinWordCount",
+      "bilingualRetentionBehavior",
+      "bilingualAnswerStyle",
+    ],
   },
   {
     name: "settings-v9-invalid-retention.json",
-    expectedMissingFields: [],
+    expectedMissingFields: [
+      "bilingualInterviewEnabled",
+      "interviewInputLanguage",
+      "translationLanguage",
+      "liveTranslationEnabled",
+      "translationDebounceMs",
+      "translationMinWordCount",
+      "bilingualRetentionBehavior",
+      "bilingualAnswerStyle",
+    ],
   },
 ];
 

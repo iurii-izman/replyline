@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 9,
+  "schemaVersion": 10,
   "hotkey": "Ctrl+Alt+Space",
   "llmBaseUrl": "https://openrouter.ai/api/v1",
   "llmModel": "openai/gpt-4o-mini",
@@ -12,5 +12,13 @@
   "interviewCompactMode": true,
   "interviewReportRetentionDays": 30,
   "debugTraceMode": "redacted",
-  "debugTraceRetentionDays": 3
+  "debugTraceRetentionDays": 3,
+  "bilingualInterviewEnabled": false,
+  "interviewInputLanguage": "en",
+  "translationLanguage": "ru",
+  "liveTranslationEnabled": true,
+  "translationDebounceMs": 600,
+  "translationMinWordCount": 3,
+  "bilingualRetentionBehavior": "session_only",
+  "bilingualAnswerStyle": "b2_conversational"
 }
