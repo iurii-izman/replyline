@@ -1047,6 +1047,8 @@ describe("Interview card rendering", () => {
 
     const labels = (await screen.findByTestId("main-card-shell")).querySelectorAll(".result-label");
     expect(labels[0]?.textContent).toBe("Ответ");
+    expect(screen.getByTestId("section-interview-answer-short").textContent).toContain("Short 1");
+    expect(screen.getByTestId("section-interview-answer-strong").textContent).toContain("Strong 1");
   });
 
   it("copy copies answer.main", async () => {
@@ -1129,6 +1131,28 @@ describe("Interview card rendering", () => {
     expect(await screen.findByTestId("section-interview-risks")).toBeTruthy();
   });
 
+  it("renders risks tab without crash when safeReframe has wrong type", async () => {
+    const mock = createMockPlatform({
+      analysisCard: interviewCardFixture({
+        interviewCardSchemaV1: {
+          ...interviewCardFixture().interviewCardSchemaV1,
+          risks: {
+            weakPoints: ["no numbers"],
+            avoid: ["blame others"],
+            safeReframe: ["focus on learning"],
+          },
+        },
+      }),
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    fireEvent.keyDown(globalThis, { key: "4" });
+    expect(await screen.findByTestId("section-interview-risks")).toBeTruthy();
+  });
+
   it("clarifier hidden when not needed", async () => {
     const mock = createMockPlatform({ analysisCard: interviewCardFixture() });
     render(() => <App platform={mock.platform} />);
@@ -1156,6 +1180,23 @@ describe("Interview card rendering", () => {
     fireEvent.keyDown(globalThis, { key: "6" });
     expect(await screen.findByTestId("section-interview-clarifier")).toBeTruthy();
     expect(screen.getByText("Which timeframe?")).toBeTruthy();
+  });
+
+  it("clarifier tab is hidden when needed=true but text is empty", async () => {
+    const mock = createMockPlatform({
+      analysisCard: interviewCardFixture({
+        interviewCardSchemaV1: {
+          ...interviewCardFixture().interviewCardSchemaV1,
+          clarifier: { needed: true, text: null },
+        },
+      }),
+    });
+    render(() => <App platform={mock.platform} />);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await mock.emitShortcut({ state: "Pressed" });
+    await mock.emitShortcut({ state: "Released" });
+
+    expect(screen.queryByTestId("section-interview-clarifier")).toBeNull();
   });
 
   it("carousel switches cards and answer is default", async () => {

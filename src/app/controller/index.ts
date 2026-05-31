@@ -212,7 +212,9 @@ export function useReplylineController(platform: AppPlatform) {
   const interviewCarouselKeys = (nextCard: AnalysisCard | null): InterviewCardKey[] => {
     if (nextCard?.mode !== "interview") return [];
     const keys: InterviewCardKey[] = ["answer", "question", "signals", "risks", "followUps"];
-    if (nextCard.interview.clarifier?.needed) keys.push("clarifier");
+    if (nextCard.interview.clarifier?.needed && nextCard.interview.clarifier.text?.trim()) {
+      keys.push("clarifier");
+    }
     return keys;
   };
 
@@ -256,13 +258,7 @@ export function useReplylineController(platform: AppPlatform) {
     if (cardValue.mode !== "interview") return "";
     const value = cardValue.interview.clarifier;
     const text = typeof value.text === "string" ? value.text.trim() : "";
-    if (text) return text;
-    const maybeQuestion =
-      "question" in (value as Record<string, unknown>) &&
-      typeof (value as { question?: unknown }).question === "string"
-        ? ((value as { question: string }).question ?? "").trim()
-        : "";
-    return maybeQuestion;
+    return text;
   };
   const copyText = createMemo(() => {
     const currentCard = card();

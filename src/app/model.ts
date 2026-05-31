@@ -213,8 +213,8 @@ export type InterviewQuestionDto = {
 export type InterviewSignalsDto = {
   mustMention: string[];
   keywords: string[];
-  metrics?: string[];
-  resumeAnchors?: string[];
+  metrics: string[];
+  resumeAnchors: string[];
 };
 
 export type InterviewRisksDto = {
@@ -230,7 +230,7 @@ export type InterviewFollowUpDto = {
 
 export type InterviewClarifierDto = {
   needed: boolean;
-  text?: string | null;
+  text: string | null;
 };
 
 export type BilingualMetaDto = {
@@ -267,8 +267,96 @@ export type AnalysisCardDto = LegacyAnalysisCard & {
   interviewCardSchemaV1?: InterviewCardDto | null;
 };
 
+function asString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+}
+
+function normalizeLegacyInterviewCard(input: unknown): InterviewCardDto | null {
+  if (!input || typeof input !== "object") return null;
+  const source = input as Record<string, unknown>;
+  const question = (source.question as Record<string, unknown> | undefined) ?? {};
+  const answer = (source.answer as Record<string, unknown> | undefined) ?? {};
+  const signals = (source.signals as Record<string, unknown> | undefined) ?? {};
+  const risks = (source.risks as Record<string, unknown> | undefined) ?? {};
+  const clarifier = (source.clarifier as Record<string, unknown> | undefined) ?? {};
+  const followUps = Array.isArray(source.followUps) ? source.followUps : [];
+  const bilingualMeta = (source.bilingualMeta as Record<string, unknown> | undefined) ?? undefined;
+  const structure = asString(answer.structure);
+  const normalizedStructure: InterviewAnswerDto["structure"] =
+    structure === "STAR" || structure === "CASE" || structure === "DIRECT" || structure === "CLARIFY"
+      ? structure
+      : "DIRECT";
+  const clarifierText = asString(clarifier.text).trim();
+  const legacyClarifierQuestion = asString(clarifier.question).trim();
+
+  return {
+    mode: "interview",
+    answer: {
+      main: asString(answer.main),
+      short: asString(answer.short),
+      strong: asString(answer.strong),
+      structure: normalizedStructure,
+    },
+    question: {
+      rawTranscript: asString(question.rawTranscript),
+      cleanQuestion: asString(question.cleanQuestion),
+      interviewerIntent: asString(question.interviewerIntent),
+      questionType: asString(question.questionType),
+      confidence:
+        asString(question.confidence) === "low" ||
+        asString(question.confidence) === "medium" ||
+        asString(question.confidence) === "high"
+          ? (asString(question.confidence) as InterviewQuestionDto["confidence"])
+          : "low",
+    },
+    signals: {
+      mustMention: asStringArray(signals.mustMention),
+      keywords: asStringArray(signals.keywords),
+      metrics: asStringArray(signals.metrics),
+      resumeAnchors: asStringArray(signals.resumeAnchors),
+    },
+    risks: {
+      weakPoints: asStringArray(risks.weakPoints),
+      avoid: asStringArray(risks.avoid),
+      safeReframe: asString(risks.safeReframe),
+    },
+    followUps: followUps
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+        const row = item as Record<string, unknown>;
+        return {
+          question: asString(row.question),
+          bridgeAnswer: asString(row.bridgeAnswer),
+        };
+      })
+      .filter((item): item is InterviewFollowUpDto => Boolean(item)),
+    clarifier: {
+      needed: Boolean(clarifier.needed),
+      text: clarifierText || legacyClarifierQuestion || null,
+    },
+    bilingualMeta: bilingualMeta
+      ? {
+          sessionId: asString(bilingualMeta.sessionId),
+          sourceSegmentIds: asStringArray(bilingualMeta.sourceSegmentIds),
+          questionRu: asString(bilingualMeta.questionRu) || null,
+          listeningStatus: asString(bilingualMeta.listeningStatus),
+        }
+      : null,
+  };
+}
+
 export function asAnalysisCard(input: AnalysisCardDto): AnalysisCard {
-  const interview = input.interviewCardSchemaV1 ?? input.interviewCard ?? null;
+  const interview =
+    normalizeLegacyInterviewCard(input.interviewCardSchemaV1) ??
+    normalizeLegacyInterviewCard(input.interviewCard) ??
+    null;
   if (interview) {
     return {
       ...input,

@@ -218,6 +218,36 @@ const staticContractChecks = [
       "Settings range drift: translationDebounceMs/translationMinWordCount sanitize ranges must remain stable",
   },
   {
+    ok:
+      interviewRustText.includes("pub mode: InterviewMode") &&
+      modelText.includes('mode: "interview";'),
+    message: "Interview mode drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub raw_transcript: String") &&
+      modelText.includes("rawTranscript: string;"),
+    message: "Interview question.rawTranscript drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub clean_question: String") &&
+      modelText.includes("cleanQuestion: string;"),
+    message: "Interview question.cleanQuestion drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub question_type: InterviewQuestionType") &&
+      modelText.includes("questionType: string;"),
+    message: "Interview question.questionType drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub interviewer_intent: String") &&
+      modelText.includes("interviewerIntent: string;"),
+    message: "Interview question.interviewerIntent drift between Rust/TS",
+  },
+  {
     ok: interviewRustText.includes("pub short: String") && modelText.includes("short: string;"),
     message: "Interview answer.short drift: Rust/TS must both be string",
   },
@@ -227,9 +257,70 @@ const staticContractChecks = [
   },
   {
     ok:
+      interviewRustText.includes("pub main: String") && modelText.includes("main: string;"),
+    message: "Interview answer.main drift: Rust/TS must both be string",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub structure: InterviewAnswerStructure") &&
+      modelText.includes('structure: "STAR" | "CASE" | "DIRECT" | "CLARIFY";'),
+    message: "Interview answer.structure drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub must_mention: Vec<String>") &&
+      modelText.includes("mustMention: string[];"),
+    message: "Interview signals.mustMention drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub keywords: Vec<String>") &&
+      modelText.includes("keywords: string[];"),
+    message: "Interview signals.keywords drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub metrics: Vec<String>") &&
+      modelText.includes("metrics: string[];"),
+    message: "Interview signals.metrics drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub resume_anchors: Vec<String>") &&
+      modelText.includes("resumeAnchors: string[];"),
+    message: "Interview signals.resumeAnchors drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub weak_points: Vec<String>") &&
+      modelText.includes("weakPoints: string[];"),
+    message: "Interview risks.weakPoints drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub avoid: Vec<String>") &&
+      modelText.includes("avoid: string[];"),
+    message: "Interview risks.avoid drift between Rust/TS",
+  },
+  {
+    ok:
       interviewRustText.includes("pub safe_reframe: String") &&
       modelText.includes("safeReframe: string;"),
     message: "Interview risks.safeReframe drift: Rust/TS must both be string",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub follow_ups: Vec<InterviewFollowUp>") &&
+      interviewRustText.includes("pub question: String") &&
+      interviewRustText.includes("pub bridge_answer: String") &&
+      modelText.includes("followUps: InterviewFollowUpDto[];"),
+    message: "Interview followUps drift between Rust/TS",
+  },
+  {
+    ok:
+      interviewRustText.includes("pub needed: bool") &&
+      modelText.includes("needed: boolean;"),
+    message: "Interview clarifier.needed drift between Rust/TS",
   },
   {
     ok:
@@ -240,7 +331,7 @@ const staticContractChecks = [
   {
     ok:
       interviewRustText.includes("pub text: Option<String>") &&
-      modelText.includes("text?: string | null;"),
+      modelText.includes("text: string | null;"),
     message: "Interview clarifier drift: expected clarifier.text on both sides",
   },
 ];

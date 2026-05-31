@@ -513,6 +513,18 @@ function LiveAssistShell(
                       ? controller().card().interview.answer.main
                       : ""}
                   </p>
+                  <p class="result-text" data-testid="section-interview-answer-short">
+                    {controller().strings().card.interview.answerShort}:{" "}
+                    {controller().card()?.mode === "interview"
+                      ? controller().card().interview.answer.short
+                      : ""}
+                  </p>
+                  <p class="result-text" data-testid="section-interview-answer-strong">
+                    {controller().strings().card.interview.answerStrong}:{" "}
+                    {controller().card()?.mode === "interview"
+                      ? controller().card().interview.answer.strong
+                      : ""}
+                  </p>
                 </section>
               </Show>
               <Show when={controller().activeInterviewCardKey() === "question"}>
@@ -570,8 +582,6 @@ function LiveAssistShell(
                   <p class="result-text">
                     {controller().card()?.mode === "interview"
                       ? controller().card().interview.clarifier.text ||
-                        (controller().card().interview.clarifier as { question?: string })
-                          .question ||
                         controller().strings().card.interview.notAvailable
                       : ""}
                   </p>

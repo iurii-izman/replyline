@@ -328,5 +328,54 @@ describe("model", () => {
       expect(card.interview.clarifier.text).toBe("Need scope?");
       expect(Array.isArray(card.interview.followUps)).toBe(true);
     });
+
+    it("normalizes legacy interviewCard and malformed legacy fields", () => {
+      const dto = {
+        gist: "legacy gist",
+        sayNow: "legacy say",
+        nextMove: "legacy next",
+        charsBand: "normal",
+        interviewCard: {
+          mode: "interview",
+          question: {
+            rawTranscript: "raw",
+            cleanQuestion: "clean",
+            interviewerIntent: "intent",
+            questionType: "behavioral",
+            confidence: "high",
+          },
+          answer: {
+            main: "main",
+            short: "short",
+            strong: "strong",
+            structure: "STAR",
+          },
+          signals: {
+            mustMention: "ownership",
+            keywords: null,
+            metrics: "metric",
+            resumeAnchors: ["resume"],
+          },
+          risks: {
+            weakPoints: "risk",
+            avoid: null,
+            safeReframe: "reframe",
+          },
+          followUps: [{ question: "q1", bridgeAnswer: "a1" }],
+          clarifier: { needed: true, question: "Need scope?" },
+        },
+      } as const;
+
+      const card = asAnalysisCard(dto);
+      expect(card.mode).toBe("interview");
+      if (card.mode !== "interview") throw new Error("expected interview card");
+      expect(card.interview.signals.mustMention).toEqual([]);
+      expect(card.interview.signals.keywords).toEqual([]);
+      expect(card.interview.signals.metrics).toEqual([]);
+      expect(card.interview.signals.resumeAnchors).toEqual(["resume"]);
+      expect(card.interview.risks.weakPoints).toEqual([]);
+      expect(card.interview.risks.avoid).toEqual([]);
+      expect(card.interview.clarifier.text).toBe("Need scope?");
+    });
   });
 });
