@@ -863,6 +863,32 @@ describe("App UX stabilization", () => {
     expect(screen.getByText(/Fallback chain:/)).toBeTruthy();
   });
 
+  it("shows preset caveats for free and paid routes and hides paid caveat for custom", async () => {
+    render(() => <App platform={mock.platform} />);
+    fireEvent.click(await screen.findByTitle("Настройки"));
+    fireEvent.click(screen.getByRole("tab", { name: /Ответ \/ LLM/i }));
+    fireEvent.click(screen.getByText(/caveats/i));
+
+    const preset = await screen.findByDisplayValue("Custom OpenAI-compatible");
+    fireEvent.input(preset, { target: { value: "openrouter_free_dev" } });
+    expect(
+      screen.getByText("Free models can be rate-limited and availability may vary."),
+    ).toBeTruthy();
+    expect(
+      screen.queryByText("Paid presets require active credits/billing; provider limits may change."),
+    ).toBeNull();
+
+    fireEvent.input(preset, { target: { value: "openrouter_quality_paid" } });
+    expect(
+      screen.getByText("Paid presets require active credits/billing; provider limits may change."),
+    ).toBeTruthy();
+
+    fireEvent.input(preset, { target: { value: "custom_openai_compatible" } });
+    expect(
+      screen.queryByText("Paid presets require active credits/billing; provider limits may change."),
+    ).toBeNull();
+  });
+
   it("syncs base URL and model for non-custom preset", async () => {
     render(() => <App platform={mock.platform} />);
     fireEvent.click(await screen.findByTitle("Настройки"));
