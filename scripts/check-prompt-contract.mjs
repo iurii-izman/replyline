@@ -15,6 +15,7 @@ const interviewCardV1Path = new URL("../src-tauri/src/interview_card_v1.rs", imp
 const llmProviderPath = new URL("../src-tauri/src/providers/llm_provider.rs", import.meta.url);
 const promptRegistryPath = new URL("../src-tauri/src/prompt_registry.rs", import.meta.url);
 const answerProfilesPath = new URL("../src/app/answerProfiles.ts", import.meta.url);
+const answerProfilesSpecPath = new URL("../specs/answer-profiles.json", import.meta.url);
 
 function fail(message) {
   throw new Error(message);
@@ -34,6 +35,7 @@ const [
   llmProviderRaw,
   promptRegistryRaw,
   answerProfilesRaw,
+  answerProfilesSpecRaw,
 ] = await Promise.all([
   readFile(fixturePath, "utf8"),
   readFile(llmPath, "utf8"),
@@ -42,7 +44,10 @@ const [
   readFile(llmProviderPath, "utf8"),
   readFile(promptRegistryPath, "utf8"),
   readFile(answerProfilesPath, "utf8"),
+  readFile(answerProfilesSpecPath, "utf8"),
 ]);
+
+const answerProfilesSpec = JSON.parse(answerProfilesSpecRaw);
 
 const fixtures = JSON.parse(fixtureRaw);
 if (!Array.isArray(fixtures) || fixtures.length < 20) {
@@ -149,22 +154,83 @@ assertIncludes(
 const backendProfileIds = [...promptRegistryRaw.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
 const backendProfileIdsSet = new Set(backendProfileIds);
 const frontendProfileIds = [...answerProfilesRaw.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
-const frontendDefault = answerProfilesRaw.match(
-  /DEFAULT_ANSWER_PROFILE:\s*AnswerProfileId\s*=\s*"([^"]+)"/,
-)?.[1];
+const specProfiles = Array.isArray(answerProfilesSpec?.profiles) ? answerProfilesSpec.profiles : [];
+const specProfileIds = specProfiles.map((p) => p.id);
+const specProfileIdsSet = new Set(specProfileIds);
+const specDefault = answerProfilesSpec?.defaultProfileId;
 const backendDefault = promptRegistryRaw.match(
   /DEFAULT_ANSWER_PROFILE_ID:\s*&str\s*=\s*"([^"]+)"/,
 )?.[1];
-if (!frontendDefault || !backendDefault) {
-  fail("Cannot parse frontend/backend default profile ids.");
+if (!specDefault || !backendDefault) {
+  fail("Cannot parse spec/backend default profile ids.");
 }
-for (const id of frontendProfileIds) {
+if (!answerProfilesRaw.includes("../../specs/answer-profiles.json")) {
+  fail("Frontend answerProfiles.ts must import specs/answer-profiles.json.");
+}
+for (const id of specProfileIds) {
   if (!backendProfileIdsSet.has(id)) {
-    fail(`Frontend profile id "${id}" is missing in backend prompt registry.`);
+    fail(`Spec profile id "${id}" is missing in backend prompt registry.`);
   }
 }
-if (frontendDefault !== backendDefault) {
-  fail(`Default profile mismatch: frontend=${frontendDefault}, backend=${backendDefault}`);
+for (const id of backendProfileIds) {
+  if (!specProfileIdsSet.has(id)) {
+    fail(`Backend profile id "${id}" is missing in specs/answer-profiles.json.`);
+  }
+}
+for (const id of frontendProfileIds) {
+  if (!specProfileIdsSet.has(id)) {
+    fail(`Frontend profile id "${id}" is missing in specs/answer-profiles.json.`);
+  }
+}
+if (specDefault !== backendDefault) {
+  fail(`Default profile mismatch: spec=${specDefault}, backend=${backendDefault}`);
+}
+
+const structureMap = {
+  star: "StructurePreference::Star",
+  case: "StructurePreference::Case",
+  direct: "StructurePreference::Direct",
+  technical: "StructurePreference::Technical",
+  executive: "StructurePreference::Executive",
+};
+const clarifierMap = {
+  only_when_blocked: "ClarifierPolicy::OnlyWhenBlocked",
+  allow_when_ambiguous: "ClarifierPolicy::AllowWhenAmbiguous",
+  never_default: "ClarifierPolicy::NeverDefault",
+};
+const riskMap = {
+  strict: "AntiHallucinationLevel::Strict",
+  high: "AntiHallucinationLevel::High",
+  standard: "AntiHallucinationLevel::Standard",
+};
+for (const profile of specProfiles) {
+  const structure = structureMap[profile.structurePreference];
+  const clarifier = clarifierMap[profile.clarifierPolicy];
+  const risk = riskMap[profile.riskPolicy];
+  if (!structure || !clarifier || !risk) {
+    fail(`Spec profile "${profile.id}" has unsupported enum values.`);
+  }
+  const checks = [
+    `id: "${profile.id}"`,
+    `title: "${profile.title}"`,
+    `description: "${profile.description}"`,
+    `answer_word_min: ${profile.answerWordMin}`,
+    `answer_word_max: ${profile.answerWordMax}`,
+    `short_word_max: ${profile.shortMax}`,
+    `strong_word_max: ${profile.strongMax}`,
+    `tone: "${profile.tone}"`,
+    `structure_preference: ${structure}`,
+    `clarifier_policy: ${clarifier}`,
+    `anti_hallucination_level: ${risk}`,
+  ];
+  for (const needle of checks) {
+    if (!promptRegistryRaw.includes(needle)) {
+      fail(`Prompt registry drift for profile "${profile.id}": missing "${needle}".`);
+    }
+  }
+}
+if (!answerProfilesRaw.includes("SPEC.profiles.map")) {
+  fail("Frontend answer profile options must be derived from shared spec.");
 }
 
 for (const fixture of fixtures) {

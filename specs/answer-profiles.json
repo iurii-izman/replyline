@@ -1,0 +1,103 @@
+{
+  "defaultProfileId": "interview_default",
+  "profiles": [
+    {
+      "id": "interview_default",
+      "title": "Interview Default",
+      "description": "Balanced interview answer with clear action and concrete next step.",
+      "answerWordMin": 14,
+      "answerWordMax": 90,
+      "shortMax": 56,
+      "strongMin": 14,
+      "strongMax": 90,
+      "tone": "clear, calm, confident",
+      "structurePreference": "direct",
+      "clarifierPolicy": "allow_when_ambiguous",
+      "riskPolicy": "high"
+    },
+    {
+      "id": "interview_concise",
+      "title": "Interview Concise",
+      "description": "Short answer first, then one concrete action.",
+      "answerWordMin": 10,
+      "answerWordMax": 56,
+      "shortMax": 42,
+      "strongMin": 10,
+      "strongMax": 56,
+      "tone": "brief, direct, practical",
+      "structurePreference": "direct",
+      "clarifierPolicy": "only_when_blocked",
+      "riskPolicy": "strict"
+    },
+    {
+      "id": "interview_star",
+      "title": "Interview STAR",
+      "description": "Bias to STAR framing with explicit situation-task-action-result logic.",
+      "answerWordMin": 16,
+      "answerWordMax": 100,
+      "shortMax": 60,
+      "strongMin": 16,
+      "strongMax": 100,
+      "tone": "structured, concrete, outcome-oriented",
+      "structurePreference": "star",
+      "clarifierPolicy": "allow_when_ambiguous",
+      "riskPolicy": "high"
+    },
+    {
+      "id": "interview_executive",
+      "title": "Interview Executive",
+      "description": "Executive tone: crisp recommendation, risk framing, accountable next step.",
+      "answerWordMin": 14,
+      "answerWordMax": 84,
+      "shortMax": 54,
+      "strongMin": 14,
+      "strongMax": 84,
+      "tone": "confident, concise, accountable",
+      "structurePreference": "executive",
+      "clarifierPolicy": "only_when_blocked",
+      "riskPolicy": "strict"
+    },
+    {
+      "id": "interview_technical",
+      "title": "Interview Technical",
+      "description": "Technical explanation with assumptions, mechanism, and tradeoffs.",
+      "answerWordMin": 16,
+      "answerWordMax": 100,
+      "shortMax": 64,
+      "strongMin": 16,
+      "strongMax": 100,
+      "tone": "technical, precise, direct",
+      "structurePreference": "technical",
+      "clarifierPolicy": "allow_when_ambiguous",
+      "riskPolicy": "strict"
+    },
+    {
+      "id": "interview_product",
+      "title": "Interview Product",
+      "description": "Product framing with user impact, tradeoff, and decision path.",
+      "answerWordMin": 14,
+      "answerWordMax": 92,
+      "shortMax": 58,
+      "strongMin": 14,
+      "strongMax": 92,
+      "tone": "product-minded, pragmatic, user-focused",
+      "structurePreference": "case",
+      "clarifierPolicy": "allow_when_ambiguous",
+      "riskPolicy": "high"
+    },
+    {
+      "id": "interview_hr",
+      "title": "Interview HR",
+      "description": "Professional people-oriented framing with policy-safe wording.",
+      "answerWordMin": 12,
+      "answerWordMax": 82,
+      "shortMax": 52,
+      "strongMin": 12,
+      "strongMax": 82,
+      "tone": "professional, respectful, policy-aware",
+      "structurePreference": "direct",
+      "clarifierPolicy": "only_when_blocked",
+      "riskPolicy": "strict"
+    }
+  ]
+}
