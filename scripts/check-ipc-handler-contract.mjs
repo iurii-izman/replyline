@@ -13,6 +13,7 @@ const commandsPath = join(root, "src-tauri", "src", "commands.rs");
 const modelPath = join(root, "src", "app", "model.ts");
 const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
 const settingsRustPath = join(root, "src-tauri", "src", "settings.rs");
+const typesRustPath = join(root, "src-tauri", "src", "types.rs");
 
 const COMMAND_CATEGORIES = {
   user: ["load_bootstrap", "clear_context", "get_context_status", "log_client_event", "quit_app"],
@@ -56,6 +57,7 @@ const commandsText = readFileSync(commandsPath, "utf8");
 const modelText = readFileSync(modelPath, "utf8");
 const interviewRustText = readFileSync(interviewRustPath, "utf8");
 const settingsRustText = readFileSync(settingsRustPath, "utf8");
+const typesRustText = readFileSync(typesRustPath, "utf8");
 
 const registered = new Set([...libText.matchAll(/commands::(\w+)/g)].map((m) => m[1]));
 const declared = new Set(
@@ -114,6 +116,106 @@ const staticContractChecks = [
   {
     ok: settingsRustText.includes("const CURRENT_SCHEMA_VERSION: u32 = 10;"),
     message: "Expected CURRENT_SCHEMA_VERSION = 10 in src-tauri/src/settings.rs",
+  },
+  {
+    ok:
+      modelText.includes('hotkey: "Ctrl+Alt+Space"') &&
+      typesRustText.includes('hotkey: "Ctrl+Alt+Space".to_string()'),
+    message: "Settings default drift: hotkey must be Ctrl+Alt+Space in TS and Rust",
+  },
+  {
+    ok: modelText.includes('llmBaseUrl: ""') && typesRustText.includes('llm_base_url: "".to_string()'),
+    message: "Settings default drift: llmBaseUrl must be empty in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes('llmModel: "gpt-4o-mini"') &&
+      typesRustText.includes('llm_model: "gpt-4o-mini".to_string()'),
+    message: "Settings default drift: llmModel must be gpt-4o-mini in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes('selectedModelPreset: "custom_openai_compatible"') &&
+      typesRustText.includes('selected_model_preset: "custom_openai_compatible".to_string()'),
+    message:
+      "Settings default drift: selectedModelPreset must be custom_openai_compatible in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes("captureMaxSeconds: 45") &&
+      typesRustText.includes("capture_max_seconds: 45"),
+    message: "Settings default drift: captureMaxSeconds must be 45 in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes('activeAnswerProfile: "interview_default"') &&
+      typesRustText.includes("active_answer_profile: crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID.to_string()"),
+    message:
+      "Settings default drift: activeAnswerProfile must be interview_default / DEFAULT_ANSWER_PROFILE_ID",
+  },
+  {
+    ok:
+      modelText.includes("windowOpacity: 100") && typesRustText.includes("window_opacity: 100"),
+    message: "Settings default drift: windowOpacity must be 100 in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes("interviewCompactMode: false") &&
+      typesRustText.includes("interview_compact_mode: false"),
+    message: "Settings default drift: interviewCompactMode must be false in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes("bilingualInterviewEnabled: false") &&
+      typesRustText.includes("bilingual_interview_enabled: false"),
+    message: "Settings default drift: bilingualInterviewEnabled must be false in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes("translationDebounceMs: 600") &&
+      typesRustText.includes("translation_debounce_ms: 600"),
+    message: "Settings default drift: translationDebounceMs must be 600 in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes("translationMinWordCount: 3") &&
+      typesRustText.includes("translation_min_word_count: 3"),
+    message: "Settings default drift: translationMinWordCount must be 3 in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes('bilingualRetentionBehavior: "session_only"') &&
+      typesRustText.includes('bilingual_retention_behavior: "session_only".to_string()'),
+    message:
+      "Settings default drift: bilingualRetentionBehavior must be session_only in TS and Rust",
+  },
+  {
+    ok:
+      modelText.includes('bilingualAnswerStyle: "b2_conversational"') &&
+      typesRustText.includes('bilingual_answer_style: "b2_conversational".to_string()'),
+    message:
+      "Settings default drift: bilingualAnswerStyle must be b2_conversational in TS and Rust",
+  },
+  {
+    ok: settingsRustText.includes("if !(5..=180).contains(&settings.capture_max_seconds) {"),
+    message: "Settings range drift: captureMaxSeconds must be validated as 5..=180 in Rust",
+  },
+  {
+    ok: settingsRustText.includes("if ![70u8, 80u8, 90u8, 100u8].contains(&settings.window_opacity) {"),
+    message: "Settings range drift: windowOpacity allowed values must be [70,80,90,100] in Rust",
+  },
+  {
+    ok:
+      modelText.includes("windowOpacity: 100 | 90 | 80 | 70;") &&
+      settingsRustText.includes("if ![70u8, 80u8, 90u8, 100u8].contains(&settings.window_opacity) {"),
+    message: "Settings type/range drift: windowOpacity options must match in TS and Rust",
+  },
+  {
+    ok:
+      settingsRustText.includes("if !(300..=1500).contains(&settings.translation_debounce_ms) {") &&
+      settingsRustText.includes("if !(1..=10).contains(&settings.translation_min_word_count) {"),
+    message:
+      "Settings range drift: translationDebounceMs/translationMinWordCount sanitize ranges must remain stable",
   },
   {
     ok: interviewRustText.includes("pub short: String") && modelText.includes("short: string;"),
