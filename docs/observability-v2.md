@@ -89,6 +89,8 @@ Default mode writes redacted snapshots only:
 
 With explicit `debugTraceMode=full_local`, the run also stores `capture.full.wav` next to transcript/prompt content for local input/output comparison. This file is sensitive and follows trace retention.
 
+Legacy `capture-debug` WAV duplication is no longer produced. The manual `Clear debug traces` action removes both current trace runs and legacy WAV files left by older builds.
+
 Safe LLM fields:
 
 - endpoint host/path

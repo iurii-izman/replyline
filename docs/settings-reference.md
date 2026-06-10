@@ -12,6 +12,8 @@ Slim Stable Beta settings:
 - `deepgramApiKey` (stored as secret)
 - `llmApiKey` optional (stored as secret)
 
+Hotkeys that collide with common close/refresh commands (`Ctrl+W`, `Ctrl+Q`, `Ctrl+R`, `Ctrl+Shift+R`, `Alt+F4`) are rejected. Existing reserved settings migrate in memory to `Ctrl+Alt+Space` without resetting provider configuration.
+
 ## Model presets
 
 Replyline ships static model presets (no live provider catalog fetch in-app):
@@ -50,7 +52,7 @@ No Advanced Mode fields in user-facing settings contract.
 
 - `Reports` now separates two groups:
 - Everyday reports/privacy: interview report retention and manual report clearing.
-- Diagnostics/ops: `debugTraceMode`, trace retention, trace folder open/clear actions.
+- Diagnostics/ops: `debugTraceMode`, trace retention, trace folder open/clear actions. Clearing traces also removes legacy `capture-debug` WAV files from older builds.
 - `debugTraceMode=full_local` is explicitly high-sensitivity local diagnostics and should be enabled only for incident troubleshooting.
 
 ## Local diagnostics controls

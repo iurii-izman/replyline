@@ -26,6 +26,7 @@ struct TraceManifest<'a> {
     model: &'a str,
     privacy_mode: &'static str,
     trace_mode: &'a str,
+    content_included: bool,
 }
 
 pub fn traces_base_dir() -> Result<PathBuf, String> {
@@ -138,11 +139,14 @@ pub fn ensure_run_started(
             crate::types::DebugTraceMode::Redacted => "redacted",
             crate::types::DebugTraceMode::FullLocal => "full_local",
         },
+        content_included: settings.debug_trace_full_enabled(),
     };
 
     let manifest_path = dir.join("manifest.json");
-    let manifest_raw = serde_json::to_vec_pretty(&manifest).map_err(|err| err.to_string())?;
-    fs::write(manifest_path, manifest_raw).map_err(|err| err.to_string())?;
+    if !manifest_path.is_file() {
+        let manifest_raw = serde_json::to_vec_pretty(&manifest).map_err(|err| err.to_string())?;
+        fs::write(manifest_path, manifest_raw).map_err(|err| err.to_string())?;
+    }
 
     let timeline_path = dir.join("timeline.jsonl");
     if !timeline_path.is_file() {
@@ -312,6 +316,7 @@ mod tests {
             .join("manifest.json");
         let raw = std::fs::read_to_string(&manifest_path).expect("manifest read");
         assert!(raw.contains("\"traceMode\": \"redacted\""));
+        assert!(raw.contains("\"contentIncluded\": false"));
         assert!(!raw.contains("transcript"));
         assert!(!raw.contains("prompt"));
 
@@ -341,6 +346,7 @@ mod tests {
             .join("manifest.json");
         let raw = std::fs::read_to_string(&manifest_path).expect("manifest read");
         assert!(raw.contains("\"traceMode\": \"full_local\""));
+        assert!(raw.contains("\"contentIncluded\": true"));
         write_run_bytes(&run_id, "capture.full.wav", b"RIFF-test").expect("audio trace write");
         let audio_path = manifest_path
             .parent()
@@ -350,6 +356,38 @@ mod tests {
             fs::read(audio_path).expect("audio trace read"),
             b"RIFF-test"
         );
+    }
+
+    #[test]
+    fn existing_manifest_keeps_original_capture_start() {
+        let _guard = trace_test_lock().lock().expect("trace lock");
+        let run_id = format!(
+            "test-run-stable-start-{}",
+            chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
+        );
+        let settings = AppSettings::default();
+        ensure_run_started(
+            &run_id,
+            "2026-05-23T12:00:00Z",
+            &settings,
+            "work_conversation",
+        )
+        .expect("first trace start");
+        ensure_run_started(
+            &run_id,
+            "2026-05-23T12:00:05Z",
+            &settings,
+            "work_conversation",
+        )
+        .expect("second trace start");
+
+        let manifest_path = traces_base_dir()
+            .expect("trace base")
+            .join(&run_id)
+            .join("manifest.json");
+        let raw = std::fs::read_to_string(manifest_path).expect("manifest read");
+        assert!(raw.contains("\"startedAt\": \"2026-05-23T12:00:00Z\""));
+        assert!(!raw.contains("2026-05-23T12:00:05Z"));
     }
 
     #[test]

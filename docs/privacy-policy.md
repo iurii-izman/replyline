@@ -33,7 +33,7 @@ Candidate Pack boundary:
 | Settings (hotkey, provider URLs, model, language) | `%APPDATA%\com.replyline.app\settings.json`                       | Plaintext JSON             | Until user changes or deletes                          |
 | API keys (Deepgram, LLM)                          | Windows Credential Manager                                        | OS-managed encrypted store | Until user revokes                                     |
 | App event log                                     | `%APPDATA%\com.replyline.app\logs\app.log`                        | Line-delimited text        | 5 MB rotation (oldest lines dropped)                   |
-| Debug WAV files                                   | `%LOCALAPPDATA%\com.replyline.app\capture-debug\`                 | WAV                        | Written only on STT failure; user manages              |
+| Legacy debug WAV files                            | `%LOCALAPPDATA%\com.replyline.app\capture-debug\`                 | WAV                        | No longer created; removed by `Clear debug traces`     |
 | Interview report store                            | `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json` | JSON                       | User-controlled (`manual clear`, `7`, `30`, `90` days) |
 
 ## What is NOT stored
@@ -55,6 +55,7 @@ Candidate Pack boundary:
 - Streaming sessions do not auto-write transcript files on session start/stop.
 - Debug traces are controlled by Settings (`debugTraceMode`: `off` / `redacted` / `full_local`).
 - `debugTraceMode=full_local` can retain transcript, prompt, response, and captured WAV content and should be used only for local triage.
+- Raw diagnostic WAV is written only inside a `full_local` trace run and follows the configured trace retention.
 
 ## External providers
 
@@ -75,7 +76,7 @@ Users can:
 - **Clear context**: Reset the in-memory conversation context at any time (tray menu or UI action).
 - **Delete settings**: Remove `settings.json` to reset all preferences.
 - **Revoke API keys**: Delete stored keys through the settings surface or directly in Windows Credential Manager.
-- **Delete debug WAVs**: Remove any files in the debug directory manually.
+- **Clear diagnostics**: `Clear debug traces` removes trace runs and legacy files from the old `capture-debug` directory.
 
 ## Data retention
 
@@ -85,7 +86,8 @@ Users can:
 | App event log              | 5 MB rotation. Oldest entries are dropped when the log exceeds the size limit. |
 | Settings                   | Persisted until user changes or deletes the file.                              |
 | API keys                   | Persisted in Credential Manager until user revokes them.                       |
-| Debug WAVs                 | Written only on STT failure. User responsible for cleanup.                     |
+| Full-local trace WAVs      | Follows `debugTraceRetentionDays`; manual clear is also available.              |
+| Legacy debug WAVs          | No longer created; removed by `Clear debug traces`.                             |
 
 ## Legal responsibility
 

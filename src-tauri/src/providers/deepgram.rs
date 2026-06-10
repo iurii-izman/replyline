@@ -43,6 +43,18 @@ impl Default for SttRequestPolicy {
     }
 }
 
+fn retry_backoff_ms(policy: SttRequestPolicy, attempt: u32, elapsed_ms: u64) -> Option<u64> {
+    if attempt == 0 {
+        return Some(0);
+    }
+    let remaining_ms = policy.total_budget_ms.checked_sub(elapsed_ms)?;
+    let requested_ms = policy
+        .retry_base_ms
+        .saturating_mul(2u64.saturating_pow(attempt - 1))
+        .min(policy.retry_max_backoff_ms);
+    (requested_ms < remaining_ms).then_some(requested_ms)
+}
+
 #[derive(Debug, Deserialize)]
 struct DeepgramResponse {
     results: DeepgramResults,
@@ -117,15 +129,24 @@ pub async fn transcribe_wav(
     }
 
     let body = bytes::Bytes::copy_from_slice(wav_bytes);
+    let client = reqwest::Client::builder()
+        .build()
+        .map_err(|err| format!("Deepgram client: {err}"))?;
     let response = {
         let mut last_err = String::new();
         let mut resolved = None;
         for attempt in 0..=policy.max_retries {
             if attempt > 0 {
-                telemetry.retry_count += 1;
-                let backoff = (policy.retry_base_ms.saturating_mul(2u64.pow(attempt - 1)))
-                    .min(policy.retry_max_backoff_ms);
+                let elapsed_ms = started.elapsed().as_millis() as u64;
+                let Some(backoff) = retry_backoff_ms(policy, attempt, elapsed_ms) else {
+                    last_err = format!(
+                        "STT_BUDGET_EXCEEDED: stt budget exceeded elapsed_ms={elapsed_ms} budget_ms={}",
+                        policy.total_budget_ms
+                    );
+                    break;
+                };
                 tokio::time::sleep(Duration::from_millis(backoff)).await;
+                telemetry.retry_count += 1;
             }
             let elapsed_ms = started.elapsed().as_millis() as u64;
             if elapsed_ms >= policy.total_budget_ms {
@@ -137,15 +158,12 @@ pub async fn transcribe_wav(
             }
             let remaining_ms = policy.total_budget_ms - elapsed_ms;
             let timeout_ms = remaining_ms.min(policy.per_attempt_timeout_ms).max(1);
-            let client = reqwest::Client::builder()
-                .timeout(Duration::from_millis(timeout_ms))
-                .build()
-                .map_err(|err| format!("Deepgram client: {err}"))?;
             match client
                 .post(&endpoint)
                 .header("Authorization", format!("Token {api_key}"))
                 .header("Content-Type", "audio/wav")
                 .body(body.clone())
+                .timeout(Duration::from_millis(timeout_ms))
                 .send()
                 .await
             {
@@ -245,7 +263,7 @@ pub async fn transcribe_wav(
 
 #[cfg(test)]
 mod tests {
-    use super::{endpoint_for_language, SttRequestPolicy, SttRequestTelemetry};
+    use super::{endpoint_for_language, retry_backoff_ms, SttRequestPolicy, SttRequestTelemetry};
 
     #[test]
     fn default_policy_keeps_stt_within_budget() {
@@ -266,5 +284,15 @@ mod tests {
         let endpoint = endpoint_for_language("multi");
         assert!(endpoint.contains("model=nova-3"));
         assert!(endpoint.contains("language=multi"));
+    }
+
+    #[test]
+    fn retry_backoff_never_exceeds_total_budget() {
+        let policy = SttRequestPolicy::default();
+        assert_eq!(retry_backoff_ms(policy, 0, 0), Some(0));
+        assert_eq!(retry_backoff_ms(policy, 1, 1_000), Some(500));
+        assert_eq!(retry_backoff_ms(policy, 2, 1_500), Some(1_000));
+        assert_eq!(retry_backoff_ms(policy, 1, 8_500), None);
+        assert_eq!(retry_backoff_ms(policy, 1, 9_000), None);
     }
 }

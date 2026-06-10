@@ -646,6 +646,7 @@ export function userSafeClearContextError(strings: UiStrings): string {
 export function mapSettingsSaveError(err: unknown, strings: UiStrings): string | null {
   const s = invokeErrorMessage(err);
   if (s.includes("HOTKEY_REQUIRED")) return strings.errors.settingsHotkeyRequired;
+  if (s.includes("HOTKEY_RESERVED")) return strings.errors.settingsHotkeyRequired;
   if (s.includes("MODEL_REQUIRED")) return strings.errors.settingsModelRequired;
   if (s.includes("INVALID_URL") || /^URL:/i.test(s)) return strings.errors.settingsInvalidUrl;
   if (s.includes("CAPTURE_RANGE_INVALID")) return strings.errors.settingsCaptureRange;

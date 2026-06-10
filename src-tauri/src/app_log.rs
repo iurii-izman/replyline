@@ -48,10 +48,6 @@ pub fn append_metadata_event(
     append_event(event, detail)
 }
 
-pub fn safe_count_detail(key: &str, count: usize) -> String {
-    format!("{key}={count}")
-}
-
 pub fn safe_duration_detail(key: &str, millis: u64) -> String {
     format!("{key}_ms={millis}")
 }
@@ -124,8 +120,28 @@ pub fn status() -> Result<LogStatusDto, String> {
 }
 
 pub fn log_file_path() -> Result<PathBuf, String> {
+    #[cfg(test)]
+    {
+        static TEST_LOG_PATH: OnceLock<PathBuf> = OnceLock::new();
+        return Ok(TEST_LOG_PATH
+            .get_or_init(|| {
+                std::env::temp_dir()
+                    .join(format!(
+                        "replyline-app-log-test-{}-{}",
+                        std::process::id(),
+                        chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
+                    ))
+                    .join("app.log")
+            })
+            .clone());
+    }
+
+    #[cfg(not(test))]
     let base = dirs::data_dir().ok_or_else(|| "data_dir_unavailable".to_string())?;
-    Ok(base.join("com.replyline.app").join("logs").join("app.log"))
+    #[cfg(not(test))]
+    {
+        Ok(base.join("com.replyline.app").join("logs").join("app.log"))
+    }
 }
 
 fn read_last_line(path: &PathBuf) -> Result<Option<String>, String> {
@@ -292,6 +308,21 @@ impl<T> Pipe for T {}
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_log_path_is_isolated_from_app_data() {
+        let path = log_file_path().expect("log path");
+        assert!(path.starts_with(std::env::temp_dir()));
+        if let Some(data_dir) = dirs::data_dir() {
+            assert_ne!(
+                path,
+                data_dir
+                    .join("com.replyline.app")
+                    .join("logs")
+                    .join("app.log")
+            );
+        }
+    }
 
     #[test]
     fn sanitize_redacts_common_secret_markers() {

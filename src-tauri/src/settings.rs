@@ -33,6 +33,8 @@ pub enum SettingsError {
     ModelRequired,
     #[error("HOTKEY_REQUIRED")]
     HotkeyRequired,
+    #[error("HOTKEY_RESERVED")]
+    HotkeyReserved,
     #[error("CAPTURE_RANGE_INVALID")]
     CaptureRangeInvalid,
     #[error("PARTIAL_CONFIG_INVALID")]
@@ -98,10 +100,27 @@ pub fn load() -> Result<AppSettings, SettingsError> {
         }
     };
 
+    let hotkey_migrated = sanitize_loaded_hotkey(&mut settings);
     sanitize_bilingual_settings(&mut settings);
 
     match validate(&settings) {
         Ok(()) => {
+            if hotkey_migrated {
+                match fs_atomic::write_json_atomically(&path, &settings) {
+                    Ok(()) => {
+                        let _ = crate::app_log::append_event(
+                            "settings_hotkey_migration_persisted",
+                            "replacement=canonical_default",
+                        );
+                    }
+                    Err(err) => {
+                        let _ = crate::app_log::append_event(
+                            "settings_hotkey_migration_persist_failed",
+                            crate::app_log::safe_provider_error_preview(&err.to_string()),
+                        );
+                    }
+                }
+            }
             let _ = crate::app_log::append_event("settings_validation_ok", "source=settings_json");
             let _ = crate::app_log::append_event(
                 "settings_load_ok",
@@ -323,6 +342,9 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
     if settings.hotkey.trim().is_empty() {
         return Err(SettingsError::HotkeyRequired);
     }
+    if is_reserved_hotkey(&settings.hotkey) {
+        return Err(SettingsError::HotkeyReserved);
+    }
     if settings.llm_model.trim().is_empty() {
         return Err(SettingsError::ModelRequired);
     }
@@ -355,6 +377,30 @@ pub fn validate(settings: &AppSettings) -> Result<(), SettingsError> {
         return Err(SettingsError::PartialConfigInvalid);
     }
     Ok(())
+}
+
+fn is_reserved_hotkey(hotkey: &str) -> bool {
+    let normalized = hotkey
+        .split('+')
+        .map(|part| part.trim().to_ascii_lowercase())
+        .collect::<Vec<_>>()
+        .join("+");
+    matches!(
+        normalized.as_str(),
+        "ctrl+w" | "ctrl+q" | "ctrl+r" | "ctrl+shift+r" | "alt+f4"
+    )
+}
+
+fn sanitize_loaded_hotkey(settings: &mut AppSettings) -> bool {
+    if !is_reserved_hotkey(&settings.hotkey) {
+        return false;
+    }
+    settings.hotkey = AppSettings::default().hotkey;
+    let _ = crate::app_log::append_event(
+        "settings_hotkey_migrated",
+        "reason=reserved_shortcut replacement=canonical_default",
+    );
+    true
 }
 
 fn sanitize_bilingual_settings(settings: &mut AppSettings) {
@@ -639,6 +685,22 @@ mod tests {
     }
 
     #[test]
+    fn rejects_reserved_hotkeys() {
+        for hotkey in ["Ctrl+W", "Ctrl+Q", "Ctrl+R", "Ctrl+Shift+R", "Alt+F4"] {
+            let mut settings = AppSettings::default();
+            settings.hotkey = hotkey.to_string();
+            assert!(matches!(
+                validate(&settings),
+                Err(SettingsError::HotkeyReserved)
+            ));
+        }
+
+        let mut settings = AppSettings::default();
+        settings.hotkey = "Ctrl+Alt+K".to_string();
+        assert!(validate(&settings).is_ok());
+    }
+
+    #[test]
     fn rejects_capture_range_outside_bounds() {
         let mut settings = AppSettings::default();
         settings.capture_max_seconds = 4;
@@ -889,6 +951,41 @@ mod tests {
             let path = settings_path().expect("settings_path");
             let backups = list_corrupt_backups(&path);
             assert!(backups.is_empty());
+        });
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn load_migrates_reserved_hotkey_without_resetting_other_settings() {
+        let dir = std::env::temp_dir().join(format!(
+            "replyline-settings-hotkey-migration-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("time")
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).expect("mkdir");
+        with_settings_override_env(&dir, || {
+            let mut settings = AppSettings::default();
+            settings.hotkey = "Ctrl+W".to_string();
+            settings.llm_base_url = "https://api.openai.com/v1".to_string();
+            settings.llm_model = "gpt-4o-mini".to_string();
+            let path = settings_path().expect("settings path");
+            std::fs::write(
+                &path,
+                serde_json::to_vec_pretty(&settings).expect("serialize"),
+            )
+            .expect("write settings");
+
+            let loaded = load().expect("load");
+            assert_eq!(loaded.hotkey, "Ctrl+Alt+Space");
+            assert_eq!(loaded.llm_base_url, settings.llm_base_url);
+            assert_eq!(loaded.llm_model, settings.llm_model);
+            let persisted: AppSettings =
+                serde_json::from_slice(&std::fs::read(&path).expect("read persisted settings"))
+                    .expect("parse persisted settings");
+            assert_eq!(persisted.hotkey, "Ctrl+Alt+Space");
+            assert_eq!(persisted.llm_base_url, settings.llm_base_url);
         });
         let _ = std::fs::remove_dir_all(&dir);
     }

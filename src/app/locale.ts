@@ -198,7 +198,7 @@ export const ui_ru = {
     notReady: "Заполните недостающие поля, чтобы запустить приложение.",
     deepgramHint: "Ключ хранится в credential store и не записывается в settings файл.",
     llmHint: "Используйте OpenAI-compatible endpoint и модель вашего провайдера.",
-    hotkeyHint: "По умолчанию Ctrl+Alt+Space.",
+    hotkeyHint: "По умолчанию Ctrl+Alt+Space. Ctrl+W и команды закрытия/обновления недоступны.",
   },
   pipeline: {
     label: "Статус цепочки",
@@ -457,7 +457,8 @@ export const ui_ru = {
     pipelineGeneric: "Цепочка прервалась. Повторите захват.",
     bootstrapLoad: "Не удалось загрузить приложение. Повторите и проверьте настройки.",
     clearContext: "Сброс контекста не выполнен. Повторите.",
-    settingsHotkeyRequired: "Укажите горячую клавишу.",
+    settingsHotkeyRequired:
+      "Укажите безопасную горячую клавишу. Для конфликтных команд используйте Ctrl+Alt+Space.",
     settingsModelRequired: "Укажите модель LLM.",
     settingsInvalidUrl: "Неверный URL LLM.",
     settingsCaptureRange: "Лимит записи: 5-180 секунд.",
@@ -674,7 +675,7 @@ export const ui_en: UiStrings = {
     deepgramHint:
       "The key is stored in the credential store and is not written to the settings file.",
     llmHint: "Use an OpenAI-compatible endpoint and model from your provider.",
-    hotkeyHint: "Default is Ctrl+Alt+Space.",
+    hotkeyHint: "Default is Ctrl+Alt+Space. Ctrl+W and close/refresh commands are unavailable.",
   },
   pipeline: {
     label: "Pipeline status",
@@ -931,7 +932,8 @@ export const ui_en: UiStrings = {
     pipelineGeneric: "Pipeline was interrupted. Retry capture.",
     bootstrapLoad: "Failed to load the app. Retry and check settings.",
     clearContext: "Context reset did not complete. Retry.",
-    settingsHotkeyRequired: "Set a hotkey.",
+    settingsHotkeyRequired:
+      "Set a safe hotkey. Use Ctrl+Alt+Space instead of conflicting close or refresh commands.",
     settingsModelRequired: "Set an LLM model.",
     settingsInvalidUrl: "Invalid LLM URL.",
     settingsCaptureRange: "Capture limit must be 5-180 seconds.",

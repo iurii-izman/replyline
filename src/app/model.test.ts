@@ -6,6 +6,7 @@ import {
   formatHotkeyFromEvent,
   initialBilingualInterviewState,
   isConfiguredLlmRoute,
+  mapSettingsSaveError,
   parseCommandInvokeError,
   settingsAnchorForCommandErrorKind,
   userSafePipelineError,
@@ -57,6 +58,14 @@ describe("model", () => {
     it("maps command error to settings anchors", () => {
       expect(settingsAnchorForCommandErrorKind("Credential")).toBe("stt");
       expect(settingsAnchorForCommandErrorKind("Pipeline")).toBe("llm");
+    });
+  });
+
+  describe("mapSettingsSaveError", () => {
+    it("maps reserved hotkeys to actionable copy", () => {
+      expect(mapSettingsSaveError("Settings: HOTKEY_RESERVED", ui_ru)).toBe(
+        ui_ru.errors.settingsHotkeyRequired,
+      );
     });
   });
 

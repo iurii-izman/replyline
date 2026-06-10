@@ -57,6 +57,22 @@ fn classify_stt_failure(err: &str) -> &'static str {
     }
 }
 
+fn finalize_failure_trace(
+    run_id: Option<&str>,
+    event: &str,
+    phase: &str,
+    failure_kind: &str,
+    timings: &[StageTiming],
+) {
+    let Some(run_id) = run_id else {
+        return;
+    };
+    let mut fields = BTreeMap::new();
+    fields.insert("failure_kind".to_string(), failure_kind.to_string());
+    let _ = trace_manifest::append_timeline_event(run_id, event, phase, fields);
+    let _ = trace_manifest::write_timings(run_id, timings);
+}
+
 fn is_interview_session_active(state: &ReplylineState) -> Result<bool, CommandError> {
     let session = state
         .interview_session
@@ -111,18 +127,23 @@ pub async fn capture_stop_and_analyze(
             .capture
             .lock()
             .map_err(|_| CommandError::Internal("Capture lock poisoned".to_string()))?;
-        let run_id = capture.active_run_id.clone();
-        let run = capture.active.take().ok_or_else(|| {
-            let _ = log_diag(
-                "capture",
-                "fail",
-                RL_CAPTURE_NOT_ACTIVE,
-                "capture was not active",
-            );
-            CommandError::Capture(
-                pick_lang(lang, en::ERR_NO_ACTIVE_CAPTURE, ru::ERR_NO_ACTIVE_CAPTURE).to_string(),
-            )
-        })?;
+        let run = match capture.active.take() {
+            Some(run) => run,
+            None => {
+                capture.active_run_id = None;
+                let _ = log_diag(
+                    "capture",
+                    "fail",
+                    RL_CAPTURE_NOT_ACTIVE,
+                    "capture was not active",
+                );
+                return Err(CommandError::Capture(
+                    pick_lang(lang, en::ERR_NO_ACTIVE_CAPTURE, ru::ERR_NO_ACTIVE_CAPTURE)
+                        .to_string(),
+                ));
+            }
+        };
+        let run_id = capture.active_run_id.take();
         (run, run_id)
     };
     let trace_redacted_enabled = settings.debug_trace_redacted_enabled();
@@ -166,7 +187,7 @@ pub async fn capture_stop_and_analyze(
     let pipeline_timer = PipelineTimer::start();
     let mut stage_timings: Vec<StageTiming> = Vec::new();
 
-    let (pcm, capture_stop_timing) = tauri::async_runtime::spawn_blocking(move || {
+    let stop_result = tauri::async_runtime::spawn_blocking(move || {
         let stop_timer = PipelineTimer::start();
         let result = capture_run.stop();
         let outcome = if result.is_ok() { "ok" } else { "fail" };
@@ -178,23 +199,51 @@ pub async fn capture_stop_and_analyze(
         let timing = stop_timer.measure("capture_stop", outcome, code);
         (result, timing)
     })
-    .await
-    .map_err(|_| {
-        let _ = log_diag(
-            "capture",
-            "fail",
-            RL_CAPTURE_JOIN_FAILED,
-            "capture join failed",
-        );
-        CommandError::Capture("Capture join failed".to_string())
-    })?;
+    .await;
+    let (pcm, capture_stop_timing) = match stop_result {
+        Ok(value) => value,
+        Err(_) => {
+            let _ = log_diag(
+                "capture",
+                "fail",
+                RL_CAPTURE_JOIN_FAILED,
+                "capture join failed",
+            );
+            finalize_failure_trace(
+                if trace_redacted_enabled {
+                    run_id.as_deref()
+                } else {
+                    None
+                },
+                "capture_stop_failed",
+                "capture",
+                "join_failed",
+                &stage_timings,
+            );
+            return Err(CommandError::Capture("Capture join failed".to_string()));
+        }
+    };
     let _ = pipeline_timing::log_stage_timing(&capture_stop_timing);
     stage_timings.push(capture_stop_timing);
 
-    let pcm = pcm.map_err(|err| {
-        let _ = log_diag("capture", "fail", RL_CAPTURE_STOP_FAILED, &err);
-        CommandError::Capture(err)
-    })?;
+    let pcm = match pcm {
+        Ok(pcm) => pcm,
+        Err(err) => {
+            let _ = log_diag("capture", "fail", RL_CAPTURE_STOP_FAILED, &err);
+            finalize_failure_trace(
+                if trace_redacted_enabled {
+                    run_id.as_deref()
+                } else {
+                    None
+                },
+                "capture_stop_failed",
+                "capture",
+                "capture_error",
+                &stage_timings,
+            );
+            return Err(CommandError::Capture(err));
+        }
+    };
     if let Some(ref rid) = run_id {
         let _ = observability::log_audit(
             "capture_stop_ok",
@@ -212,13 +261,57 @@ pub async fn capture_stop_and_analyze(
         format!("pcm_bytes={}", pcm.len()),
     );
 
-    let deepgram_key = credentials::load(SecretSlot::DeepgramApiKey)?.ok_or_else(|| {
-        let _ = log_diag("stt", "fail", RL_STT_KEY_MISSING, "deepgram key missing");
-        CommandError::Credential(
-            pick_lang(lang, en::ERR_NO_DEEPGRAM_KEY, ru::ERR_NO_DEEPGRAM_KEY).to_string(),
-        )
-    })?;
-    let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
+    let deepgram_key = match credentials::load(SecretSlot::DeepgramApiKey) {
+        Ok(Some(key)) => key,
+        Ok(None) => {
+            let _ = log_diag("stt", "fail", RL_STT_KEY_MISSING, "deepgram key missing");
+            finalize_failure_trace(
+                if trace_redacted_enabled {
+                    run_id.as_deref()
+                } else {
+                    None
+                },
+                "stt_request_failed",
+                "transcribing",
+                "credential_missing",
+                &stage_timings,
+            );
+            return Err(CommandError::Credential(
+                pick_lang(lang, en::ERR_NO_DEEPGRAM_KEY, ru::ERR_NO_DEEPGRAM_KEY).to_string(),
+            ));
+        }
+        Err(err) => {
+            finalize_failure_trace(
+                if trace_redacted_enabled {
+                    run_id.as_deref()
+                } else {
+                    None
+                },
+                "stt_request_failed",
+                "transcribing",
+                "credential_store_error",
+                &stage_timings,
+            );
+            return Err(CommandError::from(err));
+        }
+    };
+    let llm_key = match credentials::load(SecretSlot::LlmApiKey) {
+        Ok(key) => key,
+        Err(err) => {
+            finalize_failure_trace(
+                if trace_redacted_enabled {
+                    run_id.as_deref()
+                } else {
+                    None
+                },
+                "llm_request_failed",
+                "analyzing",
+                "credential_store_error",
+                &stage_timings,
+            );
+            return Err(CommandError::from(err));
+        }
+    };
     if let Some(ref rid) = run_id {
         let _ = observability::log_audit(
             "stt_request_start",
@@ -265,15 +358,6 @@ pub async fn capture_stop_and_analyze(
                 format!("stt_failure_kind={failure_kind}"),
             );
             if let Some(ref rid) = run_id {
-                let mut fields = BTreeMap::new();
-                fields.insert("failure_kind".to_string(), failure_kind.to_string());
-                let _ = trace_manifest::append_timeline_event(
-                    rid,
-                    "stt_request_failed",
-                    "transcribing",
-                    fields,
-                );
-                let _ = trace_manifest::write_timings(rid, &stage_timings);
                 let _ = observability::log_error(
                     "stt_request_failed",
                     Fields::new()
@@ -284,6 +368,17 @@ pub async fn capture_stop_and_analyze(
                         .with("failure_kind", failure_kind),
                 );
             }
+            finalize_failure_trace(
+                if trace_redacted_enabled {
+                    run_id.as_deref()
+                } else {
+                    None
+                },
+                "stt_request_failed",
+                "transcribing",
+                failure_kind,
+                &stage_timings,
+            );
             return Err(CommandError::Pipeline(err));
         }
     };
@@ -439,6 +534,17 @@ pub async fn capture_stop_and_analyze(
                         .with("chars_band", chars_band),
                 );
             }
+            finalize_failure_trace(
+                if trace_redacted_enabled {
+                    run_id.as_deref()
+                } else {
+                    None
+                },
+                "llm_request_failed",
+                "analyzing",
+                "provider_or_card_error",
+                &stage_timings,
+            );
             return Err(pipeline_errors::log_llm_failure(
                 "llm",
                 err,

@@ -22,6 +22,9 @@ Detail fields:
 - `RL_STT_TOO_SHORT` is reserved as a legacy diagnostic code; short non-empty transcripts are analyzed.
 - STT failures write available stage timings and a `stt_request_failed` timeline event.
 - `full_local` runs include `capture.full.wav`; all trace modes include redacted audio signal metrics.
+- Capture stop signals immediately and drains already-buffered WASAPI packets for a bounded 40 ms window.
+- Early capture, credential, STT, and LLM failures finalize `timings.json` and append a failure timeline event.
+- `Clear debug traces` also removes legacy `%LOCALAPPDATA%\com.replyline.app\capture-debug\*.wav` files.
 
 Example line:
 

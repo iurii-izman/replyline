@@ -1,6 +1,5 @@
 use super::deepgram;
 use crate::audio::encode_wav;
-use crate::capture_debug;
 use crate::diag_contract::{RL_STT_REQUEST_TIMED, RL_WAV_ENCODING_TIMED};
 use crate::pipeline_timing::{PipelineTimer, StageTiming};
 use crate::privacy;
@@ -60,16 +59,9 @@ fn has_audible_signal(metrics: &AudioSignalMetrics) -> bool {
     metrics.peak_abs >= MIN_AUDIBLE_PEAK as u16 && metrics.active_samples >= MIN_ACTIVE_SAMPLES
 }
 
-fn failed_stt_detail(err: &str, wav: &[u8]) -> String {
+fn failed_stt_detail(err: &str) -> String {
     let safe_err = privacy::safe_preview(err, 300);
-    if capture_debug::should_persist_stt_debug(&safe_err) {
-        match capture_debug::save_failed_stt_wav(wav) {
-            Ok(path) => format!("stt: {safe_err} debug_wav={}", path.display()),
-            Err(save_err) => format!("stt: {safe_err} debug_wav_save_failed={save_err}"),
-        }
-    } else {
-        format!("stt: {safe_err}")
-    }
+    format!("stt: {safe_err}")
 }
 
 pub async fn transcribe(
@@ -93,10 +85,8 @@ pub async fn transcribe(
     }
 
     if !has_audible_signal(&signal) {
-        let message = failed_stt_detail(
-            "STT_NO_SPEECH: Captured audio contains no audible signal.",
-            &wav,
-        );
+        let message =
+            failed_stt_detail("STT_NO_SPEECH: Captured audio contains no audible signal.");
         return Err(SttProviderError { message, stages });
     }
 
@@ -108,7 +98,7 @@ pub async fn transcribe(
         }
         Err(err) => {
             stages.push(stt_timer.measure("stt_request", "fail", RL_STT_REQUEST_TIMED));
-            let message = failed_stt_detail(&err, &wav);
+            let message = failed_stt_detail(&err);
             Err(SttProviderError { message, stages })
         }
     }

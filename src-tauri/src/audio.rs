@@ -20,6 +20,7 @@ use windows::Win32::System::Com::{
 
 const TARGET_SAMPLE_RATE: u32 = 16_000;
 const CAPTURE_START_TIMEOUT: Duration = Duration::from_secs(3);
+const CAPTURE_STOP_DRAIN: Duration = Duration::from_millis(40);
 const WAVE_FORMAT_PCM_TAG: u16 = 0x0001;
 const WAVE_FORMAT_IEEE_FLOAT_TAG: u16 = 0x0003;
 const WAVE_FORMAT_EXTENSIBLE_TAG: u16 = 0xFFFE;
@@ -54,7 +55,6 @@ impl CaptureRun {
     }
 
     pub fn stop(self) -> Result<Vec<i16>, String> {
-        thread::sleep(Duration::from_millis(450));
         self.cancel.store(true, Ordering::SeqCst);
         self.join
             .join()
@@ -186,11 +186,22 @@ fn capture_loopback(
         .send(Ok(()))
         .map_err(|_| "Capture startup receiver disconnected.".to_string())?;
 
-    while !cancel.load(Ordering::SeqCst) && started.elapsed() < max_capture_duration {
+    let mut stop_requested_at = None;
+    loop {
+        let now = Instant::now();
+        if (cancel.load(Ordering::SeqCst) || started.elapsed() >= max_capture_duration)
+            && stop_requested_at.is_none()
+        {
+            stop_requested_at = Some(now);
+        }
+
         let mut packet_frames =
             unsafe { capture.GetNextPacketSize() }.map_err(|e| e.to_string())?;
         if packet_frames == 0 {
-            thread::sleep(Duration::from_millis(8));
+            if stop_drain_complete(stop_requested_at, now) {
+                break;
+            }
+            thread::sleep(Duration::from_millis(4));
             continue;
         }
 
@@ -215,12 +226,22 @@ fn capture_loopback(
             unsafe { capture.ReleaseBuffer(frames) }.map_err(|e| e.to_string())?;
             packet_frames = unsafe { capture.GetNextPacketSize() }.map_err(|e| e.to_string())?;
         }
+
+        if stop_drain_complete(stop_requested_at, Instant::now()) {
+            break;
+        }
     }
 
     if pcm.is_empty() {
         return Err("No audio detected during snippet capture.".to_string());
     }
     Ok(pcm)
+}
+
+fn stop_drain_complete(stop_requested_at: Option<Instant>, now: Instant) -> bool {
+    stop_requested_at
+        .map(|requested_at| now.saturating_duration_since(requested_at) >= CAPTURE_STOP_DRAIN)
+        .unwrap_or(false)
 }
 
 #[cfg(windows)]
@@ -311,7 +332,8 @@ impl DownmixResampler {
 
 #[cfg(test)]
 mod tests {
-    use super::encode_wav;
+    use super::{encode_wav, stop_drain_complete, CAPTURE_STOP_DRAIN};
+    use std::time::{Duration, Instant};
 
     #[test]
     fn wav_header_matches_expected_len() {
@@ -319,5 +341,19 @@ mod tests {
         assert_eq!(&wav[0..4], b"RIFF");
         assert_eq!(&wav[8..12], b"WAVE");
         assert_eq!(wav.len(), 44 + 8);
+    }
+
+    #[test]
+    fn stop_drain_is_short_and_bounded() {
+        let requested_at = Instant::now();
+        assert!(!stop_drain_complete(
+            Some(requested_at),
+            requested_at + CAPTURE_STOP_DRAIN - Duration::from_millis(1)
+        ));
+        assert!(stop_drain_complete(
+            Some(requested_at),
+            requested_at + CAPTURE_STOP_DRAIN
+        ));
+        assert!(CAPTURE_STOP_DRAIN < Duration::from_millis(100));
     }
 }

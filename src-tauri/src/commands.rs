@@ -144,10 +144,16 @@ pub fn get_trace_status() -> Result<TraceStatusDto, CommandError> {
 
 #[tauri::command]
 pub fn clear_debug_traces() -> Result<(), CommandError> {
-    let removed = crate::trace_manifest::clear_all_traces().map_err(CommandError::Internal)?;
-    let _ = app_log::append_event(
+    let removed_traces =
+        crate::trace_manifest::clear_all_traces().map_err(CommandError::Internal)?;
+    let removed_legacy_wavs =
+        crate::capture_debug::clear_all_debug_wavs().map_err(CommandError::Internal)?;
+    let _ = app_log::append_metadata_event(
         "debug_traces_cleared",
-        app_log::safe_count_detail("removed", removed),
+        vec![
+            ("removed_traces", removed_traces.to_string()),
+            ("removed_legacy_wavs", removed_legacy_wavs.to_string()),
+        ],
     );
     Ok(())
 }
@@ -593,6 +599,21 @@ pub fn capture_start(
     }
     let run = CaptureRun::start(settings.capture_max_seconds).map_err(CommandError::Capture)?;
     let run_id = next_run_id();
+    if settings.debug_trace_redacted_enabled() {
+        let started_at = chrono::Utc::now().to_rfc3339();
+        let _ = crate::trace_manifest::ensure_run_started(
+            &run_id,
+            &started_at,
+            &settings,
+            "work_conversation",
+        );
+        let _ = crate::trace_manifest::append_timeline_event(
+            &run_id,
+            "capture_start_ok",
+            "capturing",
+            std::collections::BTreeMap::new(),
+        );
+    }
     capture.active = Some(run);
     capture.active_run_id = Some(run_id.clone());
     emit_status(&app, Some(&run_id), "capturing", None);

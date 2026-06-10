@@ -290,7 +290,7 @@ fn validate_section(
             limits.answer_min_words,
             limits.answer_max_words,
         ),
-        Section::NextStep => validate_next_step(value),
+        Section::NextStep => validate_next_step(value, transcript),
     }
 }
 
@@ -404,7 +404,7 @@ fn is_question_like(transcript: &str) -> bool {
         .any(|word| question_words.contains(&word))
 }
 
-fn validate_next_step(value: &str) -> Result<(), String> {
+fn validate_next_step(value: &str, transcript: &str) -> Result<(), String> {
     let lower = value.to_lowercase();
     let words = word_count(value);
 
@@ -419,7 +419,7 @@ fn validate_next_step(value: &str) -> Result<(), String> {
     {
         return Err("next_step is too vague.".to_string());
     }
-    if !contains_any(
+    let has_work_coordination = contains_any(
         &lower,
         &[
             "письм",
@@ -447,7 +447,28 @@ fn validate_next_step(value: &str) -> Result<(), String> {
             "источник",
             "уточн",
         ],
-    ) {
+    );
+    let has_factual_continuation = is_question_like(transcript)
+        && contains_any(
+            &lower,
+            &[
+                "информац",
+                "данн",
+                "подготов",
+                "объясн",
+                "пример",
+                "детал",
+                "справк",
+                "verify",
+                "source",
+                "information",
+                "data",
+                "explain",
+                "example",
+                "detail",
+            ],
+        );
+    if !has_work_coordination && !has_factual_continuation {
         return Err("next_step has no concrete coordination artifact.".to_string());
     }
     Ok(())
@@ -522,6 +543,7 @@ fn repair_answer_now_inner(value: &str, transcript: &str) -> String {
 
 #[derive(Clone, Copy)]
 enum FallbackIntent {
+    Factual,
     Email,
     Chat,
     Ticket,
@@ -641,6 +663,10 @@ fn detect_fallback_intent(transcript_lower: &str, combined_lower: &str) -> Fallb
         }
     }
 
+    if is_question_like(transcript_lower) {
+        return FallbackIntent::Factual;
+    }
+
     FallbackIntent::Default
 }
 
@@ -653,6 +679,16 @@ pub fn build_fallback_next_step(say_now: &str, transcript: &str) -> String {
         % 3;
     let intent = detect_fallback_intent(&transcript_lower, &combined_lower);
     match intent {
+        FallbackIntent::Factual => {
+            if transcript
+                .chars()
+                .any(|ch| ('А'..='я').contains(&ch) || ch == 'ё' || ch == 'Ё')
+            {
+                "При необходимости проверю ответ по надежному источнику и уточню детали."
+            } else {
+                "If needed, I will verify the answer against a reliable source and clarify details."
+            }
+        }
         FallbackIntent::Email => match variant {
             0 => "Отправлю письмо с итогом, владельцем и дедлайном ответа до конца дня.",
             1 => "Подготовлю email-резюме: решение, владелец и срок следующего апдейта.",
@@ -878,7 +914,7 @@ mod tests {
             normalize_parsed_card(&raw, "", crate::prompt_registry::default_answer_profile())
                 .expect("must repair");
         assert!(quality.fallback_used || quality.repair_used);
-        validate_next_step(&card.next_move).expect("fallback must pass");
+        validate_next_step(&card.next_move, "").expect("fallback must pass");
     }
 
     #[test]
@@ -967,6 +1003,37 @@ mod tests {
             "Ждем approve от legal.",
         );
         assert!(next.contains("sign-off") || next.contains("согласован") || next.contains("апрув"));
+    }
+
+    #[test]
+    fn factual_follow_up_is_preserved_without_work_fallback() {
+        let raw = v3_json(
+            "Какой город является столицей Франции?",
+            "Столицей Франции является Париж. Это один из самых известных городов мира.",
+            "Столицей Франции является Париж.",
+            "Если нужно больше информации о Париже, могу подготовить дополнительные данные.",
+        );
+        let (card, quality) = normalize_parsed_card(
+            &raw,
+            "Какой город является столицей Франции?",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("factual card must pass");
+        assert!(card.next_move.contains("дополнительные данные"));
+        assert!(!card.next_move.contains("владел"));
+        assert!(!quality.fallback_used);
+    }
+
+    #[test]
+    fn factual_fallback_uses_source_verification() {
+        let next = build_fallback_next_step(
+            "Столицей Франции является Париж.",
+            "Какой город является столицей Франции?",
+        );
+        assert!(next.contains("источнику"));
+        assert!(!next.contains("владел"));
+        validate_next_step(&next, "Какой город является столицей Франции?")
+            .expect("factual fallback must pass");
     }
 
     #[test]
