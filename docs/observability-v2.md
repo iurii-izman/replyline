@@ -84,7 +84,10 @@ Default mode writes redacted snapshots only:
 - `llm-attempts.jsonl`
 - `stt-request.redacted.json`
 - `stt-response.redacted.json`
+- `audio-signal.redacted.json`
 - `card.redacted.json`
+
+With explicit `debugTraceMode=full_local`, the run also stores `capture.full.wav` next to transcript/prompt content for local input/output comparison. This file is sensitive and follows trace retention.
 
 Safe LLM fields:
 

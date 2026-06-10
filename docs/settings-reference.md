@@ -57,6 +57,6 @@ No Advanced Mode fields in user-facing settings contract.
 
 - `debugTraceMode=off`: no local debug trace artifacts.
 - `debugTraceMode=redacted` (default): diagnostics with sanitization/redaction for routine triage.
-- `debugTraceMode=full_local`: stores sensitive local diagnostic content for deep local debugging.
+- `debugTraceMode=full_local`: stores sensitive local diagnostic content, including `capture.full.wav`, transcript, prompts, and responses, for deep local debugging.
 - `debugTraceRetentionDays=0`: manual cleanup only.
 - `debugTraceRetentionDays=1|3|7`: automatic cleanup window for trace artifacts.

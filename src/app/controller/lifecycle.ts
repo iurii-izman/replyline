@@ -24,6 +24,7 @@ export interface LifecycleDeps {
   setContextActive: Setter<boolean>;
   setContextEntryCount: Setter<number>;
   setLastTranscriptPreview: Setter<string | null>;
+  setCanRetryLastTranscript: Setter<boolean>;
   setCard: (card: AnalysisCard | null) => void;
   notices: NoticeApi;
   settingsActions: SettingsActions;
@@ -88,6 +89,7 @@ export function setupLifecycle(deps: LifecycleDeps): void {
           deps.setContextActive(false);
           deps.setContextEntryCount(0);
           deps.setLastTranscriptPreview(null);
+          deps.setCanRetryLastTranscript(false);
           deps.setCard(null);
           deps.setPhase("idle");
           deps.notices.pushNotice({

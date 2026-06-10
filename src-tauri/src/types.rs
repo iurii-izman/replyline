@@ -185,6 +185,8 @@ pub struct AnalysisCardDto {
     pub say_now: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub star_evidence: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub risk_or_clarifier: Option<String>,
     pub next_move: String,
     pub chars_band: String,
     #[serde(skip_serializing_if = "Option::is_none")]

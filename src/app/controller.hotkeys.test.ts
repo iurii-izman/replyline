@@ -10,6 +10,7 @@ describe("createHotkeys", () => {
       phase: () => "idle",
       pipelineActive: () => false,
       setupRequired: () => false,
+      setupReady: () => false,
       strings: () => ui_ru,
       setError: vi.fn() as never,
       setPhase: vi.fn() as never,
@@ -17,7 +18,7 @@ describe("createHotkeys", () => {
       setCard: vi.fn(),
       setCaptureQuality: vi.fn() as never,
       setContextActive: vi.fn() as never,
-      settings: () => ({ keepOnTopDuringCapture: false } as never),
+      settings: () => ({ keepOnTopDuringCapture: false }) as never,
       setSettings: setSettings as never,
       setHotkeyFailed: vi.fn() as never,
       setDeepgramSaved: vi.fn() as never,
@@ -74,6 +75,7 @@ describe("createHotkeys", () => {
       phase: () => "idle",
       pipelineActive: () => false,
       setupRequired: () => false,
+      setupReady: () => false,
       strings: () => ui_ru,
       setError: vi.fn() as never,
       setPhase: vi.fn() as never,
@@ -81,7 +83,7 @@ describe("createHotkeys", () => {
       setCard: vi.fn(),
       setCaptureQuality: vi.fn() as never,
       setContextActive: vi.fn() as never,
-      settings: () => ({ keepOnTopDuringCapture: false } as never),
+      settings: () => ({ keepOnTopDuringCapture: false }) as never,
       setSettings: vi.fn() as never,
       setHotkeyFailed: vi.fn() as never,
       setDeepgramSaved: vi.fn() as never,
@@ -137,6 +139,7 @@ describe("createHotkeys", () => {
       phase: () => "idle",
       pipelineActive: () => false,
       setupRequired: () => false,
+      setupReady: () => false,
       strings: () => ui_ru,
       setError: vi.fn() as never,
       setPhase: vi.fn() as never,
@@ -144,7 +147,7 @@ describe("createHotkeys", () => {
       setCard: vi.fn(),
       setCaptureQuality: vi.fn() as never,
       setContextActive: vi.fn() as never,
-      settings: () => ({ keepOnTopDuringCapture: false } as never),
+      settings: () => ({ keepOnTopDuringCapture: false }) as never,
       setSettings: vi.fn() as never,
       setHotkeyFailed: vi.fn() as never,
       setDeepgramSaved: vi.fn() as never,
@@ -203,6 +206,7 @@ describe("createHotkeys", () => {
       phase: () => "idle",
       pipelineActive: () => false,
       setupRequired: () => false,
+      setupReady: () => false,
       strings: () => ui_ru,
       setError: vi.fn() as never,
       setPhase: vi.fn() as never,
@@ -210,7 +214,7 @@ describe("createHotkeys", () => {
       setCard: vi.fn(),
       setCaptureQuality: vi.fn() as never,
       setContextActive: vi.fn() as never,
-      settings: () => ({ keepOnTopDuringCapture: false } as never),
+      settings: () => ({ keepOnTopDuringCapture: false }) as never,
       setSettings: vi.fn() as never,
       setHotkeyFailed: vi.fn() as never,
       setDeepgramSaved: vi.fn() as never,
@@ -232,5 +236,143 @@ describe("createHotkeys", () => {
     expect(invoke).toHaveBeenCalledWith("capture_start");
     expect(invoke).toHaveBeenCalledWith("capture_stop_and_analyze");
     expect(pushNotice).toHaveBeenCalledTimes(1);
+  });
+
+  it("refreshes retry status after analysis fails with a saved transcript", async () => {
+    let handler: ((event: { state: "Pressed" | "Released" }) => Promise<void> | void) | null = null;
+    const retryStatus = {
+      contextActive: false,
+      entryCount: 0,
+      lastTranscriptPreview: "Короткий вопрос",
+      canRetryLastTranscript: true,
+    };
+    const invoke = vi.fn(async (cmd: string) => {
+      if (cmd === "get_setup_status") {
+        return {
+          deepgramKeyPresent: true,
+          llmKeyPresent: true,
+          llmRouteConfigured: true,
+          runtimePathReady: true,
+        };
+      }
+      if (cmd === "capture_start") return "run-1";
+      if (cmd === "capture_stop_and_analyze") {
+        throw new Error("RL_CARD_INVALID: Card output invalid");
+      }
+      if (cmd === "get_context_status") return retryStatus;
+      return null;
+    });
+    const applyContextStatus = vi.fn();
+    const hotkeys = createHotkeys({
+      platform: {
+        invoke,
+        shortcuts: {
+          unregisterAll: vi.fn(async () => undefined),
+          isRegistered: vi.fn(async () => false),
+          register: vi.fn(async (_hotkey, fn) => {
+            handler = fn as typeof handler;
+          }),
+        },
+        window: {},
+      } as never,
+      phase: () => "idle",
+      pipelineActive: () => false,
+      setupRequired: () => false,
+      setupReady: () => false,
+      strings: () => ui_ru,
+      setError: vi.fn() as never,
+      setPhase: vi.fn() as never,
+      setPanel: vi.fn() as never,
+      setCard: vi.fn(),
+      setCaptureQuality: vi.fn() as never,
+      setContextActive: vi.fn() as never,
+      settings: () => ({ keepOnTopDuringCapture: false }) as never,
+      setSettings: vi.fn() as never,
+      setHotkeyFailed: vi.fn() as never,
+      setDeepgramSaved: vi.fn() as never,
+      setLlmKeySaved: vi.fn() as never,
+      setLlmRouteConfigured: vi.fn() as never,
+      setLastCommandErrorKind: vi.fn() as never,
+      setActiveRunId: vi.fn() as never,
+      isBilingualHotkeyMode: () => false,
+      isBilingualDegraded: () => false,
+      triggerBilingualHotkeyAnswer: vi.fn(async () => undefined),
+      notices: { pushNotice: vi.fn(), dismissNotice: vi.fn(), clearNoticeTimer: vi.fn() },
+      showWindow: vi.fn(async () => undefined),
+      applyContextStatus,
+    });
+
+    await hotkeys.registerCurrentHotkey("Ctrl+Alt+Space");
+    await handler?.({ state: "Pressed" });
+    await handler?.({ state: "Released" });
+
+    expect(invoke).toHaveBeenCalledWith("get_context_status");
+    expect(applyContextStatus).toHaveBeenCalledWith(retryStatus);
+  });
+
+  it("defers release until capture_start is ready", async () => {
+    let handler: ((event: { state: "Pressed" | "Released" }) => Promise<void> | void) | null = null;
+    let resolveCaptureStart: ((value: string) => void) | null = null;
+    const captureStart = new Promise<string>((resolve) => {
+      resolveCaptureStart = resolve;
+    });
+    const invoke = vi.fn(async (cmd: string) => {
+      if (cmd === "capture_start") return captureStart;
+      if (cmd === "capture_stop_and_analyze") {
+        return { gist: "g", sayNow: "a", nextMove: "n", charsBand: "short" };
+      }
+      if (cmd === "get_context_status") {
+        return { contextActive: false, entryCount: 0, canRetryLastTranscript: true };
+      }
+      return null;
+    });
+    const hotkeys = createHotkeys({
+      platform: {
+        invoke,
+        shortcuts: {
+          unregisterAll: vi.fn(async () => undefined),
+          isRegistered: vi.fn(async () => false),
+          register: vi.fn(async (_hotkey, fn) => {
+            handler = fn as typeof handler;
+          }),
+        },
+        window: {},
+      } as never,
+      phase: () => "idle",
+      pipelineActive: () => false,
+      setupRequired: () => false,
+      setupReady: () => true,
+      strings: () => ui_ru,
+      setError: vi.fn() as never,
+      setPhase: vi.fn() as never,
+      setPanel: vi.fn() as never,
+      setCard: vi.fn(),
+      setCaptureQuality: vi.fn() as never,
+      setContextActive: vi.fn() as never,
+      settings: () => ({ keepOnTopDuringCapture: false }) as never,
+      setSettings: vi.fn() as never,
+      setHotkeyFailed: vi.fn() as never,
+      setDeepgramSaved: vi.fn() as never,
+      setLlmKeySaved: vi.fn() as never,
+      setLlmRouteConfigured: vi.fn() as never,
+      setLastCommandErrorKind: vi.fn() as never,
+      setActiveRunId: vi.fn() as never,
+      isBilingualHotkeyMode: () => false,
+      isBilingualDegraded: () => false,
+      triggerBilingualHotkeyAnswer: vi.fn(async () => undefined),
+      notices: { pushNotice: vi.fn(), dismissNotice: vi.fn(), clearNoticeTimer: vi.fn() },
+      showWindow: vi.fn(async () => undefined),
+      applyContextStatus: vi.fn(),
+    });
+
+    await hotkeys.registerCurrentHotkey("Ctrl+Alt+Space");
+    const pressPromise = handler?.({ state: "Pressed" });
+    await Promise.resolve();
+    await handler?.({ state: "Released" });
+    resolveCaptureStart?.("run-fast");
+    await pressPromise;
+
+    expect(invoke).not.toHaveBeenCalledWith("get_setup_status");
+    expect(invoke).toHaveBeenCalledWith("capture_stop_and_analyze");
   });
 });

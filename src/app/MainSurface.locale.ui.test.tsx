@@ -180,6 +180,8 @@ describe("MainSurface state-driven view", () => {
                   gist: "g",
                   sayNow: "say",
                   nextMove: "next",
+                  starEvidence: "evidence",
+                  riskOrClarifier: "clarification",
                   charsBand: "normal",
                 }),
                 copyCurrentCard,
@@ -190,6 +192,9 @@ describe("MainSurface state-driven view", () => {
     );
     expect(screen.getByTestId("answer-hero-card")).toBeTruthy();
     expect(screen.getByTestId("secondary-insight-cards")).toBeTruthy();
+    expect(screen.getByTestId("section-star-evidence").textContent).toContain("evidence");
+    expect(screen.getByTestId("section-risk-clarifier").textContent).toContain("clarification");
+    expect(screen.getByTestId("section-say-now").textContent).toBe("say");
     expect(screen.getByTestId("action-row")).toBeTruthy();
     const hero = screen.getByTestId("answer-hero-card");
     const copy = screen.getByRole("button", { name: "Скопировать ответ" });

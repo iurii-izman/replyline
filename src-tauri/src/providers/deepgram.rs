@@ -63,6 +63,12 @@ struct DeepgramAlternative {
     transcript: String,
 }
 
+fn endpoint_for_language(language: &str) -> String {
+    format!(
+        "https://api.deepgram.com/v1/listen?model=nova-3&language={language}&smart_format=true&punctuate=true"
+    )
+}
+
 pub async fn transcribe_wav(
     run_id: Option<&str>,
     include_content: bool,
@@ -72,9 +78,7 @@ pub async fn transcribe_wav(
 ) -> Result<(String, SttRequestTelemetry), String> {
     let language = crate::language_profile::stt_language();
     let model = "nova-3";
-    let endpoint = format!(
-        "https://api.deepgram.com/v1/listen?model={model}&language={language}&smart_format=true&punctuate=true"
-    );
+    let endpoint = endpoint_for_language(language);
     let endpoint_url = Url::parse(&endpoint).ok();
     let endpoint_host = endpoint_url
         .as_ref()
@@ -105,8 +109,9 @@ pub async fn transcribe_wav(
                 "punctuate": true,
             },
             "audioBytes": wav_bytes.len(),
-            "sampleRateHz": serde_json::Value::Null,
-            "channels": serde_json::Value::Null
+            "audioDurationMs": wav_bytes.len().saturating_sub(44) as u64 * 1000 / 2 / 16_000,
+            "sampleRateHz": 16_000,
+            "channels": 1
         });
         let _ = trace_manifest::write_run_json(rid, "stt-request.redacted.json", &request_snapshot);
     }
@@ -240,7 +245,7 @@ pub async fn transcribe_wav(
 
 #[cfg(test)]
 mod tests {
-    use super::{SttRequestPolicy, SttRequestTelemetry};
+    use super::{endpoint_for_language, SttRequestPolicy, SttRequestTelemetry};
 
     #[test]
     fn default_policy_keeps_stt_within_budget() {
@@ -254,5 +259,12 @@ mod tests {
         let telemetry = SttRequestTelemetry::default();
         assert_eq!(telemetry.retry_count, 0);
         assert_eq!(telemetry.retry_reason, None);
+    }
+
+    #[test]
+    fn endpoint_supports_multilingual_recognition() {
+        let endpoint = endpoint_for_language("multi");
+        assert!(endpoint.contains("model=nova-3"));
+        assert!(endpoint.contains("language=multi"));
     }
 }

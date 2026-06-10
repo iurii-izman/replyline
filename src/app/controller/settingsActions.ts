@@ -44,6 +44,7 @@ export interface SettingsActionDeps {
   setContextActive: Setter<boolean>;
   setContextEntryCount: Setter<number>;
   setLastTranscriptPreview: Setter<string | null>;
+  setCanRetryLastTranscript: Setter<boolean>;
   setPersistenceDiagnostics: Setter<PersistenceDiagnosticsDto | null>;
   setPersistenceDiagnosticsError: Setter<string | null>;
   setSaving: Setter<boolean>;
@@ -87,6 +88,7 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
       deps.setContextActive(boot.contextActive);
       deps.setContextEntryCount(boot.contextEntryCount);
       deps.setLastTranscriptPreview(boot.lastTranscriptPreview ?? null);
+      deps.setCanRetryLastTranscript(boot.canRetryLastTranscript);
       deps.setPersistenceDiagnosticsError(null);
       try {
         const diagnostics = await deps.platform.invoke<PersistenceDiagnosticsDto>(
@@ -206,7 +208,9 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
       if (boot.runtimeReady && !setupRequiredFromBoot) deps.setPanel("main");
     } catch (err) {
       deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
-      deps.setSettingsFormHint(mapSettingsSaveError(err, deps.strings()) ?? invokeErrorMessage(err));
+      deps.setSettingsFormHint(
+        mapSettingsSaveError(err, deps.strings()) ?? invokeErrorMessage(err),
+      );
       deps.setHotkeyFailed(true);
     } finally {
       deps.setSaving(false);

@@ -102,6 +102,12 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
         message: deps.strings().notices.retryDone,
       });
     } catch (err) {
+      try {
+        const status = await deps.platform.invoke<ContextStatusDto>("get_context_status");
+        deps.applyContextStatus(status);
+      } catch {
+        // Preserve the original retry failure when context refresh is unavailable.
+      }
       const message = userSafePipelineError(err, deps.strings());
       deps.setError(message);
       deps.notices.pushNotice({

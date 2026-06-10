@@ -1,6 +1,7 @@
 use std::cmp::min;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
+    mpsc::{self, SyncSender},
     Arc,
 };
 use std::thread;
@@ -18,6 +19,7 @@ use windows::Win32::System::Com::{
 };
 
 const TARGET_SAMPLE_RATE: u32 = 16_000;
+const CAPTURE_START_TIMEOUT: Duration = Duration::from_secs(3);
 const WAVE_FORMAT_PCM_TAG: u16 = 0x0001;
 const WAVE_FORMAT_IEEE_FLOAT_TAG: u16 = 0x0003;
 const WAVE_FORMAT_EXTENSIBLE_TAG: u16 = 0xFFFE;
@@ -32,8 +34,23 @@ impl CaptureRun {
         let cancel = Arc::new(AtomicBool::new(false));
         let worker_flag = Arc::clone(&cancel);
         let duration = Duration::from_secs(max_capture_seconds as u64);
-        let join = thread::spawn(move || record_loopback(worker_flag, duration));
-        Ok(Self { cancel, join })
+        let (ready_tx, ready_rx) = mpsc::sync_channel(1);
+        let join = thread::spawn(move || record_loopback(worker_flag, duration, ready_tx));
+        match ready_rx.recv_timeout(CAPTURE_START_TIMEOUT) {
+            Ok(Ok(())) => Ok(Self { cancel, join }),
+            Ok(Err(err)) => {
+                cancel.store(true, Ordering::SeqCst);
+                Err(err)
+            }
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                cancel.store(true, Ordering::SeqCst);
+                Err("System audio capture did not become ready in time.".to_string())
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
+                cancel.store(true, Ordering::SeqCst);
+                Err("System audio capture stopped before becoming ready.".to_string())
+            }
+        }
     }
 
     pub fn stop(self) -> Result<Vec<i16>, String> {
@@ -77,17 +94,28 @@ pub fn encode_wav(samples: &[i16]) -> Vec<u8> {
 fn record_loopback(
     _cancel: Arc<AtomicBool>,
     _max_capture_duration: Duration,
+    ready: SyncSender<Result<(), String>>,
 ) -> Result<Vec<i16>, String> {
-    Err("System audio capture is only available on Windows.".to_string())
+    let err = "System audio capture is only available on Windows.".to_string();
+    let _ = ready.send(Err(err.clone()));
+    Err(err)
 }
 
 #[cfg(windows)]
 fn record_loopback(
     cancel: Arc<AtomicBool>,
     max_capture_duration: Duration,
+    ready: SyncSender<Result<(), String>>,
 ) -> Result<Vec<i16>, String> {
-    unsafe { CoInitializeEx(None, COINIT_MULTITHREADED).ok() }.map_err(|e| e.to_string())?;
-    let result = capture_loopback(cancel, max_capture_duration);
+    if let Err(err) = unsafe { CoInitializeEx(None, COINIT_MULTITHREADED).ok() } {
+        let err = err.to_string();
+        let _ = ready.send(Err(err.clone()));
+        return Err(err);
+    }
+    let result = capture_loopback(cancel, max_capture_duration, &ready);
+    if let Err(err) = &result {
+        let _ = ready.try_send(Err(err.clone()));
+    }
     unsafe {
         CoUninitialize();
     }
@@ -98,6 +126,7 @@ fn record_loopback(
 fn capture_loopback(
     cancel: Arc<AtomicBool>,
     max_capture_duration: Duration,
+    ready: &SyncSender<Result<(), String>>,
 ) -> Result<Vec<i16>, String> {
     struct MixFormatGuard(*mut windows::Win32::Media::Audio::WAVEFORMATEX);
     impl Drop for MixFormatGuard {
@@ -153,6 +182,9 @@ fn capture_loopback(
 
     unsafe { client.Start() }.map_err(|e| e.to_string())?;
     let _stop_guard = AudioClientStopGuard(client.clone());
+    ready
+        .send(Ok(()))
+        .map_err(|_| "Capture startup receiver disconnected.".to_string())?;
 
     while !cancel.load(Ordering::SeqCst) && started.elapsed() < max_capture_duration {
         let mut packet_frames =

@@ -234,6 +234,21 @@ function InsightStrip(props: Readonly<{ controller: ReplylineController }>) {
           {controller().card()?.nextMove?.trim() || st().card.emptyNextMoveCompact}
         </p>
       </section>
+      <Show when={controller().card()?.starEvidence?.trim()}>
+        <section class="result-section result-section--compact" data-testid="section-star-evidence">
+          <div class="result-label">{st().card.starEvidenceLabel}</div>
+          <p class="result-text">{controller().card()?.starEvidence?.trim()}</p>
+        </section>
+      </Show>
+      <Show when={controller().card()?.riskOrClarifier?.trim()}>
+        <section
+          class="result-section result-section--compact"
+          data-testid="section-risk-clarifier"
+        >
+          <div class="result-label">{st().card.riskOrClarifierLabel}</div>
+          <p class="result-text">{controller().card()?.riskOrClarifier?.trim()}</p>
+        </section>
+      </Show>
     </section>
   );
 }
@@ -608,6 +623,7 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
     st().card.copyUnavailableHint,
     st().card.shortCaptureHint,
     st().card.starEvidenceLabel,
+    st().card.riskOrClarifierLabel,
     st().card.nextActionLabel,
     st().card.nextActionSetup,
     st().card.nextActionCapture,
@@ -698,8 +714,10 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
     st().settings.candidatePackDefaultAvoidClaims,
     st().errors.captureStart,
     st().errors.pipelineNothingToRetry,
+    st().errors.pipelineNoSpeech,
     st().errors.pipelineDeepgram,
     st().errors.pipelineLlm,
+    st().errors.pipelineCardInvalid,
     st().errors.pipelineShortCapture,
     st().errors.pipelineGeneric,
     st().errors.bootstrapLoad,

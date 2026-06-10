@@ -28,17 +28,17 @@ Candidate Pack boundary:
 
 ## What is stored locally
 
-| Data                                              | Location                                    | Format                     | Retention                                 |
-| ------------------------------------------------- | ------------------------------------------- | -------------------------- | ----------------------------------------- |
-| Settings (hotkey, provider URLs, model, language) | `%APPDATA%\com.replyline.app\settings.json` | Plaintext JSON             | Until user changes or deletes             |
-| API keys (Deepgram, LLM)                          | Windows Credential Manager                  | OS-managed encrypted store | Until user revokes                        |
-| App event log                                     | `%APPDATA%\com.replyline.app\logs\app.log`  | Line-delimited text        | 5 MB rotation (oldest lines dropped)      |
-| Debug WAV files                                   | `%LOCALAPPDATA%\com.replyline.app\capture-debug\` | WAV                | Written only on STT failure; user manages |
-| Interview report store                            | `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json` | JSON             | User-controlled (`manual clear`, `7`, `30`, `90` days) |
+| Data                                              | Location                                                          | Format                     | Retention                                              |
+| ------------------------------------------------- | ----------------------------------------------------------------- | -------------------------- | ------------------------------------------------------ |
+| Settings (hotkey, provider URLs, model, language) | `%APPDATA%\com.replyline.app\settings.json`                       | Plaintext JSON             | Until user changes or deletes                          |
+| API keys (Deepgram, LLM)                          | Windows Credential Manager                                        | OS-managed encrypted store | Until user revokes                                     |
+| App event log                                     | `%APPDATA%\com.replyline.app\logs\app.log`                        | Line-delimited text        | 5 MB rotation (oldest lines dropped)                   |
+| Debug WAV files                                   | `%LOCALAPPDATA%\com.replyline.app\capture-debug\`                 | WAV                        | Written only on STT failure; user manages              |
+| Interview report store                            | `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json` | JSON                       | User-controlled (`manual clear`, `7`, `30`, `90` days) |
 
 ## What is NOT stored
 
-- Raw audio after processing. PCM and WAV data are discarded from memory after the STT call completes.
+- Raw audio after processing, except explicit `debugTraceMode=full_local`, which stores `capture.full.wav` inside the local trace run for diagnostics.
 - Transcripts after the session. The conversation context is RAM-only and is cleared on app restart or after the TTL expires.
 - Full conversation recordings. Replyline captures short fragments (up to the configured max seconds), not entire calls.
 - Result cards after the session. Cards exist in the UI state only and are lost on app restart.
@@ -54,7 +54,7 @@ Candidate Pack boundary:
   - `redacted` includes only metadata (timestamps/duration/counts/hashes/statuses/latencies) and excludes raw transcript text, translated text, full prompts, and raw Candidate Pack values.
 - Streaming sessions do not auto-write transcript files on session start/stop.
 - Debug traces are controlled by Settings (`debugTraceMode`: `off` / `redacted` / `full_local`).
-- `debugTraceMode=full_local` can retain more sensitive local details and should be used only for local triage.
+- `debugTraceMode=full_local` can retain transcript, prompt, response, and captured WAV content and should be used only for local triage.
 
 ## External providers
 

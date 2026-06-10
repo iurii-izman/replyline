@@ -41,7 +41,6 @@ pub mod en {
     pub const ERR_NO_ACTIVE_CAPTURE: &str = "Recording wasn't active. Hold the hotkey first.";
     pub const ERR_NO_DEEPGRAM_KEY: &str = "No Deepgram API key. Settings → key → Save.";
     pub const ERR_NOTHING_TO_RETRY: &str = "Nothing to rebuild yet — capture something first.";
-    pub const ERR_SHORT_CAPTURE: &str = "SHORT_CAPTURE: Too short fragment, record 5-10 seconds.";
 
     // -- Retry detail --
     pub const RETRY_DETAIL: &str = "retry";
@@ -76,8 +75,6 @@ pub mod ru {
         "Запись не была активна. Сначала удержите горячую клавишу.";
     pub const ERR_NO_DEEPGRAM_KEY: &str = "Нет ключа Deepgram. Настройки → ключ → Сохранить.";
     pub const ERR_NOTHING_TO_RETRY: &str = "Пока нечего пересобрать — сначала сделайте захват.";
-    pub const ERR_SHORT_CAPTURE: &str =
-        "SHORT_CAPTURE: Слишком короткий фрагмент, запишите 5-10 секунд.";
 
     // -- Retry detail --
     pub const RETRY_DETAIL: &str = "повтор";

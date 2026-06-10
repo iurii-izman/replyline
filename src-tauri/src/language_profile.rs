@@ -10,9 +10,9 @@ pub fn default_language() -> &'static str {
     "ru"
 }
 
-/// STT (Deepgram) language code for the default profile.
+/// STT (Deepgram) language code for RU-first conversations that may include English.
 pub fn stt_language() -> &'static str {
-    "ru"
+    "multi"
 }
 
 /// LLM prompt language code for the default profile.

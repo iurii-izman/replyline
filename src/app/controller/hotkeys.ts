@@ -28,6 +28,7 @@ export interface HotkeyDeps {
   phase: Accessor<Phase>;
   pipelineActive: Accessor<boolean>;
   setupRequired: Accessor<boolean>;
+  setupReady: Accessor<boolean>;
   strings: Accessor<UiStrings>;
   setError: Setter<string | null>;
   setPhase: Setter<Phase>;
@@ -77,59 +78,77 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
     await deps.platform.shortcuts.unregisterAll();
     const alreadyRegistered = await deps.platform.shortcuts.isRegistered(hotkey);
     if (alreadyRegistered) throw new Error(deps.strings().notices.hotkeyAlreadyRegistered);
-    let armed = false;
+    let captureState: "idle" | "starting" | "armed" | "stopping" = "idle";
+    let releasePending = false;
     let currentRunId: string | null = null;
-    const handlePressed = async () => {
+    async function handlePressed() {
       void emitClientEvent("hotkey_pressed", {
         state: "Pressed",
         source: "hotkey",
         phase: "capture",
       });
-      if (deps.pipelineActive()) return;
+      if (captureState !== "idle" || deps.pipelineActive()) return;
+      captureState = "starting";
+      releasePending = false;
       deps.setError(null);
       deps.notices.dismissNotice();
-      void emitClientEvent("setup_preflight_check_start", {
-        source: "hotkey_press",
-        phase: "settings",
-      });
-      const setupStatus = await deps.platform.invoke<SetupStatusDto>("get_setup_status");
-      void emitClientEvent("setup_preflight_check_result", {
-        source: "hotkey_press",
-        phase: "settings",
-        deepgram_key_present: String(setupStatus.deepgramKeyPresent),
-        llm_key_present: String(setupStatus.llmKeyPresent),
-        llm_route_configured: String(setupStatus.llmRouteConfigured),
-        runtime_path_ready: String(setupStatus.runtimePathReady),
-      });
-      deps.setDeepgramSaved(setupStatus.deepgramKeyPresent);
-      deps.setLlmKeySaved(setupStatus.llmKeyPresent);
-      deps.setLlmRouteConfigured(setupStatus.llmRouteConfigured);
-      if (!setupStatus.runtimePathReady || deps.setupRequired()) {
-        void emitClientEvent("setup_missing_redirect", {
-          phase: "settings",
-          runtime_path_ready: String(setupStatus.runtimePathReady),
-          setup_required: String(deps.setupRequired()),
-        });
-        deps.setPanel("settings");
-        deps.setPhase("idle");
-        await deps.showWindow("settings");
-        return;
-      }
-      if (deps.isBilingualHotkeyMode()) {
-        if (deps.isBilingualDegraded()) {
-          deps.notices.pushNotice({
-            tone: "info",
-            message: deps.strings().card.bilingual.status.degraded,
-          });
-        } else {
-          armed = true;
-          deps.setPhase("capturing");
-          deps.setCard(null);
-          return;
-        }
-      }
-      deps.setPhase("capturing");
       try {
+        if (!deps.setupReady()) {
+          void emitClientEvent("setup_preflight_check_start", {
+            source: "hotkey_press",
+            phase: "settings",
+          });
+          const setupStatus = await deps.platform.invoke<SetupStatusDto>("get_setup_status");
+          void emitClientEvent("setup_preflight_check_result", {
+            source: "hotkey_press",
+            phase: "settings",
+            deepgram_key_present: String(setupStatus.deepgramKeyPresent),
+            llm_key_present: String(setupStatus.llmKeyPresent),
+            llm_route_configured: String(setupStatus.llmRouteConfigured),
+            runtime_path_ready: String(setupStatus.runtimePathReady),
+          });
+          deps.setDeepgramSaved(setupStatus.deepgramKeyPresent);
+          deps.setLlmKeySaved(setupStatus.llmKeyPresent);
+          deps.setLlmRouteConfigured(setupStatus.llmRouteConfigured);
+          if (!setupStatus.runtimePathReady || deps.setupRequired()) {
+            void emitClientEvent("setup_missing_redirect", {
+              phase: "settings",
+              runtime_path_ready: String(setupStatus.runtimePathReady),
+              setup_required: String(deps.setupRequired()),
+            });
+            captureState = "idle";
+            deps.setPanel("settings");
+            deps.setPhase("idle");
+            await deps.showWindow("settings");
+            return;
+          }
+        } else {
+          void emitClientEvent("setup_preflight_check_start", {
+            source: "cached_readiness",
+            phase: "settings",
+          });
+          void emitClientEvent("setup_preflight_check_result", {
+            source: "cached_readiness",
+            phase: "settings",
+            runtime_path_ready: "true",
+            cached: "true",
+          });
+        }
+        if (deps.isBilingualHotkeyMode()) {
+          if (deps.isBilingualDegraded()) {
+            deps.notices.pushNotice({
+              tone: "info",
+              message: deps.strings().card.bilingual.status.degraded,
+            });
+          } else {
+            captureState = "armed";
+            deps.setPhase("capturing");
+            deps.setCard(null);
+            if (releasePending) await handleReleased();
+            return;
+          }
+        }
+        deps.setPhase("capturing");
         if (deps.platform.window.setAlwaysOnTop && deps.settings().keepOnTopDuringCapture) {
           await deps.platform.window.setAlwaysOnTop(true);
         }
@@ -145,15 +164,17 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         });
         deps.setActiveRunId(runId || null);
         currentRunId = runId || null;
-        armed = true;
+        captureState = "armed";
         deps.setCard(null);
+        if (releasePending) await handleReleased();
       } catch (err) {
         void emitClientEvent("capture_start_client_failed", {
           source: "hotkey_press",
           phase: "capture",
         });
         await clearCaptureAlwaysOnTop();
-        armed = false;
+        captureState = "idle";
+        releasePending = false;
         deps.setActiveRunId(null);
         currentRunId = null;
         const message = userSafeCaptureStartError(deps.strings());
@@ -165,19 +186,29 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
         deps.setPhase("idle");
       }
-    };
-    const handleReleased = async () => {
+    }
+    async function handleReleased() {
       void emitClientEvent("hotkey_released", {
         state: "Released",
         source: "hotkey",
         phase: "capture",
       });
-      if (!armed) return;
-      armed = false;
+      if (captureState === "starting") {
+        releasePending = true;
+        void emitClientEvent("hotkey_release_deferred", {
+          source: "hotkey",
+          phase: "capture",
+        });
+        return;
+      }
+      if (captureState !== "armed") return;
+      captureState = "stopping";
+      releasePending = false;
       deps.setPhase("transcribing");
       try {
         if (deps.isBilingualHotkeyMode() && !deps.isBilingualDegraded()) {
           await deps.triggerBilingualHotkeyAnswer();
+          captureState = "idle";
           deps.setPhase("ready");
           deps.setActiveRunId(null);
           currentRunId = null;
@@ -196,6 +227,7 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         deps.setContextActive(true);
         const status = await deps.platform.invoke<ContextStatusDto>("get_context_status");
         deps.applyContextStatus(status);
+        captureState = "idle";
         deps.setPhase("ready");
         void emitClientEvent("ui_ready", {
           phase: "ready",
@@ -218,6 +250,12 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
           phase: "capture",
         });
         deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
+        try {
+          const status = await deps.platform.invoke<ContextStatusDto>("get_context_status");
+          deps.applyContextStatus(status);
+        } catch {
+          // Preserve the original pipeline failure when context refresh is unavailable.
+        }
         const message = userSafePipelineError(err, deps.strings());
         deps.setError(message);
         if (invokeErrorMessage(err).includes("SHORT_CAPTURE")) deps.setCaptureQuality("short");
@@ -225,12 +263,13 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
           tone: "error",
           message,
         });
+        captureState = "idle";
         deps.setPhase("idle");
         deps.setActiveRunId(null);
         currentRunId = null;
         await clearCaptureAlwaysOnTop();
       }
-    };
+    }
     await deps.platform.shortcuts.register(hotkey, async (event) => {
       if (event.state === "Pressed") return handlePressed();
       if (event.state === "Released") return handleReleased();

@@ -150,12 +150,13 @@ fn normalize_card(
     let band = chars_band(transcript).to_string();
     let mut quality = CardQualityFlags::default();
 
-    let (mut gist, mut say_now, mut next_move, star_evidence) = match parsed {
+    let (mut gist, mut say_now, mut next_move, star_evidence, risk_or_clarifier) = match parsed {
         ParsedCard::V3(card) => map_v3_fields(card, limits),
         ParsedCard::Legacy(card) => (
             trim_line(&card.gist, limits.question_brief),
             trim_line(&card.say_now, limits.answer_now),
             trim_line(&card.next_move, limits.next_step),
+            None,
             None,
         ),
     };
@@ -188,6 +189,7 @@ fn normalize_card(
             say_now,
             next_move,
             star_evidence,
+            risk_or_clarifier,
             chars_band: band,
             interview_card_schema_v1: None,
             repair_used: quality.repair_used,
@@ -197,29 +199,26 @@ fn normalize_card(
     ))
 }
 
-fn map_v3_fields(card: RawCardV3, limits: CardLimits) -> (String, String, String, Option<String>) {
+fn map_v3_fields(
+    card: RawCardV3,
+    limits: CardLimits,
+) -> (String, String, String, Option<String>, Option<String>) {
     let question_brief = trim_line(&card.question_brief, limits.question_brief);
-    let mut answer_now = trim_line(&card.answer_now, limits.answer_now);
+    let answer_now = trim_line(&card.answer_now, limits.answer_now);
     let star = trim_line(&card.star_evidence, limits.star_evidence);
-    if !star.is_empty() && !normalize_cmp(&answer_now).contains(&normalize_cmp(&star)) {
-        let glue = if answer_now.ends_with('.') || answer_now.ends_with('?') {
-            " "
-        } else {
-            ". "
-        };
-        let combined = format!("{answer_now}{glue}Опора: {star}");
-        answer_now = trim_line(&combined, limits.answer_now);
-    }
-    if let Some(risk) = card.risk_or_clarifier.filter(|v| !v.trim().is_empty()) {
-        let risk = trim_line(&risk, 120);
-        if !normalize_cmp(&answer_now).contains(&normalize_cmp(&risk)) {
-            let combined = format!("{answer_now} Риск/уточнение: {risk}");
-            answer_now = trim_line(&combined, limits.answer_now);
-        }
-    }
     let next_step = trim_line(&card.next_step, limits.next_step);
     let star_evidence = if star.is_empty() { None } else { Some(star) };
-    (question_brief, answer_now, next_step, star_evidence)
+    let risk_or_clarifier = card
+        .risk_or_clarifier
+        .map(|risk| trim_line(&risk, 120))
+        .filter(|risk| !risk.is_empty());
+    (
+        question_brief,
+        answer_now,
+        next_step,
+        star_evidence,
+        risk_or_clarifier,
+    )
 }
 
 #[derive(Clone, Copy)]
@@ -242,7 +241,7 @@ fn repair_section(
         Section::NextStep => limits.next_step,
     };
     let mut current = trim_line(value, max);
-    let initial_err = validate_section(&current, section, limits);
+    let initial_err = validate_section(&current, transcript, section, limits);
 
     if initial_err.is_ok() {
         return Ok(current);
@@ -268,7 +267,7 @@ fn repair_section(
     };
     current = trim_line(&repaired, max);
 
-    if let Err(retry_err) = validate_section(&current, section, limits) {
+    if let Err(retry_err) = validate_section(&current, transcript, section, limits) {
         return Err(format!(
             "Card output invalid: {reason} | repair_failed: {retry_err}"
         ));
@@ -277,12 +276,20 @@ fn repair_section(
     Ok(current)
 }
 
-fn validate_section(value: &str, section: Section, limits: CardLimits) -> Result<(), String> {
+fn validate_section(
+    value: &str,
+    transcript: &str,
+    section: Section,
+    limits: CardLimits,
+) -> Result<(), String> {
     match section {
         Section::QuestionBrief => validate_question_brief(value),
-        Section::AnswerNow => {
-            validate_answer_now(value, limits.answer_min_words, limits.answer_max_words)
-        }
+        Section::AnswerNow => validate_answer_now(
+            value,
+            transcript,
+            limits.answer_min_words,
+            limits.answer_max_words,
+        ),
         Section::NextStep => validate_next_step(value),
     }
 }
@@ -298,7 +305,12 @@ fn validate_question_brief(value: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn validate_answer_now(value: &str, min_words: usize, max_words: usize) -> Result<(), String> {
+fn validate_answer_now(
+    value: &str,
+    transcript: &str,
+    min_words: usize,
+    max_words: usize,
+) -> Result<(), String> {
     let lower = value.to_lowercase();
     let words = word_count(value);
 
@@ -323,29 +335,73 @@ fn validate_answer_now(value: &str, min_words: usize, max_words: usize) -> Resul
     if !has_paragraph_shape(value) {
         return Err("answer_now is not paragraph-shaped.".to_string());
     }
-    if !contains_any(
-        &lower,
-        &[
-            "давайте",
-            "беру",
-            "делаю",
-            "закрываю",
-            "отправлю",
-            "пришлю",
-            "фиксируем",
-            "уточню",
-            "проверю",
-            "согласуем",
-            "назначу",
-            "подтверждаю",
-            "предлагаю",
-            "что именно",
-            "?",
-        ],
-    ) {
+    if !is_question_like(transcript)
+        && !contains_any(
+            &lower,
+            &[
+                "давайте",
+                "беру",
+                "делаю",
+                "закрываю",
+                "отправлю",
+                "пришлю",
+                "фиксируем",
+                "уточню",
+                "проверю",
+                "согласуем",
+                "назначу",
+                "подтверждаю",
+                "предлагаю",
+                "зафиксир",
+                "подготовлю",
+                "сверим",
+                "уточним",
+                "сделаю",
+                "возьму",
+                "обновлю",
+                "создам",
+                "передам",
+                "что именно",
+                "?",
+            ],
+        )
+    {
         return Err("answer_now has no concrete action or clarification.".to_string());
     }
     Ok(())
+}
+
+fn is_question_like(transcript: &str) -> bool {
+    let lower = transcript.trim().to_lowercase();
+    if lower.contains('?') {
+        return true;
+    }
+    let question_words = [
+        "кто",
+        "что",
+        "какой",
+        "какая",
+        "какое",
+        "какие",
+        "где",
+        "когда",
+        "сколько",
+        "почему",
+        "зачем",
+        "как",
+        "who",
+        "what",
+        "which",
+        "where",
+        "when",
+        "why",
+        "how",
+    ];
+    lower
+        .split_whitespace()
+        .take(4)
+        .map(|word| word.trim_matches(|ch: char| !ch.is_alphanumeric()))
+        .any(|word| question_words.contains(&word))
 }
 
 fn validate_next_step(value: &str) -> Result<(), String> {
@@ -387,6 +443,9 @@ fn validate_next_step(value: &str) -> Result<(), String> {
             "sign-off",
             "блокер",
             "риск",
+            "провер",
+            "источник",
+            "уточн",
         ],
     ) {
         return Err("next_step has no concrete coordination artifact.".to_string());
@@ -454,15 +513,9 @@ fn repair_answer_now_inner(value: &str, transcript: &str) -> String {
         }
     } else {
         match variant {
-            0 => format!(
-                "{clean}. Предлагаю зафиксировать один конкретный шаг, владельца и срок до конца дня. После согласования отправлю короткий итог в рабочий канал."
-            ),
-            1 => format!(
-                "{clean}. Давайте уточним следующий артефакт и время проверки сегодня. Я подготовлю краткий follow-up с решением и ответственным."
-            ),
-            _ => format!(
-                "{clean}. Сверим владельца, дедлайн и формат апдейта в этом обсуждении. Затем зафиксирую итог письменно, чтобы не потерять договоренность."
-            ),
+            0 => "Предлагаю зафиксировать один конкретный шаг, владельца и срок до конца дня. После согласования отправлю короткий итог в рабочий канал.".to_string(),
+            1 => "Давайте уточним следующий артефакт и время проверки сегодня. Я подготовлю краткий follow-up с решением и ответственным.".to_string(),
+            _ => "Сверим владельца, дедлайн и формат апдейта в этом обсуждении. Затем зафиксирую итог письменно, чтобы не потерять договоренность.".to_string(),
         }
     }
 }
@@ -736,15 +789,11 @@ fn trim_line(value: &str, max_chars: usize) -> String {
     clean.chars().take(max_chars).collect()
 }
 
-fn normalize_cmp(value: &str) -> String {
-    value.to_lowercase().replace(['\n', '\r'], " ")
-}
-
 #[cfg(test)]
 mod tests {
     use super::{
-        build_fallback_next_step, normalize_parsed_card, parse_card_json, validate_next_step,
-        ParsedCard,
+        build_fallback_next_step, is_question_like, limits_for_transcript, normalize_parsed_card,
+        parse_card_json, repair_answer_now, validate_answer_now, validate_next_step, ParsedCard,
     };
 
     fn legacy_json(gist: &str, say_now: &str, next_move: &str) -> String {
@@ -969,6 +1018,52 @@ mod tests {
     }
 
     #[test]
+    fn preserves_direct_factual_answer_without_work_action_repair() {
+        let raw = v3_json(
+            "Какой город называют городом влюбленных?",
+            "Городом влюбленных обычно называют Париж. Это устойчивое культурное обозначение города благодаря его романтическому образу.",
+            "Городом влюбленных называют Париж.",
+            "При необходимости проверить формулировку по надежному источнику.",
+        );
+        let (card, quality) = normalize_parsed_card(
+            &raw,
+            "Какой город называют городом влюбленных?",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("direct factual answer must pass");
+        assert!(card
+            .say_now
+            .starts_with("Городом влюбленных обычно называют Париж"));
+        assert!(!card.say_now.contains("владельца"));
+        assert!(!quality.repair_used);
+    }
+
+    #[test]
+    fn detects_question_after_short_leading_fragment() {
+        assert!(is_question_like(
+            "Кактус Какое животное известно способностью играть мертвым"
+        ));
+    }
+
+    #[test]
+    fn keeps_evidence_and_risk_out_of_spoken_answer() {
+        let raw = r#"{"question_brief":"Нужно уточнить термин в вопросе.","answer_now":"Не хочу угадывать значение без контекста. Уточните, пожалуйста, что именно имеется в виду, и я отвечу по существу.","star_evidence":"Прыгать.","next_step":"Уточнить вопрос в чате перед ответом.","risk_or_clarifier":"Что именно означает «прыгать» в этом контексте?"}"#;
+        let (card, _) = normalize_parsed_card(
+            raw,
+            "Прыгать.",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("clarifier card must pass");
+        assert_eq!(card.star_evidence.as_deref(), Some("Прыгать."));
+        assert_eq!(
+            card.risk_or_clarifier.as_deref(),
+            Some("Что именно означает «прыгать» в этом контексте?")
+        );
+        assert!(!card.say_now.contains("Опора:"));
+        assert!(!card.say_now.contains("Риск/уточнение:"));
+    }
+
+    #[test]
     fn allows_clarifier_when_ambiguity_blocks_direct_response() {
         let raw = legacy_json(
             "Запрос расплывчатый.",
@@ -999,5 +1094,23 @@ mod tests {
         assert!(!say_now_lower.contains("как-нибудь"));
         assert!(!say_now_lower.contains("посмотрим"));
         assert!(!say_now_lower.contains("в целом"));
+    }
+
+    #[test]
+    fn keeps_repair_action_when_long_answer_is_trimmed() {
+        let long_answer =
+            "Это подробное объяснение текущей ситуации без явного действия. ".repeat(20);
+        let limits = limits_for_transcript(
+            "Что предлагаете делать дальше?",
+            crate::prompt_registry::default_answer_profile(),
+        );
+        let repaired = repair_answer_now(&long_answer, "Что предлагаете делать дальше?", limits);
+        assert!(validate_answer_now(
+            &repaired,
+            "Что предлагаете делать дальше?",
+            limits.answer_min_words,
+            limits.answer_max_words
+        )
+        .is_ok());
     }
 }

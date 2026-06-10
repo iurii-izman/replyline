@@ -18,12 +18,15 @@ Detail fields:
 - `detail`: sanitized short detail (no raw tokens, no raw PII)
 - `repair_used=true|false`, `fallback_used=true|false`, and `chars_band=short|medium|long` appear in `detail` for successful `llm` and `retry` card generation events.
 - failed `RL_CARD_INVALID` details include `invalid_reason=...` and `chars_band=...` on analyze.
-- short transcript gate is logged as `code=RL_STT_TOO_SHORT`.
+- silent PCM is rejected before the provider request and logged as `code=RL_STT_NO_SPEECH`.
+- `RL_STT_TOO_SHORT` is reserved as a legacy diagnostic code; short non-empty transcripts are analyzed.
+- STT failures write available stage timings and a `stt_request_failed` timeline event.
+- `full_local` runs include `capture.full.wav`; all trace modes include redacted audio signal metrics.
 
 Example line:
 
 ```text
-2026-05-14T12:01:02 [diag_runtime_event] stage=stt outcome=fail code=RL_STT_FAILED detail=empty transcript
+2026-05-14T12:01:02 [diag_runtime_event] stage=stt outcome=fail code=RL_STT_NO_SPEECH detail=stt_failure_kind=no_speech
 2026-05-14T12:01:05 [diag_runtime_event] stage=llm outcome=ok code=RL_LLM_OK detail=card generated repair_used=true fallback_used=true chars_band=medium
 ```
 

@@ -3,6 +3,8 @@ use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
+#[cfg(test)]
+use std::sync::OnceLock;
 
 use crate::model_presets::{resolve_model_preset, ProviderKind};
 use crate::pipeline_timing::StageTiming;
@@ -27,8 +29,26 @@ struct TraceManifest<'a> {
 }
 
 pub fn traces_base_dir() -> Result<PathBuf, String> {
+    #[cfg(test)]
+    {
+        static TEST_BASE_DIR: OnceLock<PathBuf> = OnceLock::new();
+        return Ok(TEST_BASE_DIR
+            .get_or_init(|| {
+                std::env::temp_dir().join(format!(
+                    "replyline-traces-test-{}-{}",
+                    std::process::id(),
+                    chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
+                ))
+            })
+            .clone());
+    }
+
+    #[cfg(not(test))]
     let base = dirs::data_dir().ok_or_else(|| "data_dir_unavailable".to_string())?;
-    Ok(base.join("com.replyline.app").join("traces"))
+    #[cfg(not(test))]
+    {
+        Ok(base.join("com.replyline.app").join("traces"))
+    }
 }
 
 fn run_dir(run_id: &str) -> Result<PathBuf, String> {
@@ -46,6 +66,11 @@ pub fn write_run_json<T: Serialize>(
 }
 
 pub fn write_run_text(run_id: &str, file_name: &str, value: &str) -> Result<(), String> {
+    let path = run_dir(run_id)?.join(file_name);
+    fs::write(path, value).map_err(|err| err.to_string())
+}
+
+pub fn write_run_bytes(run_id: &str, file_name: &str, value: &[u8]) -> Result<(), String> {
     let path = run_dir(run_id)?.join(file_name);
     fs::write(path, value).map_err(|err| err.to_string())
 }
@@ -252,7 +277,7 @@ pub fn write_timings(run_id: &str, timings: &[StageTiming]) -> Result<(), String
 mod tests {
     use super::{
         append_timeline_event, clear_all_traces, enforce_trace_retention, ensure_run_started,
-        sha256_hex, traces_base_dir,
+        sha256_hex, traces_base_dir, write_run_bytes,
     };
     use crate::types::AppSettings;
     use std::collections::BTreeMap;
@@ -281,10 +306,8 @@ mod tests {
         )
         .expect("trace start");
 
-        let base = dirs::data_dir().expect("data dir");
-        let manifest_path = base
-            .join("com.replyline.app")
-            .join("traces")
+        let manifest_path = traces_base_dir()
+            .expect("trace base")
             .join(&run_id)
             .join("manifest.json");
         let raw = std::fs::read_to_string(&manifest_path).expect("manifest read");
@@ -312,14 +335,21 @@ mod tests {
             "work_conversation",
         )
         .expect("trace start");
-        let base = dirs::data_dir().expect("data dir");
-        let manifest_path = base
-            .join("com.replyline.app")
-            .join("traces")
+        let manifest_path = traces_base_dir()
+            .expect("trace base")
             .join(&run_id)
             .join("manifest.json");
         let raw = std::fs::read_to_string(&manifest_path).expect("manifest read");
         assert!(raw.contains("\"traceMode\": \"full_local\""));
+        write_run_bytes(&run_id, "capture.full.wav", b"RIFF-test").expect("audio trace write");
+        let audio_path = manifest_path
+            .parent()
+            .expect("trace dir")
+            .join("capture.full.wav");
+        assert_eq!(
+            fs::read(audio_path).expect("audio trace read"),
+            b"RIFF-test"
+        );
     }
 
     #[test]
@@ -331,6 +361,16 @@ mod tests {
         assert_eq!(first, second);
         assert_ne!(first, different);
         assert!(first.starts_with("sha256:"));
+    }
+
+    #[test]
+    fn test_trace_dir_is_isolated_from_app_data() {
+        let _guard = trace_test_lock().lock().expect("trace lock");
+        let base = traces_base_dir().expect("trace base");
+        assert!(base.starts_with(std::env::temp_dir()));
+        if let Some(data_dir) = dirs::data_dir() {
+            assert_ne!(base, data_dir.join("com.replyline.app").join("traces"));
+        }
     }
 
     #[test]

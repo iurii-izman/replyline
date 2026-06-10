@@ -89,13 +89,13 @@
 **Causes:**
 
 - The LLM model is too small or constrained for the prompt.
-- The transcript was too short or unintelligible for meaningful analysis.
+- The transcript was unintelligible or the model returned an invalid card.
 - API rate limits or token limits truncated the response.
 
 **Fix:**
 
 - Try a more capable model (e.g. `gpt-4o-mini` or larger).
-- Ensure capture duration is at least 5-10 seconds of audible speech.
+- A complete short question is supported; make sure the system audio is audible and clear.
 - Temperature is internally fixed at 0.25 (deterministic). Not exposed as a user setting in the current stable beta.
 - If using a custom system prompt, try clearing it to use the built-in prompt.
 
@@ -107,13 +107,13 @@
 
 **Causes:**
 
-- Audio snippet is too short or mostly silence.
+- Audio snippet contains silence or no meaningful system-audio signal.
 - Deepgram request failed due to network/provider issue.
 - Deepgram key is missing/invalid.
 
 **Fix:**
 
-- Keep at least 5-10 seconds of clear system audio in the snippet.
+- There is no minimum recording duration. Capture the complete question with clear system audio.
 - Re-check Deepgram key and run the settings health check.
 - Retry after network recovery; if needed, collect local diagnostics via `pnpm evidence:bundle`.
 

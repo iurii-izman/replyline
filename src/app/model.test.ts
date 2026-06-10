@@ -8,9 +8,11 @@ import {
   isConfiguredLlmRoute,
   parseCommandInvokeError,
   settingsAnchorForCommandErrorKind,
+  userSafePipelineError,
   type CheckItemDto,
   type RuntimeCheckDto,
 } from "./model";
+import { ui_ru } from "./locale";
 
 describe("model", () => {
   describe("parseCommandInvokeError", () => {
@@ -55,6 +57,23 @@ describe("model", () => {
     it("maps command error to settings anchors", () => {
       expect(settingsAnchorForCommandErrorKind("Credential")).toBe("stt");
       expect(settingsAnchorForCommandErrorKind("Pipeline")).toBe("llm");
+    });
+  });
+
+  describe("userSafePipelineError", () => {
+    it("does not report empty speech recognition as an API key problem", () => {
+      expect(
+        userSafePipelineError("STT_EMPTY: Deepgram returned an empty transcript.", ui_ru),
+      ).toBe(ui_ru.errors.pipelineNoSpeech);
+    });
+
+    it("offers rebuild after card validation failure", () => {
+      expect(
+        userSafePipelineError(
+          "RL_CARD_INVALID: Card output invalid: answer_now has no concrete action.",
+          ui_ru,
+        ),
+      ).toBe(ui_ru.errors.pipelineCardInvalid);
     });
   });
 

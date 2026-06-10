@@ -10,6 +10,7 @@ export interface SelectorDeps {
   deepgramSaved: Accessor<boolean>;
   hotkeyFailed: Accessor<boolean>;
   contextActive: Accessor<boolean>;
+  canRetryLastTranscript: Accessor<boolean>;
   llmRouteConfigured: Accessor<boolean>;
   setupReadinessState: Accessor<SetupReadinessState>;
   strings: Accessor<UiStrings>;
@@ -91,10 +92,14 @@ export function createSelectors(deps: SelectorDeps): Selectors {
     () => mainUiState() === "ready" && Boolean(deps.card()?.sayNow?.trim()),
   );
 
-  const canRetry = createMemo(() => !pipelineActive() && Boolean(deps.card()));
+  const canRetry = createMemo(
+    () => !pipelineActive() && (Boolean(deps.card()) || deps.canRetryLastTranscript()),
+  );
 
   const canClear = createMemo(
-    () => !pipelineActive() && (deps.contextActive() || Boolean(deps.card())),
+    () =>
+      !pipelineActive() &&
+      (deps.contextActive() || deps.canRetryLastTranscript() || Boolean(deps.card())),
   );
 
   const copyDisabledReason = createMemo(() =>

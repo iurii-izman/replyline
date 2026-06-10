@@ -8,7 +8,7 @@ use crate::credentials;
 use crate::diag_contract::{
     RL_ANALYSIS_OK, RL_CAPTURE_JOIN_FAILED, RL_CAPTURE_NOT_ACTIVE, RL_CAPTURE_READY,
     RL_CAPTURE_START, RL_CAPTURE_STOP_FAILED, RL_CAPTURE_STOP_TIMED, RL_LLM_OK, RL_RETRY_EMPTY,
-    RL_RETRY_OK, RL_STT_FAILED, RL_STT_KEY_MISSING, RL_STT_OK, RL_STT_TOO_SHORT, RL_TIMING_SUMMARY,
+    RL_RETRY_OK, RL_STT_FAILED, RL_STT_KEY_MISSING, RL_STT_NO_SPEECH, RL_STT_OK, RL_TIMING_SUMMARY,
 };
 use crate::llm;
 use crate::pipeline_timing::{self, PipelineTimer, StageTiming};
@@ -28,8 +28,6 @@ use crate::{
     trace_manifest,
 };
 
-const MIN_TRANSCRIPT_CHARS: usize = 25;
-
 static RETRY_RUN_SEQ: AtomicU64 = AtomicU64::new(0);
 
 fn next_retry_run_id() -> String {
@@ -40,7 +38,11 @@ fn next_retry_run_id() -> String {
 
 fn classify_stt_failure(err: &str) -> &'static str {
     let lower = err.to_lowercase();
-    if lower.contains("timeout") {
+    if lower.contains("stt_no_speech") || lower.contains("no audible signal") {
+        "no_speech"
+    } else if lower.contains("stt_empty") || lower.contains("empty transcript") {
+        "empty_transcript"
+    } else if lower.contains("timeout") {
         "timeout"
     } else if lower.contains("http") {
         "http_error"
@@ -242,11 +244,20 @@ pub async fn capture_stop_and_analyze(
     .await
     {
         Ok(value) => value,
-        Err(err) => {
+        Err(failure) => {
+            for timing in &failure.stages {
+                let _ = pipeline_timing::log_stage_timing(timing);
+            }
+            stage_timings.extend(failure.stages);
+            let err = failure.message;
             let failure_kind = classify_stt_failure(&err);
             let event = "analysis_stt_failed";
             let _ = app_log::append_event(event, format!("stt_failure_kind={failure_kind}"));
-            let code = RL_STT_FAILED;
+            let code = if failure_kind == "no_speech" {
+                RL_STT_NO_SPEECH
+            } else {
+                RL_STT_FAILED
+            };
             let _ = log_diag(
                 "stt",
                 "fail",
@@ -254,6 +265,15 @@ pub async fn capture_stop_and_analyze(
                 format!("stt_failure_kind={failure_kind}"),
             );
             if let Some(ref rid) = run_id {
+                let mut fields = BTreeMap::new();
+                fields.insert("failure_kind".to_string(), failure_kind.to_string());
+                let _ = trace_manifest::append_timeline_event(
+                    rid,
+                    "stt_request_failed",
+                    "transcribing",
+                    fields,
+                );
+                let _ = trace_manifest::write_timings(rid, &stage_timings);
                 let _ = observability::log_error(
                     "stt_request_failed",
                     Fields::new()
@@ -303,26 +323,12 @@ pub async fn capture_stop_and_analyze(
         RL_STT_OK,
         format!("transcript_chars={transcript_chars} chars_band={chars_band}"),
     );
-    if transcript_chars < MIN_TRANSCRIPT_CHARS {
-        let err = pick_lang(lang, en::ERR_SHORT_CAPTURE, ru::ERR_SHORT_CAPTURE);
-        {
-            let mut context = state
-                .context
-                .lock()
-                .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
-            context.push_transcript(&transcript);
-        }
-        let _ = app_log::append_event(
-            "analysis_short_capture",
-            format!("transcript_chars={transcript_chars} chars_band={chars_band}"),
-        );
-        let _ = log_diag(
-            "stt",
-            "fail",
-            RL_STT_TOO_SHORT,
-            format!("transcript_chars={transcript_chars} chars_band={chars_band}"),
-        );
-        return Err(CommandError::Pipeline(err.to_string()));
+    {
+        let mut context = state
+            .context
+            .lock()
+            .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
+        context.remember_transcript(&transcript);
     }
 
     emit_status(
@@ -515,7 +521,7 @@ pub async fn capture_stop_and_analyze(
             .context
             .lock()
             .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
-        context.push_transcript(&transcript);
+        context.commit_transcript(&transcript);
         context.remember_card(card.clone());
     }
     if let Some(interview) = card.interview_card_schema_v1.as_ref() {
@@ -742,6 +748,7 @@ mod tests {
             gist: "g".to_string(),
             say_now: "s".to_string(),
             star_evidence: None,
+            risk_or_clarifier: None,
             next_move: "n".to_string(),
             chars_band: "short".to_string(),
             interview_card_schema_v1: None,
@@ -760,6 +767,7 @@ mod tests {
             gist: "g".to_string(),
             say_now: "s".to_string(),
             star_evidence: None,
+            risk_or_clarifier: None,
             next_move: "n".to_string(),
             chars_band: "short".to_string(),
             interview_card_schema_v1: Some(crate::interview_card_v1::InterviewCardDto {

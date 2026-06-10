@@ -137,7 +137,7 @@ async fn analyze_work_conversation(
                 &language,
                 profile,
                 Some(
-                    "RETRY MODE: stricter CardSchemaV3. answer_now must be a concise 2-4 sentence paragraph with a direct response and concrete action (owner/deadline when possible). Use clarifier only when ambiguity blocks a direct response. next_step must name artifact+owner+deadline.",
+                    "RETRY MODE: stricter CardSchemaV3. answer_now must be a concise 2-4 sentence paragraph with a direct response. Use a concrete action for work questions and a direct factual answer for knowledge questions. For a 1-2 word fragment without a clear question, do not infer meaning; ask one concrete clarifying question. Never invent names, owners, dates, or deadlines. Use a clarifier only when ambiguity blocks a direct response. next_step must stay relevant to the actual question.",
                 ),
                 llm::RETRY_MAX_TOKENS,
             )

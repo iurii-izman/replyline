@@ -8,11 +8,18 @@ describe("createSelectors", () => {
   it("derives ready state and action enablement", () => {
     createRoot((dispose) => {
       const [phase] = createSignal<"ready">("ready");
-      const [card] = createSignal({ mode: "work", sayNow: "reply", gist: "g", nextMove: "n", charsBand: "normal" } as never);
+      const [card] = createSignal({
+        mode: "work",
+        sayNow: "reply",
+        gist: "g",
+        nextMove: "n",
+        charsBand: "normal",
+      } as never);
       const [error] = createSignal<string | null>(null);
       const [deepgramSaved] = createSignal(true);
       const [hotkeyFailed] = createSignal(false);
       const [contextActive] = createSignal(true);
+      const [canRetryLastTranscript] = createSignal(true);
       const [llmRouteConfigured] = createSignal(true);
       const [setupReadinessState] = createSignal<"ready">("ready");
       const [strings] = createSignal(ui_ru);
@@ -24,6 +31,7 @@ describe("createSelectors", () => {
         deepgramSaved,
         hotkeyFailed,
         contextActive,
+        canRetryLastTranscript,
         llmRouteConfigured,
         setupReadinessState,
         strings,
@@ -45,6 +53,7 @@ describe("createSelectors", () => {
       const [deepgramSaved] = createSignal(false);
       const [hotkeyFailed] = createSignal(false);
       const [contextActive] = createSignal(false);
+      const [canRetryLastTranscript] = createSignal(false);
       const [llmRouteConfigured] = createSignal(false);
       const [setupReadinessState] = createSignal<"missing">("missing");
       const [strings] = createSignal(ui_ru);
@@ -56,6 +65,7 @@ describe("createSelectors", () => {
         deepgramSaved,
         hotkeyFailed,
         contextActive,
+        canRetryLastTranscript,
         llmRouteConfigured,
         setupReadinessState,
         strings,
@@ -64,6 +74,27 @@ describe("createSelectors", () => {
       expect(selectors.setupRequired()).toBe(true);
       expect(selectors.allSetupReady()).toBe(false);
       expect(selectors.mainUiState()).toBe("idle");
+      dispose();
+    });
+  });
+
+  it("enables retry for a saved transcript even when no card exists", () => {
+    createRoot((dispose) => {
+      const selectors = createSelectors({
+        phase: () => "idle",
+        card: () => null,
+        error: () => "answer failed",
+        deepgramSaved: () => true,
+        hotkeyFailed: () => false,
+        contextActive: () => false,
+        canRetryLastTranscript: () => true,
+        llmRouteConfigured: () => true,
+        setupReadinessState: () => "ready",
+        strings: () => ui_ru,
+      });
+
+      expect(selectors.canRetry()).toBe(true);
+      expect(selectors.canClear()).toBe(true);
       dispose();
     });
   });

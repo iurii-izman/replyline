@@ -192,8 +192,9 @@ export type LegacyAnalysisCard = {
   nextMove: string;
   /// Always present in Rust AnalysisCardDto (chars_band: String, not Option).
   charsBand: string;
-  /// Supporting evidence snippet from the LLM response. Not surfaced in Slim Stable Beta UI.
+  /// Supporting evidence snippet from the LLM response.
   starEvidence?: string;
+  riskOrClarifier?: string;
 };
 
 export type InterviewAnswerDto = {
@@ -616,14 +617,20 @@ export function userSafePipelineError(err: unknown, strings: UiStrings): string 
   if (/Nothing to retry|nothing to retry/i.test(s)) {
     return strings.errors.pipelineNothingToRetry;
   }
-  if (/Deepgram|API key|missing|распознаван/i.test(s)) {
+  if (/STT_NO_SPEECH|STT_EMPTY|empty transcript|no audible signal/i.test(s)) {
+    return strings.errors.pipelineNoSpeech;
+  }
+  if (/SHORT_CAPTURE|слишком короткий фрагмент/i.test(s)) {
+    return strings.errors.pipelineShortCapture;
+  }
+  if (/RL_CARD_INVALID|Card output invalid|repair_failed/i.test(s)) {
+    return strings.errors.pipelineCardInvalid;
+  }
+  if (/Deepgram|STT_HTTP|STT_REQUEST|API key|unauthorized|forbidden/i.test(s)) {
     return strings.errors.pipelineDeepgram;
   }
   if (/LLM|gateway|401|403|http|timeout/i.test(s)) {
     return strings.errors.pipelineLlm;
-  }
-  if (/SHORT_CAPTURE|слишком короткий фрагмент/i.test(s)) {
-    return strings.errors.pipelineShortCapture;
   }
   return strings.errors.pipelineGeneric;
 }

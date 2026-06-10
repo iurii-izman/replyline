@@ -410,14 +410,14 @@ describe("App UX stabilization", () => {
             interviewReportRetentionDays: 0,
             debugTraceMode: "redacted",
             debugTraceRetentionDays: 3,
-    bilingualInterviewEnabled: false,
-    interviewInputLanguage: "en",
-    translationLanguage: "ru",
-    liveTranslationEnabled: true,
-    translationDebounceMs: 600,
-    translationMinWordCount: 3,
-    bilingualRetentionBehavior: "session_only",
-    bilingualAnswerStyle: "b2_conversational",
+            bilingualInterviewEnabled: false,
+            interviewInputLanguage: "en",
+            translationLanguage: "ru",
+            liveTranslationEnabled: true,
+            translationDebounceMs: 600,
+            translationMinWordCount: 3,
+            bilingualRetentionBehavior: "session_only",
+            bilingualAnswerStyle: "b2_conversational",
           },
           deepgramKeyPresent: overrides.deepgramKeyPresent ?? false,
           llmKeyPresent: overrides.llmKeyPresent ?? false,
@@ -875,7 +875,9 @@ describe("App UX stabilization", () => {
       screen.getByText("Free models can be rate-limited and availability may vary."),
     ).toBeTruthy();
     expect(
-      screen.queryByText("Paid presets require active credits/billing; provider limits may change."),
+      screen.queryByText(
+        "Paid presets require active credits/billing; provider limits may change.",
+      ),
     ).toBeNull();
 
     fireEvent.input(preset, { target: { value: "openrouter_quality_paid" } });
@@ -885,7 +887,9 @@ describe("App UX stabilization", () => {
 
     fireEvent.input(preset, { target: { value: "custom_openai_compatible" } });
     expect(
-      screen.queryByText("Paid presets require active credits/billing; provider limits may change."),
+      screen.queryByText(
+        "Paid presets require active credits/billing; provider limits may change.",
+      ),
     ).toBeNull();
   });
 
@@ -1428,14 +1432,14 @@ describe("Interview card rendering", () => {
             interviewReportRetentionDays: 0,
             debugTraceMode: "redacted",
             debugTraceRetentionDays: 3,
-    bilingualInterviewEnabled: false,
-    interviewInputLanguage: "en",
-    translationLanguage: "ru",
-    liveTranslationEnabled: true,
-    translationDebounceMs: 600,
-    translationMinWordCount: 3,
-    bilingualRetentionBehavior: "session_only",
-    bilingualAnswerStyle: "b2_conversational",
+            bilingualInterviewEnabled: false,
+            interviewInputLanguage: "en",
+            translationLanguage: "ru",
+            liveTranslationEnabled: true,
+            translationDebounceMs: 600,
+            translationMinWordCount: 3,
+            bilingualRetentionBehavior: "session_only",
+            bilingualAnswerStyle: "b2_conversational",
           },
           deepgramKeyPresent: false,
           llmKeyPresent: false,
@@ -1493,14 +1497,14 @@ describe("Interview card rendering", () => {
             interviewReportRetentionDays: 0,
             debugTraceMode: "redacted",
             debugTraceRetentionDays: 3,
-    bilingualInterviewEnabled: false,
-    interviewInputLanguage: "en",
-    translationLanguage: "ru",
-    liveTranslationEnabled: true,
-    translationDebounceMs: 600,
-    translationMinWordCount: 3,
-    bilingualRetentionBehavior: "session_only",
-    bilingualAnswerStyle: "b2_conversational",
+            bilingualInterviewEnabled: false,
+            interviewInputLanguage: "en",
+            translationLanguage: "ru",
+            liveTranslationEnabled: true,
+            translationDebounceMs: 600,
+            translationMinWordCount: 3,
+            bilingualRetentionBehavior: "session_only",
+            bilingualAnswerStyle: "b2_conversational",
           },
           deepgramKeyPresent: false,
           llmKeyPresent: false,
@@ -1814,9 +1818,7 @@ describe("Runtime scenario matrix (deterministic)", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Завершить сессию" }));
     await waitFor(() =>
-      expect(mock.invoke.mock.calls.some((call) => call[0] === "end_interview_session")).toBe(
-        true,
-      ),
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "end_interview_session")).toBe(true),
     );
 
     fireEvent.click(
@@ -1829,7 +1831,9 @@ describe("Runtime scenario matrix (deterministic)", () => {
 
     await waitFor(() =>
       expect(
-        mock.invoke.mock.calls.some((call) => call[0] === "export_interview_report_redacted_markdown"),
+        mock.invoke.mock.calls.some(
+          (call) => call[0] === "export_interview_report_redacted_markdown",
+        ),
       ).toBe(true),
     );
     await waitFor(() =>
@@ -2039,14 +2043,14 @@ describe("Setup wizard (first-run guidance)", () => {
             interviewReportRetentionDays: 0,
             debugTraceMode: "redacted",
             debugTraceRetentionDays: 3,
-    bilingualInterviewEnabled: false,
-    interviewInputLanguage: "en",
-    translationLanguage: "ru",
-    liveTranslationEnabled: true,
-    translationDebounceMs: 600,
-    translationMinWordCount: 3,
-    bilingualRetentionBehavior: "session_only",
-    bilingualAnswerStyle: "b2_conversational",
+            bilingualInterviewEnabled: false,
+            interviewInputLanguage: "en",
+            translationLanguage: "ru",
+            liveTranslationEnabled: true,
+            translationDebounceMs: 600,
+            translationMinWordCount: 3,
+            bilingualRetentionBehavior: "session_only",
+            bilingualAnswerStyle: "b2_conversational",
           },
           deepgramKeyPresent: true,
           llmKeyPresent: true,
@@ -2077,7 +2081,7 @@ describe("Setup wizard (first-run guidance)", () => {
     expect(mock.invoke.mock.calls.some((c) => c[0] === "save_secret")).toBe(false);
   });
 
-  it("hotkey preflight keeps ready state when secrets are redacted in UI but present in credential store", async () => {
+  it("hotkey uses cached ready state when startup already confirmed credential availability", async () => {
     const mock = createSetupMockPlatform({
       deepgramKeyPresent: true,
       llmKeyPresent: true,
@@ -2108,6 +2112,9 @@ describe("Setup wizard (first-run guidance)", () => {
     render(() => <App platform={mock.platform} />);
     await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
     await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    const setupChecksBeforeCapture = mock.invoke.mock.calls.filter(
+      (call) => call[0] === "get_setup_status",
+    ).length;
 
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });
@@ -2116,7 +2123,9 @@ describe("Setup wizard (first-run guidance)", () => {
       expect(mock.invoke.mock.calls.some((c) => c[0] === "capture_start")).toBe(true),
     );
     expect(screen.queryByTestId("settings-surface")).toBeNull();
-    expect(mock.invoke.mock.calls.some((c) => c[0] === "get_setup_status")).toBe(true);
+    expect(mock.invoke.mock.calls.filter((call) => call[0] === "get_setup_status")).toHaveLength(
+      setupChecksBeforeCapture,
+    );
     expect(
       mock.invoke.mock.calls.some(
         (c) =>
@@ -2187,14 +2196,14 @@ describe("Setup wizard (first-run guidance)", () => {
         interviewReportRetentionDays: 0,
         debugTraceMode: "redacted",
         debugTraceRetentionDays: 3,
-    bilingualInterviewEnabled: false,
-    interviewInputLanguage: "en",
-    translationLanguage: "ru",
-    liveTranslationEnabled: true,
-    translationDebounceMs: 600,
-    translationMinWordCount: 3,
-    bilingualRetentionBehavior: "session_only",
-    bilingualAnswerStyle: "b2_conversational",
+        bilingualInterviewEnabled: false,
+        interviewInputLanguage: "en",
+        translationLanguage: "ru",
+        liveTranslationEnabled: true,
+        translationDebounceMs: 600,
+        translationMinWordCount: 3,
+        bilingualRetentionBehavior: "session_only",
+        bilingualAnswerStyle: "b2_conversational",
       },
       deepgramKeyPresent: true,
       llmKeyPresent: true,

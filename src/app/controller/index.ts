@@ -134,6 +134,7 @@ export function useReplylineController(platform: AppPlatform) {
   const [contextActive, setContextActive] = createSignal(false);
   const [contextEntryCount, setContextEntryCount] = createSignal(0);
   const [lastTranscriptPreview, setLastTranscriptPreview] = createSignal<string | null>(null);
+  const [canRetryLastTranscript, setCanRetryLastTranscript] = createSignal(false);
   const [saving, setSaving] = createSignal(false);
   const [notice, setNotice] = createSignal<{
     tone: "info" | "error";
@@ -190,9 +191,8 @@ export function useReplylineController(platform: AppPlatform) {
   );
   const [interviewReportRedactedMarkdownPath, setInterviewReportRedactedMarkdownPath] =
     createSignal<string | null>(null);
-  const [bilingualInterviewState, setBilingualInterviewState] = createSignal<BilingualInterviewState>(
-    initialBilingualInterviewState,
-  );
+  const [bilingualInterviewState, setBilingualInterviewState] =
+    createSignal<BilingualInterviewState>(initialBilingualInterviewState);
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -311,6 +311,7 @@ export function useReplylineController(platform: AppPlatform) {
     setContextActive(status.contextActive);
     setContextEntryCount(status.entryCount);
     setLastTranscriptPreview(status.lastTranscriptPreview ?? null);
+    setCanRetryLastTranscript(status.canRetryLastTranscript);
   }
 
   async function showWindow(panelName?: Panel) {
@@ -334,6 +335,7 @@ export function useReplylineController(platform: AppPlatform) {
     deepgramSaved,
     hotkeyFailed,
     contextActive,
+    canRetryLastTranscript,
     llmRouteConfigured,
     setupReadinessState,
     strings,
@@ -349,6 +351,7 @@ export function useReplylineController(platform: AppPlatform) {
     phase,
     pipelineActive: selectors.pipelineActive,
     setupRequired: selectors.setupRequired,
+    setupReady: () => setupReadinessState() === "ready",
     strings,
     setError,
     setPhase,
@@ -417,6 +420,7 @@ export function useReplylineController(platform: AppPlatform) {
     setContextActive,
     setContextEntryCount,
     setLastTranscriptPreview,
+    setCanRetryLastTranscript,
     setPersistenceDiagnostics,
     setPersistenceDiagnosticsError,
     setSaving,
@@ -440,6 +444,7 @@ export function useReplylineController(platform: AppPlatform) {
     setContextActive,
     setContextEntryCount,
     setLastTranscriptPreview,
+    setCanRetryLastTranscript,
     setCard: applyIncomingCard,
     notices,
     settingsActions,
@@ -729,6 +734,7 @@ export function useReplylineController(platform: AppPlatform) {
     contextActive,
     contextEntryCount,
     lastTranscriptPreview,
+    canRetryLastTranscript,
     saving,
     notice,
     hotkeyFailed,
@@ -857,7 +863,8 @@ export function useReplylineController(platform: AppPlatform) {
     setCompactMode: (value: boolean) => setSettings("interviewCompactMode", value),
     setHideToTrayOnClose: (value: boolean) => setSettings("hideToTrayOnClose", value),
     setKeepOnTopDuringCapture: (value: boolean) => setSettings("keepOnTopDuringCapture", value),
-    setBilingualInterviewEnabled: (value: boolean) => setSettings("bilingualInterviewEnabled", value),
+    setBilingualInterviewEnabled: (value: boolean) =>
+      setSettings("bilingualInterviewEnabled", value),
     setLiveTranslationEnabled: (value: boolean) => setSettings("liveTranslationEnabled", value),
     setTranslationDebounceMs: (value: number) =>
       setSettings("translationDebounceMs", Math.max(200, Math.min(4000, Math.round(value)))),

@@ -5,13 +5,15 @@ use chrono::Local;
 
 pub fn should_persist_stt_debug(err: &str) -> bool {
     let text = err.to_ascii_lowercase();
-    text.contains("empty transcript") || text.contains("empty transcription")
+    text.contains("empty transcript")
+        || text.contains("empty transcription")
+        || text.contains("no audible signal")
 }
 
 pub fn save_failed_stt_wav(wav_bytes: &[u8]) -> Result<PathBuf, String> {
     let dir = debug_capture_dir()?;
     fs::create_dir_all(&dir).map_err(|err| err.to_string())?;
-    let timestamp = Local::now().format("%Y%m%d-%H%M%S");
+    let timestamp = Local::now().format("%Y%m%d-%H%M%S-%3f");
     let path = dir.join(format!("stt-empty-{timestamp}.wav"));
     fs::write(&path, wav_bytes).map_err(|err| err.to_string())?;
     Ok(path)

@@ -32,13 +32,21 @@ impl ConversationContext {
         self.last_card = None;
     }
 
-    pub fn push_transcript(&mut self, transcript: &str) {
+    pub fn remember_transcript(&mut self, transcript: &str) {
         let value = transcript.trim();
         if value.is_empty() {
             return;
         }
         self.last_touched = Some(Instant::now());
         self.last_transcript = Some(value.to_string());
+    }
+
+    pub fn commit_transcript(&mut self, transcript: &str) {
+        let value = transcript.trim();
+        self.remember_transcript(value);
+        if value.split_whitespace().count() < 2 {
+            return;
+        }
         self.entries.push(value.to_string());
         if self.entries.len() > CONTEXT_MAX_ENTRIES {
             let overflow = self.entries.len() - CONTEXT_MAX_ENTRIES;
@@ -109,20 +117,20 @@ mod tests {
     #[test]
     fn trims_context_to_recent_entries() {
         let mut ctx = ConversationContext::default();
-        ctx.push_transcript("one");
-        ctx.push_transcript("two");
-        ctx.push_transcript("three");
-        ctx.push_transcript("four");
+        ctx.commit_transcript("entry one");
+        ctx.commit_transcript("entry two");
+        ctx.commit_transcript("entry three");
+        ctx.commit_transcript("entry four");
         let text = ctx.formatted_context();
-        assert!(!text.contains("1: one"));
-        assert!(text.contains("1: two"));
-        assert!(text.contains("3: four"));
+        assert!(!text.contains("1: entry one"));
+        assert!(text.contains("1: entry two"));
+        assert!(text.contains("3: entry four"));
     }
 
     #[test]
     fn status_exposes_transcript_preview_and_retry_flag() {
         let mut ctx = ConversationContext::default();
-        ctx.push_transcript("hello transcript");
+        ctx.commit_transcript("hello transcript");
         let s = ctx.status();
         assert!(s.can_retry_last_transcript);
         assert_eq!(s.entry_count, 1);
@@ -131,5 +139,27 @@ mod tests {
             .as_ref()
             .expect("preview")
             .contains("hello transcript"));
+    }
+
+    #[test]
+    fn remembered_transcript_enables_retry_without_adding_context_entry() {
+        let mut ctx = ConversationContext::default();
+        ctx.remember_transcript("short complete question");
+        let status = ctx.status();
+        assert!(status.can_retry_last_transcript);
+        assert!(!status.context_active);
+        assert_eq!(status.entry_count, 0);
+    }
+
+    #[test]
+    fn commit_keeps_single_word_out_of_rolling_context() {
+        let mut ctx = ConversationContext::default();
+        ctx.commit_transcript("Прыгать.");
+        let status = ctx.status();
+        assert!(status.can_retry_last_transcript);
+        assert_eq!(status.entry_count, 0);
+
+        ctx.commit_transcript("Кто владелец?");
+        assert_eq!(ctx.status().entry_count, 1);
     }
 }
