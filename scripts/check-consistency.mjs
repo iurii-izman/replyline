@@ -28,6 +28,7 @@ const requiredIncludes = [
       "InterviewCardSchemaV1",
       "schemaVersion = 10",
       "pnpm beta:doctor",
+      "pnpm beta:smoke-report",
       "pnpm beta:preflight",
       "pnpm verify:fast",
       "pnpm verify:full",
@@ -37,6 +38,10 @@ const requiredIncludes = [
   {
     path: "docs/beta-doctor.md",
     includes: ["pnpm beta:doctor", "ready_with_warnings", "blocked"],
+  },
+  {
+    path: "docs/beta-smoke-report.md",
+    includes: ["pnpm beta:smoke-report", "smoke-report.md", "smoke-report.json", "GitHub issue"],
   },
   {
     path: "docs/interview-mode.md",
