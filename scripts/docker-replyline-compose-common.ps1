@@ -120,3 +120,50 @@ function Get-ReplylineComposeFileArgs {
   }
   return $args
 }
+
+function Get-ReplylineHealthArgs {
+  param(
+    [string]$ProjectName,
+    [object]$ComposeContext
+  )
+
+  $args = @(
+    "-ProjectName", $ProjectName,
+    "-ManagedLabel", "com.replyline.managed=true"
+  )
+  if ($ComposeContext.Mode -eq "single" -and $ComposeContext.Files.Count -gt 0) {
+    $args += @("-ComposeFile", $ComposeContext.Files[0])
+  } elseif ($ComposeContext.Mode -eq "merged" -and $ComposeContext.Files.Count -gt 1) {
+    $args += @(
+      "-BaseComposeFile", $ComposeContext.Files[0],
+      "-OverrideComposeFile", $ComposeContext.Files[1]
+    )
+  }
+  return $args
+}
+
+function Wait-ReplylineDockerHealth {
+  param(
+    [string]$ProjectName,
+    [object]$ComposeContext,
+    [int]$TimeoutSeconds = 180
+  )
+
+  $healthScript = Join-Path $PSScriptRoot "docker-replyline-health.ps1"
+  $healthArgs = Get-ReplylineHealthArgs -ProjectName $ProjectName -ComposeContext $ComposeContext
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  $lastOutput = @()
+
+  do {
+    $lastOutput = @(& pwsh -NoProfile -File $healthScript @healthArgs 2>&1)
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -eq 0) {
+      $lastOutput | ForEach-Object { Write-Host $_ }
+      return
+    }
+    Start-Sleep -Seconds 5
+  } while ((Get-Date) -lt $deadline)
+
+  $lastOutput | ForEach-Object { Write-Host $_ }
+  throw "Docker stack did not reach a healthy state within $TimeoutSeconds seconds."
+}

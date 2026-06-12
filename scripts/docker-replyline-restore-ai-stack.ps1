@@ -37,25 +37,13 @@ if (-not $DryRun) {
   }
 }
 
-$healthScript = Join-Path $PSScriptRoot "docker-replyline-health.ps1"
-$healthArgs = @(
-  "-ProjectName", $ProjectName,
-  "-ManagedLabel", "com.replyline.managed=true"
-)
-if ($composeContext.Mode -eq "single" -and $composeContext.Files.Count -gt 0) {
-  $healthArgs += @("-ComposeFile", $composeContext.Files[0])
-} elseif ($composeContext.Mode -eq "merged" -and $composeContext.Files.Count -gt 1) {
-  $healthArgs += @(
-    "-BaseComposeFile", $composeContext.Files[0],
-    "-OverrideComposeFile", $composeContext.Files[1]
-  )
-}
-
 if ($DryRun) {
+  $healthScript = Join-Path $PSScriptRoot "docker-replyline-health.ps1"
+  $healthArgs = Get-ReplylineHealthArgs -ProjectName $ProjectName -ComposeContext $composeContext
   Write-Host "[replyline-docker] Dry-run mode; health check command:"
   Write-Host "  pwsh -File `"$healthScript`" $($healthArgs -join ' ')"
   exit 0
 }
 
-& pwsh -File $healthScript @healthArgs
-exit $LASTEXITCODE
+Wait-ReplylineDockerHealth -ProjectName $ProjectName -ComposeContext $composeContext
+exit 0

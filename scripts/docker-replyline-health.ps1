@@ -180,7 +180,11 @@ function Get-RunningContainerPortInventory {
       if ($labels.PSObject.Properties.Name -contains "com.docker.compose.project") {
         $composeProject = [string]$labels."com.docker.compose.project"
       }
-      if ($managedRaw -eq "true" -or $composeProject -eq $Project) {
+      $replylineProject = ""
+      if ($labels.PSObject.Properties.Name -contains "com.replyline.project") {
+        $replylineProject = [string]$labels."com.replyline.project"
+      }
+      if (($managedRaw -eq "true" -and $replylineProject -eq $Project) -or $composeProject -eq $Project) {
         $isManaged = $true
       }
     }
@@ -280,10 +284,10 @@ function Get-PortConflictReport {
   }
 
   return [pscustomobject]@{
-    checked = ($DesiredPorts.Count -gt 0)
+    checked = (@($DesiredPorts).Count -gt 0)
     desiredPorts = $desiredUnique
     conflicts = $conflicts
-    hasConflicts = ($conflicts.Count -gt 0)
+    hasConflicts = (@($conflicts).Count -gt 0)
     foreignBindings = $foreignPortBindings
   }
 }
@@ -296,7 +300,7 @@ function Get-ManagedContainers {
 
   $containerLines = New-Object System.Collections.Generic.List[string]
 
-  $managed = & docker ps -a --filter "label=$ManagedLabelFilter" --format "{{.ID}}"
+  $managed = & docker ps -a --filter "label=$ManagedLabelFilter" --filter "label=com.replyline.project=$Project" --format "{{.ID}}"
   if ($LASTEXITCODE -eq 0 -and $managed) {
     foreach ($line in $managed) {
       if (-not [string]::IsNullOrWhiteSpace($line)) {
@@ -325,6 +329,7 @@ function Get-ServiceRole {
     "^langfuse-db$" { return "db" }
     "^langfuse-redis$" { return "cache" }
     "^langfuse-clickhouse$" { return "olap-db" }
+    "^langfuse-minio-permissions$" { return "storage-permissions-init" }
     "^langfuse-minio$" { return "object-storage" }
     "^langfuse-minio-init$" { return "init" }
     "^qdrant$" { return "vector-db" }
@@ -397,10 +402,10 @@ function Get-ExternalComposeInlineSecretFindings {
   $findings = @()
   for ($i = 0; $i -lt $lines.Count; $i++) {
     $line = $lines[$i]
-    if ($line -match '^\s*([A-Z0-9_]*(SECRET|PASSWORD|TOKEN|KEY)[A-Z0-9_]*)\s*:\s*(.+)\s*$') {
+    if ($line -match '^\s*((?:SALT|REDIS_AUTH)|[A-Z0-9_]*(?:^|_)(SECRET|PASSWORD|TOKEN|KEY)(?:_|$)[A-Z0-9_]*)\s*:\s*(.+)\s*$') {
       $key = $Matches[1]
       $valueToken = $Matches[3].Trim()
-      if ($valueToken -notmatch '^\$\{?[A-Z0-9_]+\}?$') {
+      if (-not $valueToken.StartsWith('$')) {
         $findings += [pscustomobject]@{
           file = $resolvedBase
           line = ($i + 1)
@@ -554,7 +559,7 @@ $runningPortInventory = Get-RunningContainerPortInventory -Project $ProjectName 
 $listeningPorts = Get-ListeningTcpPorts
 $portConflicts = Get-PortConflictReport -DesiredPorts $desiredPorts -RunningPortInventory $runningPortInventory -ListeningPorts $listeningPorts
 
-$containerIds = Get-ManagedContainers -Project $ProjectName -ManagedLabelFilter $ManagedLabel
+$containerIds = @(Get-ManagedContainers -Project $ProjectName -ManagedLabelFilter $ManagedLabel)
 
 if (($null -eq $containerIds -or $containerIds.Count -eq 0) -and $AutoRecover) {
   if ($composeContext.Files.Count -gt 0) {
@@ -575,7 +580,7 @@ if (($null -eq $containerIds -or $containerIds.Count -eq 0) -and $AutoRecover) {
         throw "Bootstrap failed: $($upResult.Output)"
       }
     }
-    $containerIds = Get-ManagedContainers -Project $ProjectName -ManagedLabelFilter $ManagedLabel
+    $containerIds = @(Get-ManagedContainers -Project $ProjectName -ManagedLabelFilter $ManagedLabel)
   }
 }
 
@@ -598,7 +603,7 @@ if ($AutoRecover -and $containers.Count -gt 0) {
   if (-not $DryRun -and @($actions).Count -gt 0) {
     Start-Sleep -Seconds 1
     $containers = @()
-    $containerIds = Get-ManagedContainers -Project $ProjectName -ManagedLabelFilter $ManagedLabel
+    $containerIds = @(Get-ManagedContainers -Project $ProjectName -ManagedLabelFilter $ManagedLabel)
     foreach ($id in $containerIds) {
       $containers += Get-ContainerState -ContainerId $id
     }
@@ -606,6 +611,7 @@ if ($AutoRecover -and $containers.Count -gt 0) {
 }
 
 $unhealthyCount = ($containers | Where-Object { $_.health -eq "unhealthy" } | Measure-Object).Count
+$startingCount = ($containers | Where-Object { $_.health -eq "starting" } | Measure-Object).Count
 $stoppedCount = ($containers | Where-Object { $_.status -ne "running" -and -not $_.expectedStopped } | Measure-Object).Count
 $expectedStoppedCount = ($containers | Where-Object { $_.expectedStopped } | Measure-Object).Count
 $healthyCount = ($containers | Where-Object { $_.status -eq "running" -and ($_.health -eq $null -or $_.health -eq "healthy") } | Measure-Object).Count
@@ -615,19 +621,21 @@ $envExampleCandidates = @(
   (Join-Path $repoRoot "infra\replyline-ai-stack.env.example")
 )
 $envExampleFound = @($envExampleCandidates | Where-Object { Test-Path $_ })
-$publicPortFindings = Get-PublicPortBindingFindings -DesiredPorts $desiredPorts
+$publicPortFindings = @(Get-PublicPortBindingFindings -DesiredPorts $desiredPorts)
 $floatingImageFindings = @($containers | Where-Object { $_.versionFinding -in @("floating-tag", "implicit-latest") } | Select-Object name, service, image, versionFinding)
 $majorOnlyImageFindings = @($containers | Where-Object { $_.versionFinding -eq "major-only" } | Select-Object name, service, image, versionFinding)
 $experimentalRunning = @($containers | Where-Object { $_.service -eq "qdrant" -and $_.status -eq "running" } | Select-Object -ExpandProperty name)
 $externalComposeInlineSecrets = @()
 if ($composeContext.Mode -eq "merged" -and $composeContext.Files.Count -ge 1) {
-  $externalComposeInlineSecrets = Get-ExternalComposeInlineSecretFindings -BaseComposeFilePath $composeContext.Files[0] -RepoRoot $repoRoot
+  $externalComposeInlineSecrets = @(Get-ExternalComposeInlineSecretFindings -BaseComposeFilePath $composeContext.Files[0] -RepoRoot $repoRoot)
 }
 $strictFailures = @()
 if ($StrictRelease) {
+  if (-not $composeSafety.safe) { $strictFailures += "unsafeComposeContainerNames" }
   if ($floatingImageFindings.Count -gt 0) { $strictFailures += "floatingImageTags" }
-  if (($publicPortFindings | Where-Object { $_.service -in @("langfuse-minio", "qdrant") }).Count -gt 0) { $strictFailures += "publicPortBindingsSensitive" }
+  if (@($publicPortFindings | Where-Object { $_.service -in @("langfuse-minio", "qdrant") }).Count -gt 0) { $strictFailures += "publicPortBindingsSensitive" }
   if ($envExampleFound.Count -eq 0) { $strictFailures += "missingEnvExample" }
+  if ($externalComposeInlineSecrets.Count -gt 0) { $strictFailures += "externalComposeSecretsInline" }
 }
 
 $report = [pscustomobject]@{
@@ -646,6 +654,7 @@ $report = [pscustomobject]@{
     stopped = $stoppedCount
     expectedStopped = $expectedStoppedCount
     unhealthy = $unhealthyCount
+    starting = $startingCount
   }
   recoveryActions = $actions
   recommendedLabels = @(
@@ -749,7 +758,7 @@ if ($StrictRelease -and $strictFailures.Count -gt 0) {
   exit 3
 }
 
-if ($portConflicts.hasConflicts -or $stoppedCount -gt 0 -or $unhealthyCount -gt 0) {
+if ($portConflicts.hasConflicts -or $stoppedCount -gt 0 -or $unhealthyCount -gt 0 -or $startingCount -gt 0) {
   if ($Json) {
     $report | ConvertTo-Json -Depth 8
   }

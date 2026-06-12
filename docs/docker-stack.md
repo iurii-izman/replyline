@@ -6,18 +6,19 @@ Replyline is a desktop Tauri app and can run without Docker. Docker stack is use
 
 ## Services
 
-| Service               | Role                                     | Required for stable beta | Expected state                     |
-| --------------------- | ---------------------------------------- | ------------------------ | ---------------------------------- |
-| `langfuse-web`        | Langfuse UI/API                          | Optional                 | `running`                          |
-| `langfuse-worker`     | Langfuse background worker               | Optional                 | `running`                          |
-| `langfuse-db`         | Postgres for Langfuse transactional data | Optional                 | `running (healthy)`                |
-| `langfuse-clickhouse` | OLAP storage for traces/observations     | Optional                 | `running (healthy)`                |
-| `langfuse-redis`      | Queue/cache for Langfuse                 | Optional                 | `running (healthy)`                |
-| `langfuse-minio`      | Object storage for Langfuse uploads      | Optional                 | `running (healthy)`                |
-| `langfuse-minio-init` | One-shot bucket bootstrap (`langfuse`)   | Optional                 | `exited (0)` after successful init |
-| `qdrant`              | Vector DB                                | Experimental             | `running` if used                  |
+| Service                      | Role                                       | Required for stable beta | Expected state                     |
+| ---------------------------- | ------------------------------------------ | ------------------------ | ---------------------------------- |
+| `langfuse-web`               | Langfuse UI/API                            | Optional                 | `running`                          |
+| `langfuse-worker`            | Langfuse background worker                 | Optional                 | `running (healthy)`                |
+| `langfuse-db`                | Postgres for Langfuse transactional data   | Optional                 | `running (healthy)`                |
+| `langfuse-clickhouse`        | OLAP storage for traces/observations       | Optional                 | `running (healthy)`                |
+| `langfuse-redis`             | Queue/cache for Langfuse                   | Optional                 | `running (healthy)`                |
+| `langfuse-minio-permissions` | One-shot legacy volume ownership migration | Optional                 | `exited (0)` after successful init |
+| `langfuse-minio`             | Object storage for Langfuse uploads        | Optional                 | `running (healthy)`                |
+| `langfuse-minio-init`        | One-shot bucket bootstrap (`langfuse`)     | Optional                 | `exited (0)` after successful init |
+| `qdrant`                     | Vector DB                                  | Experimental             | `running` if used                  |
 
-`langfuse-minio-init` is expected to stop after successful bucket creation. `exited (0)` is healthy for this init container.
+`langfuse-minio-permissions` and `langfuse-minio-init` are expected to stop with code 0 after successful ownership migration and bucket creation.
 
 ## Source of truth
 
@@ -39,6 +40,7 @@ Health check:
 pnpm docker:replyline:check
 pnpm docker:replyline:check:dry
 pnpm docker:replyline:check:strict
+pnpm docker:replyline:storage:check
 ```
 
 Auto-heal:
@@ -54,6 +56,23 @@ Logs:
 pnpm docker:replyline:logs
 pnpm docker:replyline:logs:dry
 ```
+
+Consistent volume backup:
+
+```powershell
+pnpm docker:replyline:backup:dry
+pnpm docker:replyline:backup
+```
+
+The backup command stops the Compose project, copies all project-labelled volumes into immutable timestamped backup volumes, labels the backups for inventory, and starts the project again in a `finally` block. It never removes source or backup volumes.
+
+Restore preview:
+
+```powershell
+pnpm docker:replyline:backup:restore YYYYMMDD-HHMMSS -DryRun
+```
+
+Actual restore additionally requires `-ConfirmRestore`. Legacy backups without a completion marker require `-AllowLegacyBackup` after manual verification. Restore overwrites active volume contents but never deletes the backup volumes.
 
 Stop without deleting data:
 
@@ -101,16 +120,25 @@ Copy-Item .env.docker.example .env.docker.local
 ```
 
 - Rotate secrets by replacing local values and restarting stack (`pnpm docker:replyline:restore:ai`).
+- Migrate legacy inline values from the external base compose into its local `.env`:
+
+```powershell
+pnpm docker:replyline:secrets:migrate
+```
+
+The migration creates a timestamped backup beside the external compose file and never prints secret values.
+Use `pwsh -File scripts/docker-replyline-migrate-secrets.ps1 -DryRun` to preview variable names without changing files.
 
 ## Image pinning policy
 
-1. Prefer exact tested tags/digests from currently running images.
+1. Use exact tested tags and digests in `infra/replyline-ai-stack.override.yml`.
 2. Never replace floating tags blindly.
-3. Use `infra/replyline-ai-stack.pinned.example.yml` as release-hardening overlay template.
-4. Keep external base compose updates manual when image definitions live outside repo.
+3. Use `infra/replyline-ai-stack.pinned.example.yml` as a template when evaluating future upgrades.
+4. Upgrade the repo override intentionally; do not rely on floating tags from the external base compose.
 5. Upgrade one service at a time and validate with:
    - `pnpm docker:replyline:check`
    - `pnpm docker:replyline:check:strict`
+   - `pnpm docker:replyline:storage:check`
    - `pnpm smoke`
 
 `docker:replyline:check` reports warnings (floating tags, public binds, env template gap, expected stopped init containers).  
