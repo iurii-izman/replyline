@@ -62,14 +62,33 @@ Supported provider/runtime path for stable beta:
 1. Install prerequisites: Node.js + `pnpm`, Rust toolchain, Windows build prerequisites for Tauri.
 2. Install dependencies: `pnpm install --frozen-lockfile`.
 3. Run `pnpm beta:doctor` and follow any `WARN`/`FAIL` next actions before starting the app.
-4. If you need a sanitized issue bundle, run `pnpm beta:smoke-report` and attach the generated artifacts.
-4. Configure providers in Settings:
+4. Start the guided beta flow with `pnpm beta:start`; it runs the doctor again, prints a readiness summary, and launches `pnpm tauri dev` when allowed.
+5. If you need a sanitized issue bundle, run `pnpm beta:smoke-report` and attach the generated artifacts.
+6. Configure providers in Settings:
    - Deepgram API key
    - LLM base URL
    - LLM model
    - optional LLM API key
-5. Verify a valid playback device is set as default in Windows Sound settings.
-6. For runtime probe credentials setup, use `docs/runtime-probe-credentials.md` (local env only, never committed).
+7. Verify a valid playback device is set as default in Windows Sound settings.
+8. For runtime probe credentials setup, use `docs/runtime-probe-credentials.md` (local env only, never committed).
+
+`pnpm beta:start` flags:
+
+- `-Strict`: treat doctor warnings as blocking.
+- `-SkipDoctor`: skip the doctor and continue to launch preflight.
+- `-ReportOnFail`: generate `pnpm beta:smoke-report` after a blocked gate or launch failure.
+- `-NoLaunch`: print readiness without starting the app.
+- `-Force`: continue past a blocked doctor verdict; missing launch tools still block.
+
+Examples:
+
+```bash
+pnpm beta:start -- -NoLaunch
+pnpm beta:start -- -NoLaunch -Strict
+pnpm beta:start -- -ReportOnFail
+```
+
+Blocked starts never install prerequisites. Without `-Force`, they do not launch the app and point to the doctor next actions plus the sanitized smoke report command.
 
 ## 5) Validation matrix
 
@@ -77,15 +96,16 @@ Supported provider/runtime path for stable beta:
 2. Smoke gate: `pnpm smoke`
 3. Fast verify: `pnpm verify:fast`
 4. Beta doctor: `pnpm beta:doctor`
-5. Sanitized smoke report: `pnpm beta:smoke-report`
-6. Full verify: `pnpm verify:full`
-7. Extended verify: `pnpm verify:extended`
-8. Beta preflight lane: `pnpm beta:preflight`
-9. Interview quality report artifact: `pnpm report:interview-quality`
-10. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
-11. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
-12. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
-13. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
+5. Guided beta start/readiness: `pnpm beta:start -- -NoLaunch`
+6. Sanitized smoke report: `pnpm beta:smoke-report`
+7. Full verify: `pnpm verify:full`
+8. Extended verify: `pnpm verify:extended`
+9. Beta preflight lane: `pnpm beta:preflight`
+10. Interview quality report artifact: `pnpm report:interview-quality`
+11. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
+12. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
+13. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
+14. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
 
 Additional conditional gates:
 
@@ -187,6 +207,7 @@ Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in eve
 
 - `pnpm beta:preflight`
 - `pnpm beta:handoff`
+- `pnpm beta:start`
 
 ## 10) Interview Mode beta posture decision criteria
 

@@ -61,8 +61,11 @@ cd replyline
 git checkout v0.2.0-beta.1
 pnpm install --frozen-lockfile
 pnpm beta:doctor
-pnpm tauri dev
+pnpm beta:start
 ```
+
+`pnpm beta:start` prints a readiness summary and launches `pnpm tauri dev` when
+the local environment is ready. It does not install prerequisites automatically.
 
 Then configure runtime settings in app UI:
 
