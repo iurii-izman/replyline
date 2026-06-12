@@ -53,6 +53,8 @@
     "reports/docker/docker-stack-hardening-2026-05-21.md",
     ".github/workflows/ci.yml",
     ".github/workflows/extended-quality.yml",
+    ".github/workflows/release-on-tag.yml",
+    ".github/workflows/windows-packaging-manual.yml",
     ".github/copilot-instructions.md",
     "AGENTS.md",
     "CHANGELOG.md",
