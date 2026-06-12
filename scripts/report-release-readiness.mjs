@@ -66,18 +66,83 @@ function statusFromScore(score) {
   return "pass";
 }
 
-function extractScriptFileRefs(command) {
+function tokenizeShellCommand(command) {
+  const tokens = [];
+  let current = "";
+  let quote = null;
+
+  const flush = () => {
+    if (current) {
+      tokens.push(current);
+      current = "";
+    }
+  };
+
+  for (const char of command) {
+    if (quote) {
+      if (char === quote) {
+        quote = null;
+      } else {
+        current += char;
+      }
+      continue;
+    }
+
+    if (char === '"' || char === "'") {
+      quote = char;
+    } else if (/\s/u.test(char)) {
+      flush();
+    } else if (";&|".includes(char)) {
+      flush();
+      tokens.push(char);
+    } else {
+      current += char;
+    }
+  }
+
+  flush();
+  return tokens;
+}
+
+function isCommandBoundary(token) {
+  return token === ";" || token === "&" || token === "|";
+}
+
+function executableName(token) {
+  return token.toLowerCase().split(/[\\/]/u).at(-1);
+}
+
+export function extractScriptFileRefs(command) {
   const refs = [];
   if (!command) return refs;
 
-  const nodePattern = /(?:^|\s)node\s+((?:"[^"]+"|'[^']+'|[^\s;&|])+\.(?:mjs|cjs|js))/giu;
-  const pwshPattern =
-    /(?:^|\s)pwsh(?:\s+-[\w:]+(?:\s+[^\s;&|]+)?)*\s+-File\s+((?:"[^"]+"|'[^']+'|[^\s;&|])+\.ps1)/giu;
+  const tokens = tokenizeShellCommand(command);
+  for (let index = 0; index < tokens.length; index += 1) {
+    const executable = executableName(tokens[index]);
 
-  for (const pattern of [nodePattern, pwshPattern]) {
-    let match;
-    while ((match = pattern.exec(command)) !== null) {
-      refs.push(match[1].replace(/^['"]|['"]$/g, ""));
+    if (executable === "node" || executable === "node.exe") {
+      for (let cursor = index + 1; cursor < tokens.length; cursor += 1) {
+        if (isCommandBoundary(tokens[cursor])) break;
+        if (/\.(?:mjs|cjs|js)$/iu.test(tokens[cursor])) {
+          refs.push(tokens[cursor]);
+          break;
+        }
+      }
+    }
+
+    if (
+      executable === "pwsh" ||
+      executable === "pwsh.exe" ||
+      executable === "powershell" ||
+      executable === "powershell.exe"
+    ) {
+      for (let cursor = index + 1; cursor < tokens.length; cursor += 1) {
+        if (isCommandBoundary(tokens[cursor])) break;
+        if (tokens[cursor].toLowerCase() === "-file" && tokens[cursor + 1]) {
+          refs.push(tokens[cursor + 1]);
+          break;
+        }
+      }
     }
   }
 
@@ -394,15 +459,13 @@ export function runReleaseReadiness(options = {}) {
   }
 
   if (!hasReleaseArtifactBuild) {
-    const msg =
-      "release-on-tag workflow is missing Windows release artifact build/upload path.";
+    const msg = "release-on-tag workflow is missing Windows release artifact build/upload path.";
     blockers.push(msg);
     staticGateBlockers.push(msg);
   }
 
   if (!hasUnsignedReleasePath) {
-    const msg =
-      "release-on-tag workflow is missing explicit internal-unsigned artifact labeling.";
+    const msg = "release-on-tag workflow is missing explicit internal-unsigned artifact labeling.";
     blockers.push(msg);
     staticGateBlockers.push(msg);
   }

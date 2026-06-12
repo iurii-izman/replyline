@@ -899,11 +899,17 @@
         state.notes[id] = val;
         saveState();
       }
-      function esc(s) {
-        return String(s).replace(
-          /[&<>"']/g,
-          (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m],
-        );
+      function createElement(tag, { className, text, attrs, dataset } = {}) {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (text !== undefined) element.textContent = String(text);
+        for (const [name, value] of Object.entries(attrs || {})) {
+          element.setAttribute(name, String(value));
+        }
+        for (const [name, value] of Object.entries(dataset || {})) {
+          element.dataset[name] = String(value);
+        }
+        return element;
       }
       function toast(msg = "Готово") {
         const el = $("toast");
@@ -921,21 +927,98 @@
       }
       function renderNav() {
         const nav = $("nav");
-        nav.innerHTML = data.sections
-          .map(
-            (s) =>
-              `<a class="navitem" href="#sec-${s.id}" data-nav="${s.id}"><span><b>${esc(s.title)}</b><small>${esc(s.goal)}</small></span><span class="pill ${s.priority}">${s.priority}</span></a>`,
-          )
-          .join("");
+        nav.replaceChildren(
+          ...data.sections.map((section) => {
+            const link = createElement("a", {
+              className: "navitem",
+              attrs: { href: `#sec-${section.id}` },
+              dataset: { nav: section.id },
+            });
+            const content = createElement("span");
+            content.append(
+              createElement("b", { text: section.title }),
+              createElement("small", { text: section.goal }),
+            );
+            link.append(
+              content,
+              createElement("span", {
+                className: `pill ${section.priority}`,
+                text: section.priority,
+              }),
+            );
+            return link;
+          }),
+        );
       }
       function renderSections() {
         const root = $("sections");
-        root.innerHTML = data.sections
-          .map(
-            (s) =>
-              `<section class="section" id="sec-${s.id}" data-section="${s.id}"><div class="section-head"><div><div class="section-title"><span class="pill ${s.priority}">${s.priority}</span><h2>${esc(s.title)}</h2></div><p class="section-desc">${esc(s.goal)}</p></div><div class="section-actions"><button class="btn" data-section-done="${s.id}">Mark section done</button><button class="btn ghost" data-section-toggle="${s.id}">Collapse</button></div></div><div class="section-body" data-section-body="${s.id}">${s.commands?.length ? `<div class="commands">${s.commands.map((c) => `<div class="cmd"><code>${esc(c)}</code><button data-copy="${esc(c)}">Copy</button></div>`).join("")}</div>` : ""}<div class="tasklist">${s.tasks.map((t) => renderTask(t, s.id)).join("")}</div></div></section>`,
-          )
-          .join("");
+        root.replaceChildren(
+          ...data.sections.map((sectionData) => {
+            const section = createElement("section", {
+              className: "section",
+              attrs: { id: `sec-${sectionData.id}` },
+              dataset: { section: sectionData.id },
+            });
+            const head = createElement("div", { className: "section-head" });
+            const description = createElement("div");
+            const title = createElement("div", { className: "section-title" });
+            title.append(
+              createElement("span", {
+                className: `pill ${sectionData.priority}`,
+                text: sectionData.priority,
+              }),
+              createElement("h2", { text: sectionData.title }),
+            );
+            description.append(
+              title,
+              createElement("p", {
+                className: "section-desc",
+                text: sectionData.goal,
+              }),
+            );
+
+            const actions = createElement("div", { className: "section-actions" });
+            actions.append(
+              createElement("button", {
+                className: "btn",
+                text: "Mark section done",
+                dataset: { sectionDone: sectionData.id },
+              }),
+              createElement("button", {
+                className: "btn ghost",
+                text: "Collapse",
+                dataset: { sectionToggle: sectionData.id },
+              }),
+            );
+            head.append(description, actions);
+
+            const body = createElement("div", {
+              className: "section-body",
+              dataset: { sectionBody: sectionData.id },
+            });
+            if (sectionData.commands?.length) {
+              const commands = createElement("div", { className: "commands" });
+              for (const command of sectionData.commands) {
+                const commandRow = createElement("div", { className: "cmd" });
+                commandRow.append(
+                  createElement("code", { text: command }),
+                  createElement("button", {
+                    text: "Copy",
+                    dataset: { copy: command },
+                  }),
+                );
+                commands.append(commandRow);
+              }
+              body.append(commands);
+            }
+
+            const taskList = createElement("div", { className: "tasklist" });
+            taskList.append(...sectionData.tasks.map((task) => renderTask(task, sectionData.id)));
+            body.append(taskList);
+            section.append(head, body);
+            return section;
+          }),
+        );
         document
           .querySelectorAll("[data-copy]")
           .forEach((btn) => btn.addEventListener("click", () => copyText(btn.dataset.copy)));
@@ -963,7 +1046,62 @@
         if (st.done) classes.push("done");
         if (st.status === "block") classes.push("block");
         if (st.status === "warn") classes.push("warn");
-        return `<div class="${classes.join(" ")}" id="task-${id}" data-task="${id}" data-priority="${pr}"><div class="check" data-check="${id}">${st.done ? "✓" : ""}</div><div class="task-main"><label data-check="${id}">${esc(text)}</label><div class="task-meta"><span class="pill ${pr}">${pr}</span><span class="pill">${esc(sectionId)}</span></div></div><div class="task-actions"><select class="status" data-status="${id}"><option value="todo" ${st.status === "todo" ? "selected" : ""}>Todo</option><option value="pass" ${st.status === "pass" ? "selected" : ""}>Pass</option><option value="warn" ${st.status === "warn" ? "selected" : ""}>Warn</option><option value="block" ${st.status === "block" ? "selected" : ""}>Block</option></select><button class="btn ghost" data-note="${id}">Note</button></div><textarea class="note" data-note-field="${id}" placeholder="Заметка / evidence / ссылка на отчёт…">${esc(note(id))}</textarea></div>`;
+        const task = createElement("div", {
+          className: classes.join(" "),
+          attrs: { id: `task-${id}` },
+          dataset: { task: id, priority: pr },
+        });
+        task.append(
+          createElement("div", {
+            className: "check",
+            text: st.done ? "✓" : "",
+            dataset: { check: id },
+          }),
+        );
+
+        const taskMain = createElement("div", { className: "task-main" });
+        const metadata = createElement("div", { className: "task-meta" });
+        metadata.append(
+          createElement("span", { className: `pill ${pr}`, text: pr }),
+          createElement("span", { className: "pill", text: sectionId }),
+        );
+        taskMain.append(createElement("label", { text, dataset: { check: id } }), metadata);
+
+        const taskActions = createElement("div", { className: "task-actions" });
+        const status = createElement("select", {
+          className: "status",
+          dataset: { status: id },
+        });
+        for (const [value, label] of [
+          ["todo", "Todo"],
+          ["pass", "Pass"],
+          ["warn", "Warn"],
+          ["block", "Block"],
+        ]) {
+          const option = createElement("option", {
+            text: label,
+            attrs: { value },
+          });
+          option.selected = st.status === value;
+          status.append(option);
+        }
+        taskActions.append(
+          status,
+          createElement("button", {
+            className: "btn ghost",
+            text: "Note",
+            dataset: { note: id },
+          }),
+        );
+
+        const noteField = createElement("textarea", {
+          className: "note",
+          attrs: { placeholder: "Заметка / evidence / ссылка на отчёт…" },
+          dataset: { noteField: id },
+        });
+        noteField.value = note(id);
+        task.append(taskMain, taskActions, noteField);
+        return task;
       }
       function bindTasks() {
         document.addEventListener("click", (e) => {
@@ -1038,12 +1176,24 @@
           go.textContent = "GO";
           go.classList.add("go");
         }
-        $("goList").innerHTML = data.goCriteria
-          .map(([name, goText, noText]) => {
+        $("goList").replaceChildren(
+          ...data.goCriteria.map(([name, goText, noText]) => {
             const isOk = p0pct === 100 && blockers === 0;
-            return `<div class="goline"><span><b>${esc(name)}</b><br><small>GO: ${esc(goText)}<br>NO-GO: ${esc(noText)}</small></span><span class="pill ${isOk ? "ok" : "P1"}">${isOk ? "reviewed" : "check"}</span></div>`;
-          })
-          .join("");
+            const row = createElement("div", { className: "goline" });
+            const details = createElement("span");
+            const criteria = createElement("small");
+            criteria.append(`GO: ${goText}`, createElement("br"), `NO-GO: ${noText}`);
+            details.append(createElement("b", { text: name }), createElement("br"), criteria);
+            row.append(
+              details,
+              createElement("span", {
+                className: `pill ${isOk ? "ok" : "P1"}`,
+                text: isOk ? "reviewed" : "check",
+              }),
+            );
+            return row;
+          }),
+        );
       }
       function updateNav() {
         for (const s of data.sections) {
@@ -1058,12 +1208,22 @@
         }
       }
       function renderTemplates() {
-        $("templatesGrid").innerHTML = Object.entries(data.templates)
-          .map(
-            ([name, body]) =>
-              `<div class="template"><header><h3>${esc(name)}</h3><button class="btn" data-template="${esc(name)}">Copy</button></header><pre>${esc(body)}</pre></div>`,
-          )
-          .join("");
+        $("templatesGrid").replaceChildren(
+          ...Object.entries(data.templates).map(([name, body]) => {
+            const card = createElement("div", { className: "template" });
+            const header = createElement("header");
+            header.append(
+              createElement("h3", { text: name }),
+              createElement("button", {
+                className: "btn",
+                text: "Copy",
+                dataset: { template: name },
+              }),
+            );
+            card.append(header, createElement("pre", { text: body }));
+            return card;
+          }),
+        );
         document
           .querySelectorAll("[data-template]")
           .forEach((btn) =>

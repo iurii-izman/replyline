@@ -1,8 +1,9 @@
 import { strict as assert } from "node:assert";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { runReleaseReadiness } from "./report-release-readiness.mjs";
+import { extractScriptFileRefs, runReleaseReadiness } from "./report-release-readiness.mjs";
 
 function setupFixture({
   includeRequiredScripts = true,
@@ -19,6 +20,7 @@ function setupFixture({
   mkdirSync(join(root, "reports", "product-quality"), { recursive: true });
   mkdirSync(join(root, "reports", "release"), { recursive: true });
   mkdirSync(join(root, "docs"), { recursive: true });
+  mkdirSync(join(root, ".github", "workflows"), { recursive: true });
 
   const today = "2026-05-22";
   const scripts = {
@@ -32,6 +34,8 @@ function setupFixture({
     "test:public-footprint":
       "node scripts/check-public-footprint.mjs && node scripts/check-report-secret-leaks.mjs",
     "test:runtime-quality": "node scripts/test-runtime-quality.mjs",
+    "test:e2e:desktop": "node scripts/run-tauri-driver-tests.mjs",
+    "test:e2e:desktop:required": "node scripts/run-tauri-driver-tests.mjs --required",
     "test:report-secret-leaks": "node scripts/check-report-secret-leaks.mjs",
     "report:release-readiness": "node scripts/report-release-readiness.mjs",
     "report:sonar-residual": "node scripts/report-sonar-residual-readiness.mjs",
@@ -93,6 +97,19 @@ function setupFixture({
     "utf8",
   );
   writeFileSync(join(root, "scripts", "test-runtime-quality.mjs"), "console.log('ok')\n", "utf8");
+  writeFileSync(join(root, "scripts", "run-tauri-driver-tests.mjs"), "console.log('ok')\n", "utf8");
+  writeFileSync(
+    join(root, ".github", "workflows", "release-on-tag.yml"),
+    [
+      "name: release fixture",
+      "windows-artifact",
+      "pnpm tauri build",
+      "windows-internal-unsigned",
+      "windows-signed",
+      "Get-AuthenticodeSignature",
+    ].join("\n"),
+    "utf8",
+  );
 
   writeFileSync(
     join(root, "reports", "release-freeze-check.json"),
@@ -140,7 +157,20 @@ function setupFixture({
     );
   }
 
+  execFileSync("git", ["init", "--quiet"], { cwd: root });
+  execFileSync("git", ["add", "."], { cwd: root });
+
   return { root, now: new Date(`${today}T10:00:00.000Z`) };
+}
+
+{
+  assert.deepEqual(
+    extractScriptFileRefs(
+      "node --trace-warnings \"scripts/check one.mjs\" && pwsh -NoProfile -ExecutionPolicy Bypass -File 'scripts/check two.ps1'",
+    ),
+    ["scripts/check one.mjs", "scripts/check two.ps1"],
+  );
+  assert.deepEqual(extractScriptFileRefs(`node "${"a".repeat(100_000)}"`), []);
 }
 
 {
