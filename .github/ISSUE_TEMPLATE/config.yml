@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Beta testing guide
+    url: https://github.com/iurii-izman/replyline/blob/main/BETA_TESTING.md
+    about: Run the focused 15-minute Windows beta test and report sanitized results.
   - name: Questions and setup help
     url: https://github.com/iurii-izman/replyline/discussions/categories/q-a
     about: Ask usage, setup, and provider configuration questions.

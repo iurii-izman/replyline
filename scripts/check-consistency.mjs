@@ -79,10 +79,6 @@ const requiredIncludes = [
     includes: ["diag_runtime_event", "stage", "outcome", "code"],
   },
   {
-    path: "docs/advanced-mode-governance.md",
-    includes: ["Purpose", "Enable criteria", "Disable criteria"],
-  },
-  {
     path: "landing/index.html",
     includes: [canonicalCard, ...guardrailTokens],
   },
@@ -112,11 +108,7 @@ const requiredIncludes = [
   },
   {
     path: "docs/release-freeze-matrix.md",
-    includes: [
-      "Source of truth: `docs/release-freeze-baseline.json`.",
-      "docs/manual-closure-pack.html",
-      "scripts/check-manual-closure-pack.mjs",
-    ],
+    includes: ["Source of truth: `docs/release-freeze-baseline.json`."],
   },
 ];
 

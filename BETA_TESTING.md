@@ -1,0 +1,81 @@
+# Replyline Beta Testing
+
+Спасибо за помощь с публичной source beta. Нужен Windows 10/11 и примерно
+15 минут. Технический опыт полезен, но не обязателен.
+
+## Before You Start
+
+Replyline отправляет короткий audio snippet в Deepgram для speech-to-text, а
+полученный текст и контекст в настроенный OpenAI-compatible LLM provider.
+
+Не используйте реальные конфиденциальные разговоры. Для теста возьмите
+синтетическую фразу без персональных данных, credentials или информации
+работодателя.
+
+## Setup
+
+```powershell
+git clone https://github.com/iurii-izman/replyline.git
+cd replyline
+git checkout v0.2.0-beta.1
+pnpm install --frozen-lockfile
+pnpm tauri dev
+```
+
+В Settings настройте:
+
+- Deepgram API key;
+- LLM base URL;
+- model name;
+- LLM API key, если endpoint его требует.
+
+Keys хранятся локально через Windows Credential Manager. Не публикуйте их в
+issues, screenshots или logs.
+
+## 15-Minute Smoke Test
+
+1. Запустите приложение и сохраните Settings.
+2. Удерживайте `Ctrl+Alt+Space` во время синтетической рабочей реплики.
+3. Отпустите hotkey и дождитесь карточки `gist / say_now / next_move`.
+4. Проверьте, можно ли произнести `say_now` без переписывания.
+5. Повторите один раз через Retry.
+6. Проверьте tray open/restore/quit и повторный запуск приложения.
+
+Пример безопасной реплики:
+
+> Срок перенесли на завтра, но входные данные ещё не согласованы. Как спокойно
+> обозначить риск и предложить следующий шаг?
+
+## Report The Result
+
+Оставьте результат в
+[beta smoke issue](https://github.com/iurii-izman/replyline/issues/71) или
+создайте отдельный
+[bug report](https://github.com/iurii-izman/replyline/issues/new?template=bug_report.md)
+для воспроизводимого дефекта.
+
+Укажите:
+
+- Windows version;
+- release tag or commit;
+- pass/fail для setup, capture, card, retry, tray и second launch;
+- примерное ожидание карточки;
+- usefulness score от 1 до 5;
+- минимальные reproduction steps для ошибки.
+
+## Privacy Rules
+
+Не прикладывайте:
+
+- API keys, bearer tokens и account identifiers;
+- raw transcripts, prompts или provider response bodies;
+- resume, job description или Candidate Pack values;
+- screenshots с персональными данными;
+- абсолютные local paths с именем пользователя.
+
+Используйте только synthetic content. Security-sensitive findings отправляйте
+по инструкции из [SECURITY.md](.github/SECURITY.md), а не в public issue.
+
+Подробные ограничения продукта описаны в
+[known limitations](docs/known-limitations.md). Вопросы можно задать в
+[GitHub Discussions Q&A](https://github.com/iurii-izman/replyline/discussions/categories/q-a).

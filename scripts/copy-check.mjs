@@ -13,9 +13,9 @@ const targets = [
   "docs/privacy-and-trust.md",
   "docs/known-limitations.md",
   "docs/third-party-providers.md",
-  "docs/tester-brief.md",
+  "BETA_TESTING.md",
   "docs/test-feedback-template.md",
-  "docs/internal-alpha-checklist.md",
+  "BETA_TESTING.md",
   ".github/ISSUE_TEMPLATE/bug_report.md",
   ".github/ISSUE_TEMPLATE/feature_request.md",
 ];

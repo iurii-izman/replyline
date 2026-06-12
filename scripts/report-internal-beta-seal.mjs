@@ -10,14 +10,20 @@ const COMMANDS = [
   { name: "verify:fast", command: ["pnpm", "verify:fast"], blocking: true },
   { name: "test:doc-links", command: ["pnpm", "test:doc-links"], blocking: true },
   { name: "copy:check", command: ["pnpm", "copy:check"], blocking: true },
-  { name: "test:manual-closure-pack", command: ["pnpm", "test:manual-closure-pack"], blocking: true },
   { name: "report:runtime-quality", command: ["pnpm", "report:runtime-quality"], blocking: true },
   { name: "report:product-quality", command: ["pnpm", "report:product-quality"], blocking: true },
-  { name: "report:live-evidence-pack", command: ["pnpm", "report:live-evidence-pack"], blocking: true },
+  {
+    name: "report:live-evidence-pack",
+    command: ["pnpm", "report:live-evidence-pack"],
+    blocking: true,
+  },
   { name: "release:freeze:check", command: ["pnpm", "release:freeze:check"], blocking: true },
-  { name: "report:release-readiness:strict", command: ["pnpm", "report:release-readiness:strict"], blocking: true },
+  {
+    name: "report:release-readiness:strict",
+    command: ["pnpm", "report:release-readiness:strict"],
+    blocking: true,
+  },
   { name: "test:e2e:desktop", command: ["pnpm", "test:e2e:desktop"], blocking: false },
-  { name: "test:api:postman", command: ["pnpm", "test:api:postman"], blocking: false },
 ];
 
 function runCommand(spec) {
@@ -94,11 +100,7 @@ function extractLiveEvidence(stamp) {
 }
 
 function testerKitStatus() {
-  const required = [
-    "docs/internal-beta-tester-kit.md",
-    "docs/tester-brief.md",
-    "docs/test-feedback-template.md",
-  ];
+  const required = ["BETA_TESTING.md", "docs/test-feedback-template.md"];
   const missing = required.filter((rel) => !existsSync(join(rootDir, rel)));
   return { required, missing, ok: missing.length === 0 };
 }
@@ -137,7 +139,9 @@ function main() {
     .map((row) => row.name);
 
   if (!releaseReadiness.signedVerifiedPath) {
-    warnings.push("signed binary path is not verified (warning for internal beta, blocker for RC/public).");
+    warnings.push(
+      "signed binary path is not verified (warning for internal beta, blocker for RC/public).",
+    );
   }
 
   const desktopLane = commandResults.find((row) => row.name === "test:e2e:desktop");
@@ -145,19 +149,15 @@ function main() {
     warnings.push("desktop E2E lane skipped (allowed for internal beta seal).");
   }
   if (desktopLane?.status === "fail") {
-    warnings.push("desktop E2E lane failed (optional for internal beta, investigate before RC/public).");
-  }
-
-  const postmanLane = commandResults.find((row) => row.name === "test:api:postman");
-  if (postmanLane?.status === "skipped") {
-    warnings.push("Postman/API lane skipped (allowed for internal beta seal).");
-  }
-  if (postmanLane?.status === "fail") {
-    warnings.push("Postman/API lane failed (optional for internal beta, investigate before RC/public).");
+    warnings.push(
+      "desktop E2E lane failed (optional for internal beta, investigate before RC/public).",
+    );
   }
 
   if (liveEvidence.pendingRows.length > 0 || liveEvidence.status !== "partial_measured_evidence") {
-    warnings.push("live multi-machine evidence is pending and must be collected during tester cycle.");
+    warnings.push(
+      "live multi-machine evidence is pending and must be collected during tester cycle.",
+    );
   }
   warnings.push("public beta readiness is not asserted by beta:seal and requires RC/public gates.");
   for (const rrWarn of releaseReadiness.warnings) {
@@ -165,7 +165,8 @@ function main() {
   }
 
   const dedupWarnings = [...new Set(warnings)];
-  const status = blockers.length > 0 ? "blocked" : dedupWarnings.length > 0 ? "ready-with-warnings" : "ready";
+  const status =
+    blockers.length > 0 ? "blocked" : dedupWarnings.length > 0 ? "ready-with-warnings" : "ready";
 
   const reportLines = [
     "# Internal Beta Seal Report",
@@ -177,7 +178,9 @@ function main() {
     "## Commands run",
     "| command | status | exit code | blocking |",
     "| --- | --- | ---: | --- |",
-    ...commandResults.map((row) => `| ${row.name} | ${row.status} | ${row.exitCode} | ${row.blocking ? "yes" : "no"} |`),
+    ...commandResults.map(
+      (row) => `| ${row.name} | ${row.status} | ${row.exitCode} | ${row.blocking ? "yes" : "no"} |`,
+    ),
     "",
     "## Blockers",
     ...(blockers.length ? blockers.map((row) => `- ${row}`) : ["- none"]),
@@ -191,7 +194,9 @@ function main() {
     "## Pending live evidence",
     `- live-evidence report: ${liveEvidence.present ? "present" : "missing"}`,
     `- live-evidence status: ${liveEvidence.status}`,
-    ...(liveEvidence.pendingRows.length ? liveEvidence.pendingRows.map((row) => `- ${row}`) : ["- none"]),
+    ...(liveEvidence.pendingRows.length
+      ? liveEvidence.pendingRows.map((row) => `- ${row}`)
+      : ["- none"]),
     "",
     "## Signed binary status",
     `- signed+verified release path: ${releaseReadiness.signedVerifiedPath ? "present" : "missing"}`,
@@ -199,9 +204,6 @@ function main() {
     "## Desktop E2E status",
     `- test:e2e:desktop: ${desktopLane?.status ?? "not-run"}`,
     "- note: non-skipped desktop E2E is RC/public beta requirement.",
-    "",
-    "## Postman/API lane status",
-    `- test:api:postman: ${postmanLane?.status ?? "not-run"}`,
     "",
     "## Tester kit status",
     `- status: ${testerKit.ok ? "ready" : "missing-files"}`,
@@ -251,7 +253,9 @@ function main() {
 
   console.log(`[internal-beta-seal] markdown: ${mdPath}`);
   console.log(`[internal-beta-seal] json: ${jsonPath}`);
-  console.log(`[internal-beta-seal] status=${status} blockers=${blockers.length} warnings=${dedupWarnings.length}`);
+  console.log(
+    `[internal-beta-seal] status=${status} blockers=${blockers.length} warnings=${dedupWarnings.length}`,
+  );
 
   if (status === "blocked") process.exit(1);
 }

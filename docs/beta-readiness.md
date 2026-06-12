@@ -179,16 +179,10 @@ Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in eve
 - no transcript/history/team workflows in current stable-beta product scope
 - no meeting assistant, no transcript tool, no speaking coach
 
-## 9) Command naming standard (beta-first)
+## 9) Command naming standard
 
-- Primary handoff/preflight commands:
-  - `pnpm beta:preflight`
-  - `pnpm beta:handoff`
-- Legacy aliases:
-  - `pnpm alpha:preflight`
-  - `pnpm alpha:handoff`
-
-Legacy `alpha:*` aliases are deprecated compatibility aliases and must not be used as the primary path in new documentation.
+- `pnpm beta:preflight`
+- `pnpm beta:handoff`
 
 ## 10) Interview Mode beta posture decision criteria
 

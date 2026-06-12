@@ -15,28 +15,6 @@
 - `cargo fmt --manifest-path src-tauri/Cargo.toml --check`
 - required policy checks: `pnpm test:prompt-contract`, `pnpm copy:check`
 
-## API Test Stack (single source of truth)
-
-Replyline keeps one API stack: **Postman/Newman**.
-
-- API smoke: `pnpm test:api:postman`
-- In this minimal public footprint, Postman collection/environment files stay local-only by default.
-- If either local Postman asset is absent (`Replyline.postman_collection.json` or `Replyline.local.postman_environment.json`), `pnpm test:api:postman` exits with `SKIP` and does not fail the pipeline.
-- The lane is optional and intentionally excluded from `verify:fast`.
-- If assets are present, they must target only local/mock harness endpoints and contain no real secrets or transcript payloads.
-
-Bruno assets and scripts were removed to avoid duplicate maintenance.
-
-### Postman lane scope
-
-`pnpm test:api:postman` validates only an optional API harness contract (request/response shape, local regression checks against mock/local endpoints).
-
-It does **not** validate:
-
-- desktop UI behavior or WorkConversation/Interview flows;
-- production provider integrations;
-- release readiness (it is not a blocking lane).
-
 ## Optional Lanes
 
 Optional tooling is excluded from the default install profile (`optional=false` in `.npmrc`).
@@ -48,7 +26,6 @@ pnpm install --include=optional
 
 - `pnpm verify:extended`
 - `pnpm deps:review` (dependency freshness + override maintenance review; non-blocking lane)
-- `pnpm test:optional:api`
 - `pnpm test:optional:e2e:web`
 - `pnpm test:optional:e2e:desktop`
 - `pnpm test:optional:ux:lighthouse`

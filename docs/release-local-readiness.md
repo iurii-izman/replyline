@@ -27,9 +27,8 @@ pnpm verify:release-local
 3. `pnpm test:doc-links`
 4. `pnpm report:runtime-quality`
 5. `pnpm test:product-scenarios`
-6. `pnpm test:manual-closure-pack`
-7. `pnpm release:freeze:check`
-8. `pnpm report:release-readiness:strict`
+6. `pnpm release:freeze:check`
+7. `pnpm report:release-readiness:strict`
 
 Freeze semantics inside this lane:
 

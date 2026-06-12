@@ -48,8 +48,6 @@ docs/max-upgrade-*.md
 docs-cleanup-task.md
 CLAUDE.md
 infra/**
-!infra/replyline-ai-stack.override.yml
-!infra/replyline-ai-stack.pinned.example.yml
 postman/
 scratch/
 tests/api/postman/
@@ -66,7 +64,6 @@ interview-exports/
 .env.*
 !.env.keys.example
 !.env.keys
-!.env.docker.example
 scripts/runtime-probe-env.local.ps1
 *.pem
 *.key

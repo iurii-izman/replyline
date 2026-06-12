@@ -3,8 +3,6 @@
 ## Baseline required scenarios
 
 Source of truth: `docs/release-freeze-baseline.json`.
-Manual closure static assets are part of this baseline: `docs/manual-closure-pack.html` and
-`scripts/check-manual-closure-pack.mjs`.
 
 | Scenario                               | Path                                          | Expected outcome                                                       |
 | -------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |

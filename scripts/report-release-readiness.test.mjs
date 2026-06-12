@@ -132,14 +132,7 @@ function setupFixture({
     "ok\n",
     "utf8",
   );
-  writeFileSync(
-    join(root, "reports", "docker", "docker-stack-hardening-2026-05-21.md"),
-    "ok\n",
-    "utf8",
-  );
   writeFileSync(join(root, "docs", "note.md"), "placeholder\n", "utf8");
-  writeFileSync(join(root, "docs", "manual-closure-pack.html"), "<html></html>\n", "utf8");
-  writeFileSync(join(root, ".env.docker.example"), "OPENAI_API_KEY=change-me\n", "utf8");
 
   if (includeSecretLeak) {
     writeFileSync(

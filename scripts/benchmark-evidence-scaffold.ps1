@@ -104,7 +104,7 @@ $artifact = [ordered]@{
   honesty = [ordered]@{
     proves = @(
       "Identifies which local runtime artifacts back current benchmark discussion.",
-      "Captures timestamp/version context for alpha handoff notes."
+      "Captures timestamp/version context for beta handoff notes."
     )
     doesNotProve = @(
       "Cross-machine reproducibility.",

@@ -27,7 +27,6 @@ Replyline keeps runtime evidence local. The goal is to avoid "it probably works"
   `docs/core-pipeline-slo.json` when stage data is available.
 - `pnpm beta:handoff`
   creates one timestamped `reports/beta-handoff-*` folder that composes runtime evidence, manual smoke template, and benchmark scaffold references for machine-local handoff.
-  `pnpm alpha:handoff` remains a deprecated compatibility alias.
 
 Note:
 

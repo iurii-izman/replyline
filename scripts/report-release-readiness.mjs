@@ -38,8 +38,7 @@ const WEIGHTS = {
   securityAndPublicFootprint: 20,
   sonarReadiness: 15,
   releaseGatesAndFreeze: 20,
-  dockerOptionalStack: 5,
-  manualEvidenceGap: 5,
+  manualEvidenceGap: 10,
 };
 
 function readJson(path) {
@@ -249,16 +248,6 @@ function buildRiskSnapshot(state, blockers, warnings) {
         : "sonar residual report is stale (today file missing)",
   });
 
-  const dockerScore = state.dockerHardeningReport ? 75 : 60;
-  rows.push({
-    area: "Docker optional stack",
-    score: dockerScore,
-    status: "warn",
-    reason: state.dockerHardeningReport
-      ? "docker hardening evidence present, strict check remains external"
-      : "docker hardening report missing, strict check remains external",
-  });
-
   const freezeScore = state.freezeHasOutsideGuardrails ? 30 : state.freezePresent ? 100 : 50;
   rows.push({
     area: "Release freeze",
@@ -275,8 +264,7 @@ function buildRiskSnapshot(state, blockers, warnings) {
     area: "Manual evidence gap",
     score: 60,
     status: "warn",
-    reason:
-      "manual GUI/provider steps are formalized in structured attestation; external docker strict remains manual",
+    reason: "manual GUI/provider steps require structured external tester evidence",
   });
 
   const weightedTotal =
@@ -290,7 +278,6 @@ function buildRiskSnapshot(state, blockers, warnings) {
       WEIGHTS.securityAndPublicFootprint +
     rows.find((x) => x.area === "Sonar readiness").score * WEIGHTS.sonarReadiness +
     rows.find((x) => x.area === "Release freeze").score * WEIGHTS.releaseGatesAndFreeze +
-    rows.find((x) => x.area === "Docker optional stack").score * WEIGHTS.dockerOptionalStack +
     rows.find((x) => x.area === "Manual evidence gap").score * WEIGHTS.manualEvidenceGap;
 
   const overallScore = Math.round(weightedTotal / 100);
@@ -330,9 +317,6 @@ export function runReleaseReadiness(options = {}) {
   );
   const productScenarioToday = existsSync(
     join(root, "reports", "product-quality", `product-scenario-benchmark-${stamp}.md`),
-  );
-  const dockerHardeningReport = existsSync(
-    join(root, "reports", "docker", "docker-stack-hardening-2026-05-21.md"),
   );
   const hasReleaseArtifactBuild =
     releaseWorkflowText.includes("windows-artifact") &&
@@ -482,15 +466,12 @@ export function runReleaseReadiness(options = {}) {
   }
 
   warnings.push(
-    "docker:replyline:check:strict is external-state/manual and not part of strict local blocker.",
-  );
-  warnings.push(
     "Live GUI/provider evidence requires manual attestation rows in reports/manual/live-evidence-pack-YYYY-MM-DD.json.",
   );
 
   const secretLeakScan = scanReportSecretLeaks({ repoRoot: root });
   if (secretLeakScan.violations.length > 0) {
-    const msg = "Secret-like patterns detected in reports/docs/.env.docker.example.";
+    const msg = "Secret-like patterns detected in reports/docs.";
     blockers.push(msg);
     dependencySecurityBlockers.push(msg);
   }
@@ -499,17 +480,6 @@ export function runReleaseReadiness(options = {}) {
     const msg = "Tracked/working .env file detected in repository root; keep secrets local-only.";
     blockers.push(msg);
     dependencySecurityBlockers.push(msg);
-  }
-
-  const envDockerExample = readText(join(root, ".env.docker.example"));
-  if (envDockerExample) {
-    const suspiciousEnvValue =
-      /(?:OPENAI_API_KEY|DEEPGRAM_API_KEY|LANGFUSE_SECRET_KEY|POSTGRES_PASSWORD)\s*=\s*(?!\s*(?:\[redacted\]|change-me|placeholder|example|<value>|your[_-]|fake|local-id))/i;
-    if (suspiciousEnvValue.test(envDockerExample)) {
-      const msg = ".env.docker.example contains non-placeholder secret-looking values.";
-      blockers.push(msg);
-      dependencySecurityBlockers.push(msg);
-    }
   }
 
   const scriptRefValidation = validateScriptFileRefs(root, pkg, blockers);
@@ -526,7 +496,6 @@ export function runReleaseReadiness(options = {}) {
     secretLeakViolations: secretLeakScan.violations,
     sonarConfigPresent,
     sonarResidualToday,
-    dockerHardeningReport,
     freezePresent,
     freezeHasOutsideGuardrails,
     liveEvidencePackPass: liveEvidencePack.pass,
@@ -572,7 +541,6 @@ export function runReleaseReadiness(options = {}) {
     `- sonar residual report (${stamp}): ${sonarResidualToday ? "present" : "missing"}`,
     `- live evidence pack (${stamp}): ${liveEvidencePack.pass ? "present+structured" : "missing-required-automation"}`,
     `- release freeze report: ${freezePresent ? "present" : "missing"}`,
-    `- docker hardening report: ${dockerHardeningReport ? "present" : "missing"}`,
     `- release-on-tag windows artifact build path: ${hasReleaseArtifactBuild ? "present" : "missing"}`,
     `- release-on-tag internal unsigned labeling: ${hasUnsignedReleasePath ? "present" : "missing"}`,
     `- release-on-tag signed+verified path: ${hasSignedReleasePath ? "present" : "missing"}`,
@@ -622,7 +590,6 @@ export function runReleaseReadiness(options = {}) {
         requiredAutomatedMissing: liveEvidencePack.requiredAutomatedMissing,
       },
       freezeReportPresent: freezePresent,
-      dockerHardeningReport,
       releaseWorkflow: {
         path: releaseWorkflowPath,
         windowsArtifactBuildPath: hasReleaseArtifactBuild,

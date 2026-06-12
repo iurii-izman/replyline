@@ -18,6 +18,7 @@ The current release is a **source/developer prerelease** for Windows testers and
 
 - [Open the product page](https://iurii-izman.github.io/replyline/)
 - [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.1)
+- [Run the 15-minute beta test](BETA_TESTING.md)
 - [Ask a question or share feedback](https://github.com/iurii-izman/replyline/discussions)
 
 No unsigned artifact is presented as a public installer. Until an Authenticode-signed build
@@ -110,16 +111,8 @@ See:
 - [docs/runtime-bringup.md](docs/runtime-bringup.md)
 - [docs/runtime-evidence.md](docs/runtime-evidence.md)
 - [docs/runtime-quality-harness.md](docs/runtime-quality-harness.md)
-- [docs/docker-stack.md](docs/docker-stack.md)
 - [docs/known-limitations.md](docs/known-limitations.md)
 - [docs/README.md](docs/README.md)
-
-### Manual beta closure
-
-For manual beta seal and local QA, use:
-
-- [docs/manual-closure-pack.html](docs/manual-closure-pack.html)
-- [docs/manual-closure-pack.md](docs/manual-closure-pack.md)
 
 ## Security and Support
 

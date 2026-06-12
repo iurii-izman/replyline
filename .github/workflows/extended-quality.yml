@@ -48,10 +48,6 @@ jobs:
         id: verify_profile_extended
         continue-on-error: true
         run: pnpm verify:extended
-      - name: Optional API lane
-        id: optional_api
-        continue-on-error: true
-        run: pnpm test:optional:api
       - name: Optional web e2e lane
         id: optional_e2e_web
         continue-on-error: true
@@ -71,7 +67,6 @@ jobs:
           $failed = @()
           if ("${{ steps.verify_full.outcome }}" -ne "success") { $failed += "verify:full" }
           if ("${{ steps.verify_profile_extended.outcome }}" -ne "success") { $failed += "verify:profile:extended" }
-          if ("${{ steps.optional_api.outcome }}" -ne "success") { $failed += "test:optional:api" }
           if ("${{ steps.optional_e2e_web.outcome }}" -ne "success") { $failed += "test:optional:e2e:web" }
           if ("${{ steps.optional_e2e_desktop.outcome }}" -ne "success") { $failed += "test:optional:e2e:desktop" }
           if ("${{ steps.experimental_lane.outcome }}" -ne "success") { $failed += "test:experimental" }

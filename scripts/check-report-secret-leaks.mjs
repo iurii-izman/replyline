@@ -1,9 +1,9 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 
-const defaultScanRoots = ["reports/", "docs/", ".env.docker.example"];
+const defaultScanRoots = ["reports/", "docs/"];
 
 const secretRules = [
   { label: "OpenAI API key", regex: /\bsk-[A-Za-z0-9_-]{16,}\b/g },
@@ -73,16 +73,9 @@ function shouldSkipPathRule(relPath, label) {
   return false;
 }
 
-function isSensitiveAbsolutePath(relPath, line) {
+function isSensitiveAbsolutePath(_relPath, line) {
   if (!line.includes(":\\") && !line.includes("/Users/") && !line.includes("/home/")) return false;
   if (line.includes("C:\\Dev\\replyline")) return false;
-  if (
-    (relPath === "reports/docker/docker-stack-audit-2026-05-21.md" ||
-      relPath === "reports/docker/docker-stack-hardening-2026-05-21.md") &&
-    line.includes("ai-stack\\docker-compose.yml")
-  ) {
-    return false;
-  }
   if (line.includes("placeholder") || line.includes("example")) return false;
   return true;
 }
@@ -90,7 +83,9 @@ function isSensitiveAbsolutePath(relPath, line) {
 export function scanReportSecretLeaks(options = {}) {
   const repoRoot = options.repoRoot ?? process.cwd();
   const scanRoots = options.scanRoots ?? defaultScanRoots;
-  const trackedFiles = getTrackedFiles(repoRoot).filter((file) => matchesScanRoot(file, scanRoots));
+  const trackedFiles = getTrackedFiles(repoRoot).filter(
+    (file) => matchesScanRoot(file, scanRoots) && existsSync(resolve(repoRoot, file)),
+  );
   const files = trackedFiles.map((relPath) => resolve(repoRoot, relPath));
   const violations = [];
 
@@ -136,9 +131,7 @@ function runCli() {
     process.exit(1);
   }
 
-  console.log(
-    `[report-secret-leaks] OK: scanned ${filesScanned} files in reports/docs/.env.docker.example`,
-  );
+  console.log(`[report-secret-leaks] OK: scanned ${filesScanned} files in reports/docs`);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {

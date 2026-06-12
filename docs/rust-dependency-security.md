@@ -45,7 +45,7 @@ Then rerun `pnpm rust:deps`.
 - crates.io registry allowed, unknown registries/git sources warned
 - allowlist entries require reason + `REVIEW_DATE` and are revisited on dependency refresh
 
-This avoids overfitting early-alpha policy while still flagging high-signal supply-chain issues.
+This avoids overfitting dependency policy while still flagging high-signal supply-chain issues.
 
 ## Current warning posture
 
@@ -64,7 +64,7 @@ Observed in current `cargo deny` output:
 Decision:
 
 - keep current stance as `warn` for duplicates (do not fail release gate on these warnings now)
-- avoid forced pin/unify attempts that can destabilize Tauri transitives in alpha
+- avoid forced pin/unify attempts that can destabilize Tauri transitives during beta
 - treat this as known technical debt, not as ignored risk
 
 Why:

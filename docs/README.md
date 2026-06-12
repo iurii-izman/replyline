@@ -1,92 +1,50 @@
-# Replyline Docs
+# Replyline Documentation
 
-Карта документации Replyline для текущей stable beta.
+Документация разделена по задачам. Для первого знакомства начните с
+[`README.md`](../README.md), для тестирования с
+[`BETA_TESTING.md`](../BETA_TESTING.md).
 
-## 0) Internal tester entry point
+## Product And Setup
 
-- [internal-beta-tester-kit.md](internal-beta-tester-kit.md) - основной tester runbook (setup -> scenarios -> evidence -> feedback -> stop conditions).
-- [tester-brief.md](tester-brief.md) - короткий вход для tester wave.
-- [test-feedback-template.md](test-feedback-template.md) - обязательный structured feedback шаблон.
-- Internal beta seal command before sending tester instructions: `pnpm beta:seal` (report: `reports/release/internal-beta-seal-YYYY-MM-DD.md`).
-
-## 1) Canonical shipped-beta docs (primary truth)
-
-- [beta-readiness.md](beta-readiness.md)
-- [release-readiness.md](release-readiness.md)
-- [release-local-readiness.md](release-local-readiness.md)
-- [interview-mode.md](interview-mode.md)
-- [candidate-pack.md](candidate-pack.md)
-- [model-ladder.md](model-ladder.md)
-- [interview-quality.md](interview-quality.md)
-- [privacy-and-trust.md](privacy-and-trust.md)
 - [known-limitations.md](known-limitations.md)
-- [verification-lanes.md](verification-lanes.md)
-
-## 2) Runtime evidence and operations docs (machine/operator scope)
-
-- [runtime-bringup.md](runtime-bringup.md) - operator runbook for real provider bring-up on one workstation.
-- [runtime-probe-credentials.md](runtime-probe-credentials.md) - local credential setup for runtime probes.
-- [runtime-evidence.md](runtime-evidence.md) - evidence model and claim labeling (`measured` / `target` / `pending verification`).
-- [runtime-quality-harness.md](runtime-quality-harness.md) - fixture/CI quality harness; not live-provider proof.
-- [runtime-live-qa.md](runtime-live-qa.md) - manual live GUI/runtime QA.
-- [live-runtime-matrix.md](live-runtime-matrix.md) - cross-machine + cross-call-app operator matrix and JSON row template.
-- [smoke-checks.md](smoke-checks.md) - smoke and pre-handoff command map.
-- Live evidence pack report command: `pnpm report:live-evidence-pack` -> `reports/manual/live-evidence-pack-YYYY-MM-DD.md`.
-
-## 3) Release governance and policy docs
-
-- [runtime-decisions.md](runtime-decisions.md)
-- [benchmark-policy.md](benchmark-policy.md)
-- [rust-dependency-security.md](rust-dependency-security.md)
-- [script-lifecycle-matrix.md](script-lifecycle-matrix.md)
-- [release-freeze-matrix.md](release-freeze-matrix.md)
-- [release-freeze-baseline.json](release-freeze-baseline.json)
-
-Freeze semantics shorthand:
-- advisory freeze visibility: `pnpm release:freeze:check`
-- blocking freeze gate: `pnpm release:freeze:check:strict`
-
-## 4) Product contracts and trust docs
-
+- [privacy-and-trust.md](privacy-and-trust.md)
 - [third-party-providers.md](third-party-providers.md)
-- [prompt-contract-lane.md](prompt-contract-lane.md)
-- [interview-golden-dataset-v1.md](interview-golden-dataset-v1.md)
-- [copy-rules.md](copy-rules.md)
 - [settings-reference.md](settings-reference.md)
 - [troubleshooting.md](troubleshooting.md)
+- [interview-mode.md](interview-mode.md)
+- [candidate-pack.md](candidate-pack.md)
 
-## 5) Architecture and ADRs
+## Testing
 
-- [adr/0001-interview-card-engine.md](adr/0001-interview-card-engine.md)
+- [test-feedback-template.md](test-feedback-template.md)
+- [runtime-bringup.md](runtime-bringup.md)
+- [runtime-live-qa.md](runtime-live-qa.md)
+- [live-runtime-matrix.md](live-runtime-matrix.md)
+- [manual-windows-ux-qa.md](manual-windows-ux-qa.md)
+- [manual-visual-qa.md](manual-visual-qa.md)
+- [verification-lanes.md](verification-lanes.md)
+- [testing-stack-setup.md](testing-stack-setup.md)
 
-## 6) Internal operations and templates (active)
+Runtime evidence is machine-scoped. It must not be presented as universal
+cross-machine or cross-provider proof.
 
-Internal operator notes and draft execution plans are local-only and intentionally not part of the public GitHub footprint.
-- [postman-audit-execution-prompts.md](postman-audit-execution-prompts.md)
-- [beta-feedback-loop.md](beta-feedback-loop.md)
-- [beta-ops-diagnostics.md](beta-ops-diagnostics.md)
+## Engineering Contracts
 
-## 7) Historical docs (kept for traceability, not current runbook)
+- [architecture.md](architecture.md)
+- [copy-rules.md](copy-rules.md)
+- [prompt-contract-lane.md](prompt-contract-lane.md)
+- [runtime-evidence.md](runtime-evidence.md)
+- [runtime-quality-harness.md](runtime-quality-harness.md)
+- [release-readiness.md](release-readiness.md)
+- [release-freeze-matrix.md](release-freeze-matrix.md)
+- [script-lifecycle-matrix.md](script-lifecycle-matrix.md)
+- [rust-dependency-security.md](rust-dependency-security.md)
 
-- [internal-alpha-checklist.md](internal-alpha-checklist.md) - historical internal-alpha checklist.
-- [internal-alpha-handoff-note-template.md](internal-alpha-handoff-note-template.md) - historical alpha handoff template.
-- [internal-alpha-log.md](internal-alpha-log.md) - historical alpha execution log.
+## Release
 
-## 8) Future-track docs (not shipped behavior in current stable beta)
+- [release-local-readiness.md](release-local-readiness.md)
+- [release-incident-classification.md](release-incident-classification.md)
+- [releases/v0.2.0-beta.1.md](releases/v0.2.0-beta.1.md)
 
-- [memory-layer.md](memory-layer.md) - future layer, not core shipped flow.
-- [advanced-mode-governance.md](advanced-mode-governance.md) - ops-only future/diagnostic governance.
-- [i18n-beta-prep.md](i18n-beta-prep.md) - future multilingual prep.
-- [extension-points.md](extension-points.md) - extension reference, not default shipped scope.
-
-## 9) Manual beta closure pack
-
-- [manual-closure-pack.html](manual-closure-pack.html)
-- [manual-closure-pack.md](manual-closure-pack.md)
-
-## Portfolio decisions (Block 4)
-
-- Current shipped behavior claims must be sourced from sections `1` and `3` above.
-- Runtime docs from section `2` are machine/operator evidence docs and must not be used as universal product claims.
-- Internal alpha docs from section `7` are historical traceability only.
-- Future-track docs from section `8` are design/governance references and are not shipped stable-beta behavior.
+Generated reports and sensitive runtime evidence stay under ignored `reports/`
+paths and are not product documentation.

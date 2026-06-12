@@ -5,7 +5,6 @@
 
 ## A
 
-- **alpha:preflight** — composite pnpm script гейтящий internal alpha handoff (`pnpm alpha:preflight`). Запускает smoke + runtime preflight + supply-chain checks.
 - **AGENTS.md** — root-уровневый файл с repo-wide policy precedence для AI-инструментов. Имеет приоритет выше любых tool-specific adapters.
 
 ## C
@@ -22,7 +21,7 @@
 
 ## E
 
-- **evidence bundle** — local artifact bundle (`pnpm evidence:bundle`) с runtime proof, durations, log snippets. Используется для alpha handoff.
+- **evidence bundle** — local artifact bundle (`pnpm evidence:bundle`) с runtime proof, durations и log snippets для beta handoff.
 - **evidence discipline** — дисциплина: claim не поднимается до `measured` без runtime artifact в `reports/runtime/`.
 
 ## F
@@ -35,7 +34,6 @@
 
 ## H
 
-- **handoff note** — machine-local README для передачи alpha-прогона между machines или people. Шаблон — [internal-alpha-handoff-note-template.md](internal-alpha-handoff-note-template.md).
 - **hotkey-gated** — capture только во время удержания глобального hotkey. Никакого автоматического background monitoring.
 
 ## L
@@ -46,7 +44,6 @@
 ## M
 
 - **measured** — claim level: подтверждён runtime artifact, не теорией. Высший уровень доверия в [benchmark-policy.md](benchmark-policy.md).
-- **memory layer** — отдельный future track для долгосрочной памяти (spaces, facts, commitments, terms). Не shipped и не compiled в текущем stable-beta runtime. Не часть текущего user-facing продукта. См. [memory-layer.md](memory-layer.md).
 - **mock lane** — UI-тесты с stubbed providers, без сети. Быстрый, deterministic, не доказывает runtime поведение.
 
 ## P
@@ -59,7 +56,7 @@
 
 - **RAM-only** — никакого долгосрочного хранения transcript/audio. Всё живёт в памяти процесса до закрытия окна или нового capture.
 - **release lane** — runtime artifact в `reports/runtime/`, источник `measured` claims. Single source of truth для performance numbers.
-- **Replyline** — название продукта. Обоснование выбора и триггеры пересмотра — в [naming-decision-brief.md](naming-decision-brief.md).
+- **Replyline** — Windows-first local desktop assistant for preparing the next response in difficult work conversations and interviews.
 - **runtime probe** — отдельный binary с per-stage timing (capture → STT → LLM → render). Запускается через `pnpm probe:runtime`.
 
 ## S
