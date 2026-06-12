@@ -105,8 +105,39 @@ jobs:
       - name: Setup Rust stable
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
+      - name: Cache Cargo registry and build
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Cache pnpm store
+        uses: actions/cache@v5
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install cargo-deny and cargo-audit
+        shell: pwsh
+        run: |
+          if (-not (Get-Command cargo-deny -ErrorAction SilentlyContinue)) {
+            cargo install --locked cargo-deny
+          }
+          if (-not (Get-Command cargo-audit -ErrorAction SilentlyContinue)) {
+            cargo install --locked cargo-audit
+          }
+          cargo deny --version
+          cargo audit --version
 
       - name: Prebuild verification gate
         run: pnpm verify:fast
