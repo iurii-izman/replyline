@@ -48,5 +48,5 @@ assignees: []
 
 ## Scope check
 
-- Does this block internal stable beta testing? (yes/no):
+- Does this block current beta testing? (yes/no):
 - Does this issue push toward transcript/history/team workflow? (yes/no + short note):

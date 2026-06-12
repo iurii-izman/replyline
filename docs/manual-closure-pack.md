@@ -95,8 +95,8 @@ start docs/manual-closure-pack.html
 
 ## Release artifact truth rule
 
-- `release-on-tag.yml` now builds and publishes Windows release artifacts.
-- Unsigned artifacts are acceptable only for internal trusted beta when explicitly approved.
+- `release-on-tag.yml` builds Windows release artifacts and SHA-256 checksums.
+- Unsigned artifacts remain internal workflow artifacts and are not attached to public releases.
 - RC/public beta requires signed installer evidence (valid Authenticode signature + release gates).
 - `pnpm beta:seal` не требует signed binary для internal beta, но фиксирует это как warning в отчёте.
 

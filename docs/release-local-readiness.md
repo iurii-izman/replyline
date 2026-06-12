@@ -32,6 +32,7 @@ pnpm verify:release-local
 8. `pnpm report:release-readiness:strict`
 
 Freeze semantics inside this lane:
+
 - `pnpm release:freeze:check` is advisory visibility output.
 - blocking decision is enforced by `pnpm report:release-readiness:strict`.
 
@@ -44,6 +45,7 @@ Freeze semantics inside this lane:
 ## Strict readiness report model
 
 `report:release-readiness:strict` отделяет домены:
+
 - static gates
 - dependency/security gates
 - runtime evidence artifacts
@@ -56,10 +58,10 @@ Strict mode exits with `1` when blockers exist.
 
 - CI blocking quality lane: `.github/workflows/ci.yml`.
 - Extended non-blocking signal: `.github/workflows/extended-quality.yml`.
-- Tag release workflow (`.github/workflows/release-on-tag.yml`) публикует release notes only и не строит installers.
+- Tag release workflow (`.github/workflows/release-on-tag.yml`) публикует source release notes, проверяет Windows package и оставляет unsigned package внутренним workflow artifact.
 
 ## Packaging lane boundary
 
 - Packaging lane for Windows artifacts exists as `.github/workflows/windows-packaging-manual.yml` and runs only by manual `workflow_dispatch`.
-- Until explicit approval, packaging lane must stay non-publishing: build + artifact upload for review only.
+- Until signing and installer evidence pass, unsigned packaging lanes stay non-publishing: build + workflow artifact upload for review only.
 - Current local readiness (`verify:release-local`) validates quality and release governance, but does not prove installer availability.

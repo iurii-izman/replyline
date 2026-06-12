@@ -11,6 +11,8 @@
 - Bugs: open a **Bug report** issue template
 - Improvements: open a **Feature request** issue template
 - Beta handoff/release readiness: open a **Beta handoff release** issue template
+- Setup and usage questions: use [GitHub Discussions Q&A](https://github.com/iurii-izman/replyline/discussions/categories/q-a)
+- Product feedback and ideas: use [GitHub Discussions Ideas](https://github.com/iurii-izman/replyline/discussions/categories/ideas)
 
 ## What Helps Triage
 

@@ -1,6 +1,6 @@
 # Script Lifecycle Matrix
 
-Единая lifecycle-классификация команд `package.json` для internal stable beta.
+Единая lifecycle-классификация команд `package.json` для текущего beta cycle.
 
 ## Class Definitions
 

@@ -1,7 +1,7 @@
 {
   "name": "replyline",
-  "version": "0.1.0",
-  "description": "Replyline — Windows-first tray app для сложных рабочих разговоров (internal stable beta, RU-first UX).",
+  "version": "0.2.0-beta.1",
+  "description": "Replyline — Windows-first tray app для сложных рабочих разговоров (public source beta, RU-first UX).",
   "packageManager": "pnpm@9.15.9",
   "type": "module",
   "pnpm": {

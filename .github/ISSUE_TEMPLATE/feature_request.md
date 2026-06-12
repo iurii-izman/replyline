@@ -25,7 +25,7 @@ What failed in real usage without this?
 
 Mark this as:
 
-- [ ] out-of-scope for current internal stable beta
+- [ ] out-of-scope for current public source beta
 
 ## Minimal acceptable shape
 

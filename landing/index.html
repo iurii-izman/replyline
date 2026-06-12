@@ -3,178 +3,773 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#173f38" />
-    <title>Replyline — Public beta posture</title>
+    <meta name="theme-color" content="#102e2a" />
+    <meta
+      name="description"
+      content="Replyline помогает сформулировать следующий ответ в сложном рабочем разговоре. Windows-first, Russian-first, public source beta."
+    />
+    <link rel="canonical" href="https://iurii-izman.github.io/replyline/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Replyline public beta" />
+    <meta
+      property="og:description"
+      content="Короткий фрагмент разговора превращается в одну практичную карточку: gist, say_now, next_move."
+    />
+    <meta property="og:url" content="https://iurii-izman.github.io/replyline/" />
+    <meta
+      property="og:image"
+      content="https://iurii-izman.github.io/replyline/social-preview.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>Replyline | Следующий ответ в сложном разговоре</title>
     <style>
       :root {
-        color: #162c29;
-        background: #f4efe7;
-        font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+        color-scheme: light;
+        --ink: #102e2a;
+        --ink-soft: #405d57;
+        --paper: #f5efe5;
+        --surface: #fffdf8;
+        --surface-strong: #ffffff;
+        --line: rgba(16, 46, 42, 0.14);
+        --brand: #0c6156;
+        --brand-dark: #084b43;
+        --mint: #d8ebe4;
+        --peach: #f2d8bc;
+        --shadow: 0 24px 70px rgba(28, 52, 47, 0.12);
+        font-family:
+          "Segoe UI Variable Text",
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html {
+        scroll-behavior: smooth;
+      }
+
       body {
         margin: 0;
-        line-height: 1.45;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 5%, rgba(242, 216, 188, 0.85), transparent 34rem),
+          radial-gradient(circle at 88% 24%, rgba(216, 235, 228, 0.9), transparent 30rem),
+          var(--paper);
+        line-height: 1.55;
       }
 
-      .wrap {
-        max-width: 860px;
+      a {
+        color: inherit;
+      }
+
+      .skip-link {
+        position: absolute;
+        left: 1rem;
+        top: -4rem;
+        z-index: 10;
+        padding: 0.75rem 1rem;
+        color: white;
+        background: var(--brand-dark);
+        border-radius: 0.6rem;
+      }
+
+      .skip-link:focus {
+        top: 1rem;
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 32px));
         margin: 0 auto;
-        padding: 28px 16px 44px;
       }
 
-      .card {
-        background: #fffdfa;
-        border: 1px solid rgba(22, 44, 41, 0.12);
-        border-radius: 16px;
-        padding: 18px;
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.4rem 0;
       }
 
-      .alpha-badge {
-        display: inline-block;
-        margin-bottom: 10px;
-        padding: 6px 10px;
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        text-decoration: none;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 2.25rem;
+        height: 2.25rem;
+        place-items: center;
+        color: white;
+        background: var(--brand);
+        border-radius: 0.75rem 0.75rem 0.75rem 0.2rem;
+        box-shadow: 0 8px 24px rgba(12, 97, 86, 0.24);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.92rem;
+      }
+
+      .nav a {
+        color: var(--ink-soft);
+        text-decoration: none;
+      }
+
+      .nav a:hover,
+      .nav a:focus-visible {
+        color: var(--brand);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.03fr) minmax(360px, 0.97fr);
+        gap: clamp(2rem, 6vw, 5rem);
+        align-items: center;
+        min-height: 680px;
+        padding: 4rem 0 6rem;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0 0 1.25rem;
+        padding: 0.45rem 0.75rem;
+        color: var(--brand-dark);
+        background: rgba(255, 255, 255, 0.62);
+        border: 1px solid var(--line);
         border-radius: 999px;
-        font-size: 0.78rem;
-        background: rgba(23, 63, 56, 0.1);
-        color: #173f38;
+        font-size: 0.82rem;
+        font-weight: 700;
+        backdrop-filter: blur(12px);
+      }
+
+      .eyebrow::before {
+        width: 0.55rem;
+        height: 0.55rem;
+        content: "";
+        background: #2f9a73;
+        border-radius: 50%;
+        box-shadow: 0 0 0 0.28rem rgba(47, 154, 115, 0.14);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
       }
 
       h1 {
-        margin: 0 0 10px;
-        font-size: clamp(1.35rem, 3vw, 1.9rem);
+        max-width: 13ch;
+        margin-bottom: 1.35rem;
+        font-size: clamp(3.2rem, 7vw, 6.2rem);
+        line-height: 0.96;
+        letter-spacing: -0.065em;
       }
 
-      .subhead {
-        margin: 0 0 16px;
-        color: rgba(22, 44, 41, 0.86);
+      .lead {
+        max-width: 650px;
+        margin-bottom: 1.75rem;
+        color: var(--ink-soft);
+        font-size: clamp(1.08rem, 2vw, 1.3rem);
       }
 
-      .section {
-        margin-top: 16px;
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.35rem;
       }
 
-      .section h2 {
-        margin: 0 0 8px;
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3.1rem;
+        padding: 0.75rem 1.15rem;
+        border: 1px solid var(--brand);
+        border-radius: 0.8rem;
+        font-weight: 750;
+        text-decoration: none;
+        transition:
+          transform 160ms ease,
+          box-shadow 160ms ease,
+          background 160ms ease;
+      }
+
+      .button:hover,
+      .button:focus-visible {
+        transform: translateY(-2px);
+      }
+
+      .button.primary {
+        color: white;
+        background: var(--brand);
+        box-shadow: 0 12px 28px rgba(12, 97, 86, 0.2);
+      }
+
+      .button.primary:hover,
+      .button.primary:focus-visible {
+        background: var(--brand-dark);
+      }
+
+      .button.secondary {
+        color: var(--brand-dark);
+        background: rgba(255, 255, 255, 0.52);
+      }
+
+      .release-note {
+        max-width: 650px;
+        color: var(--ink-soft);
+        font-size: 0.9rem;
+      }
+
+      .product-frame {
+        position: relative;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        border-radius: 1.7rem;
+        box-shadow: var(--shadow);
+        transform: rotate(1deg);
+        backdrop-filter: blur(18px);
+      }
+
+      .product-frame::before,
+      .product-frame::after {
+        position: absolute;
+        z-index: -1;
+        width: 10rem;
+        height: 10rem;
+        content: "";
+        border-radius: 50%;
+        filter: blur(4px);
+      }
+
+      .product-frame::before {
+        right: -3rem;
+        top: -3rem;
+        background: rgba(216, 235, 228, 0.85);
+      }
+
+      .product-frame::after {
+        left: -2rem;
+        bottom: -3rem;
+        background: rgba(242, 216, 188, 0.7);
+      }
+
+      .window {
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 1.2rem;
+      }
+
+      .window-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.75rem 1rem;
+        background: #f0e6d7;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .window-dot {
+        width: 0.55rem;
+        height: 0.55rem;
+        background: rgba(16, 46, 42, 0.28);
+        border-radius: 50%;
+      }
+
+      .window-title {
+        margin-left: auto;
+        color: var(--ink-soft);
+        font-size: 0.75rem;
+      }
+
+      .answer-card {
+        padding: clamp(1.2rem, 3vw, 2rem);
+      }
+
+      .card-state {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.4rem;
+      }
+
+      .card-state strong {
         font-size: 1rem;
       }
 
-      .section p {
-        margin: 0 0 8px;
+      .hotkey {
+        padding: 0.35rem 0.55rem;
+        color: var(--brand-dark);
+        background: var(--mint);
+        border: 1px solid rgba(12, 97, 86, 0.16);
+        border-radius: 0.55rem;
+        font-family: "Cascadia Code", Consolas, monospace;
+        font-size: 0.72rem;
       }
 
-      ul {
+      .answer-section {
+        padding: 1rem 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .answer-section:first-of-type {
+        border-top: 0;
+      }
+
+      .answer-label {
+        display: block;
+        margin-bottom: 0.4rem;
+        color: var(--brand);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .answer-section p {
+        margin-bottom: 0;
+      }
+
+      .say-now {
+        font-size: 1.25rem;
+        font-weight: 720;
+        line-height: 1.35;
+      }
+
+      .section-shell {
+        padding: 6rem 0;
+      }
+
+      .section-heading {
+        max-width: 760px;
+        margin-bottom: 2rem;
+      }
+
+      .section-heading h2 {
+        margin-bottom: 0.8rem;
+        font-size: clamp(2rem, 4vw, 3.5rem);
+        line-height: 1.02;
+        letter-spacing: -0.045em;
+      }
+
+      .section-heading p {
+        color: var(--ink-soft);
+        font-size: 1.05rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .info-card {
+        min-height: 220px;
+        padding: 1.4rem;
+        background: rgba(255, 253, 248, 0.78);
+        border: 1px solid var(--line);
+        border-radius: 1.1rem;
+      }
+
+      .info-card .number {
+        display: block;
+        margin-bottom: 2.5rem;
+        color: var(--brand);
+        font-family: "Cascadia Code", Consolas, monospace;
+        font-size: 0.78rem;
+      }
+
+      .info-card h3 {
+        margin-bottom: 0.55rem;
+        font-size: 1.15rem;
+      }
+
+      .info-card p {
+        margin-bottom: 0;
+        color: var(--ink-soft);
+      }
+
+      .trust-panel {
+        display: grid;
+        grid-template-columns: 0.8fr 1.2fr;
+        gap: 2rem;
+        padding: clamp(1.5rem, 5vw, 3.5rem);
+        color: white;
+        background: var(--ink);
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow);
+      }
+
+      .trust-panel h2 {
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+
+      .trust-list {
+        display: grid;
+        gap: 0.85rem;
         margin: 0;
-        padding-left: 18px;
+        padding: 0;
+        list-style: none;
       }
 
-      li + li {
-        margin-top: 4px;
+      .trust-list li {
+        padding: 1rem 1rem 1rem 2.8rem;
+        background: rgba(255, 255, 255, 0.075);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.9rem;
       }
 
-      .cta {
-        margin-top: 18px;
-        display: inline-block;
-        text-decoration: none;
-        border-radius: 10px;
-        padding: 10px 14px;
-        background: #173f38;
-        color: #f7f3ee;
-        border: 1px solid #173f38;
+      .trust-list li::before {
+        float: left;
+        margin-left: -1.7rem;
+        color: #8ed0b7;
+        content: "✓";
+        font-weight: 900;
       }
 
-      .note {
-        margin-top: 12px;
-        font-size: 0.9rem;
-        color: rgba(22, 44, 41, 0.8);
+      .launch {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
       }
 
-      @media (max-width: 640px) {
-        .wrap {
-          padding-top: 18px;
+      .launch-card {
+        padding: clamp(1.4rem, 4vw, 2.5rem);
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: 1.2rem;
+      }
+
+      .launch-card h3 {
+        font-size: 1.45rem;
+      }
+
+      .launch-card p,
+      .launch-card li {
+        color: var(--ink-soft);
+      }
+
+      .launch-card code {
+        color: var(--brand-dark);
+        font-family: "Cascadia Code", Consolas, monospace;
+      }
+
+      .text-link {
+        color: var(--brand);
+        font-weight: 750;
+        text-underline-offset: 0.2rem;
+      }
+
+      .site-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 2.5rem 0 3rem;
+        color: var(--ink-soft);
+        border-top: 1px solid var(--line);
+        font-size: 0.88rem;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      @media (max-width: 880px) {
+        .hero {
+          grid-template-columns: 1fr;
+          min-height: auto;
+          padding-top: 3rem;
+        }
+
+        h1 {
+          max-width: 11ch;
+        }
+
+        .product-frame {
+          transform: none;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .info-card {
+          min-height: 0;
+        }
+
+        .info-card .number {
+          margin-bottom: 1rem;
+        }
+
+        .trust-panel,
+        .launch {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .nav a:not(.nav-primary) {
+          display: none;
+        }
+
+        .hero {
+          padding-bottom: 4rem;
+        }
+
+        h1 {
+          font-size: clamp(3rem, 17vw, 4.4rem);
+        }
+
+        .card-state {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .section-shell {
+          padding: 4rem 0;
+        }
+
+        .site-footer {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        .button {
+          transition: none;
         }
       }
     </style>
   </head>
   <body>
-    <main class="wrap">
-      <article class="card">
-        <div class="alpha-badge">Public beta posture · Windows-first · Russian-first</div>
-        <h1>Когда ответить трудно, Replyline даёт следующий ход.</h1>
-        <p class="subhead">
-          Tray-приложение для сложных рабочих разговоров: одна горячая клавиша, короткий фрагмент,
-          одна карточка `gist / say_now / next_move`.
-        </p>
+    <a class="skip-link" href="#main">К содержанию</a>
+    <header class="site-header page">
+      <a class="brand" href="#top" aria-label="Replyline, начало страницы">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        <span>Replyline</span>
+      </a>
+      <nav class="nav" aria-label="Основная навигация">
+        <a href="#how">Как работает</a>
+        <a href="#trust">Trust</a>
+        <a href="#try">Попробовать</a>
+        <a class="nav-primary" href="https://github.com/iurii-izman/replyline">GitHub</a>
+      </nav>
+    </header>
 
-        <section class="section">
-          <h2>Что это</h2>
-          <ul>
-            <li>Помощь в моменте, а не пост-разбор звонка.</li>
-            <li>Захват только пока удерживается hotkey.</li>
-            <li>Фокус на коротком ответе, который можно произнести вслух.</li>
-          </ul>
-        </section>
+    <main id="main">
+      <section class="hero page" id="top">
+        <div>
+          <p class="eyebrow">v0.2.0-beta.1 · public source beta</p>
+          <h1>Найдите следующий ответ.</h1>
+          <p class="lead">
+            Replyline помогает в сложном рабочем разговоре: вы удерживаете hotkey во время короткого
+            фрагмента, а затем получаете одну карточку с сутью, фразой и следующим шагом.
+          </p>
+          <div class="actions">
+            <a
+              class="button primary"
+              href="https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.1"
+            >
+              Открыть beta release
+            </a>
+            <a class="button secondary" href="https://github.com/iurii-izman/replyline">
+              Посмотреть исходники
+            </a>
+          </div>
+          <p class="release-note">
+            Сейчас это source/developer beta. Публичного unsigned installer нет: build from source
+            остаётся честным и проверяемым путём до появления Authenticode-signed release.
+          </p>
+        </div>
 
-        <section class="section">
-          <h2>Что это не есть</h2>
-          <ul>
-            <li>Не meeting assistant.</li>
-            <li>Не transcript tool.</li>
-            <li>Не speaking coach.</li>
-          </ul>
-        </section>
+        <div class="product-frame" aria-label="Пример карточки Replyline">
+          <div class="window">
+            <div class="window-bar">
+              <span class="window-dot"></span>
+              <span class="window-dot"></span>
+              <span class="window-dot"></span>
+              <span class="window-title">Replyline · пример карточки</span>
+            </div>
+            <div class="answer-card">
+              <div class="card-state">
+                <strong>Ответ готов</strong>
+                <span class="hotkey">Ctrl+Alt+Space</span>
+              </div>
+              <div class="answer-section">
+                <span class="answer-label">Gist</span>
+                <p>Собеседник просит подтвердить новый срок и ответственного.</p>
+              </div>
+              <div class="answer-section">
+                <span class="answer-label">Say now</span>
+                <p class="say-now">
+                  «Давайте зафиксируем пятницу как новый срок, а я сегодня подтвержу владельца
+                  задачи.»
+                </p>
+              </div>
+              <div class="answer-section">
+                <span class="answer-label">Next move</span>
+                <p>Отправить короткое подтверждение со сроком и owner после разговора.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <section class="section">
-          <h2>Trust</h2>
+      <section class="section-shell page" id="how">
+        <div class="section-heading">
+          <h2>Один bounded flow вместо ещё одного dashboard.</h2>
           <p>
-            Live-фрагменты обрабатываются в RAM и по умолчанию не сохраняются на диск. После
-            отпускания hotkey фрагмент отправляется во внешние STT/LLM провайдеры, которые вы
-            настраиваете сами. Пользователь отвечает за соблюдение правил платформ, политики
-            работодателя и законов о записи.
+            Replyline не записывает весь звонок и не строит историю встреч. Он помогает пройти один
+            конкретный сложный момент.
           </p>
-          <p class="note">
-            Поведение между разными машинами и всеми call-приложениями остаётся pending
-            verification.
+          <p>
+            Это не meeting assistant, не transcript tool и не speaking coach. В текущем beta scope
+            нет скрытого overlay, полной истории разговоров или командных workflows.
           </p>
-        </section>
+        </div>
+        <div class="grid">
+          <article class="info-card">
+            <span class="number">01 / CAPTURE</span>
+            <h3>Удерживайте hotkey</h3>
+            <p>Захватывается короткий фрагмент системного аудио, пока клавиша нажата.</p>
+          </article>
+          <article class="info-card">
+            <span class="number">02 / ANALYZE</span>
+            <h3>STT и LLM по вашей конфигурации</h3>
+            <p>Deepgram и OpenAI-compatible endpoint настраиваются пользователем.</p>
+          </article>
+          <article class="info-card">
+            <span class="number">03 / RESPOND</span>
+            <h3>Одна компактная карточка</h3>
+            <p>
+              <code>gist / say_now / next_move</code> без transcript UI и перегруженного workflow.
+            </p>
+          </article>
+        </div>
+      </section>
 
-        <a
-          class="cta"
-          href="https://github.com/iurii-izman/replyline"
-          target="_blank"
-          rel="noopener"
-        >
-          GitHub (исходники)
-        </a>
-
-        <section class="section">
-          <h2>Быстрый старт</h2>
-          <ol>
-            <li>
-              Клонируйте репозиторий:
-              <code>git clone git@github.com:iurii-izman/replyline.git</code>
-            </li>
-            <li>Установите зависимости: <code>pnpm install</code></li>
-            <li>Запустите dev-режим: <code>pnpm tauri dev</code></li>
-            <li>Откройте настройки — введите ключи Deepgram и LLM-шлюза</li>
-            <li>Удерживайте горячую клавишу во время разговора</li>
-          </ol>
-        </section>
-
-        <section class="section">
-          <h2>Системные требования</h2>
-          <ul>
-            <li>Windows 10/11 (основная платформа)</li>
-            <li>Node.js 20+, pnpm 9+, Rust toolchain (stable)</li>
-            <li>Ключ Deepgram API (STT)</li>
-            <li>Доступ к OpenAI-совместимому LLM API (OpenRouter, локальный прокси и т.д.)</li>
+      <section class="section-shell page" id="trust">
+        <div class="trust-panel">
+          <div>
+            <p class="eyebrow">Trust boundaries</p>
+            <h2>Без скрытых обещаний.</h2>
+            <p>
+              Поведение продукта описывается через конкретный data flow, а не через расплывчатое
+              «полностью приватно».
+            </p>
+          </div>
+          <ul class="trust-list">
+            <li>API keys хранятся в Windows Credential Manager.</li>
+            <li>Capture не сохраняется на диск по умолчанию.</li>
+            <li>Настроенные STT/LLM провайдеры получают необходимые audio/text данные.</li>
+            <li>Evidence и report artifacts создаются только в явных диагностических flows.</li>
+            <li>Это видимое desktop-приложение без скрытого режима или обхода контроля.</li>
           </ul>
-        </section>
-      </article>
+        </div>
+      </section>
+
+      <section class="section-shell page" id="try">
+        <div class="section-heading">
+          <h2>Для тестеров и contributors.</h2>
+          <p>
+            Самый полезный вклад сейчас: воспроизводимые Windows-наблюдения, понятные setup notes и
+            небольшие изменения с проверками.
+          </p>
+        </div>
+        <div class="launch">
+          <article class="launch-card">
+            <h3>Запустить из source</h3>
+            <ol>
+              <li><code>git clone https://github.com/iurii-izman/replyline.git</code></li>
+              <li><code>git checkout v0.2.0-beta.1</code></li>
+              <li><code>pnpm install --frozen-lockfile</code></li>
+              <li><code>pnpm tauri dev</code></li>
+            </ol>
+            <p>
+              Нужны Windows 10/11, Node.js 20+, pnpm 9, Rust stable, Deepgram key и
+              OpenAI-compatible LLM endpoint.
+            </p>
+            <a
+              class="text-link"
+              href="https://github.com/iurii-izman/replyline/blob/main/docs/runtime-bringup.md"
+            >
+              Runtime setup guide
+            </a>
+          </article>
+          <article class="launch-card">
+            <h3>Помочь проекту</h3>
+            <p>
+              Не публикуйте API keys, raw transcripts, provider responses или Candidate Pack values.
+              Используйте redacted artifacts и минимальный reproduction.
+            </p>
+            <p>
+              <a
+                class="text-link"
+                href="https://github.com/iurii-izman/replyline/discussions/categories/q-a"
+                >Задать вопрос</a
+              >
+              ·
+              <a
+                class="text-link"
+                href="https://github.com/iurii-izman/replyline/discussions/categories/ideas"
+                >Обсудить идею</a
+              >
+              ·
+              <a class="text-link" href="https://github.com/iurii-izman/replyline/issues/new/choose"
+                >Сообщить о проблеме</a
+              >
+            </p>
+            <a
+              class="text-link"
+              href="https://github.com/iurii-izman/replyline/blob/main/CONTRIBUTING.md"
+            >
+              Contribution guide
+            </a>
+          </article>
+        </div>
+      </section>
     </main>
+
+    <footer class="site-footer page">
+      <span>Replyline · MIT · Windows-first · Russian-first</span>
+      <div class="footer-links">
+        <a href="https://github.com/iurii-izman/replyline/blob/main/docs/privacy-and-trust.md"
+          >Privacy</a
+        >
+        <a href="https://github.com/iurii-izman/replyline/blob/main/docs/known-limitations.md"
+          >Limitations</a
+        >
+        <a href="https://github.com/iurii-izman/replyline/security">Security</a>
+      </div>
+    </footer>
   </body>
 </html>

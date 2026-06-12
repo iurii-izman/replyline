@@ -2,7 +2,7 @@
 
 ## Supported Stage
 
-Replyline is currently an internal stable beta. Security reports are still welcome and prioritized.
+Replyline is currently a public source/developer beta. Security reports are welcome and prioritized.
 
 ## Reporting a Vulnerability
 

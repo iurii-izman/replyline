@@ -144,15 +144,16 @@ Release handoff is blocked unless all items are complete:
 
 Current state:
 
-- `.github/workflows/release-on-tag.yml` publishes GitHub release notes and a Windows artifact package on `v*` tags.
+- `.github/workflows/release-on-tag.yml` publishes source release notes and validates a Windows artifact package on `v*` tags.
 - `.github/workflows/windows-packaging-manual.yml` builds Windows artifacts by manual run and uploads workflow artifacts for internal review only.
 - `release-on-tag.yml` artifact naming is signing-aware:
   - `Replyline-vX.Y.Z-windows-internal-unsigned.zip` when signing is unavailable or signature validation fails.
   - `Replyline-vX.Y.Z-windows-signed.zip` only when Authenticode signature validation passes.
+- Unsigned packages remain workflow artifacts. Only signed and verified packages are attached to a public GitHub Release.
 
 Future staged path (implementation-ready, not yet active):
 
-1. Keep public-beta messaging conservative even though tag workflow now publishes an artifact.
+1. Keep public-beta messaging conservative: current public release is source/developer beta.
 2. Treat unsigned tag artifacts as internal trusted beta artifacts only.
 3. Keep signing path behind explicit secret onboarding and certificate ownership.
 4. Add checksums (`SHA-256`) and verification notes alongside each reviewed artifact.

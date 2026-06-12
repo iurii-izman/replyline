@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No unreleased changes yet._
 
+## [0.2.0-beta.1] - 2026-06-12
+
+Public source/developer beta. No signed public Windows installer is included.
+
+### Added
+
+- WorkConversation and Interview Mode paths with bounded card contracts.
+- Candidate Pack preparation and local interview report flow.
+- GitHub Pages launch surface and public beta release notes.
+- CodeQL default setup for Actions, JavaScript/TypeScript, and Rust.
+- Credential-free web E2E, runtime quality reports, and manual beta closure pack.
+
+### Changed
+
+- Settings schema advanced to v10 with model presets, trace controls, and migration coverage.
+- Windows UI moved to a normal taskbar/Alt+Tab window while preserving tray lifecycle.
+- Release workflow now treats prerelease tags correctly and only attaches signed, verified public binaries.
+- npm, Rust, and GitHub Actions dependencies refreshed and security gates hardened.
+
+### Security
+
+- Secret scanning, push protection, Dependabot security updates, and private vulnerability reporting enabled.
+- Dynamic HTML rendering and script-reference parsing hardened after CodeQL review.
+- Workflow permissions reduced and third-party actions pinned where applicable.
+
+### Known limitations
+
+- Cross-machine and cross-call-app runtime behavior remains pending broader verification.
+- Users must configure their own Deepgram and OpenAI-compatible provider access.
+- This prerelease is intended for developers and testers who build from source.
+
 ## [0.1.0] - 2026-04-06
 
 Initial alpha baseline.

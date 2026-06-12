@@ -1,12 +1,27 @@
 # Replyline
 
 [![CI](https://github.com/iurii-izman/replyline/actions/workflows/ci.yml/badge.svg)](https://github.com/iurii-izman/replyline/actions/workflows/ci.yml)
+[![Pages](https://github.com/iurii-izman/replyline/actions/workflows/pages.yml/badge.svg)](https://iurii-izman.github.io/replyline/)
+[![Beta](https://img.shields.io/github/v/release/iurii-izman/replyline?include_prereleases&label=beta)](https://github.com/iurii-izman/replyline/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)](docs/runtime-bringup.md)
 
 Windows-first desktop tray app for difficult live work conversations and interview practice (public beta posture).
 
 Core flow: `capture -> stt -> llm -> card`
+
+![Replyline public beta](landing/social-preview.png)
+
+## Public Beta
+
+The current release is a **source/developer prerelease** for Windows testers and contributors:
+
+- [Open the product page](https://iurii-izman.github.io/replyline/)
+- [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.1)
+- [Ask a question or share feedback](https://github.com/iurii-izman/replyline/discussions)
+
+No unsigned artifact is presented as a public installer. Until an Authenticode-signed build
+passes the release workflow, use the source setup below.
 
 ## What It Does
 
@@ -40,8 +55,11 @@ Also out of scope in current stable beta:
 ## Quick Start
 
 ```bash
+git clone https://github.com/iurii-izman/replyline.git
+cd replyline
+git checkout v0.2.0-beta.1
 pnpm install --frozen-lockfile
-pnpm verify:fast
+pnpm tauri dev
 ```
 
 Then configure runtime settings in app UI:
@@ -64,6 +82,7 @@ pnpm verify:full
 - `pnpm verify:extended` - full profile + extra coverage/fixtures/say-now lanes
 
 Release-freeze command semantics:
+
 - advisory: `pnpm release:freeze:check` (captures attention-required findings for handoff text)
 - blocking: `pnpm release:freeze:check:strict` (non-zero exit when findings exist)
 
@@ -113,10 +132,10 @@ For manual beta seal and local QA, use:
 
 ## Releases
 
-- Tag format: `vX.Y.Z` (for example: `v0.2.0`)
-- On push of a `v*` tag, GitHub Action `Release On Tag` creates a release with auto-generated notes and uploads a Windows artifact package.
+- Stable tag format: `vX.Y.Z`; prerelease format: `vX.Y.Z-beta.N`.
+- On push of a `v*` tag, GitHub Action `Release On Tag` creates release notes and validates a Windows artifact package.
 - Notes are grouped by labels via `.github/release.yml`.
 - Artifact naming is signing-aware:
-  - `Replyline-vX.Y.Z-windows-internal-unsigned.zip` for internal trusted beta only.
-  - `Replyline-vX.Y.Z-windows-signed.zip` only when signing secrets are configured and Authenticode signature validation succeeds.
-- Do not treat unsigned artifacts as public beta installers.
+  - unsigned packages remain internal workflow artifacts
+  - `Replyline-vX.Y.Z-windows-signed.zip` is attached only after Authenticode validation succeeds
+- Source archives remain available on every GitHub Release.

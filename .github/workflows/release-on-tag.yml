@@ -44,6 +44,12 @@ jobs:
     needs: resolve-tag
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve-tag.outputs.tag }}
+          fetch-depth: 0
+
       - name: Create GitHub release with generated notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,10 +60,23 @@ jobs:
             echo "Release for $TAG already exists. Skipping create."
             exit 0
           fi
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --generate-notes \
-            --latest
+
+          RELEASE_ARGS=(--verify-tag --title "Replyline ${TAG#v}")
+          NOTES_FILE="docs/releases/$TAG.md"
+
+          if [[ "$TAG" == *-* ]]; then
+            RELEASE_ARGS+=(--prerelease)
+          else
+            RELEASE_ARGS+=(--latest)
+          fi
+
+          if [[ -f "$NOTES_FILE" ]]; then
+            RELEASE_ARGS+=(--notes-file "$NOTES_FILE")
+          else
+            RELEASE_ARGS+=(--generate-notes)
+          fi
+
+          gh release create "$TAG" "${RELEASE_ARGS[@]}"
 
   windows-artifact:
     needs:
@@ -66,8 +85,6 @@ jobs:
     runs-on: windows-latest
     env:
       TAG: ${{ needs.resolve-tag.outputs.tag }}
-      WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
     steps:
       - name: Checkout tag
         uses: actions/checkout@v6
@@ -97,21 +114,57 @@ jobs:
       - name: Prepare optional signing certificate
         id: signing
         shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         run: |
           $hasCert = -not [string]::IsNullOrWhiteSpace($env:WINDOWS_CERTIFICATE)
           $hasPass = -not [string]::IsNullOrWhiteSpace($env:WINDOWS_CERTIFICATE_PASSWORD)
 
           if ($hasCert -and $hasPass) {
-            $bytes = [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE)
-            $certPath = Join-Path $env:RUNNER_TEMP 'windows-signing-cert.pfx'
-            [IO.File]::WriteAllBytes($certPath, $bytes)
+            $certDir = Join-Path $env:RUNNER_TEMP 'replyline-signing'
+            New-Item -Path $certDir -ItemType Directory -Force | Out-Null
+            $encodedPath = Join-Path $certDir 'certificate-base64.txt'
+            $certPath = Join-Path $certDir 'certificate.pfx'
+            Set-Content -LiteralPath $encodedPath -Value $env:WINDOWS_CERTIFICATE -Encoding ascii
+            certutil -decode $encodedPath $certPath | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+              throw "Unable to decode WINDOWS_CERTIFICATE."
+            }
+
+            $securePassword = ConvertTo-SecureString `
+              -String $env:WINDOWS_CERTIFICATE_PASSWORD `
+              -Force `
+              -AsPlainText
+            $importedCertificate = @(
+              Import-PfxCertificate `
+                -FilePath $certPath `
+                -CertStoreLocation 'Cert:\CurrentUser\My' `
+                -Password $securePassword
+            ) | Where-Object HasPrivateKey | Select-Object -First 1
+
+            if ($null -eq $importedCertificate) {
+              throw "Imported signing certificate does not contain a private key."
+            }
+
+            $signingConfigPath = Join-Path $certDir 'tauri.signing.conf.json'
+            @{
+              bundle = @{
+                windows = @{
+                  certificateThumbprint = $importedCertificate.Thumbprint
+                  digestAlgorithm = 'sha256'
+                  timestampUrl = 'http://timestamp.digicert.com'
+                }
+              }
+            } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $signingConfigPath -Encoding utf8
+
             "eligible=true" >> $env:GITHUB_OUTPUT
-            "cert_path=$certPath" >> $env:GITHUB_OUTPUT
-            "cert_password=$env:WINDOWS_CERTIFICATE_PASSWORD" >> $env:GITHUB_OUTPUT
+            "certificate_thumbprint=$($importedCertificate.Thumbprint)" >> $env:GITHUB_OUTPUT
+            "config_path=$signingConfigPath" >> $env:GITHUB_OUTPUT
           } else {
             "eligible=false" >> $env:GITHUB_OUTPUT
-            "cert_path=" >> $env:GITHUB_OUTPUT
-            "cert_password=" >> $env:GITHUB_OUTPUT
+            "certificate_thumbprint=" >> $env:GITHUB_OUTPUT
+            "config_path=" >> $env:GITHUB_OUTPUT
           }
 
       - name: Build unsigned Windows artifacts
@@ -120,10 +173,7 @@ jobs:
 
       - name: Build signing-eligible Windows artifacts
         if: steps.signing.outputs.eligible == 'true'
-        env:
-          TAURI_WINDOWS_CERTIFICATE_PATH: ${{ steps.signing.outputs.cert_path }}
-          TAURI_WINDOWS_CERTIFICATE_PASSWORD: ${{ steps.signing.outputs.cert_password }}
-        run: pnpm tauri build
+        run: pnpm tauri build --config "${{ steps.signing.outputs.config_path }}"
 
       - name: Determine signing status and package release artifact
         id: package
@@ -134,21 +184,28 @@ jobs:
             throw "Expected Tauri bundle output path not found: $bundleRoot"
           }
 
-          $signed = $false
           $installerCandidates = @()
           $installerCandidates += Get-ChildItem -Path $bundleRoot -Recurse -File -Filter *.msi -ErrorAction SilentlyContinue
           $installerCandidates += Get-ChildItem -Path $bundleRoot -Recurse -File -Filter *.exe -ErrorAction SilentlyContinue
+          if (Test-Path -LiteralPath 'src-tauri/target/release/replyline.exe') {
+            $installerCandidates += Get-Item -LiteralPath 'src-tauri/target/release/replyline.exe'
+          }
 
+          $signed = $installerCandidates.Count -gt 0
           foreach ($file in $installerCandidates) {
             $sig = Get-AuthenticodeSignature -FilePath $file.FullName
-            if ($sig.Status -eq 'Valid') {
-              $signed = $true
+            if ($sig.Status -ne 'Valid') {
+              $signed = $false
               break
             }
           }
 
           $posture = if ($signed) { 'signed' } else { 'internal-unsigned' }
-          $artifactName = "Replyline-$env:TAG-windows-$posture"
+          $artifactName = if ($signed) {
+            "Replyline-$env:TAG-windows-signed"
+          } else {
+            "Replyline-$env:TAG-windows-internal-unsigned"
+          }
           $artifactDir = Join-Path $env:RUNNER_TEMP $artifactName
           New-Item -Path $artifactDir -ItemType Directory -Force | Out-Null
 
@@ -162,26 +219,42 @@ jobs:
             Remove-Item -LiteralPath $zipPath -Force
           }
           Compress-Archive -Path (Join-Path $artifactDir '*') -DestinationPath $zipPath -Force
+          $checksumPath = "$zipPath.sha256"
+          $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $(Split-Path -Leaf $zipPath)" | Set-Content -LiteralPath $checksumPath -Encoding ascii
 
           "signed=$($signed.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "posture=$posture" >> $env:GITHUB_OUTPUT
           "artifact_name=$artifactName" >> $env:GITHUB_OUTPUT
           "artifact_zip=$zipPath" >> $env:GITHUB_OUTPUT
+          "artifact_checksum=$checksumPath" >> $env:GITHUB_OUTPUT
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.package.outputs.artifact_name }}
-          path: ${{ steps.package.outputs.artifact_zip }}
+          path: |
+            ${{ steps.package.outputs.artifact_zip }}
+            ${{ steps.package.outputs.artifact_checksum }}
           if-no-files-found: error
 
-      - name: Attach artifact to GitHub release
+      - name: Attach signed artifact to GitHub release
+        if: steps.package.outputs.signed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           TAG="${{ needs.resolve-tag.outputs.tag }}"
-          gh release upload "$TAG" "${{ steps.package.outputs.artifact_zip }}" --clobber
+          gh release upload "$TAG" \
+            "${{ steps.package.outputs.artifact_zip }}" \
+            "${{ steps.package.outputs.artifact_checksum }}" \
+            --clobber
+
+      - name: Keep unsigned artifact internal
+        if: steps.package.outputs.signed != 'true'
+        shell: bash
+        run: |
+          echo "Unsigned package remains a workflow artifact and is not attached to the public release."
 
       - name: Publish release summary
         shell: bash
@@ -197,6 +270,16 @@ jobs:
             echo "- tag: ${{ needs.resolve-tag.outputs.tag }}";
             echo "- signed: ${{ steps.package.outputs.signed }}";
             echo "- artifact: ${{ steps.package.outputs.artifact_name }}.zip";
+            echo "- checksum: ${{ steps.package.outputs.artifact_name }}.zip.sha256";
             echo "- artifact path: ${{ steps.package.outputs.artifact_zip }}";
             echo "- public beta eligible: $ELIGIBLE";
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove imported signing certificate
+        if: always() && steps.signing.outputs.eligible == 'true'
+        shell: pwsh
+        run: |
+          $thumbprint = '${{ steps.signing.outputs.certificate_thumbprint }}'
+          if (-not [string]::IsNullOrWhiteSpace($thumbprint)) {
+            Remove-Item -LiteralPath "Cert:\CurrentUser\My\$thumbprint" -Force -ErrorAction SilentlyContinue
+          }
