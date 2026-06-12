@@ -109,6 +109,7 @@ See:
 - [docs/candidate-pack.md](docs/candidate-pack.md)
 - [docs/model-ladder.md](docs/model-ladder.md)
 - [docs/interview-quality.md](docs/interview-quality.md)
+- [docs/beta-smoke-report.md](docs/beta-smoke-report.md)
 - [docs/runtime-bringup.md](docs/runtime-bringup.md)
 - [docs/runtime-evidence.md](docs/runtime-evidence.md)
 - [docs/runtime-quality-harness.md](docs/runtime-quality-harness.md)

@@ -62,6 +62,7 @@ Supported provider/runtime path for stable beta:
 1. Install prerequisites: Node.js + `pnpm`, Rust toolchain, Windows build prerequisites for Tauri.
 2. Install dependencies: `pnpm install --frozen-lockfile`.
 3. Run `pnpm beta:doctor` and follow any `WARN`/`FAIL` next actions before starting the app.
+4. If you need a sanitized issue bundle, run `pnpm beta:smoke-report` and attach the generated artifacts.
 4. Configure providers in Settings:
    - Deepgram API key
    - LLM base URL
@@ -76,14 +77,15 @@ Supported provider/runtime path for stable beta:
 2. Smoke gate: `pnpm smoke`
 3. Fast verify: `pnpm verify:fast`
 4. Beta doctor: `pnpm beta:doctor`
-5. Full verify: `pnpm verify:full`
-6. Extended verify: `pnpm verify:extended`
-7. Beta preflight lane: `pnpm beta:preflight`
-8. Interview quality report artifact: `pnpm report:interview-quality`
-9. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
-10. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
-11. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
-12. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
+5. Sanitized smoke report: `pnpm beta:smoke-report`
+6. Full verify: `pnpm verify:full`
+7. Extended verify: `pnpm verify:extended`
+8. Beta preflight lane: `pnpm beta:preflight`
+9. Interview quality report artifact: `pnpm report:interview-quality`
+10. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
+11. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
+12. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
+13. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
 
 Additional conditional gates:
 
