@@ -78,6 +78,7 @@ const matrix = {
     "beta:handoff",
     "beta:doctor",
     "beta:smoke-report",
+    "beta:start",
     "rust:deny",
     "rust:audit",
     "rust:deps",
