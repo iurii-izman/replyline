@@ -1,0 +1,16 @@
+2026-05-20T10:00:00 [app_boot_start] setup
+2026-05-20T10:00:00 [settings_load_attempt] exists=true
+2026-05-20T10:00:00 [settings_parse_ok] source=settings_json
+2026-05-20T10:00:00 [settings_validation_ok] source=settings_json
+2026-05-20T10:00:01 [bootstrap_loaded] runtime_ready=true
+2026-05-20T10:00:01 [hotkey_registered] Ctrl+Alt+Space
+2026-05-20T10:00:05 [hotkey_pressed] state=Pressed
+2026-05-20T10:00:05 [setup_preflight_check_start] -
+2026-05-20T10:00:05 [setup_preflight_check_result] status=ready runtime_ready=true
+2026-05-20T10:00:06 [capture_start_requested] source=hotkey
+2026-05-20T10:00:06 [capture_start_ok] run_id=1
+2026-05-20T10:00:10 [capture_stop_requested] source=hotkey
+2026-05-20T10:00:10 [analysis_start] -
+2026-05-20T10:00:11 [analysis_stt_ok] chars=120
+2026-05-20T10:00:12 [analysis_llm_ok] model=gpt-4o-mini
+2026-05-20T10:00:12 [analysis_ok] card_ready

@@ -2,6 +2,7 @@ node_modules/
 dist/
 src-tauri/target/
 *.log
+!tests/fixtures/runtime-live-evidence/good/app.log
 reports/**
 !reports/
 !reports/docker/

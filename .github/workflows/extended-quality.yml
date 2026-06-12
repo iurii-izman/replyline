@@ -24,6 +24,8 @@ jobs:
           pnpm --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install Playwright browser
+        run: pnpm exec playwright install chromium
       - name: Install cargo-deny and cargo-audit
         run: cargo install --locked cargo-deny cargo-audit
       - name: Full verification profile
