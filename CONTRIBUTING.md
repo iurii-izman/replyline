@@ -1,5 +1,9 @@
 # Contributing
 
+By participating, you agree to follow the
+[Code of Conduct](CODE_OF_CONDUCT.md). Use the private reporting channel
+described there for enforcement concerns.
+
 ## Scope
 
 Keep Replyline in Slim Stable Beta scope:
