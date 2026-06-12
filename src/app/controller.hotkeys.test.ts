@@ -47,6 +47,52 @@ describe("createHotkeys", () => {
     expect(setSettings).toHaveBeenCalledWith("hotkey", "Ctrl+Alt+K");
   });
 
+  it("reports a friendly failure when the hotkey is already registered", async () => {
+    const setError = vi.fn();
+    const setHotkeyFailed = vi.fn();
+    const pushNotice = vi.fn();
+    const hotkeys = createHotkeys({
+      platform: {
+        shortcuts: {
+          unregisterAll: vi.fn(async () => undefined),
+          isRegistered: vi.fn(async () => true),
+          register: vi.fn(async () => undefined),
+        },
+        window: {},
+      } as never,
+      phase: () => "idle",
+      pipelineActive: () => false,
+      setupRequired: () => false,
+      setupReady: () => false,
+      strings: () => ui_ru,
+      setError,
+      setPhase: vi.fn() as never,
+      setPanel: vi.fn() as never,
+      setCard: vi.fn(),
+      setCaptureQuality: vi.fn() as never,
+      setContextActive: vi.fn() as never,
+      settings: () => ({ keepOnTopDuringCapture: false }) as never,
+      setSettings: vi.fn() as never,
+      setHotkeyFailed,
+      setDeepgramSaved: vi.fn() as never,
+      setLlmKeySaved: vi.fn() as never,
+      setLlmRouteConfigured: vi.fn() as never,
+      setLastCommandErrorKind: vi.fn() as never,
+      setActiveRunId: vi.fn() as never,
+      isBilingualHotkeyMode: () => false,
+      isBilingualDegraded: () => false,
+      triggerBilingualHotkeyAnswer: vi.fn(async () => undefined),
+      notices: { pushNotice, dismissNotice: vi.fn(), clearNoticeTimer: vi.fn() },
+      showWindow: vi.fn(async () => undefined),
+      applyContextStatus: vi.fn(),
+    });
+
+    await expect(hotkeys.registerCurrentHotkey("Ctrl+Alt+Space")).resolves.toBe(false);
+    expect(setHotkeyFailed).toHaveBeenCalledWith(true);
+    expect(setError).toHaveBeenCalledWith(ui_ru.errors.hotkeyRegistrationFailed);
+    expect(pushNotice).toHaveBeenCalled();
+  });
+
   it("routes release to bilingual answer when bilingual mode is active", async () => {
     const triggerBilingualHotkeyAnswer = vi.fn(async () => undefined);
     let handler: ((event: { state: "Pressed" | "Released" }) => Promise<void> | void) | null = null;

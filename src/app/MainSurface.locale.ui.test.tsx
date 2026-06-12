@@ -34,6 +34,8 @@ function createController(strings: UiStrings, overrides: Record<string, unknown>
     mainUiState: () => "idle",
     setupReadinessState: () => "ready",
     setupRequired: () => false,
+    hotkeyFailed: () => false,
+    setupTroubleCount: () => 0,
     setupSteps: () => [
       { label: strings.setup.stepSpeech, readyLabel: "", missingLabel: "", ready: true },
       { label: strings.setup.stepReply, readyLabel: "", missingLabel: "", ready: true },
@@ -49,6 +51,9 @@ function createController(strings: UiStrings, overrides: Record<string, unknown>
     clearDisabledReason: () => null,
     clearContext: vi.fn(),
     copyCurrentCard: vi.fn(),
+    checkRuntimeConfig: vi.fn(),
+    copySetupIssueHint: vi.fn(),
+    error: () => null,
     phaseLabel: () => strings.phase.idleReady,
     interviewSession: () => null,
     interviewReport: () => null,

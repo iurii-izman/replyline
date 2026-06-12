@@ -142,6 +142,7 @@ export function useReplylineController(platform: AppPlatform) {
   } | null>(null);
   const [hotkeyFailed, setHotkeyFailed] = createSignal(false);
   const [settingsFormHint, setSettingsFormHint] = createSignal<string | null>(null);
+  const [setupTroubleCount, setSetupTroubleCount] = createSignal(0);
   const [lastCommandErrorKind, setLastCommandErrorKind] = createSignal<CommandErrorKind | null>(
     null,
   );
@@ -299,6 +300,28 @@ export function useReplylineController(platform: AppPlatform) {
         return currentCard.interview.answer.main ?? "";
     }
   });
+  const buildSetupIssueHint = () => {
+    const s = strings();
+    const missingSteps = selectors
+      .setupSteps()
+      .filter((step) => !step.ready)
+      .map((step) => step.label);
+    const runtimeReady = setupReadinessState() === "ready" && !hotkeyFailed();
+    const runtimeSummary = runtimeCheckResult()
+      ? runtimeCheckResult()!.runtimeReady
+        ? s.settings.runtimeSummaryReady
+        : s.settings.runtimeSummaryNeedsFix
+      : s.settings.runtimeSummaryNotRun;
+    return [
+      s.settings.setupIssueHintTitle,
+      `${s.settings.setupIssueHintMissing} ${missingSteps.length ? missingSteps.join(", ") : s.settings.setupIssueHintNone}`,
+      `${s.settings.setupIssueHintRuntime} ${runtimeReady ? s.settings.runtimeSummaryReady : runtimeSummary}`,
+      s.settings.setupIssueHintSteps,
+      `1. ${s.settings.setupIssueHintOpenSettings}`,
+      `2. ${s.settings.setupIssueHintRunCheck}`,
+      `3. ${s.settings.setupIssueHintSmokeReport}`,
+    ].join("\n");
+  };
 
   // ── Derived ────────────────────────────────────────────────────────────
   const strings: Accessor<UiStrings> = createMemo(() => getUi(currentLanguage()));
@@ -426,6 +449,7 @@ export function useReplylineController(platform: AppPlatform) {
     setSaving,
     setSettingsFormHint,
     setHotkeyFailed,
+    setSetupTroubleCount,
     setLastCommandErrorKind,
     notices,
     hotkeys,
@@ -739,6 +763,7 @@ export function useReplylineController(platform: AppPlatform) {
     notice,
     hotkeyFailed,
     settingsFormHint,
+    setupTroubleCount,
     settings,
     draftSecrets,
     ...selectors,
@@ -777,6 +802,7 @@ export function useReplylineController(platform: AppPlatform) {
       try {
         const result = await platform.invoke<RuntimeCheckDto>("check_runtime_config");
         setRuntimeCheckResult(result);
+        setSetupTroubleCount((count) => (result.runtimeReady ? 0 : count + 1));
       } catch (err) {
         setRuntimeCheckResult({
           stt: { ok: false, code: "error", message: invokeErrorMessage(err) },
@@ -784,9 +810,14 @@ export function useReplylineController(platform: AppPlatform) {
           settings: { ok: false, code: "error", message: invokeErrorMessage(err) },
           runtimeReady: false,
         });
+        setSetupTroubleCount((count) => count + 1);
       } finally {
         setRuntimeCheckRunning(false);
       }
+    },
+    copySetupIssueHint: async () => {
+      await platform.clipboard.writeText(buildSetupIssueHint());
+      notices.pushNotice({ tone: "info", message: strings().notices.setupIssueHintCopied });
     },
     refreshPersistenceDiagnostics: async () => {
       setPersistenceDiagnosticsError(null);

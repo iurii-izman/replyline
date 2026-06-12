@@ -36,6 +36,7 @@ describe("createSettingsActions", () => {
       setSaving: vi.fn() as never,
       setSettingsFormHint: vi.fn() as never,
       setHotkeyFailed: vi.fn() as never,
+      setSetupTroubleCount: vi.fn() as never,
       setLastCommandErrorKind: vi.fn() as never,
       setupReadinessState: () => "checking",
       setSetupReadinessState: setSetupReadinessState as never,
