@@ -60,6 +60,7 @@ git clone https://github.com/iurii-izman/replyline.git
 cd replyline
 git checkout v0.2.0-beta.1
 pnpm install --frozen-lockfile
+pnpm beta:doctor
 pnpm tauri dev
 ```
 

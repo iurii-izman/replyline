@@ -61,27 +61,29 @@ Supported provider/runtime path for stable beta:
 
 1. Install prerequisites: Node.js + `pnpm`, Rust toolchain, Windows build prerequisites for Tauri.
 2. Install dependencies: `pnpm install --frozen-lockfile`.
-3. Configure providers in Settings:
+3. Run `pnpm beta:doctor` and follow any `WARN`/`FAIL` next actions before starting the app.
+4. Configure providers in Settings:
    - Deepgram API key
    - LLM base URL
    - LLM model
    - optional LLM API key
-4. Verify a valid playback device is set as default in Windows Sound settings.
-5. For runtime probe credentials setup, use `docs/runtime-probe-credentials.md` (local env only, never committed).
+5. Verify a valid playback device is set as default in Windows Sound settings.
+6. For runtime probe credentials setup, use `docs/runtime-probe-credentials.md` (local env only, never committed).
 
 ## 5) Validation matrix
 
 1. Dev loop: `pnpm test:quick`
 2. Smoke gate: `pnpm smoke`
 3. Fast verify: `pnpm verify:fast`
-4. Full verify: `pnpm verify:full`
-5. Extended verify: `pnpm verify:extended`
-6. Beta preflight lane: `pnpm beta:preflight`
-7. Interview quality report artifact: `pnpm report:interview-quality`
-8. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
-9. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
-10. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
-11. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
+4. Beta doctor: `pnpm beta:doctor`
+5. Full verify: `pnpm verify:full`
+6. Extended verify: `pnpm verify:extended`
+7. Beta preflight lane: `pnpm beta:preflight`
+8. Interview quality report artifact: `pnpm report:interview-quality`
+9. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
+10. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
+11. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
+12. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
 
 Additional conditional gates:
 
