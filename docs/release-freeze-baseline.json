@@ -62,6 +62,7 @@
     ".github/copilot-instructions.md",
     "AGENTS.md",
     "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "package.json",
     "docs/README.md",

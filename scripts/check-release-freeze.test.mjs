@@ -9,7 +9,12 @@ const scriptSource = join(repoRoot, "scripts", "check-release-freeze.mjs");
 const baselineSource = join(repoRoot, "docs", "release-freeze-baseline.json");
 
 function runGit(root, args) {
-  const run = spawnSync("git", args, { cwd: root, encoding: "utf8", shell: false, windowsHide: true });
+  const run = spawnSync("git", args, {
+    cwd: root,
+    encoding: "utf8",
+    shell: false,
+    windowsHide: true,
+  });
   if (run.status !== 0) {
     throw new Error(`git ${args.join(" ")} failed: ${(run.stderr || run.stdout || "").trim()}`);
   }
@@ -23,7 +28,9 @@ function runFreeze(root, args = []) {
     shell: false,
     windowsHide: true,
   });
-  const artifact = JSON.parse(readFileSync(join(root, "reports", "release-freeze-check.json"), "utf8"));
+  const artifact = JSON.parse(
+    readFileSync(join(root, "reports", "release-freeze-check.json"), "utf8"),
+  );
   return { status: run.status ?? 1, stdout: run.stdout, stderr: run.stderr, artifact };
 }
 
@@ -62,6 +69,20 @@ function setupFixture() {
     const allowedUntracked = runFreeze(root);
     assert.equal(allowedUntracked.status, 0);
     assert.equal(allowedUntracked.artifact.changedFiles.includes("scripts/scratch.mjs"), true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+{
+  const root = setupFixture();
+  try {
+    writeFileSync(join(root, "CODE_OF_CONDUCT.md"), "# Community standards\n", "utf8");
+    const governanceFile = runFreeze(root, ["--strict"]);
+    assert.equal(governanceFile.status, 0);
+    assert.equal(governanceFile.artifact.changedFiles.includes("CODE_OF_CONDUCT.md"), true);
+    assert.deepEqual(governanceFile.artifact.outsideFreeze, []);
+    assert.deepEqual(governanceFile.artifact.outsideGuardrails, []);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
