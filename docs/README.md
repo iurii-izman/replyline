@@ -8,6 +8,7 @@
 
 - [known-limitations.md](known-limitations.md)
 - [privacy-and-trust.md](privacy-and-trust.md)
+- [beta-doctor.md](beta-doctor.md)
 - [third-party-providers.md](third-party-providers.md)
 - [settings-reference.md](settings-reference.md)
 - [troubleshooting.md](troubleshooting.md)
