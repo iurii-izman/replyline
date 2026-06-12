@@ -77,7 +77,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install cargo-deny and cargo-audit
-        run: cargo install --locked cargo-deny cargo-audit
+        shell: pwsh
+        run: |
+          if (-not (Get-Command cargo-deny -ErrorAction SilentlyContinue)) {
+            cargo install --locked cargo-deny
+          }
+          if (-not (Get-Command cargo-audit -ErrorAction SilentlyContinue)) {
+            cargo install --locked cargo-audit
+          }
+          cargo deny --version
+          cargo audit --version
 
       - name: Local quality and security gate (fail-fast)
         run: pnpm verify:fast
