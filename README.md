@@ -117,17 +117,13 @@ See:
 
 ## Documentation Map
 
-- [docs/beta-readiness.md](docs/beta-readiness.md)
-- [docs/interview-mode.md](docs/interview-mode.md)
-- [docs/candidate-pack.md](docs/candidate-pack.md)
-- [docs/model-ladder.md](docs/model-ladder.md)
-- [docs/interview-quality.md](docs/interview-quality.md)
-- [docs/beta-smoke-report.md](docs/beta-smoke-report.md)
-- [docs/runtime-bringup.md](docs/runtime-bringup.md)
-- [docs/runtime-evidence.md](docs/runtime-evidence.md)
-- [docs/runtime-quality-harness.md](docs/runtime-quality-harness.md)
-- [docs/known-limitations.md](docs/known-limitations.md)
-- [docs/README.md](docs/README.md)
+- [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke test for Windows testers.
+- [docs/README.md](docs/README.md) - role-based documentation map for beta users, testers, contributors, and operators.
+- [docs/privacy-policy.md](docs/privacy-policy.md) - canonical privacy, storage, and provider data-flow policy.
+- [docs/known-limitations.md](docs/known-limitations.md) - current beta scope, limitations, and non-shipped tracks.
+- [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and verification expectations.
+- [.github/SECURITY.md](.github/SECURITY.md) - private vulnerability reporting.
+- [.github/SUPPORT.md](.github/SUPPORT.md) - issue routing and support paths.
 
 ## Security and Support
 

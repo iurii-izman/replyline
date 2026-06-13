@@ -1,58 +1,57 @@
 # Replyline Documentation
 
-Документация разделена по задачам. Для первого знакомства начните с
-[`README.md`](../README.md), для тестирования с
-[`BETA_TESTING.md`](../BETA_TESTING.md). Полный список и инвентаризация файлов документации приведены в [doc-inventory.md](doc-inventory.md).
+Start with the public entrypoints:
 
+- [README.md](../README.md) - product overview, setup path, and high-level links.
+- [BETA_TESTING.md](../BETA_TESTING.md) - short 15-minute beta smoke test.
 
-## Product And Setup
+Use this page as role-based navigation. For the full document inventory, merge candidates, and archive plan, see [doc-inventory.md](doc-inventory.md).
 
-- [known-limitations.md](known-limitations.md)
-- [privacy-and-trust.md](privacy-and-trust.md)
-- [beta-doctor.md](beta-doctor.md)
-- [beta-smoke-report.md](beta-smoke-report.md)
-- [github-beta-operations-kit.md](github-beta-operations-kit.md)
-- [stale-beta-policy.md](stale-beta-policy.md)
-- [third-party-providers.md](third-party-providers.md)
-- [settings-reference.md](settings-reference.md)
-- [troubleshooting.md](troubleshooting.md)
-- [interview-mode.md](interview-mode.md)
-- [candidate-pack.md](candidate-pack.md)
+## Start Here By Role
 
-## Testing
+### Product / beta user
 
-- [test-feedback-template.md](test-feedback-template.md)
-- [beta-feedback-loop.md](beta-feedback-loop.md)
-- [runtime-bringup.md](runtime-bringup.md)
-- [runtime-live-qa.md](runtime-live-qa.md)
-- [live-runtime-matrix.md](live-runtime-matrix.md)
-- [manual-windows-ux-qa.md](manual-windows-ux-qa.md)
-- [manual-visual-qa.md](manual-visual-qa.md)
-- [verification-lanes.md](verification-lanes.md)
-- [testing-stack-setup.md](testing-stack-setup.md)
+- [known-limitations.md](known-limitations.md) - current beta scope, non-shipped tracks, and platform boundaries.
+- [privacy-policy.md](privacy-policy.md) - canonical capture, storage, provider, and user-control policy.
+- [troubleshooting.md](troubleshooting.md) - setup and runtime problem-solving guide.
+- [settings-reference.md](settings-reference.md) - active settings surface and configuration reference.
 
-Runtime evidence is machine-scoped. It must not be presented as universal
-cross-machine or cross-provider proof.
+### Beta tester
 
-## Engineering Contracts
+- [BETA_TESTING.md](../BETA_TESTING.md) - canonical short beta smoke path.
+- [beta-doctor.md](beta-doctor.md) - environment readiness and local setup diagnostics.
+- [beta-smoke-report.md](beta-smoke-report.md) - sanitized reporting flow after a smoke run.
+- [runtime-bringup.md](runtime-bringup.md) - first-time runtime bring-up for local validation.
+- [testing-stack-setup.md](testing-stack-setup.md) - local test environment setup for deeper validation.
 
-- [architecture.md](architecture.md)
-- [copy-rules.md](copy-rules.md)
-- [prompt-contract-lane.md](prompt-contract-lane.md)
-- [runtime-evidence.md](runtime-evidence.md)
-- [runtime-quality-harness.md](runtime-quality-harness.md)
-- [release-readiness.md](release-readiness.md)
-- [release-freeze-matrix.md](release-freeze-matrix.md)
-- [script-lifecycle-matrix.md](script-lifecycle-matrix.md)
-- [rust-dependency-security.md](rust-dependency-security.md)
+### Contributor
 
-## Release
+- [CONTRIBUTING.md](../CONTRIBUTING.md) - canonical contributor workflow and verification lanes.
+- [architecture.md](architecture.md) - core system structure and boundaries.
+- [copy-rules.md](copy-rules.md) - product/trust wording rules for docs and UI copy.
+- [verification-lanes.md](verification-lanes.md) - validation model and lane expectations.
 
-- [release-checklist.md](release-checklist.md)
-- [release-local-readiness.md](release-local-readiness.md)
-- [release-incident-classification.md](release-incident-classification.md)
-- [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md)
-- [releases/v0.2.0-beta.1.md](releases/v0.2.0-beta.1.md)
+### Release/operator
 
-Generated reports and sensitive runtime evidence stay under ignored `reports/`
-paths and are not product documentation.
+- [release-readiness.md](release-readiness.md) - canonical release readiness gate.
+- [release-checklist.md](release-checklist.md) - release execution checklist.
+- [runtime-evidence.md](runtime-evidence.md) - evidence policy and claim boundaries.
+- [runtime-live-qa.md](runtime-live-qa.md) - live runtime QA runbook for operator validation.
+- [public-vs-local-artifacts.md](public-vs-local-artifacts.md) - sharing and sensitivity rules for generated artifacts.
+- [github-beta-operations-kit.md](github-beta-operations-kit.md) - GitHub-side beta operations and routing.
+
+### Internal/archive
+
+- [doc-inventory.md](doc-inventory.md) - documentation inventory, merge map, and archive candidates.
+- [releases/v0.2.0-beta.1.md](releases/v0.2.0-beta.1.md) - historical beta release note.
+- [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md) - historical/draft beta release note.
+- [card-schema-v3-migration.md](card-schema-v3-migration.md) - historical migration note.
+
+## Secondary Docs
+
+These docs stay available, but they are not part of the main visible role map on this page:
+
+- to be merged/archived: see [doc-inventory.md](doc-inventory.md) for the canonical cleanup map
+- examples: `privacy-and-trust.md`, `third-party-providers.md`, `beta-readiness.md`, `release-local-readiness.md`, `live-runtime-matrix.md`, `manual-ui-qa.md`, `manual-visual-qa.md`, `manual-windows-ux-qa.md`
+
+Treat these as supporting material to be merged or archived over time rather than primary entrypoints.
