@@ -12,7 +12,7 @@
 | fast default gate | `pnpm verify:fast` | Обязательный PR/local baseline: `smoke` + security/public-footprint |
 | standard handoff gate | `pnpm verify:standard` | Локальный pre-handoff gate: `verify:fast` + lifecycle + advisory freeze report |
 | full release gate | `pnpm verify:full` | Release-quality gate: standard + strict freeze + dependency/security + runtime/product quality + strict reports |
-| extended addon lane | `pnpm verify:extended` | Nightly/operator addon lane: coverage + fixtures + optional E2E/experimental lanes, без повторного `verify:full` |
+| extended addon lane | `pnpm verify:extended` | Nightly/operator addon lane: coverage + fixtures + runtime/product gates + optional E2E/experimental lanes, без повторного `verify:full` |
 
 ## Profile Composition
 
@@ -53,8 +53,9 @@
 
 8. `verify:extended`
 
-- Состав: `test:ui:coverage` + `test:fixtures` + `test:optional:e2e:web` + `test:optional:e2e:desktop` + `test:experimental`.
+- Состав: `test:ui:coverage` + `test:fixtures` + `test:runtime-quality` + `test:product-scenarios` + `test:optional:e2e:web` + `test:optional:e2e:desktop` + `test:experimental`.
 - Этот профиль не вызывает `verify:full`, чтобы nightly/CI не гонял full дважды.
+- `test:runtime-quality` уже включает `test:say-now-scenarios` и `test:interview-quality`, поэтому `verify:extended` не должен вызывать их отдельно.
 - Запускать его следует как addon после `verify:full`, а не вместо `verify:full`.
 
 ## Tests vs Reports
@@ -85,5 +86,5 @@
 ## CI Alignment
 
 - `.github/workflows/ci.yml`: blocking `verify:fast` baseline.
-- `.github/workflows/extended-quality.yml`: `verify:full` и затем addon-only `verify:extended`, без повторного full внутри extended profile.
+- `.github/workflows/extended-quality.yml`: `verify:full` и затем addon-only `verify:extended`, без отдельного повторного запуска addon lanes вне `verify:extended`.
 - `.github/workflows/release-on-tag.yml`: tag/release validation path.

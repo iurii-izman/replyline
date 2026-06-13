@@ -76,7 +76,7 @@
     "verify:standard": "pnpm verify:fast && pnpm scripts:lifecycle && pnpm release:freeze:check",
     "verify:full": "pnpm verify:standard && pnpm release:freeze:check:strict && pnpm rust:deps && pnpm audit:npm && pnpm test:runtime-quality && pnpm test:product-scenarios && pnpm report:runtime-quality:strict && pnpm report:interview-quality:strict && pnpm report:release-readiness:strict",
     "verify": "pnpm verify:fast",
-    "verify:extended": "pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:optional:e2e:web && pnpm test:optional:e2e:desktop && pnpm test:experimental",
+    "verify:extended": "pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:runtime-quality && pnpm test:product-scenarios && pnpm test:optional:e2e:web && pnpm test:optional:e2e:desktop && pnpm test:experimental",
     "test:e2e:web": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage @playwright/test --exec pnpm -- exec playwright test",
     "test:e2e:web:required": "pnpm exec playwright test",
     "test:e2e:web:ui": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage @playwright/test --exec pnpm -- exec playwright test --ui",

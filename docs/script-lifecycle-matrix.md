@@ -10,6 +10,9 @@ classification.
 Build, test, policy, security and release commands used by canonical profiles
 such as `test:unit`, `test:contracts`, `verify:fast`, `verify:standard`,
 `verify:full`, `verify:extended` and `verify:release-local`.
+`verify:extended` is the canonical owner of the addon lanes it composes, so CI
+should reference `pnpm verify:extended` directly instead of duplicating its
+child commands as separate canonical steps.
 
 ## Advisory
 

@@ -56,7 +56,7 @@ pnpm install --include=optional
 - `pnpm test:optional:e2e:desktop`
 - `pnpm test:optional:ux:lighthouse`
 
-`verify:extended` is an addon lane. It does not rerun `verify:full`; CI/nightly should execute `verify:full` separately when full baseline is required.
+`verify:extended` is an addon lane. It does not rerun `verify:full`; CI/nightly should execute `verify:full` separately when full baseline is required. The extended profile itself owns coverage, fixtures, `test:runtime-quality`, `test:product-scenarios`, and the optional addon lanes, so workflows should not schedule those same lanes again outside `verify:extended`.
 
 ## Desktop/Web E2E Policy
 
