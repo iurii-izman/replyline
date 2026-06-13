@@ -23,7 +23,7 @@
 
 2. `test:unit`
 
-- Состав: `test:rust` + `test:ui` + `test:latency-parser` + `test:runtime-answer-quality:unit` + `test:product-scenarios:unit` + `test:release-freeze-guard`.
+- Состав: `test:rust` + `test:ui` + `test:latency-parser` + `test:runtime-answer-quality:unit` + `test:product-scenarios:unit` + `test:release-freeze-guard` + `test:beta-smoke-report` + `test:report-release-readiness`.
 - Здесь только deterministic unit/component/script-unit checks.
 
 3. `test:contracts`
@@ -32,6 +32,8 @@
 - `test:consistency` теперь является compatibility aggregator над явными lanes:
   `test:contracts:docs`, `test:contracts:ui`, `test:contracts:model`,
   `test:contracts:runtime`, `test:contracts:observability`, `test:contracts:beta`.
+- `test:contracts:beta` теперь идёт через явные package entrypoints
+  `test:beta-doctor` и `test:beta-start`, вместо raw `node ...test.mjs` вызовов.
 - Это делает failure source явным без изменения привычной entrypoint-команды.
 
 4. `smoke`

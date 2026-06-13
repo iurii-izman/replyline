@@ -15,6 +15,11 @@
 - `pnpm test:unit` -> deterministic unit/component/script-unit coverage
 - `pnpm test:contracts` -> docs/copy/prompt/ipc/locale plus split contract lanes
 
+`test:unit` also owns the script-unit tests for release/beta reporting:
+
+- `pnpm test:beta-smoke-report`
+- `pnpm test:report-release-readiness`
+
 `pnpm test:consistency` remains the привычный aggregator alias, but now it is a
 readable composition of focused lanes:
 
@@ -24,6 +29,11 @@ readable composition of focused lanes:
 - `pnpm test:contracts:runtime`
 - `pnpm test:contracts:observability`
 - `pnpm test:contracts:beta`
+
+`test:contracts:beta` is backed by explicit entrypoints:
+
+- `pnpm test:beta-doctor`
+- `pnpm test:beta-start`
 
 `pnpm smoke` is the canonical compile-and-test baseline and includes:
 

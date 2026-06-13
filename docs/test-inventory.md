@@ -10,8 +10,8 @@ listed under `smoke` is also used by profiles that call `smoke`.
 
 - Frontend: 17 Vitest files under `src/app`, run as one serialized suite.
 - Backend: 208 Rust tests in 32 modules, run by `cargo test`.
-- Script tests: 9 `scripts/*.test.mjs` files; 3 have no package command or
-  profile usage.
+- Script tests: 9 `scripts/*.test.mjs` files; all now have either a package
+  command, a canonical profile owner, or both.
 - E2E: 2 Playwright web specs and 1 WebdriverIO/Tauri desktop smoke spec.
 - Profiles are nested: `verify:fast` -> `smoke`; `verify:standard` ->
   `verify:fast`; `verify:full` -> `verify:standard`.
@@ -77,9 +77,9 @@ listed under `smoke` is also used by profiles that call `smoke`.
 | `pnpm report:runtime-quality`; `scripts/report-runtime-quality-summary.mjs`                                            | report       | medium            | conditional   | no                   | no               | optional                                             | keep           | Orchestrates five checks and writes dated summaries; report command can fail.                                  |
 | `pnpm report:card-quality`; `scripts/runtime-card-quality-report.mjs`                                                  | report       | machine-dependent | conditional   | no                   | yes              | optional                                             | keep           | Reads the local app log; correctly outside automated profiles.                                                 |
 | `report:sonar-residual`, `report:live-evidence-pack`, `report:internal-beta-seal`, `report:release-readiness[:strict]` | report       | medium            | conditional   | no                   | no               | optional                                             | keep           | Evidence aggregation/readiness reports, not independent tests.                                                 |
-| `scripts/report-release-readiness.test.mjs`                                                                            | unit         | medium            | yes           | no                   | no               | none                                                 | merge          | Valuable strict/readiness behavior tests are orphaned from package scripts and profiles.                       |
-| `scripts/beta-doctor.test.mjs`                                                                                         | integration  | medium            | conditional   | no                   | yes              | none                                                 | merge          | Tests a PowerShell path while the package command uses `beta-doctor.mjs`; also has no package entry.           |
-| `scripts/beta-smoke-report.test.mjs`                                                                                   | unit         | quick             | yes           | no                   | no               | none                                                 | merge          | Sanitization/report rendering test exists but is not executable through a package profile.                     |
+| `scripts/report-release-readiness.test.mjs`; `pnpm test:report-release-readiness`                                     | unit         | medium            | yes           | no                   | no               | smoke via `test:unit`                                | keep           | Release-readiness report behavior is now covered through an explicit package lane in the unit profile.         |
+| `scripts/beta-doctor.test.mjs`; `pnpm test:beta-doctor`                                                               | integration  | medium            | conditional   | no                   | yes              | smoke via `test:contracts:beta`                      | keep           | Windows beta-doctor path now has an explicit package test entrypoint and contract owner.                       |
+| `scripts/beta-smoke-report.test.mjs`; `pnpm test:beta-smoke-report`                                                   | unit         | quick             | yes           | no                   | no               | smoke via `test:unit`                                | keep           | Sanitization/report rendering test now runs through a package lane inside the unit profile.                    |
 | `beta:doctor`, `beta:smoke-report`, `beta:start`, `beta:preflight`, `beta:seal`                                        | release      | machine-dependent | conditional   | no                   | yes              | optional                                             | keep           | Windows beta operator workflows; several produce reports rather than test signals.                             |
 | Runtime probes, benches, soak, evidence bundle, handoff/template/scaffold commands                                     | runtime      | machine-dependent | no            | yes                  | yes              | optional                                             | keep           | Local hardware/provider evidence; must not be represented as deterministic CI validation.                      |
 | `pnpm test:e2e:web` / `test:e2e:web:required`; `playwright.config.ts`                                                  | e2e          | medium            | conditional   | no                   | no               | CI, optional                                         | keep           | Credential-free mocked platform flow; optional wrapper may return `SKIP`, required lane cannot.                |
@@ -173,9 +173,8 @@ blocking policy/threshold gates, and `report:*` for evidence generation.
   artifact now states that the failure is non-blocking.
 - CI installs `cargo-deny` and `cargo-audit` before `verify:fast`, although that
   profile does not call them. They are needed only by full/dependency lanes.
-- Three script tests have no package/profile entry:
-  `beta-doctor.test.mjs`, `beta-smoke-report.test.mjs`, and
-  `report-release-readiness.test.mjs`.
+- No `scripts/*.test.mjs` file is orphaned anymore; each one now has an
+  explicit package command or a canonical profile owner.
 
 ## Recommended Next Block
 
@@ -184,9 +183,7 @@ Finish the remaining cleanup without changing product behavior:
 1. Decide whether the interview-quality strict report should remain a separate
    second pass inside `verify:full`, or whether evidence can be generated from
    the blocking test run.
-2. Add one `test:scripts` command for orphaned `scripts/*.test.mjs`, then place
-   each script test explicitly into `smoke`, `verify:extended`, or an operator lane.
-3. Separate report generation from evaluator gates where a `test:*` command still
+2. Separate report generation from evaluator gates where a `test:*` command still
    writes durable artifacts.
-4. Remove or restore the placeholder k6 lane.
-5. Revisit whether CI really needs cargo audit tooling preinstalled on the fast lane.
+3. Remove or restore the placeholder k6 lane.
+4. Revisit whether CI really needs cargo audit tooling preinstalled on the fast lane.
