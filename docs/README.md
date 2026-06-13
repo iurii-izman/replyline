@@ -46,13 +46,8 @@ Use this page as the final role-based map.
 - [beta-doctor.md](beta-doctor.md) - tester-facing readiness command reference.
 - [beta-smoke-report.md](beta-smoke-report.md) - tester-facing sanitized issue attachment flow.
 
-### Compatibility and history
+### Archive
 
-- Compatibility stubs for old links are tracked in [doc-inventory.md](doc-inventory.md). They should stay short and should not grow new policy content.
-- [engineering/verification.md](engineering/verification.md) - compatibility stub to the canonical testing guide.
-- [testing-stack-setup.md](testing-stack-setup.md) - compatibility stub to the canonical testing guide.
-- [archive/experimental/bilingual-interview-mode.md](archive/experimental/bilingual-interview-mode.md) - archived experimental bilingual interview concept; not shipped in current public beta.
+- [archive/experimental/bilingual-interview-mode.md](archive/experimental/bilingual-interview-mode.md) - archived experimental bilingual interview concept.
 - [archive/handoff/beta-readiness.md](archive/handoff/beta-readiness.md) - archived beta handoff plan.
 - [release-notes/v0.2.0-beta.1.md](release-notes/v0.2.0-beta.1.md) - historical beta release note.
-- [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md) - historical/draft beta release note.
-- [card-schema-v3-migration.md](card-schema-v3-migration.md) - historical migration note.

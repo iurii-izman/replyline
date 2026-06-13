@@ -23,7 +23,7 @@ const requiredIncludes = [
   },
   {
     path: "docs/README.md",
-    includes: ["engineering/verification.md", "testing-stack-setup.md", "engineering/runtime.md", "engineering/operations.md"],
+    includes: ["engineering/runtime.md", "engineering/operations.md"],
   },
   {
     path: "docs/archive/handoff/beta-readiness.md",
@@ -39,7 +39,7 @@ const requiredIncludes = [
       "pnpm verify:fast",
       "pnpm verify:full",
     ],
-    excludes: ["primary instruction", "alpha-only"],
+    excludes: ["primary instruction", "alpha-only", "releases/v0.2.0-beta.2.md"],
   },
   {
     path: "docs/beta-doctor.md",

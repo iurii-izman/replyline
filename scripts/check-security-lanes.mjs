@@ -167,8 +167,8 @@ function checkCspDecision() {
     return false;
   }
 
-  const privacyDoc = readFileSync(resolve(repoRoot, "docs/privacy-and-trust.md"), "utf8");
-  const providersDoc = readFileSync(resolve(repoRoot, "docs/third-party-providers.md"), "utf8");
+  const privacyDoc = readFileSync(resolve(repoRoot, "docs/product/privacy.md"), "utf8");
+  const providersDoc = readFileSync(resolve(repoRoot, "docs/product/limitations.md"), "utf8");
   const settingsDoc = readFileSync(resolve(repoRoot, "docs/settings-reference.md"), "utf8");
 
   const requiredPrivacyMarkers = [
@@ -181,7 +181,7 @@ function checkCspDecision() {
   const missingPrivacyMarkers = requiredPrivacyMarkers.filter((marker) => !privacyDoc.includes(marker));
   if (missingPrivacyMarkers.length > 0) {
     console.error(
-      `[privacy-lane] docs/privacy-and-trust.md is missing CSP rationale marker(s): ${missingPrivacyMarkers.join(", ")}`,
+      `[privacy-lane] docs/product/privacy.md is missing CSP rationale marker(s): ${missingPrivacyMarkers.join(", ")}`,
     );
     return false;
   }
@@ -196,7 +196,7 @@ function checkCspDecision() {
   );
   if (missingProviderMarkers.length > 0) {
     console.error(
-      `[privacy-lane] docs/third-party-providers.md is missing URL policy marker(s): ${missingProviderMarkers.join(", ")}`,
+      `[privacy-lane] docs/product/limitations.md is missing URL policy marker(s): ${missingProviderMarkers.join(", ")}`,
     );
     return false;
   }

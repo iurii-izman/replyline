@@ -59,11 +59,12 @@ function setupFixture() {
 {
   const root = setupFixture();
   try {
-    writeFileSync(join(root, "docs", "verification-lanes.md"), "staged doc change\n", "utf8");
-    runGit(root, ["add", "docs/verification-lanes.md"]);
+    mkdirSync(join(root, "docs", "engineering"), { recursive: true });
+    writeFileSync(join(root, "docs", "engineering", "testing.md"), "staged doc change\n", "utf8");
+    runGit(root, ["add", "docs/engineering/testing.md"]);
     const staged = runFreeze(root);
     assert.equal(staged.status, 0);
-    assert.equal(staged.artifact.changedFiles.includes("docs/verification-lanes.md"), true);
+    assert.equal(staged.artifact.changedFiles.includes("docs/engineering/testing.md"), true);
 
     writeFileSync(join(root, "scripts", "scratch.mjs"), "console.log('ok')\n", "utf8");
     const allowedUntracked = runFreeze(root);

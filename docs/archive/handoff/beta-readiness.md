@@ -25,7 +25,7 @@ Replyline stable beta supports two bounded paths:
 Read alongside:
 
 - [../../release-checklist.md](../../release-checklist.md)
-- [../../releases/v0.2.0-beta.2.md](../../releases/v0.2.0-beta.2.md)
+
 
 Out of scope for current beta posture:
 

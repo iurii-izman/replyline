@@ -100,7 +100,7 @@ function extractLiveEvidence(stamp) {
 }
 
 function testerKitStatus() {
-  const required = ["BETA_TESTING.md", "docs/test-feedback-template.md"];
+  const required = ["BETA_TESTING.md", "docs/engineering/manual-qa.md"];
   const missing = required.filter((rel) => !existsSync(join(rootDir, rel)));
   return { required, missing, ok: missing.length === 0 };
 }

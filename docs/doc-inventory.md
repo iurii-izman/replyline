@@ -81,29 +81,12 @@
 
 | path | audience | final status | canonical target | minimum target action |
 | --- | --- | --- | --- | --- |
-| `docs/known-limitations.md` | public user | `compatibility stub` | `docs/product/limitations.md` | `delete stub after next beta tag` |
 | `docs/live-runtime-matrix.md` | release operator | `compatibility stub` | `docs/engineering/runtime.md` | `delete stub after next beta tag` |
-| `docs/manual-ui-qa.md` | release operator | `compatibility stub` | `docs/engineering/manual-qa.md` | `delete stub after next beta tag` |
-| `docs/manual-visual-qa.md` | release operator | `compatibility stub` | `docs/engineering/manual-qa.md` | `delete stub after next beta tag` |
-| `docs/manual-windows-ux-qa.md` | release operator | `compatibility stub` | `docs/engineering/manual-qa.md` | `delete stub after next beta tag` |
 | `docs/beta-feedback-loop.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` | `delete stub after next beta tag` |
 | `docs/beta-ops-diagnostics.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` and `docs/reference/errors.md` | `delete stub after next beta tag` |
 | `docs/github-beta-operations-kit.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` | `delete stub after next beta tag` |
-| `docs/privacy-and-trust.md` | public user | `compatibility stub` | `docs/product/privacy.md` | `delete stub after next beta tag` |
-| `docs/privacy-policy.md` | public user | `compatibility stub` | `docs/product/privacy.md` | `delete stub after next beta tag` |
 | `docs/public-vs-local-artifacts.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` | `delete stub after next beta tag` |
-| `docs/release-freeze-matrix.md` | release operator | `compatibility stub` | `docs/engineering/release.md` | `delete stub after next beta tag` |
-| `docs/release-incident-classification.md` | release operator | `compatibility stub` | `docs/engineering/release.md` | `delete stub after next beta tag` |
-| `docs/release-local-readiness.md` | release operator | `compatibility stub` | `docs/engineering/release.md` | `delete stub after next beta tag` |
-| `docs/release-readiness.md` | release operator | `compatibility stub` | `docs/engineering/release.md` | `delete stub after next beta tag` |
-| `docs/runtime-bringup.md` | mixed | `compatibility stub` | `docs/engineering/runtime.md` | `delete stub after next beta tag` |
-| `docs/runtime-evidence.md` | mixed | `compatibility stub` | `docs/engineering/runtime.md` | `delete stub after next beta tag` |
-| `docs/runtime-live-qa.md` | mixed | `compatibility stub` | `docs/engineering/runtime.md` and `docs/engineering/manual-qa.md` | `delete stub after next beta tag` |
-| `docs/runtime-quality-harness.md` | contributor | `compatibility stub` | `docs/engineering/runtime.md` | `delete stub after next beta tag` |
 | `docs/stale-beta-policy.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` | `delete stub after next beta tag` |
-| `docs/test-feedback-template.md` | beta tester | `compatibility stub` | `docs/engineering/manual-qa.md` | `delete stub after next beta tag` |
-| `docs/third-party-providers.md` | beta tester | `compatibility stub` | `docs/product/privacy.md` and `docs/product/limitations.md` | `delete stub after next beta tag` |
-| `docs/verification-lanes.md` | contributor | `compatibility stub` | `docs/engineering/testing.md` | `delete stub after next beta tag` |
 
 ## Historical And Archive Docs
 
@@ -111,18 +94,13 @@
 | --- | --- | --- | --- |
 | `docs/archive/experimental/bilingual-interview-mode.md` | internal archive | `historical archive` | Experimental concept, explicitly not shipped in the current public beta. |
 | `docs/archive/handoff/beta-readiness.md` | internal archive | `historical archive` | Archived handoff plan. |
-| `docs/card-schema-v3-migration.md` | internal archive | `historical archive` | Migration note kept for reference only. |
 | `docs/release-notes/v0.2.0-beta.1.md` | internal archive | `historical archive` | Historical public beta release note. |
-| `docs/releases/v0.2.0-beta.2.md` | internal archive | `historical archive` | Draft/historical release note, not active product guidance. |
-| `docs/releases/v0.2.0-beta.2/screenshots/README.md` | internal archive | `historical archive` | Historical screenshot checklist for the beta 2 draft. |
 
 ## Current Count Snapshot
 
-- Active root docs count: `6`
-- Active product docs count: `10`
-- Active engineering/operator docs count: `27`
-- Compatibility stubs count: `28`
-- Archive docs count: `6`
+- Active docs count: `44`
+- Compatibility stubs count: `21`
+- Archive docs count: `3`
 
 ## Minimum Active Set
 
@@ -164,4 +142,3 @@
 карты документации:
 
 - `reports/*.md` - generated reports/evidence artifacts
-- `tests/fixtures/runtime-live-evidence/good/runtime-live-qa.md` - test fixture
