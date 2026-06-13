@@ -2,6 +2,14 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deterministicCardFromSnippet, normalize, validateCard } from "./prompt-contract-core.mjs";
+import {
+  APOLOGY_SPAM,
+  assertMinArraySize,
+  MARKDOWN_TABLE,
+  matchesAnyPattern,
+  RAW_PROMPT_LEAK,
+  SECRET_PATTERNS,
+} from "./quality-fixture-shared.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, "..");
@@ -20,19 +28,6 @@ const DIMENSIONS = {
   no_hallucination: 10,
   privacy_no_secret_leak: 10,
 };
-
-const SECRET_PATTERNS = [
-  /\bsk-[a-z0-9_-]{12,}\b/i,
-  /\bdg_[a-z0-9_-]{12,}\b/i,
-  /\bBearer\s+\S+/i,
-  /\bOPENAI_API_KEY\b/i,
-  /\bDEEPGRAM_API_KEY\b/i,
-  /\bOPENROUTER_API_KEY\b/i,
-];
-
-const RAW_PROMPT_LEAK = /(system prompt|developer message|BEGIN PROMPT|### instruction)/i;
-const MARKDOWN_TABLE = /^\s*\|.+\|/m;
-const APOLOGY_SPAM = /(извините|простите|сожалею).*(извините|простите|сожалею)/i;
 
 const CONCEPT_MAP = {
   acknowledge: ["понима", "согласен", "вижу", "слышу"],
@@ -242,8 +237,7 @@ function evaluateScenario(scenario, thresholds, goldenById = new Map()) {
   if (!hallPackCheck) reasons.push("no_hallucination: candidate pack fact missing");
   dimensionPass.no_hallucination = noHallucinationOk;
 
-  const privacyOk =
-    !RAW_PROMPT_LEAK.test(combined) && SECRET_PATTERNS.every((re) => !re.test(combined));
+  const privacyOk = !RAW_PROMPT_LEAK.test(combined) && !matchesAnyPattern(combined, SECRET_PATTERNS);
   if (!privacyOk) reasons.push("privacy_no_secret_leak: secret-like or prompt leak content");
   dimensionPass.privacy_no_secret_leak = privacyOk;
 
@@ -393,9 +387,10 @@ export function evaluateProductScenarios() {
   if (!existsSync(thresholdsPath)) throw new Error(`Missing thresholds: ${thresholdsPath}`);
   const thresholds = readJson(thresholdsPath);
   const scenarios = loadScenarios();
-  if (scenarios.length < 25 || scenarios.length > 40) {
+  if (scenarios.length > 40) {
     throw new Error(`Expected 25-40 product scenarios, got ${scenarios.length}`);
   }
+  assertMinArraySize(scenarios, 25, `Expected 25-40 product scenarios, got ${scenarios.length}`);
   const goldenEntries = loadGolden();
   const goldenById = new Map(goldenEntries.map((row) => [row.id, row]));
   const results = scenarios.map((scenario) => evaluateScenario(scenario, thresholds, goldenById));
@@ -444,9 +439,7 @@ export function runNegativeRegressionCases() {
   }
   const thresholds = readJson(thresholdsPath);
   const rows = readJson(negativeCasesPath);
-  if (!Array.isArray(rows) || rows.length < 6) {
-    throw new Error("negative-cases must contain at least 6 cases");
-  }
+  assertMinArraySize(rows, 6, "negative-cases must contain at least 6 cases");
 
   const outcomes = [];
   for (const row of rows) {

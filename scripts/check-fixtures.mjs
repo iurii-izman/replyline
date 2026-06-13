@@ -1,11 +1,10 @@
 import { readFile } from "node:fs/promises";
+import { assertMinArraySize } from "./quality-fixture-shared.mjs";
 
 const raw = await readFile(new URL("../fixtures/ru-work-snippets.json", import.meta.url), "utf8");
 const fixtures = JSON.parse(raw);
 
-if (!Array.isArray(fixtures) || fixtures.length < 20) {
-  throw new Error("Expected at least 20 Russian work-conversation fixtures.");
-}
+assertMinArraySize(fixtures, 20, "Expected at least 20 Russian work-conversation fixtures.");
 
 const seenIds = new Set();
 const seenSnippets = new Set();

@@ -42,6 +42,8 @@ It runs in CI/local without real Deepgram/OpenAI/OpenRouter keys and without man
 
 Use this harness for regression guardrails, not as replacement for live runtime evidence.
 
+Lane boundary map: [test-quality-fixtures.md](test-quality-fixtures.md).
+
 ## Thresholds
 
 `tests/fixtures/runtime-quality/quality-thresholds.json`

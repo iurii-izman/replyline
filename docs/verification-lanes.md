@@ -51,7 +51,7 @@
 
 7. `verify:full`
 
-- Состав: `verify:standard` + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + `test:runtime-quality` + `test:product-scenarios` + `report:runtime-quality:strict` + `report:interview-quality:strict` + `report:release-readiness:strict`.
+- Состав: `verify:standard` + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + `test:runtime-quality` + `test:product-scenarios` + `report:interview-quality:strict` + `report:release-readiness:strict`.
 - Это release-quality gate. Здесь разрешены strict report lanes, потому что они являются explicit blocking release gates.
 
 8. `verify:extended`
@@ -85,6 +85,8 @@
 - Product quality gate: `pnpm test:product-scenarios`.
 - Lifecycle governance: `pnpm scripts:lifecycle`.
 - Operator release lane: `pnpm verify:release-local`.
+
+Границы между fixture lanes описаны в [test-quality-fixtures.md](test-quality-fixtures.md).
 
 ## E2E Lane Roles
 

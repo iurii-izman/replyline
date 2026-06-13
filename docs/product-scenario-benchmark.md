@@ -21,6 +21,8 @@
 
 Benchmark — это deterministic regression gate, не замена live runtime QA.
 
+Fixture lane boundary map: [test-quality-fixtures.md](test-quality-fixtures.md).
+
 ## Где находятся данные
 
 - Scenarios: `tests/fixtures/product-scenarios/*.json`

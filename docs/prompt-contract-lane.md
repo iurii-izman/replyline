@@ -38,6 +38,8 @@ Default mode is deterministic and local-only. Scenario checks add a small produc
 
 For those claims, use runtime lanes and evidence artifacts.
 
+Fixture lane boundary map: [test-quality-fixtures.md](test-quality-fixtures.md).
+
 ## Related guards
 
 - `scripts/check-prompt-contract.mjs` — prompt/schema/copy regression checks

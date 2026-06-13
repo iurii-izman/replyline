@@ -7,6 +7,7 @@ import {
   validateCard,
   validateCardV3,
 } from "./prompt-contract-core.mjs";
+import { assertMinArraySize } from "./quality-fixture-shared.mjs";
 
 const fixturePath = new URL("../fixtures/ru-work-snippets.json", import.meta.url);
 const llmPath = new URL("../src-tauri/src/llm.rs", import.meta.url);
@@ -50,9 +51,7 @@ const [
 const answerProfilesSpec = JSON.parse(answerProfilesSpecRaw);
 
 const fixtures = JSON.parse(fixtureRaw);
-if (!Array.isArray(fixtures) || fixtures.length < 20) {
-  fail("Fixture corpus is too small for prompt-contract checks (need >= 20).");
-}
+assertMinArraySize(fixtures, 20, "Fixture corpus is too small for prompt-contract checks (need >= 20).");
 
 assertIncludes(llmRaw, "CardSchemaV3", "llm.rs must document CardSchemaV3 in system prompt.");
 assertIncludes(

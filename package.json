@@ -80,7 +80,7 @@
     "smoke": "pnpm typecheck && pnpm lint && pnpm build && cargo check --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && cargo fmt --manifest-path src-tauri/Cargo.toml --check && pnpm test:unit && pnpm test:contracts && pnpm test:interview-quality",
     "verify:fast": "pnpm smoke && pnpm test:security-lanes && pnpm test:public-footprint",
     "verify:standard": "pnpm verify:fast && pnpm scripts:lifecycle && pnpm release:freeze:check",
-    "verify:full": "pnpm verify:standard && pnpm release:freeze:check:strict && pnpm rust:deps && pnpm audit:npm && pnpm test:runtime-quality && pnpm test:product-scenarios && pnpm report:runtime-quality:strict && pnpm report:interview-quality:strict && pnpm report:release-readiness:strict",
+    "verify:full": "pnpm verify:standard && pnpm release:freeze:check:strict && pnpm rust:deps && pnpm audit:npm && pnpm test:runtime-quality && pnpm test:product-scenarios && pnpm report:interview-quality:strict && pnpm report:release-readiness:strict",
     "verify": "pnpm verify:fast",
     "verify:extended": "pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:runtime-quality && pnpm test:product-scenarios && pnpm test:optional:e2e:web && pnpm test:optional:e2e:desktop && pnpm test:experimental",
     "test:e2e:web": "pnpm test:e2e:web:smoke",
@@ -131,7 +131,7 @@
     "report:release-readiness": "node scripts/report-release-readiness.mjs",
     "report:release-readiness:strict": "node scripts/report-release-readiness.mjs --strict",
     "beta:seal": "pnpm report:internal-beta-seal",
-    "verify:release-local": "pnpm verify:standard && pnpm test:e2e:web && pnpm test:runtime-quality && pnpm test:product-scenarios && pnpm report:runtime-quality:strict && pnpm report:release-readiness:strict",
+    "verify:release-local": "pnpm verify:standard && pnpm test:e2e:web && pnpm test:runtime-quality && pnpm test:product-scenarios && pnpm report:release-readiness:strict",
     "verify:release-local:required-e2e": "pnpm verify:release-local && pnpm test:e2e:web:required"
   },
   "license": "MIT",

@@ -2,6 +2,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deterministicCardFromSnippet, normalize, validateCard } from "./prompt-contract-core.mjs";
+import {
+  APOLOGY_SPAM,
+  assertMinArraySize,
+  findFirstMatch,
+  FORBIDDEN_SAY_NOW_MARKDOWN,
+  RAW_PROMPT_LEAK,
+  SECRET_PATTERNS,
+} from "./quality-fixture-shared.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, "..");
@@ -21,18 +29,6 @@ const thresholdsPath = join(
 );
 const reportsDir = join(rootDir, "reports", "runtime-quality");
 
-const SECRET_PATTERNS = [
-  /\bsk-[a-z0-9_-]{12,}\b/i,
-  /\bdg_[a-z0-9_-]{12,}\b/i,
-  /\bBearer\s+\S+/i,
-  /\bOPENAI_API_KEY\b/i,
-  /\bDEEPGRAM_API_KEY\b/i,
-  /\bOPENROUTER_API_KEY\b/i,
-];
-
-const FORBIDDEN_SAY_NOW_MARKDOWN = [/```/, /^\s*#/m, /^\s*\|.+\|/m, /^\s*[-*]\s+/m];
-const APOLOGY_SPAM = /(извините|простите|сожалею).*(извините|простите|сожалею)/i;
-const RAW_PROMPT_LEAK = /(system prompt|developer message|BEGIN PROMPT|### instruction)/i;
 const CYRILLIC_RATIO_RE = /[а-яё]/gi;
 
 function todayStamp() {
@@ -158,20 +154,16 @@ export function evaluateFixture(fixture, thresholds) {
     reasons.push("raw prompt leakage");
   }
 
-  for (const pattern of SECRET_PATTERNS) {
-    if (pattern.test(fullText)) {
-      score -= 20;
-      reasons.push(`secret-like pattern: ${pattern}`);
-      break;
-    }
+  const secretPattern = findFirstMatch(fullText, SECRET_PATTERNS);
+  if (secretPattern) {
+    score -= 20;
+    reasons.push(`secret-like pattern: ${secretPattern}`);
   }
 
-  for (const pattern of FORBIDDEN_SAY_NOW_MARKDOWN) {
-    if (pattern.test(String(card.say_now ?? ""))) {
-      score -= 10;
-      reasons.push("markdown dump inside sayNow");
-      break;
-    }
+  const markdownPattern = findFirstMatch(String(card.say_now ?? ""), FORBIDDEN_SAY_NOW_MARKDOWN);
+  if (markdownPattern) {
+    score -= 10;
+    reasons.push("markdown dump inside sayNow");
   }
 
   if (expected.requiresNoCandidateHallucination && !fixture.candidatePack) {
@@ -217,9 +209,7 @@ export function evaluateRuntimeAnswerQuality() {
   const fixtures = readJson(fixturesPath);
   const thresholds = readJson(thresholdsPath);
 
-  if (!Array.isArray(fixtures) || fixtures.length < 10) {
-    throw new Error("runtime-answer fixtures must contain at least 10 scenarios");
-  }
+  assertMinArraySize(fixtures, 10, "runtime-answer fixtures must contain at least 10 scenarios");
 
   const results = fixtures.map((fixture) => evaluateFixture(fixture, thresholds));
   const passCount = results.filter((x) => x.pass).length;
