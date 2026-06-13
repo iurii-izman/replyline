@@ -1,0 +1,86 @@
+name: Provider compatibility
+description: Share provider compatibility results and rough edges for beta triage.
+title: "[compat] "
+labels:
+  - beta
+  - type:compatibility
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to record provider compatibility outcomes.
+
+        Keep it sanitized. Never paste secrets, raw transcripts, or provider response bodies.
+  - type: input
+    id: app_version
+    attributes:
+      label: App version
+      placeholder: "0.2.0-beta.1"
+    validations:
+      required: true
+  - type: input
+    id: os_version
+    attributes:
+      label: OS version
+      placeholder: "Windows 11 24H2"
+    validations:
+      required: true
+  - type: dropdown
+    id: provider_type
+    attributes:
+      label: Provider type
+      options:
+        - OpenRouter preset
+        - custom OpenAI-compatible
+        - local/custom
+    validations:
+      required: true
+  - type: input
+    id: provider_name
+    attributes:
+      label: Provider name or endpoint family
+      placeholder: "OpenRouter / vLLM / LM Studio / Ollama / custom gateway"
+    validations:
+      required: true
+  - type: input
+    id: model_name
+    attributes:
+      label: Model name
+      placeholder: "gpt-4.1-mini / deepseek / qwen / local model"
+    validations:
+      required: true
+  - type: dropdown
+    id: compatibility_result
+    attributes:
+      label: Compatibility result
+      options:
+        - Works for smoke path
+        - Works with caveats
+        - Fails setup
+        - Fails runtime
+    validations:
+      required: true
+  - type: textarea
+    id: caveats
+    attributes:
+      label: Caveats or failure details
+      placeholder: Describe request/response quirks, unsupported behavior, or setup friction in sanitized form.
+    validations:
+      required: true
+  - type: textarea
+    id: smoke_attachment
+    attributes:
+      label: Sanitized smoke report attachment
+      description: Attach `artifacts/beta-smoke-report/smoke-report.md` and `.json` after submitting if available.
+      placeholder: Note whether the sanitized smoke report is attached.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety_checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I did not attach API keys, bearer tokens, or credential values.
+          required: true
+        - label: I did not attach raw transcripts, raw prompts, or provider response bodies.
+          required: true

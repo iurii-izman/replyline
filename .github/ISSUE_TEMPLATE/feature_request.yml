@@ -1,0 +1,67 @@
+name: Feature request
+description: Suggest a beta-scoped improvement with concrete user value.
+title: "[feature] "
+labels:
+  - beta
+  - type:feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep requests inside the current beta direction: quality, safety, reliability, local UX, and developer confidence.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What fails in real usage today?
+    validations:
+      required: true
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Most relevant area
+      options:
+        - area:setup
+        - area:runtime
+        - area:stt
+        - area:llm
+        - area:interview
+        - area:candidate-pack
+        - area:report
+        - area:privacy-trust
+        - area:docs
+        - area:release
+    validations:
+      required: true
+  - type: textarea
+    id: request_summary
+    attributes:
+      label: Requested change
+      description: Smallest useful version of the request.
+    validations:
+      required: true
+  - type: textarea
+    id: beta_value
+    attributes:
+      label: Why this matters for beta
+      description: Explain the reliability, trust, usefulness, or setup impact.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Testing evidence or scenarios
+      placeholder: Reference sanitized beta notes, smoke results, or repeat scenarios.
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope_checks
+    attributes:
+      label: Scope checks
+      options:
+        - label: This request does not require external analytics or automatic data collection.
+          required: true
+        - label: This request does not depend on auto-closing issues or bot comment spam.
+          required: true
+        - label: Any attached screenshots or logs are sanitized.
+          required: true

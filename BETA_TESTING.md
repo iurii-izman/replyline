@@ -49,9 +49,9 @@ issues, screenshots или logs.
 ## Report The Result
 
 Оставьте результат в
-[beta smoke issue](https://github.com/iurii-izman/replyline/issues/71) или
+[beta smoke report form](https://github.com/iurii-izman/replyline/issues/new?template=beta_smoke_report.yml) или
 создайте отдельный
-[bug report](https://github.com/iurii-izman/replyline/issues/new?template=bug_report.md)
+[bug report](https://github.com/iurii-izman/replyline/issues/new?template=bug_report.yml)
 для воспроизводимого дефекта.
 
 Укажите:
@@ -62,6 +62,9 @@ issues, screenshots или logs.
 - примерное ожидание карточки;
 - usefulness score от 1 до 5;
 - минимальные reproduction steps для ошибки.
+
+Если есть runtime-артефакт, сначала выполните `pnpm beta:smoke-report` и приложите
+только `smoke-report.md` / `smoke-report.json` в sanitized виде.
 
 ## Privacy Rules
 
@@ -78,4 +81,4 @@ issues, screenshots или logs.
 
 Подробные ограничения продукта описаны в
 [known limitations](docs/known-limitations.md). Вопросы можно задать в
-[GitHub Discussions Q&A](https://github.com/iurii-izman/replyline/discussions/categories/q-a).
+[GitHub Beta Operations Kit](docs/github-beta-operations-kit.md).

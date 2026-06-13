@@ -1,0 +1,90 @@
+name: Setup help
+description: Ask for setup or configuration help without exposing secrets.
+title: "[setup] "
+labels:
+  - beta
+  - area:setup
+  - type:question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when Replyline setup is blocked or unclear.
+
+        Never paste API keys, bearer tokens, or raw logs containing secrets.
+  - type: input
+    id: app_version
+    attributes:
+      label: App version
+      placeholder: "0.2.0-beta.1"
+    validations:
+      required: true
+  - type: input
+    id: os_version
+    attributes:
+      label: OS version
+      placeholder: "Windows 10/11 build"
+    validations:
+      required: true
+  - type: dropdown
+    id: provider_type
+    attributes:
+      label: Provider type
+      options:
+        - OpenRouter preset
+        - custom OpenAI-compatible
+        - local/custom
+        - Not configured yet
+    validations:
+      required: true
+  - type: dropdown
+    id: deepgram_configured
+    attributes:
+      label: Deepgram configured
+      options:
+        - "yes"
+        - "no"
+        - not sure
+    validations:
+      required: true
+  - type: input
+    id: beta_doctor_verdict
+    attributes:
+      label: beta:doctor verdict
+      placeholder: blocked
+    validations:
+      required: true
+  - type: textarea
+    id: blocking_step
+    attributes:
+      label: What is blocked?
+      placeholder: Describe the exact setup step that fails or stays unclear.
+    validations:
+      required: true
+  - type: textarea
+    id: steps_tried
+    attributes:
+      label: Steps already tried
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: sanitized_context
+    attributes:
+      label: Sanitized context
+      description: Reference docs used, redacted screenshots, or sanitized report files.
+      placeholder: docs/troubleshooting.md, sanitized screenshot, smoke-report.md
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety_checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed secrets and API keys from screenshots, logs, and pasted text.
+          required: true
+        - label: I did not attach raw transcripts or private candidate data.
+          required: true

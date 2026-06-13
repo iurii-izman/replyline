@@ -1,0 +1,116 @@
+name: Bug report
+description: Report a reproducible beta issue with sanitized evidence only.
+title: "[bug] "
+labels:
+  - beta
+  - type:bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for reproducible defects in the current beta.
+
+        Do not paste or attach API keys, bearer tokens, raw transcripts, raw prompts, provider response bodies, or private smoke reports committed into the repo.
+  - type: input
+    id: app_version
+    attributes:
+      label: App version
+      description: Replyline version or commit SHA.
+      placeholder: "0.2.0-beta.1 / 5d0feaa"
+    validations:
+      required: true
+  - type: input
+    id: os_version
+    attributes:
+      label: OS version
+      description: Windows edition and build.
+      placeholder: "Windows 11 24H2 (build 26100)"
+    validations:
+      required: true
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Affected area
+      options:
+        - area:setup
+        - area:runtime
+        - area:stt
+        - area:llm
+        - area:interview
+        - area:candidate-pack
+        - area:report
+        - area:privacy-trust
+        - area:docs
+        - area:release
+    validations:
+      required: true
+  - type: dropdown
+    id: provider_type
+    attributes:
+      label: Provider type
+      options:
+        - OpenRouter preset
+        - custom OpenAI-compatible
+        - local/custom
+    validations:
+      required: true
+  - type: dropdown
+    id: stt_provider
+    attributes:
+      label: STT provider
+      options:
+        - Deepgram
+        - Not configured
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: beta_doctor_verdict
+    attributes:
+      label: beta:doctor verdict
+      description: Paste the verdict only, for example `ready`, `ready_with_warnings`, or `blocked`.
+      placeholder: ready_with_warnings
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Reference sanitized local artifacts, redacted screenshots, or the sanitized smoke report attachment.
+      placeholder: |
+        Attach `artifacts/beta-smoke-report/smoke-report.md` and `smoke-report.json` after submitting.
+        Paste only short redacted snippets here when needed.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety_checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I attached sanitized logs only.
+          required: true
+        - label: I did not attach API keys, bearer tokens, or credential values.
+          required: true
+        - label: I did not attach raw transcripts, raw prompts, Candidate Pack values, or provider response bodies.
+          required: true

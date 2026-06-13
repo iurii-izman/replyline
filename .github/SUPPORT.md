@@ -9,11 +9,13 @@
 
 ## Where to Ask
 
-- Bugs: open a **Bug report** issue template
-- Improvements: open a **Feature request** issue template
+- Bugs: open the structured **Bug report** issue form
+- Setup blockers: open the **Setup help** issue form
+- Provider route coverage: open the **Provider compatibility** issue form
+- Weekly or release-wave smoke results: open the **Beta smoke report** issue form
+- Improvements: open the **Feature request** issue form
 - Beta handoff/release readiness: open a **Beta handoff release** issue template
-- Setup and usage questions: use [GitHub Discussions Q&A](https://github.com/iurii-izman/replyline/discussions/categories/q-a)
-- Product feedback and ideas: use [GitHub Discussions Ideas](https://github.com/iurii-izman/replyline/discussions/categories/ideas)
+- Proposed Discussions topics and manual routing live in [docs/github-beta-operations-kit.md](../docs/github-beta-operations-kit.md)
 
 ## What Helps Triage
 
@@ -38,4 +40,4 @@ Do not attach or paste:
 Prefer redacted artifacts:
 
 - `Export redacted markdown (no transcript)` for interview report sharing
-- sanitized runtime artifacts from `reports/` only
+- sanitized runtime artifacts from local `artifacts/` or `reports/` only

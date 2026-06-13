@@ -1,0 +1,104 @@
+name: Beta smoke report
+description: Submit a structured smoke result with sanitized artifacts only.
+title: "[smoke] "
+labels:
+  - beta
+  - area:runtime
+  - type:feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for weekly or release-wave smoke results.
+
+        Run `pnpm beta:smoke-report` first, then attach `artifacts/beta-smoke-report/smoke-report.md` and `smoke-report.json` after submitting this issue.
+  - type: input
+    id: app_version
+    attributes:
+      label: App version
+      placeholder: "0.2.0-beta.1 / commit SHA"
+    validations:
+      required: true
+  - type: input
+    id: os_version
+    attributes:
+      label: OS version
+      placeholder: "Windows 10/11 build"
+    validations:
+      required: true
+  - type: dropdown
+    id: beta_doctor_verdict
+    attributes:
+      label: beta:doctor verdict
+      options:
+        - ready
+        - ready_with_warnings
+        - blocked
+    validations:
+      required: true
+  - type: textarea
+    id: smoke_report_attachment
+    attributes:
+      label: beta:smoke-report attachment
+      description: Confirm that the sanitized smoke report files are attached after issue creation.
+      placeholder: "Attached smoke-report.md and smoke-report.json from artifacts/beta-smoke-report/."
+    validations:
+      required: true
+  - type: dropdown
+    id: provider_type
+    attributes:
+      label: Provider type
+      options:
+        - OpenRouter preset
+        - custom OpenAI-compatible
+        - local/custom
+    validations:
+      required: true
+  - type: dropdown
+    id: stt_provider
+    attributes:
+      label: STT provider
+      options:
+        - Deepgram
+        - Deepgram not configured
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: sanitized_logs
+    attributes:
+      label: Sanitized logs only
+      description: Paste only short redacted snippets or say "attached in sanitized report".
+      placeholder: attached in sanitized report
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety_checks
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I confirm no secrets, API keys, bearer tokens, or credential values are attached.
+          required: true
+        - label: I confirm no raw transcripts, raw prompts, or provider response bodies are attached.
+          required: true

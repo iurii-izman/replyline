@@ -3,12 +3,9 @@ contact_links:
   - name: Beta testing guide
     url: https://github.com/iurii-izman/replyline/blob/main/BETA_TESTING.md
     about: Run the focused 15-minute Windows beta test and report sanitized results.
-  - name: Questions and setup help
-    url: https://github.com/iurii-izman/replyline/discussions/categories/q-a
-    about: Ask usage, setup, and provider configuration questions.
-  - name: Product ideas
-    url: https://github.com/iurii-izman/replyline/discussions/categories/ideas
-    about: Discuss an idea before opening a scoped feature request.
+  - name: Beta ops routing guide
+    url: https://github.com/iurii-izman/replyline/blob/main/docs/github-beta-operations-kit.md
+    about: Labels, milestones, discussion-topic plan, and weekly health report workflow.
   - name: Support Guide
     url: https://github.com/iurii-izman/replyline/blob/main/.github/SUPPORT.md
     about: Troubleshooting and support path before opening issues.

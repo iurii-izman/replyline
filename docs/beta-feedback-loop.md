@@ -17,7 +17,7 @@ Capture these fields:
 
 1. Daily: cluster repeated reports by scenario.
 2. Before release: resolve S0/S1 to zero.
-3. Weekly: review S2 trends (latency drift, retry growth, recurrent provider degradation).
+3. Weekly: run `pnpm beta:health-report` and review S2 trends (latency drift, retry growth, recurrent provider degradation).
 
 ## Output artifact
 
@@ -27,6 +27,10 @@ Maintain a single session note with:
 - class (audio routing, hotkey, latency, bad say_now, trust/legal, other)
 - frequency/severity/reproducibility/action
 - owner + target date
+
+Weekly scaffold output:
+
+- `artifacts/beta-health-report/YYYY-MM-DD.md`
 
 ## PMF evidence ledger (summary-only, no sensitive raw content)
 

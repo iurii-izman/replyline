@@ -4,12 +4,15 @@
 [`README.md`](../README.md), для тестирования с
 [`BETA_TESTING.md`](../BETA_TESTING.md). Полный список и инвентаризация файлов документации приведены в [doc-inventory.md](doc-inventory.md).
 
+
 ## Product And Setup
 
 - [known-limitations.md](known-limitations.md)
 - [privacy-and-trust.md](privacy-and-trust.md)
 - [beta-doctor.md](beta-doctor.md)
 - [beta-smoke-report.md](beta-smoke-report.md)
+- [github-beta-operations-kit.md](github-beta-operations-kit.md)
+- [stale-beta-policy.md](stale-beta-policy.md)
 - [third-party-providers.md](third-party-providers.md)
 - [settings-reference.md](settings-reference.md)
 - [troubleshooting.md](troubleshooting.md)
@@ -19,6 +22,7 @@
 ## Testing
 
 - [test-feedback-template.md](test-feedback-template.md)
+- [beta-feedback-loop.md](beta-feedback-loop.md)
 - [runtime-bringup.md](runtime-bringup.md)
 - [runtime-live-qa.md](runtime-live-qa.md)
 - [live-runtime-matrix.md](live-runtime-matrix.md)
