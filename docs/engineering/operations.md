@@ -156,7 +156,7 @@ Operator quick-read flow:
 4. Correlate the last failure with `logs/app.log` locally.
 5. Reproduce with `pnpm probe:runtime` only when live-provider proof is actually needed.
 
-Do not duplicate the full event schema here. The stable `diag_runtime_event` contract and `RL_*` codes live in [../error-catalog.md](../error-catalog.md).
+Do not duplicate the full event schema here. The stable `diag_runtime_event` contract and `RL_*` codes live in [../reference/errors.md](../reference/errors.md).
 
 Blocker examples:
 

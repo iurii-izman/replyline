@@ -145,3 +145,4 @@ Use this compact template when collecting operator evidence:
 - [testing.md](testing.md)
 - [manual-qa.md](manual-qa.md)
 - [operations.md](operations.md)
+- [../reference/errors.md](../reference/errors.md)

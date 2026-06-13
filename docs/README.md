@@ -15,7 +15,7 @@ Use this page as the final role-based map.
 - [product/user-guide.md](product/user-guide.md) - compact user guide for setup, settings, WorkConversation, Interview Mode, exports, troubleshooting, and keyboard notes.
 - [product/limitations.md](product/limitations.md) - current beta scope, non-shipped tracks, and platform boundaries.
 - [product/privacy.md](product/privacy.md) - canonical capture, storage, provider, and user-control policy.
-- [error-catalog.md](error-catalog.md) - user-facing error reference.
+- [reference/errors.md](reference/errors.md) - canonical error and diagnostics reference.
 - [glossary.md](glossary.md) - short vocabulary reference.
 
 ### Beta tester

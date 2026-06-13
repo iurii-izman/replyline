@@ -97,8 +97,8 @@ const requiredIncludes = [
     excludes: ["Pre-Alpha"],
   },
   {
-    path: "docs/beta-ops-diagnostics.md",
-    includes: ["engineering/operations.md", "diag_runtime_event", "RL_*"],
+    path: "docs/reference/errors.md",
+    includes: ["diag_runtime_event", "RL_*", "CommandError"],
   },
   {
     path: "docs/public-vs-local-artifacts.md",

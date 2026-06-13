@@ -33,7 +33,7 @@
 | `docs/beta-smoke-report.md` | beta tester | `canonical` | Sanitized smoke-report generation and sharing. | `keep concise active guide` |
 | `docs/accessibility.md` | public user | `compatibility stub` | Legacy keyboard/accessibility entrypoint. | `keep short stub` |
 | `docs/candidate-pack.md` | beta tester | `compatibility stub` | Legacy Candidate Pack entrypoint. | `keep short stub` |
-| `docs/error-catalog.md` | beta tester | `canonical` | User-facing error reference. | `merge into reference/errors.md` |
+| `docs/error-catalog.md` | beta tester | `compatibility stub` | `docs/reference/errors.md` | `delete stub after next beta tag` |
 | `docs/glossary.md` | mixed | `supporting` | Shared vocabulary for product and engineering docs. | `keep active` |
 | `docs/interview-mode.md` | beta tester | `compatibility stub` | Legacy Interview Mode entrypoint. | `keep short stub` |
 | `docs/product/limitations.md` | public user | `canonical` | Current beta scope, installer truth, and non-shipped tracks. | `keep active` |
@@ -56,22 +56,23 @@
 | `docs/engineering/operations.md` | release operator | `canonical` | Compact beta/operator guide for intake, routing, diagnostics, sharing, and stale policy. | `keep active` |
 | `docs/engineering/release.md` | release operator | `canonical` | Release decision, freeze, packaging, and handoff truth. | `keep active` |
 | `docs/engineering/runtime.md` | release operator/contributor | `canonical` | Runtime proof, evidence, and claim-label guide. | `keep active` |
+| `docs/reference/errors.md` | release operator/contributor | `canonical` | Canonical error and diagnostics reference. | `keep active` |
 | `docs/engineering/testing.md` | contributor | `canonical` | Test profiles, verification lanes, fixture boundaries, E2E policy, lifecycle, and CI alignment. | `keep active` |
 | `docs/engineering/verification.md` | contributor | `compatibility stub` | Legacy verification entrypoint. | `keep short stub` |
 | `docs/interview-golden-dataset-v1.md` | contributor | `supporting` | Interview dataset reference note. | `keep active` |
 | `docs/interview-quality.md` | contributor | `compatibility stub` | Legacy interview-quality entrypoint. | `keep short stub` |
 | `docs/model-ladder.md` | contributor | `canonical` | Model/provider selection policy. | `archive` |
-| `docs/observability-v2.md` | contributor | `canonical` | Observability and logging design contract. | `merge into engineering/operations.md` |
+| `docs/observability-v2.md` | contributor | `compatibility stub` | `docs/reference/errors.md` | `delete stub after next beta tag` |
 | `docs/product-scenario-benchmark.md` | contributor | `compatibility stub` | Legacy product-scenarios entrypoint. | `keep short stub` |
 | `docs/prompt-contract-lane.md` | contributor | `supporting` | Prompt-contract lane specifics with canonical policy in testing guide. | `keep active` |
 | `docs/release-checklist.md` | release operator | `canonical` | Release execution checklist. | `merge into engineering/operations.md` |
 | `docs/rust-dependency-security.md` | contributor | `canonical` | Rust dependency review and security policy. | `archive` |
 | `docs/runtime-decisions.md` | contributor | `canonical` | Runtime architecture decisions and anti-goals. | `archive` |
-| `docs/runtime-persistence-debug.md` | contributor | `canonical` | Local persistence/debug guide. | `merge into engineering/operations.md` |
+| `docs/runtime-persistence-debug.md` | contributor | `compatibility stub` | `docs/reference/errors.md` | `delete stub after next beta tag` |
 | `docs/runtime-probe-credentials.md` | contributor | `canonical` | Runtime probe credential setup. | `merge into engineering/operations.md` |
 | `docs/runtime-scenario-matrix.md` | contributor | `supporting` | Deterministic runtime scenario coverage map. | `keep active` |
 | `docs/script-lifecycle-matrix.md` | contributor | `compatibility stub` | Legacy lifecycle entrypoint. | `keep short stub` |
-| `docs/secrets-management.md` | contributor | `canonical` | Secrets handling guide. | `merge into engineering/operations.md` |
+| `docs/secrets-management.md` | contributor | `compatibility stub` | `docs/engineering/runtime.md` | `delete stub after next beta tag` |
 | `docs/test-inventory.md` | contributor | `supporting` | Historical audit note from test-surface cleanup. | `keep concise` |
 | `docs/test-quality-fixtures.md` | contributor | `compatibility stub` | Legacy fixture-boundary entrypoint. | `keep short stub` |
 | `docs/ui-layout-contract.md` | contributor | `canonical` | Desktop UI layout contract. | `archive` |
@@ -86,7 +87,7 @@
 | `docs/manual-visual-qa.md` | release operator | `compatibility stub` | `docs/engineering/manual-qa.md` | `delete stub after next beta tag` |
 | `docs/manual-windows-ux-qa.md` | release operator | `compatibility stub` | `docs/engineering/manual-qa.md` | `delete stub after next beta tag` |
 | `docs/beta-feedback-loop.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` | `delete stub after next beta tag` |
-| `docs/beta-ops-diagnostics.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` and `docs/error-catalog.md` | `delete stub after next beta tag` |
+| `docs/beta-ops-diagnostics.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` and `docs/reference/errors.md` | `delete stub after next beta tag` |
 | `docs/github-beta-operations-kit.md` | release operator | `compatibility stub` | `docs/engineering/operations.md` | `delete stub after next beta tag` |
 | `docs/privacy-and-trust.md` | public user | `compatibility stub` | `docs/product/privacy.md` | `delete stub after next beta tag` |
 | `docs/privacy-policy.md` | public user | `compatibility stub` | `docs/product/privacy.md` | `delete stub after next beta tag` |
