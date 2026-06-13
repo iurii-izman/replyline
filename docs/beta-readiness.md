@@ -108,8 +108,8 @@ Blocked starts never install prerequisites. Without `-Force`, they do not launch
 9. Beta preflight lane: `pnpm beta:preflight`
 10. Interview quality report artifact: `pnpm report:interview-quality`
 11. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
-12. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
-13. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
+12. Manual QA pass: follow [engineering/manual-qa.md](./engineering/manual-qa.md) for compact/normal/wide states, Windows UX, Candidate Studio, and privacy/export checks
+13. Keep [ui-layout-contract.md](./ui-layout-contract.md) as the detailed layout contract when a manual QA finding points to geometry, sticky footer overlap, or scroll ownership regressions
 14. Beta release readiness gate: `pnpm beta:release-check`
 15. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
 

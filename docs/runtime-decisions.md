@@ -13,7 +13,7 @@ Keep this as the main MVP runtime path:
 - paragraph-style `answer_now` with dynamic char/word limits by `chars_band`
 - RAM-only context memo
 
-Claim status for this path must follow `docs/benchmark-policy.md` labels.
+Claim status for this path must follow `docs/engineering/runtime.md` labels.
 
 ## What is not in the main path
 
@@ -72,6 +72,5 @@ That future layer should:
 
 See also:
 
-- `docs/runtime-bringup.md`
-- `docs/runtime-evidence.md`
+- `docs/engineering/runtime.md`
 - `docs/release-readiness.md`

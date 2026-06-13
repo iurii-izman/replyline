@@ -39,8 +39,7 @@ Runtime helpers:
 
 ## See also
 
-- [verification-lanes.md](verification-lanes.md) — 4 lane модель (compile / mock / prompt / runtime).
-- [runtime-evidence.md](runtime-evidence.md) — где живут артефакты, минимальное качество.
-- [runtime-bringup.md](runtime-bringup.md) — как поднять runtime path первый раз.
+- [engineering/verification.md](engineering/verification.md) — verify lanes и их границы.
+- [engineering/runtime.md](engineering/runtime.md) — где живут runtime claims, evidence и proof boundaries.
 
 - [copy-rules.md](copy-rules.md) — формулировки и баны.

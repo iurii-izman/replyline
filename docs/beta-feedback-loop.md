@@ -2,7 +2,7 @@
 
 ## Tester input
 
-Use `docs/test-feedback-template.md` for every trusted beta session.
+Use `docs/engineering/manual-qa.md` for every trusted beta session.
 
 ## Fast triage (per issue)
 

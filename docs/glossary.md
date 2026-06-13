@@ -38,8 +38,8 @@
 
 ## L
 
-- **lane** — изолированная категория верификации. Replyline различает 4 lane: compile, mock/UI, prompt/contract, runtime proof. См. [verification-lanes.md](verification-lanes.md).
-- **live-runtime matrix** — таблица проверок на реальных call-приложениях (Teams/Zoom/Meet/Telemost). Operator-mutable. См. [live-runtime-matrix.md](live-runtime-matrix.md).
+- **lane** — изолированная категория верификации. Canonical verify reference: [engineering/verification.md](engineering/verification.md).
+- **live-runtime matrix** — компактный шаблон операторских live-проверок на реальных call-приложениях. См. appendix в [engineering/runtime.md](engineering/runtime.md).
 
 ## M
 

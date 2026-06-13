@@ -47,5 +47,5 @@ Fixture lane boundary map: [test-quality-fixtures.md](test-quality-fixtures.md).
 
 See also:
 
-- `docs/verification-lanes.md`
-- `docs/runtime-evidence.md`
+- `docs/engineering/verification.md`
+- `docs/engineering/runtime.md`

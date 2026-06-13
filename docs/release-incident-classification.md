@@ -20,7 +20,7 @@
 This classification is applied together with:
 
 - `docs/release-readiness.md`
-- `docs/verification-lanes.md`
+- `docs/engineering/verification.md`
 - `docs/release-freeze-matrix.md`
 
 ## Decision rule

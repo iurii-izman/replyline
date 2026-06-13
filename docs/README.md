@@ -21,7 +21,7 @@ Use this page as role-based navigation. For the full document inventory, merge c
 - [BETA_TESTING.md](../BETA_TESTING.md) - canonical short beta smoke path.
 - [beta-doctor.md](beta-doctor.md) - environment readiness and local setup diagnostics.
 - [beta-smoke-report.md](beta-smoke-report.md) - sanitized reporting flow after a smoke run.
-- [runtime-bringup.md](runtime-bringup.md) - first-time runtime bring-up for local validation.
+- [engineering/runtime.md](engineering/runtime.md) - runtime bring-up, evidence, and claim-label guide for local validation.
 - [testing-stack-setup.md](testing-stack-setup.md) - local test environment setup for deeper validation.
 
 ### Contributor
@@ -29,14 +29,14 @@ Use this page as role-based navigation. For the full document inventory, merge c
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - canonical contributor workflow and verification lanes.
 - [architecture.md](architecture.md) - core system structure and boundaries.
 - [copy-rules.md](copy-rules.md) - product/trust wording rules for docs and UI copy.
-- [verification-lanes.md](verification-lanes.md) - validation model and lane expectations.
+- [engineering/verification.md](engineering/verification.md) - validation model and lane expectations.
 
 ### Release/operator
 
 - [release-readiness.md](release-readiness.md) - canonical release readiness gate.
 - [release-checklist.md](release-checklist.md) - release execution checklist.
-- [runtime-evidence.md](runtime-evidence.md) - evidence policy and claim boundaries.
-- [runtime-live-qa.md](runtime-live-qa.md) - live runtime QA runbook for operator validation.
+- [engineering/runtime.md](engineering/runtime.md) - runtime evidence policy, proof boundaries, and live validation flow.
+- [engineering/manual-qa.md](engineering/manual-qa.md) - compact operator manual QA checklist.
 - [public-vs-local-artifacts.md](public-vs-local-artifacts.md) - sharing and sensitivity rules for generated artifacts.
 - [github-beta-operations-kit.md](github-beta-operations-kit.md) - GitHub-side beta operations and routing.
 
@@ -52,6 +52,7 @@ Use this page as role-based navigation. For the full document inventory, merge c
 These docs stay available, but they are not part of the main visible role map on this page:
 
 - to be merged/archived: see [doc-inventory.md](doc-inventory.md) for the canonical cleanup map
-- examples: `beta-readiness.md`, `release-local-readiness.md`, `live-runtime-matrix.md`, `manual-ui-qa.md`, `manual-visual-qa.md`, `manual-windows-ux-qa.md`
+- legacy redirect stubs: [verification-lanes.md](verification-lanes.md), [runtime-live-qa.md](runtime-live-qa.md), [runtime-bringup.md](runtime-bringup.md), [runtime-evidence.md](runtime-evidence.md), [manual-ui-qa.md](manual-ui-qa.md), [manual-windows-ux-qa.md](manual-windows-ux-qa.md), [manual-visual-qa.md](manual-visual-qa.md), [test-feedback-template.md](test-feedback-template.md)
+- examples: `beta-readiness.md`, `release-local-readiness.md`
 
 Treat these as supporting material to be merged or archived over time rather than primary entrypoints.
