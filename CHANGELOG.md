@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes yet._
+- Release readiness work continues for v0.2.0-beta.2.
+
+## [0.2.0-beta.2] - Draft
+
+### Added
+
+- `pnpm beta:release-check` for release readiness review.
+- `docs/release-checklist.md` for the honest split between automated and manual release checks.
+- `docs/releases/v0.2.0-beta.2.md` as the beta 2 release notes draft.
+- `docs/releases/v0.2.0-beta.2/screenshots/README.md` as the screenshot checklist placeholder.
 
 ## [0.2.0-beta.1] - 2026-06-12
 

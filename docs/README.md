@@ -44,8 +44,10 @@ cross-machine or cross-provider proof.
 
 ## Release
 
+- [release-checklist.md](release-checklist.md)
 - [release-local-readiness.md](release-local-readiness.md)
 - [release-incident-classification.md](release-incident-classification.md)
+- [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md)
 - [releases/v0.2.0-beta.1.md](releases/v0.2.0-beta.1.md)
 
 Generated reports and sensitive runtime evidence stay under ignored `reports/`
