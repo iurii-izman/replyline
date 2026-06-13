@@ -60,6 +60,7 @@
 - Этот профиль не вызывает `verify:full`, чтобы nightly/CI не гонял full дважды.
 - `test:runtime-quality` уже включает `test:say-now-scenarios` и `test:interview-quality`, поэтому `verify:extended` не должен вызывать их отдельно.
 - Запускать его следует как addon после `verify:full`, а не вместо `verify:full`.
+- Для реального выполнения optional tooling нужен `pnpm install --include=optional`; иначе optional wrappers могут вернуть `SKIP`, и этот статус должен быть явно отражён в summary/artifacts.
 
 ## Tests vs Reports
 
@@ -99,5 +100,6 @@
 ## CI Alignment
 
 - `.github/workflows/ci.yml`: blocking `verify:fast` baseline.
-- `.github/workflows/extended-quality.yml`: `verify:full` и затем addon-only `verify:extended`, без отдельного повторного запуска addon lanes вне `verify:extended`.
+- `.github/workflows/extended-quality.yml`: `verify:full` и затем addon-only `verify:extended`, без отдельного повторного запуска addon lanes вне `verify:extended`; summary различает `PASS`, `PASS_WITH_SKIP` и `FAIL_NON_BLOCKING`.
 - `.github/workflows/release-on-tag.yml`: tag/release validation path.
+- `.github/workflows/windows-packaging-manual.yml`: manual packaging path c обязательным `verify:fast` перед сборкой.

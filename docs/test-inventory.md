@@ -1,6 +1,6 @@
 # Test and Verification Inventory
 
-Audit snapshot: 2026-06-13, commit `017ca00426bb7a1cc368bed509fd2c3a5727b349`.
+Audit snapshot: 2026-06-13, worktree after verification-architecture cleanup.
 
 This document describes the current test, policy, report, and release lanes. It
 does not change their behavior. `Current profile usage` is transitive: an entry
@@ -13,8 +13,9 @@ listed under `smoke` is also used by profiles that call `smoke`.
 - Script tests: 9 `scripts/*.test.mjs` files; 3 have no package command or
   profile usage.
 - E2E: 2 Playwright web specs and 1 WebdriverIO/Tauri desktop smoke spec.
-- Profiles are nested: `verify:fast` -> `smoke`; `verify:full` ->
-  `verify:fast`; `verify:extended` -> `verify:full`.
+- Profiles are nested: `verify:fast` -> `smoke`; `verify:standard` ->
+  `verify:fast`; `verify:full` -> `verify:standard`.
+- `verify:extended` is an addon lane that runs separately from `verify:full`.
 
 ## Inventory
 
@@ -98,22 +99,19 @@ listed under `smoke` is also used by profiles that call `smoke`.
 
 ## Duplicate Checks
 
-1. `extended-quality.yml` runs `verify:full`, then `verify:extended`; the latter
-   starts with `verify:full`, so the full profile runs twice.
-2. The same workflow runs `test:optional:e2e:web` after `verify:extended`, while
-   blocking `ci.yml` already runs the same web E2E suite for every push/PR.
-3. `verify:extended` runs `test:say-now-scenarios` directly and then again
-   inside `test:runtime-quality`.
-4. `verify:full` runs `test:interview-quality` through `smoke`, then runs
-   `report:interview-quality`, which evaluates the same golden dataset again.
-5. `test:fixtures` checks `fixtures/ru-work-snippets.json` shape and uniqueness;
-   `test:prompt-contract` reads the same corpus, enforces the same minimum size,
-   and performs stronger card validation.
-6. `verify`/`verify:fast`, `check:slo`/`test:slo-budget`, and the
-   `test:optional:*` commands are aliases rather than distinct checks.
-7. `check-public-footprint.mjs` is run once in an Ubuntu pre-job and again
-   inside Windows `verify:fast`. This may be intentional cross-platform defense,
-   but it is duplicate CI work.
+1. `verify:full` still runs `test:interview-quality` through `smoke`, then runs
+   `report:interview-quality:strict` for evidence output. The repeated dataset
+   evaluation is intentional but remains the main heavy duplicate inside release
+   verification.
+2. `test:fixtures` still overlaps partly with `test:prompt-contract`, but its
+   role is now explicitly limited to addon fixture-shape coverage in
+   `verify:extended`.
+3. `verify`/`verify:fast`, `check:slo`/`test:slo-budget`, and the
+   `test:optional:*` commands are compatibility or readability aliases rather
+   than distinct checks.
+4. `check-public-footprint.mjs` still runs once in the Ubuntu pre-job and again
+   inside Windows `verify:fast`. This remains deliberate cross-platform defense
+   rather than accidental duplication.
 
 ## Fixtures and Schema Versions
 
@@ -157,22 +155,22 @@ blocking policy/threshold gates, and `report:*` for evidence generation.
 - k6 is currently a placeholder lane because its checked test file is absent;
   it cannot produce a test signal until the file is restored or the script is
   removed.
-- Optional wrappers exit successfully on `SKIP`. Workflow summaries must keep
-  `SKIP` distinct from `PASS`; the current extended summary only records process
-  success/failure and loses that distinction.
+- Optional wrappers exit successfully on `SKIP`.
+- `.github/workflows/extended-quality.yml` now records `PASS`, `PASS_WITH_SKIP`,
+  and `FAIL_NON_BLOCKING`, plus the exact optional tools that were skipped.
+- `verify:extended` still requires `pnpm install --include=optional` when the
+  optional E2E or experimental tooling is expected to run for real.
 
 ## CI Duplication and Gaps
 
 - Main CI and tag release both run `verify:fast`; this is appropriate for tag
   immutability but expensive.
-- Extended Quality duplicates the full profile internally and duplicates web
-  E2E across workflows.
-- Manual Windows packaging has no `verify:fast` or explicit assertion that the
-  selected ref was previously verified.
-- Extended Quality is described as non-blocking and uses `continue-on-error`,
-  but its summary step exits `1`; the workflow itself therefore ends failed.
-  It is non-blocking only because it is scheduled/manual, not because the
-  workflow conclusion is neutral.
+- Extended Quality no longer re-runs `verify:full` through `verify:extended`,
+  and it no longer hides optional-tool skips behind a generic pass result.
+- Manual Windows packaging now runs `pnpm verify:fast` before `pnpm tauri build`.
+- Extended Quality still surfaces failed lanes as a failed scheduled/manual run;
+  that is acceptable because it is not a PR-blocking workflow, and the summary
+  artifact now states that the failure is non-blocking.
 - CI installs `cargo-deny` and `cargo-audit` before `verify:fast`, although that
   profile does not call them. They are needed only by full/dependency lanes.
 - Three script tests have no package/profile entry:
@@ -181,12 +179,14 @@ blocking policy/threshold gates, and `report:*` for evidence generation.
 
 ## Recommended Next Block
 
-Make a scripts-only normalization change with no product behavior change:
+Finish the remaining cleanup without changing product behavior:
 
-1. Remove the repeated `verify:full` and Say Now executions.
-2. Add one `test:scripts` command for all `scripts/*.test.mjs`, then decide
-   which script tests belong in `smoke` versus `verify:extended`.
-3. Separate report generation from evaluator unit tests.
+1. Decide whether the interview-quality strict report should remain a separate
+   second pass inside `verify:full`, or whether evidence can be generated from
+   the blocking test run.
+2. Add one `test:scripts` command for orphaned `scripts/*.test.mjs`, then place
+   each script test explicitly into `smoke`, `verify:extended`, or an operator lane.
+3. Separate report generation from evaluator gates where a `test:*` command still
+   writes durable artifacts.
 4. Remove or restore the placeholder k6 lane.
-5. Make CI summaries preserve `PASS` / `FAIL` / `SKIP`.
-6. Add verification to manual packaging or require a verified commit input.
+5. Revisit whether CI really needs cargo audit tooling preinstalled on the fast lane.

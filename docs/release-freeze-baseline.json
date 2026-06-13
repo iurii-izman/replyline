@@ -81,6 +81,7 @@
     "docs/runtime-live-qa.md",
     "docs/runtime-scenario-matrix.md",
     "docs/live-runtime-matrix.md",
+    "docs/test-inventory.md",
     "docs/troubleshooting.md",
     "docs/script-lifecycle-matrix.md",
     "scripts/check-report-secret-leaks.mjs",

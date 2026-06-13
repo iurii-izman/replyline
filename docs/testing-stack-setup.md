@@ -67,6 +67,14 @@ pnpm install --include=optional
 - `pnpm test:optional:ux:lighthouse`
 
 `verify:extended` is an addon lane. It does not rerun `verify:full`; CI/nightly should execute `verify:full` separately when full baseline is required. The extended profile itself owns coverage, fixtures, `test:runtime-quality`, `test:product-scenarios`, and the optional addon lanes, so workflows should not schedule those same lanes again outside `verify:extended`.
+If optional tooling is absent, the wrapper lanes return `SKIP`; workflow/reporting
+must surface that as `SKIP`, not as a silent pass.
+
+## Workflow Expectations
+
+- `.github/workflows/ci.yml` is the blocking PR/main lane: `verify:fast` + blocking web E2E + strict release-freeze check.
+- `.github/workflows/extended-quality.yml` is a non-blocking addon workflow: `verify:full`, then `verify:extended`, with explicit summary states for `PASS`, `PASS_WITH_SKIP`, and `FAIL_NON_BLOCKING`.
+- `.github/workflows/windows-packaging-manual.yml` now runs `pnpm verify:fast` before `pnpm tauri build`, so manual packaging is no longer a raw build-only path.
 
 ## Desktop/Web E2E Policy
 

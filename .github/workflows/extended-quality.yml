@@ -43,44 +43,101 @@ jobs:
       - name: Run pnpm verify:full
         id: verify_full
         continue-on-error: true
-        run: pnpm verify:full
+        shell: pwsh
+        run: |
+          $logPath = Join-Path $env:RUNNER_TEMP "verify-full.log"
+          pnpm verify:full *>&1 | Tee-Object -FilePath $logPath
+          exit $LASTEXITCODE
       - name: Run pnpm verify:extended
         id: verify_extended
         continue-on-error: true
-        run: pnpm verify:extended
+        shell: pwsh
+        run: |
+          $logPath = Join-Path $env:RUNNER_TEMP "verify-extended.log"
+          pnpm verify:extended *>&1 | Tee-Object -FilePath $logPath
+          exit $LASTEXITCODE
       - name: Extended quality summary
         if: always()
         shell: pwsh
         run: |
           $failed = @()
+          $skipped = @{}
+          $skipRegex = '\[optional-lane\] SKIP ([^:]+):'
+
+          function Get-SkippedTools([string] $path) {
+            if (-not (Test-Path -LiteralPath $path)) {
+              return @()
+            }
+
+            $tools = @()
+            foreach ($match in [regex]::Matches((Get-Content -LiteralPath $path -Raw), $skipRegex)) {
+              $tools += $match.Groups[1].Value
+            }
+            return $tools | Sort-Object -Unique
+          }
+
           if ("${{ steps.verify_full.outcome }}" -ne "success") { $failed += "verify:full" }
           if ("${{ steps.verify_extended.outcome }}" -ne "success") { $failed += "verify:extended" }
+
+          $verifyFullSkipped = Get-SkippedTools (Join-Path $env:RUNNER_TEMP "verify-full.log")
+          $verifyExtendedSkipped = Get-SkippedTools (Join-Path $env:RUNNER_TEMP "verify-extended.log")
+          if ($verifyFullSkipped.Count -gt 0) { $skipped["verify:full"] = $verifyFullSkipped }
+          if ($verifyExtendedSkipped.Count -gt 0) { $skipped["verify:extended"] = $verifyExtendedSkipped }
+
+          $status = if ($failed.Count -gt 0) {
+            "FAIL_NON_BLOCKING"
+          } elseif ($skipped.Count -gt 0) {
+            "PASS_WITH_SKIP"
+          } else {
+            "PASS"
+          }
 
           $json = @{
             runId = "${{ github.run_id }}"
             runAttempt = "${{ github.run_attempt }}"
             workflow = "${{ github.workflow }}"
             failedLanes = $failed
-            status = $(if ($failed.Count -eq 0) { "PASS" } else { "FAIL_NON_BLOCKING" })
+            skippedOptionalTools = $skipped
+            status = $status
             generatedAtUtc = [DateTime]::UtcNow.ToString("o")
           } | ConvertTo-Json -Depth 4
           $jsonPath = Join-Path $env:RUNNER_TEMP "extended-quality-failures.json"
           Set-Content -Path $jsonPath -Value $json -Encoding utf8
 
-          if ($failed.Count -eq 0) {
-            "### Extended Quality Summary`n`n- Status: PASS`n- Failed lanes: none" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-            Write-Host "All non-blocking lanes passed."
+          if ($failed.Count -eq 0 -and $skipped.Count -eq 0) {
+            "### Extended Quality Summary`n`n- Status: PASS`n- Failed lanes: none`n- Skipped optional tools: none" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+            Write-Host "All extended lanes passed without skips."
             exit 0
           }
 
-          "### Extended Quality Summary`n`n- Status: FAIL (non-blocking)`n- Failed lanes:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "### Extended Quality Summary" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- Status: $status" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- Failed lanes: $(if ($failed.Count -eq 0) { 'none' } else { $failed -join ', ' })" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+          if ($skipped.Count -eq 0) {
+            "- Skipped optional tools: none" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          } else {
+            "- Skipped optional tools:" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+            foreach ($entry in $skipped.GetEnumerator() | Sort-Object Name) {
+              "- $($entry.Key): $($entry.Value -join ', ')" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+            }
+          }
+
           foreach ($lane in $failed) {
-            "- $lane" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
             Write-Host "::error title=Extended quality lane failed::$lane failed in non-blocking workflow"
           }
 
-          Write-Host "::warning title=Extended quality signal::Non-blocking workflow reported failed lanes. See summary + artifact."
-          exit 1
+          foreach ($entry in $skipped.GetEnumerator()) {
+            Write-Host "::warning title=Extended quality optional tooling skipped::$($entry.Key) skipped $($entry.Value -join ', ')"
+          }
+
+          if ($failed.Count -gt 0) {
+            Write-Host "::warning title=Extended quality signal::Non-blocking workflow reported failed lanes. See summary + artifact."
+            exit 1
+          }
+
+          Write-Host "::warning title=Extended quality signal::Extended lanes passed with optional-tool skips. See summary + artifact."
+          exit 0
       - name: Upload extended summary artifact
         if: always()
         uses: actions/upload-artifact@v7
