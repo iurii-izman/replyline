@@ -7,13 +7,15 @@ classification.
 
 ## Required
 
-Build, test, policy, security and release commands used by `verify:fast`,
+Build, test, policy, security and release commands used by canonical profiles
+such as `test:unit`, `test:contracts`, `verify:fast`, `verify:standard`,
 `verify:full`, `verify:extended` and `verify:release-local`.
 
 ## Advisory
 
-Readiness and release-freeze reports that provide evidence without replacing a
-blocking quality gate.
+Readiness and evidence commands that are not themselves the canonical gate.
+When a report is intended to be blocking, its canonical name must end with
+`:strict`.
 
 ## Optional
 
@@ -25,5 +27,5 @@ generators that are useful for a specific task but not required for every PR.
 Machine-dependent performance, ZAP and Lighthouse lanes. Their absence or skip
 must never be represented as completed validation.
 
-Deprecated aliases are removed instead of being kept indefinitely. Git history
-preserves their previous behavior.
+Compatibility aliases may remain temporarily, but canonical docs/workflows must
+point to the non-alias profile names.

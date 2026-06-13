@@ -312,6 +312,7 @@ function writeReports(report) {
 }
 
 function runCli() {
+  const reportOnly = process.argv.includes("--report-only");
   const report = evaluateRuntimeAnswerQuality();
   const files = writeReports(report);
   console.log(`runtime-answer-quality: JSON report -> ${files.jsonPath}`);
@@ -319,7 +320,7 @@ function runCli() {
   console.log(
     `runtime-answer-quality: pass=${report.aggregate.passCount}/${report.aggregate.total} avg=${report.aggregate.averageScore}`,
   );
-  if (!report.pass) process.exit(1);
+  if (!reportOnly && !report.pass) process.exit(1);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

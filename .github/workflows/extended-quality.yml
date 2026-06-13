@@ -44,7 +44,7 @@ jobs:
         id: verify_full
         continue-on-error: true
         run: pnpm verify:full
-      - name: Extended verification lane (coverage + fixtures)
+      - name: Extended verification addon lane
         id: verify_profile_extended
         continue-on-error: true
         run: pnpm verify:extended
@@ -66,7 +66,7 @@ jobs:
         run: |
           $failed = @()
           if ("${{ steps.verify_full.outcome }}" -ne "success") { $failed += "verify:full" }
-          if ("${{ steps.verify_profile_extended.outcome }}" -ne "success") { $failed += "verify:profile:extended" }
+          if ("${{ steps.verify_profile_extended.outcome }}" -ne "success") { $failed += "verify:extended" }
           if ("${{ steps.optional_e2e_web.outcome }}" -ne "success") { $failed += "test:optional:e2e:web" }
           if ("${{ steps.optional_e2e_desktop.outcome }}" -ne "success") { $failed += "test:optional:e2e:desktop" }
           if ("${{ steps.experimental_lane.outcome }}" -ne "success") { $failed += "test:experimental" }

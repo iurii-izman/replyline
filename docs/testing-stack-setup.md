@@ -1,58 +1,72 @@
 # Testing Stack Setup
 
-## Required Gates
+## Required Baseline
 
 - Install deps: `pnpm install --frozen-lockfile`
-- Required PR/local profile: `pnpm verify:fast`
-- Release profile: `pnpm verify:full`
+- Fast PR/local gate: `pnpm verify:fast`
+- Local pre-handoff gate: `pnpm verify:standard`
+- Release-quality gate: `pnpm verify:full`
 - Rust supply chain lane: `pnpm rust:deps`
-- npm advisories: `pnpm audit:npm`
+- npm advisories lane: `pnpm audit:npm`
 
-`pnpm smoke` is required and includes:
+## Canonical Test Profiles
 
-- `cargo test --manifest-path src-tauri/Cargo.toml`
+- `pnpm test:quick` -> fastest local loop
+- `pnpm test:unit` -> deterministic unit/component/script-unit coverage
+- `pnpm test:contracts` -> docs/copy/prompt/ipc/locale/consistency contracts
+
+`pnpm smoke` is the canonical compile-and-test baseline and includes:
+
+- `typecheck`
+- `lint`
+- `build`
+- `cargo check --manifest-path src-tauri/Cargo.toml`
 - `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings`
 - `cargo fmt --manifest-path src-tauri/Cargo.toml --check`
-- required policy checks: `pnpm test:prompt-contract`, `pnpm copy:check`
+- `pnpm test:unit`
+- `pnpm test:contracts`
+- `pnpm test:interview-quality`
 
-## Optional Lanes
+## Reports and Strict Reports
+
+- `report:*` lanes generate evidence/report artifacts.
+- Blocking report lanes are named explicitly with `:strict`.
+- Canonical strict report gates:
+  - `pnpm report:runtime-quality:strict`
+  - `pnpm report:interview-quality:strict`
+  - `pnpm report:release-readiness:strict`
+
+Compatibility aliases remain available:
+
+- `pnpm report:runtime-quality` -> `pnpm report:runtime-quality:strict`
+- `pnpm report:interview-quality` -> `pnpm report:interview-quality:strict`
+
+## Extended / Optional Lanes
 
 Optional tooling is excluded from the default install profile (`optional=false` in `.npmrc`).
-Before running optional lanes, install optional packages explicitly:
+Before running addon lanes, install optional packages explicitly:
 
 ```bash
 pnpm install --include=optional
 ```
 
 - `pnpm verify:extended`
-- `pnpm deps:review` (dependency freshness + override maintenance review; non-blocking lane)
+- `pnpm deps:review`
 - `pnpm test:optional:e2e:web`
 - `pnpm test:optional:e2e:desktop`
 - `pnpm test:optional:ux:lighthouse`
 
-### Desktop/Web E2E policy
+`verify:extended` is an addon lane. It does not rerun `verify:full`; CI/nightly should execute `verify:full` separately when full baseline is required.
 
-- Deterministic credential-free happy path: `pnpm test:e2e:web` (Playwright + injected mock platform, no real Deepgram/LLM keys).
-- Web E2E auto-starts local Vite server (`127.0.0.1:4173`) from Playwright config; no separate manual server step is required.
-- Desktop E2E (`pnpm test:e2e:desktop`) is still optional and returns `SKIP` when `TAURI_APP_PATH` is not set.
+## Desktop/Web E2E Policy
+
+- Deterministic credential-free happy path: `pnpm test:e2e:web`.
+- Web E2E auto-starts local Vite server (`127.0.0.1:4173`) from Playwright config.
+- Desktop E2E (`pnpm test:e2e:desktop`) remains optional and returns `SKIP` when `TAURI_APP_PATH` is not set.
 - Desktop E2E required lane (`pnpm test:e2e:desktop:required`) is for release/operator validation and fails when prerequisites are missing.
-- Required lane prerequisites:
-  - build app artifact: `pnpm tauri build`
-  - set desktop binary path: `set TAURI_APP_PATH=<path-to-built-app>`
-  - run lane: `pnpm test:e2e:desktop:required`
-- Flake policy:
-  - keep `retries: 0` for fast failure and reproducible diagnosis;
-  - use deterministic selectors (`data-testid`) and mocked IPC payloads;
-  - any flaky E2E must be fixed or isolated before making that lane blocking.
 
-## Frontend Test Strategy
+Required desktop E2E prerequisites:
 
-- `pnpm test:ui` is the default frontend regression lane for PR/local changes touching `src/app/*`.
-- Keep tests deterministic: mock platform IPC (`invoke`, shortcuts, listeners), avoid timers unless controlled with fake timers, and avoid full snapshots.
-- Coverage intent:
-  - `src/app/controller/*`: direct unit tests for pure/action modules plus integration coverage via `App.ui.test.tsx`.
-  - Critical UI states: mode state banner, Candidate Pack state machine, Settings diagnostics warnings, and export safety copy.
-- Run `pnpm test:ui:coverage` when:
-  - changing controller orchestration or setup/mode/privacy flows;
-  - adding/removing UI states in `MainSurface`, `SettingsSurface`, or `CandidatePackStudio`;
-  - preparing risk-sensitive handoff where proof of frontend coverage delta is required.
+- build app artifact: `pnpm tauri build`
+- set desktop binary path: `set TAURI_APP_PATH=<path-to-built-app>`
+- run lane: `pnpm test:e2e:desktop:required`

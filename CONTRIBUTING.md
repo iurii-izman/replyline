@@ -26,6 +26,12 @@ pnpm install --frozen-lockfile
 pnpm verify:fast
 ```
 
+## Local handoff profile
+
+```bash
+pnpm verify:standard
+```
+
 ## Release candidate profile
 
 ```bash
@@ -34,10 +40,12 @@ pnpm verify:full
 
 `verify:full` includes:
 
-- `pnpm verify:fast`
-- `pnpm release:freeze:check`
+- `pnpm verify:standard`
+- `pnpm release:freeze:check:strict`
 - `pnpm rust:deps`
 - `pnpm audit:npm`
+- runtime/product quality gates
+- strict evidence reports
 
 ## Solo workflow mode
 

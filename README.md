@@ -82,14 +82,24 @@ pnpm verify:full
 
 ## Validation Profiles
 
+- `pnpm test:quick` - fastest local loop (`typecheck` + `lint` + `test:ui`)
+- `pnpm test:unit` - deterministic unit/component/script-unit suite
+- `pnpm test:contracts` - docs/copy/prompt/ipc/locale/consistency contracts
 - `pnpm verify:fast` - default local/PR profile (`smoke` + security lane + public-footprint guard)
-- `pnpm verify:full` - release profile (`verify:fast` + strict freeze gate + dependency/security checks)
-- `pnpm verify:extended` - full profile + extra coverage/fixtures/say-now lanes
+- `pnpm verify:standard` - local pre-handoff profile (`verify:fast` + lifecycle + advisory freeze report)
+- `pnpm verify:full` - release-quality profile (`verify:standard` + strict freeze/dependency/runtime/report gates)
+- `pnpm verify:extended` - addon-only nightly/operator lane (coverage + fixtures + optional E2E/experimental), runs separately from `verify:full`
 
 Release-freeze command semantics:
 
 - advisory: `pnpm release:freeze:check` (captures attention-required findings for handoff text)
 - blocking: `pnpm release:freeze:check:strict` (non-zero exit when findings exist)
+
+Strict report gates:
+
+- `pnpm report:runtime-quality:strict`
+- `pnpm report:interview-quality:strict`
+- `pnpm report:release-readiness:strict`
 
 ## Privacy Baseline
 

@@ -1,93 +1,89 @@
-# Replyline Verification Lanes
+# Replyline Verification Profiles
 
-Этот документ фиксирует роли verification lane и их границы. `green` в одном lane не означает `green` в другом.
+Этот документ фиксирует canonical hierarchy тестовых и verification profiles. Старые имена-алиасы сохранены только для совместимости и не должны быть главным reference в новых docs/workflows.
 
-## Core lanes
+## Canonical Profiles
 
-| Lane                                       | Main command                             | Role                                                                                          |
-| ------------------------------------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------- |
-| internal beta seal                         | `pnpm beta:seal`                         | One-command internal tester readiness report with explicit blockers/warnings/skips            |
-| fast default                               | `pnpm verify` / `pnpm verify:fast`       | Обязательный PR/local baseline: compile + lint + tests + security/public footprint checks     |
-| full release profile                       | `pnpm verify:full`                       | Усиленный release профиль: `verify:fast` + freeze/dependency/security/release reporting lanes |
-| extended quality                           | `pnpm verify:extended`                   | Неразрушающий расширенный quality lane (coverage/fixtures/scenario/runtime-quality)           |
-| local release readiness                    | `pnpm verify:release-local`              | Строгий локальный pre-handoff lane без live credentials и GUI шагов                           |
-| local release readiness + required web E2E | `pnpm verify:release-local:required-e2e` | Operator lane: `verify:release-local` + non-skipped web E2E execution                         |
-| desktop E2E required lane                  | `pnpm test:e2e:desktop:required`         | Operator lane для built desktop artifact: не допускает `SKIP`, даёт только `PASS`/`FAIL`      |
+| Profile | Command | Role |
+| --- | --- | --- |
+| quick local loop | `pnpm test:quick` | Самый быстрый локальный цикл: `typecheck` + `lint` + frontend component tests |
+| deterministic unit/component | `pnpm test:unit` | Все deterministic unit/component/script-unit проверки |
+| deterministic contracts | `pnpm test:contracts` | Docs/copy/prompt/ipc/locale/consistency contract checks |
+| fast default gate | `pnpm verify:fast` | Обязательный PR/local baseline: `smoke` + security/public-footprint |
+| standard handoff gate | `pnpm verify:standard` | Локальный pre-handoff gate: `verify:fast` + lifecycle + advisory freeze report |
+| full release gate | `pnpm verify:full` | Release-quality gate: standard + strict freeze + dependency/security + runtime/product quality + strict reports |
+| extended addon lane | `pnpm verify:extended` | Nightly/operator addon lane: coverage + fixtures + optional E2E/experimental lanes, без повторного `verify:full` |
 
-## Lane semantics
+## Profile Composition
 
-1. `verify` и `verify:fast`
+1. `test:quick`
 
-- `verify` это alias к `verify:fast`.
-- `verify:fast` обязан включать `pnpm smoke`, `pnpm test:security-lanes`, `pnpm test:public-footprint`.
-- Это baseline для локальной и PR-проверки.
+- Состав: `typecheck` + `lint` + `test:ui`.
+- Это developer shortcut, не заменяет `test:unit` или `verify:*`.
 
-2. `verify:full`
+2. `test:unit`
 
-- Состав: `verify:fast` + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + `report:interview-quality`.
-- Дублирование security/dependency сигналов относительно `verify:fast` намеренно: release lane должен оставаться самодостаточным и читаемым без догадок о транзитивных шагах.
+- Состав: `test:rust` + `test:ui` + `test:latency-parser` + `test:runtime-answer-quality:unit` + `test:product-scenarios:unit` + `test:release-freeze-guard`.
+- Здесь только deterministic unit/component/script-unit checks.
 
-3. `verify:extended`
+3. `test:contracts`
 
-- Надстройка над `verify:full`, включает более тяжёлые/длинные automated проверки.
-- Не заменяет `verify:fast` в основном PR флоу.
+- Состав: `test:consistency` + `test:doc-links` + `test:ipc-contract` + `test:locale-keys` + `test:prompt-contract` + `copy:check`.
+- Важно: `test:consistency` уже включает часть contract checks, поэтому дополнительные шаги здесь только те, которые не покрываются транзитивно.
 
-4. `verify:release-local`
+4. `smoke`
 
-- Состав: `verify:fast` + `scripts:lifecycle` + docs/link checks + runtime/product reports + manual closure pack + freeze + strict readiness report.
-- Это основной локальный lane перед handoff в `main`.
-- `pnpm test:e2e:web` в этом lane остаётся optional-wrapper lane и может корректно завершиться как `SKIP` (например, если Playwright runtime отсутствует в локальном окружении).
-- Для release operator есть required путь без skip-wrapper: `pnpm test:e2e:web:required` (должен дать `PASS` или `FAIL`, но не `SKIP`).
+- Состав: compile/build/Rust static gates + `test:unit` + `test:contracts` + `test:interview-quality`.
+- Это canonical compile-and-test baseline для `verify:fast`.
 
-5. `verify:release-local:required-e2e`
+5. `verify:fast`
 
-- Состав: `verify:release-local` + `test:e2e:web:required`.
-- Это decision lane для релиз-оператора, когда нужен явный non-skipped E2E сигнал в локальном handoff.
+- Состав: `smoke` + `test:security-lanes` + `test:public-footprint`.
+- Default PR/local gate.
 
-6. `beta:seal`
+6. `verify:standard`
 
-- Состав (operator command): `verify:fast`, `test:doc-links`, `copy:check`, `report:runtime-quality`, `report:product-quality`, `report:live-evidence-pack`, `report:release-readiness:strict`, плюс optional lane `test:e2e:desktop`.
-- Выход: `reports/release/internal-beta-seal-YYYY-MM-DD.md` (`ready` / `ready-with-warnings` / `blocked`).
-- Не доказывает public beta readiness; signed binary / required desktop E2E остаются RC/public gates.
+- Состав: `verify:fast` + `scripts:lifecycle` + `release:freeze:check`.
+- Это основной локальный pre-handoff gate, когда нужен читаемый baseline без release-only тяжёлых lanes.
 
-## Supporting lanes
+7. `verify:full`
 
-- `pnpm smoke`: compile/unit + policy/contract baseline.
+- Состав: `verify:standard` + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + `test:runtime-quality` + `test:product-scenarios` + `report:runtime-quality:strict` + `report:interview-quality:strict` + `report:release-readiness:strict`.
+- Это release-quality gate. Здесь разрешены strict report lanes, потому что они являются explicit blocking release gates.
+
+8. `verify:extended`
+
+- Состав: `test:ui:coverage` + `test:fixtures` + `test:optional:e2e:web` + `test:optional:e2e:desktop` + `test:experimental`.
+- Этот профиль не вызывает `verify:full`, чтобы nightly/CI не гонял full дважды.
+- Запускать его следует как addon после `verify:full`, а не вместо `verify:full`.
+
+## Tests vs Reports
+
+- `test:*` scripts являются gate-командами и должны падать при нарушении ожиданий.
+- `report:*` scripts существуют для evidence/report generation.
+- Если report-команда должна быть blocking gate, canonical имя обязано явно содержать `:strict`.
+- Поэтому canonical blocking report lanes: `report:runtime-quality:strict`, `report:interview-quality:strict`, `report:release-readiness:strict`.
+
+## Compatibility Aliases
+
+| Alias | Canonical target |
+| --- | --- |
+| `pnpm verify` | `pnpm verify:fast` |
+| `pnpm test:runtime-answer-quality` | `pnpm test:runtime-answer-quality:gate` |
+| `pnpm test:product-scenarios` | `pnpm test:product-scenarios:gate` |
+| `pnpm report:runtime-quality` | `pnpm report:runtime-quality:strict` |
+| `pnpm report:interview-quality` | `pnpm report:interview-quality:strict` |
+
+## Supporting Lanes
+
 - Security/dependency lanes: `pnpm test:security-lanes`, `pnpm test:public-footprint`, `pnpm rust:deps`, `pnpm audit:npm`.
-- Dependency maintenance lane (operator/scheduled, non-blocking): `pnpm deps:review` (`pnpm outdated --recursive` + override freshness review).
-  - Decision log (2026-05-25): removed stale `pnpm.overrides` entries (`handlebars`, `node-forge`, `underscore`) after evidence that they were absent from `pnpm-lock.yaml` during `deps:review`; blocking audit gates remain unchanged.
-- Runtime evidence lanes: `pnpm report:runtime-quality`, `pnpm test:product-scenarios`, `pnpm report:live-evidence-pack`.
-- Lifecycle governance: `pnpm scripts:lifecycle` (coverage и конфликт классификации scripts).
-- E2E lanes:
-  - `pnpm test:e2e:web` is an optional-wrapper deterministic credential-free lane and is included in `verify:release-local`.
-  - `pnpm test:e2e:web:required` is a non-wrapper operator lane for explicit non-skipped evidence.
-  - `pnpm test:e2e:desktop` remains optional (`SKIP` when `TAURI_APP_PATH` is absent) for normal PR/dev flow.
-  - `pnpm test:e2e:desktop:required` is a non-wrapper operator lane for release validation and fails if `TAURI_APP_PATH` is missing.
+- Runtime quality gate: `pnpm test:runtime-quality`.
+- Product quality gate: `pnpm test:product-scenarios`.
+- Lifecycle governance: `pnpm scripts:lifecycle`.
+- Operator release lane: `pnpm verify:release-local`.
 
-## CI alignment
+## CI Alignment
 
-- `.github/workflows/ci.yml`: блокирующий fast CI lane + `release:freeze:check:strict`, публикует freeze/test artifacts.
-- `.github/workflows/extended-quality.yml`: non-blocking extended signal, публикует summary artifact с failed lane списком.
-- `.github/workflows/release-on-tag.yml`: создаёт GitHub Release notes по тегу, строит Windows artifact и прикрепляет его к релизу; помечает `signed` только при валидной Authenticode подписи.
-
-## Public beta blocking decision (optional lanes)
-
-- Make blocking before public beta:
-  - `pnpm test:e2e:web` in Windows CI (deterministic, credential-free).
-- Keep non-blocking before public beta:
-  - `pnpm test:e2e:desktop` (optional wrapper lane for dev/PR when artifact/env is unavailable).
-  - `pnpm test:perf:k6`, `pnpm test:sec:zap`, `pnpm test:ux:lighthouse` (heavier operator lanes, best as scheduled signal).
-
-## Desktop E2E release policy
-
-- PR/dev: use `pnpm test:e2e:desktop` (optional, safe `SKIP`).
-- Internal beta handoff: `pnpm test:e2e:desktop:required` is recommended when built artifact is available.
-- RC/public beta handoff: `pnpm test:e2e:desktop:required` is required and must be non-skipped.
-
-Windows local run example:
-
-```powershell
-pnpm tauri build
-$env:TAURI_APP_PATH = "src-tauri\\target\\release\\replyline.exe"
-pnpm test:e2e:desktop:required
-```
+- `.github/workflows/ci.yml`: blocking `verify:fast` baseline.
+- `.github/workflows/extended-quality.yml`: `verify:full` и затем addon-only `verify:extended`, без повторного full внутри extended profile.
+- `.github/workflows/release-on-tag.yml`: tag/release validation path.

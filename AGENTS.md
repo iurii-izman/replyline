@@ -19,7 +19,9 @@ These instructions apply to the whole repository.
 ## Verification Profiles
 
 - `pnpm verify:fast` is the default PR/local profile (required).
-- `pnpm verify:full` is the release profile (fast + freeze + dependency/security gates).
+- `pnpm verify:standard` is the default local pre-handoff profile.
+- `pnpm verify:full` is the release profile (standard + strict freeze/dependency/runtime/report gates).
+- `pnpm verify:extended` is the addon nightly/operator lane and does not replace `verify:full`.
 - `pnpm verify` is an alias to `pnpm verify:fast`.
 
 ## Task Lifecycle (Mandatory)
@@ -52,6 +54,7 @@ These instructions apply to the whole repository.
   - run `pnpm verify:fast`
 - Substantial code change before handoff:
   - run `pnpm smoke` (already included in `verify:fast`)
+  - run `pnpm verify:standard`
 - If `package.json` or `pnpm-lock.yaml` changed:
   - additionally run `pnpm audit:npm`
 - If `src-tauri/Cargo.toml` or Rust dependency graph changed:
