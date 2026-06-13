@@ -11,7 +11,7 @@ const blockedPrefixes = [
   ".windsurf/",
   ".zed/",
   "AI/",
-  "docs/archive/",
+  "docs/archive/strategic/",
   "infra/",
   "postman/",
   "scratch/",

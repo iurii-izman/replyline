@@ -18,7 +18,7 @@ Minimal policy for what should be tracked in GitHub vs kept local-only.
 ## Local-only by default (not tracked in GitHub)
 
 - assistant/editor policy folders: `.roo/`, `.windsurf/`, `.zed/`
-- archived strategic docs: `docs/archive/`
+- archived strategic docs: `docs/archive/strategic/`
 - internal cleanup notes: `docs-cleanup-task.md`, `test-out.txt`
 - local infrastructure and observability stacks: `infra/`
 - ad-hoc helper scripts/notebooks: `scratch/`
@@ -40,6 +40,7 @@ Minimal policy for what should be tracked in GitHub vs kept local-only.
 ## Notes
 
 - Local-only does not mean deleted from workstation: files can exist locally and stay ignored.
+- Historical archive docs under `docs/archive/` may remain tracked when they are part of the public project history; only `docs/archive/strategic/` is local-only by default.
 - If a local-only path becomes required for public usage, move it explicitly into tracked scope and update this doc in the same PR.
 - Runtime `.env` files remain local-only and must never be committed.
 - Release binaries/installers are distributed as GitHub Actions artifacts/Release assets; they must not be committed into this repository.
