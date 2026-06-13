@@ -26,6 +26,8 @@ function mainController(overrides: Record<string, unknown> = {}) {
     mainUiState: () => "ready",
     setupReadinessState: () => "ready",
     setupRequired: () => false,
+    hotkeyFailed: () => false,
+    setupTroubleCount: () => 0,
     setupSteps: () => [
       { label: ui_ru.setup.stepSpeech, readyLabel: "", missingLabel: "", ready: true },
       { label: ui_ru.setup.stepReply, readyLabel: "", missingLabel: "", ready: true },
@@ -83,6 +85,8 @@ function settingsController(overrides: Record<string, unknown> = {}) {
     panel: () => "settings",
     settingsActiveSection: () => "reports",
     setSettingsActiveSection: vi.fn(),
+    hotkeyFailed: () => false,
+    setupTroubleCount: () => 0,
     setupSteps: () => [
       { label: ui_ru.setup.stepSpeech, readyLabel: "ok", missingLabel: "miss", ready: true },
       { label: ui_ru.setup.stepReply, readyLabel: "ok", missingLabel: "miss", ready: true },
@@ -94,6 +98,7 @@ function settingsController(overrides: Record<string, unknown> = {}) {
     persistenceDiagnostics: () => null,
     persistenceDiagnosticsError: () => null,
     refreshPersistenceDiagnostics: vi.fn(),
+    checkRuntimeConfig: vi.fn(),
     settings: {
       selectedModelPreset: "custom_openai_compatible",
       llmBaseUrl: "https://api.example/v1",
@@ -141,8 +146,8 @@ function settingsController(overrides: Record<string, unknown> = {}) {
     settingsFormHint: () => null,
     saving: () => false,
     persistSettings: vi.fn(),
-    checkRuntimeConfig: vi.fn(),
     openMainPanel: vi.fn(),
+    copySetupIssueHint: vi.fn(),
     clearInterviewReports: vi.fn(),
     ...overrides,
   };

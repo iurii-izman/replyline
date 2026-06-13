@@ -39,11 +39,13 @@ export interface Selectors {
 }
 
 export function createSelectors(deps: SelectorDeps): Selectors {
-  const setupRequired = createMemo(() => deps.setupReadinessState() === "missing");
+  const setupRequired = createMemo(
+    () => deps.setupReadinessState() === "missing" || deps.hotkeyFailed(),
+  );
 
   const sttReady = createMemo(() => deps.deepgramSaved());
   const llmRouteReady = createMemo(() => deps.llmRouteConfigured());
-  const hotkeyReady = createMemo(() => true);
+  const hotkeyReady = createMemo(() => !deps.hotkeyFailed());
 
   const setupSteps = createMemo<SetupStepState[]>(() => {
     const s = deps.strings();

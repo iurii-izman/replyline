@@ -53,7 +53,7 @@ export interface HotkeyDeps {
 }
 
 export interface HotkeyApi {
-  registerCurrentHotkey: (hotkey: string) => Promise<void>;
+  registerCurrentHotkey: (hotkey: string) => Promise<boolean>;
   captureHotkeyInput: (event: KeyboardEvent) => void;
 }
 
@@ -74,10 +74,20 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
     return "normal";
   };
 
-  async function registerCurrentHotkey(hotkey: string) {
+  async function registerCurrentHotkey(hotkey: string): Promise<boolean> {
     await deps.platform.shortcuts.unregisterAll();
     const alreadyRegistered = await deps.platform.shortcuts.isRegistered(hotkey);
-    if (alreadyRegistered) throw new Error(deps.strings().notices.hotkeyAlreadyRegistered);
+    if (alreadyRegistered) {
+      const message = deps.strings().errors.hotkeyRegistrationFailed;
+      deps.setHotkeyFailed(true);
+      deps.setError(message);
+      deps.notices.pushNotice({
+        tone: "error",
+        message: deps.strings().notices.hotkeyAlreadyRegistered,
+      });
+      deps.setLastCommandErrorKind(null);
+      return false;
+    }
     let captureState: "idle" | "starting" | "armed" | "stopping" = "idle";
     let releasePending = false;
     let currentRunId: string | null = null;
@@ -270,11 +280,27 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
         await clearCaptureAlwaysOnTop();
       }
     }
-    await deps.platform.shortcuts.register(hotkey, async (event) => {
-      if (event.state === "Pressed") return handlePressed();
-      if (event.state === "Released") return handleReleased();
-    });
-    void emitClientEvent("hotkey_registered", { hotkey, phase: "settings" });
+    try {
+      await deps.platform.shortcuts.register(hotkey, async (event) => {
+        if (event.state === "Pressed") return handlePressed();
+        if (event.state === "Released") return handleReleased();
+      });
+      deps.setHotkeyFailed(false);
+      deps.setError(null);
+      deps.setLastCommandErrorKind(null);
+      void emitClientEvent("hotkey_registered", { hotkey, phase: "settings" });
+      return true;
+    } catch (err) {
+      const message = deps.strings().errors.hotkeyRegistrationFailed;
+      deps.setHotkeyFailed(true);
+      deps.setError(message);
+      deps.notices.pushNotice({
+        tone: "error",
+        message,
+      });
+      deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
+      return false;
+    }
   }
 
   function captureHotkeyInput(event: KeyboardEvent) {

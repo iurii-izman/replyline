@@ -18,7 +18,6 @@ import { emitUiEvent } from "../observability";
 import {
   DEFAULT_SETTINGS,
   parseCommandInvokeError,
-  invokeErrorMessage,
   userSafeBootstrapLoadError,
   mapSettingsSaveError,
 } from "../model";
@@ -50,6 +49,7 @@ export interface SettingsActionDeps {
   setSaving: Setter<boolean>;
   setSettingsFormHint: Setter<string | null>;
   setHotkeyFailed: Setter<boolean>;
+  setSetupTroubleCount: Setter<number>;
   setLastCommandErrorKind: Setter<CommandErrorKind | null>;
   setupReadinessState: Accessor<SetupReadinessState>;
   setSetupReadinessState: Setter<SetupReadinessState>;
@@ -120,24 +120,28 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
         return;
       }
 
-      deps.setSetupReadinessState(runtimePathReady ? "ready" : "missing");
+      await deps.loadCandidatePack();
+      const hotkeyRegistered = await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
+      if (!hotkeyRegistered) {
+        deps.setSettingsFormHint(deps.strings().errors.hotkeyRegistrationFailed);
+      }
+      const runtimeReadyAfterHotkey = runtimePathReady && hotkeyRegistered;
+      deps.setSetupReadinessState(runtimeReadyAfterHotkey ? "ready" : "missing");
       await emitUiEvent(
         deps.platform,
-        runtimePathReady ? "startup_readiness_ready" : "startup_readiness_missing",
+        runtimeReadyAfterHotkey ? "startup_readiness_ready" : "startup_readiness_missing",
         { phase: "boot" },
       );
       if (deps.startupPanelDecisionPending() && !deps.userSelectedPanel()) {
-        const targetPanel = runtimePathReady ? "main" : "settings";
+        const targetPanel = runtimeReadyAfterHotkey ? "main" : "settings";
         deps.setPanel(targetPanel);
         deps.setStartupPanelDecisionPending(false);
         await emitUiEvent(deps.platform, "startup_panel_decision", {
           phase: "boot",
           panel: targetPanel,
-          reason: runtimePathReady ? "runtime_ready" : "runtime_missing",
+          reason: runtimeReadyAfterHotkey ? "runtime_ready" : "runtime_missing",
         });
       }
-      await deps.loadCandidatePack();
-      await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
       deps.setPhase("idle");
     } catch (err) {
       deps.setError(userSafeBootstrapLoadError(deps.strings()));
@@ -194,24 +198,30 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
         deps.setPersistenceDiagnostics(null);
         deps.setPersistenceDiagnosticsError("diag_unavailable");
       }
-      await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
+      const hotkeyRegistered = await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
+      if (!hotkeyRegistered) {
+        deps.setSettingsFormHint(deps.strings().errors.hotkeyRegistrationFailed);
+      }
       const setupRequiredFromBoot =
         !boot.deepgramKeyPresent ||
-        !(boot.settings.llmBaseUrl.trim() && boot.settings.llmModel.trim());
-      deps.setHotkeyFailed(false);
+        !(boot.settings.llmBaseUrl.trim() && boot.settings.llmModel.trim()) ||
+        !hotkeyRegistered;
+      deps.setSetupReadinessState(setupRequiredFromBoot ? "missing" : "ready");
+      deps.setSetupTroubleCount((count) => (setupRequiredFromBoot ? count + 1 : 0));
       deps.notices.pushNotice({
         tone: "info",
         message: setupRequiredFromBoot
           ? deps.strings().notices.settingsSavedPartial
           : deps.strings().notices.settingsSaved,
       });
-      if (boot.runtimeReady && !setupRequiredFromBoot) deps.setPanel("main");
+      if (boot.runtimeReady && hotkeyRegistered && !setupRequiredFromBoot) deps.setPanel("main");
     } catch (err) {
       deps.setLastCommandErrorKind(parseCommandInvokeError(err)?.kind ?? null);
       deps.setSettingsFormHint(
-        mapSettingsSaveError(err, deps.strings()) ?? invokeErrorMessage(err),
+        mapSettingsSaveError(err, deps.strings()) ?? deps.strings().errors.settingsSaveFailed,
       );
-      deps.setHotkeyFailed(true);
+      deps.setSetupReadinessState("missing");
+      deps.setSetupTroubleCount((count) => count + 1);
     } finally {
       deps.setSaving(false);
     }

@@ -33,11 +33,106 @@ function checkItemClass(item: CheckItemDto): string {
   return item.ok ? "check-item is-ok" : "check-item is-fail";
 }
 
-type SetupStatusTone = "missing" | "ready" | "optional";
+type SetupStatusTone = "configured" | "missing" | "needs_check" | "check_failed" | "ready" | "optional";
+
+function setupStatusLabel(st: UiStrings, tone: SetupStatusTone): string {
+  switch (tone) {
+    case "configured":
+      return st.settings.statusConfigured;
+    case "missing":
+      return st.settings.statusMissing;
+    case "needs_check":
+      return st.settings.statusNeedsCheck;
+    case "check_failed":
+      return st.settings.statusCheckFailed;
+    case "ready":
+      return st.settings.statusReady;
+    case "optional":
+      return st.settings.statusOptional;
+  }
+}
+
+function setupStatusClass(tone: SetupStatusTone): string {
+  if (tone === "ready" || tone === "configured") return "status-pill is-ready";
+  if (tone === "needs_check") return "status-pill is-setup-needed";
+  if (tone === "check_failed" || tone === "missing") return "status-pill is-error";
+  return "status-pill";
+}
+
+function runtimeCheckSection(item: CheckItemDto): SettingsSectionId {
+  if (item.code === "missing_key") return "speech";
+  if (item.code === "auth_error" || item.code === "endpoint_error" || item.code === "network_error")
+    return "llm";
+  if (item.code === "config_error") return "overview";
+  return "overview";
+}
+
+function runtimeCheckMessage(st: UiStrings, item: CheckItemDto): string {
+  switch (item.code) {
+    case "ok":
+      return st.settings.runtimeCheckOk;
+    case "missing_key":
+      return st.errors.missingDeepgramKey;
+    case "config_error":
+      return st.errors.runtimeCheckFailed;
+    case "auth_error":
+      return st.errors.runtimeCheckAuth;
+    case "endpoint_error":
+      return st.errors.runtimeCheckEndpoint;
+    case "network_error":
+      return st.errors.runtimeCheckNetwork;
+    case "skipped":
+      return st.settings.runtimeCheckSkipped;
+    case "error":
+      return st.errors.runtimeCheckFailed;
+    default:
+      return st.errors.runtimeCheckFailed;
+  }
+}
+
+function runtimeCheckActionLabel(st: UiStrings, item: CheckItemDto): string {
+  switch (item.code) {
+    case "missing_key":
+      return st.settings.openSpeechSection;
+    case "auth_error":
+    case "endpoint_error":
+    case "network_error":
+      return st.settings.openReplySection;
+    case "config_error":
+      return st.settings.openSettings;
+    default:
+      return st.settings.runCheck;
+  }
+}
 
 export function SettingsSurface(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
+  Object.freeze([
+    st().setup.focusSmokeReportHint,
+    st().settings.openSpeechSection,
+    st().settings.openReplySection,
+    st().settings.openHotkeySection,
+    st().settings.runtimeCheckOk,
+    st().settings.runtimeCheckSkipped,
+    st().settings.runtimeSummaryNotRun,
+    st().settings.setupIssueHintMissing,
+    st().settings.setupIssueHintNone,
+    st().settings.setupIssueHintOpenSettings,
+    st().settings.setupIssueHintRunCheck,
+    st().settings.setupIssueHintRuntime,
+    st().settings.setupIssueHintSmokeReport,
+    st().settings.setupIssueHintSteps,
+    st().settings.setupIssueHintTitle,
+    st().settings.statusCheckFailed,
+    st().settings.statusOptional,
+    st().errors.missingDeepgramKey,
+    st().errors.runtimeCheckAuth,
+    st().errors.runtimeCheckEndpoint,
+    st().errors.runtimeCheckFailed,
+    st().errors.runtimeCheckNetwork,
+    st().errors.settingsCorruptRecovered,
+  ]);
   Object.freeze([
     st().checks.code.ok,
     st().checks.code.missing_key,
@@ -61,21 +156,31 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
   };
 
   const sectionStatus = (id: SettingsSectionId): SetupStatusTone => {
+    const runtimeResult = controller().runtimeCheckResult();
     if (id === "speech") {
-      const ready = setupSteps()[0]?.ready ?? false;
-      return ready ? "ready" : "missing";
+      if (!controller().deepgramSaved()) return "missing";
+      if (runtimeResult && !runtimeResult.stt.ok) return "check_failed";
+      return runtimeResult?.stt.ok ? "ready" : "configured";
     }
     if (id === "llm") {
       const ready = setupSteps()[1]?.ready ?? false;
-      return ready ? "ready" : "missing";
+      if (!ready) return "missing";
+      if (runtimeResult && !runtimeResult.llm.ok) return "check_failed";
+      return runtimeResult?.llm.ok ? "ready" : "needs_check";
     }
     if (id === "hotkey") {
       const ready = setupSteps()[2]?.ready ?? false;
-      return ready ? "ready" : "missing";
+      if (!ready) return "missing";
+      if (controller().hotkeyFailed()) return "check_failed";
+      if (runtimeResult && !runtimeResult.settings.ok) return "check_failed";
+      return runtimeResult?.settings.ok ? "ready" : "configured";
     }
     if (id === "overview") {
-      return controller().allSetupReady() ? "ready" : "missing";
+      if (runtimeResult?.runtimeReady) return "ready";
+      if (runtimeResult) return "needs_check";
+      return controller().allSetupReady() ? "configured" : "missing";
     }
+    if (id === "reports") return "optional";
     return "optional";
   };
 
@@ -85,12 +190,6 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
     if (index === 2) return "hotkey";
     return "overview";
   };
-  const setupStatusLabel = (tone: SetupStatusTone): string => {
-    if (tone === "ready") return st().settings.statusReady;
-    if (tone === "missing") return st().settings.statusMissing;
-    return st().settings.statusOptional;
-  };
-
   const runtimeSummary = () => {
     const result = controller().runtimeCheckResult();
     if (!result) return null;
@@ -236,8 +335,8 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                       <span class="settings-sidebar-label">{section.label}</span>
                       <span
                         class={`section-status-dot section-status-${status()}`}
-                        aria-label={setupStatusLabel(status())}
-                        title={setupStatusLabel(status())}
+                        aria-label={setupStatusLabel(st(), status())}
+                        title={setupStatusLabel(st(), status())}
                       >
                         <span class="section-status-dot-inner" />
                       </span>
@@ -261,7 +360,12 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                 class="settings-section-card section-card"
                 data-testid="settings-section-overview"
               >
-                <h3 class="settings-section-title">{st().settings.overviewTitle}</h3>
+                <h3 class="settings-section-title">
+                  {st().settings.overviewTitle}{" "}
+                  <span class={setupStatusClass(sectionStatus("overview"))}>
+                    {setupStatusLabel(st(), sectionStatus("overview"))}
+                  </span>
+                </h3>
                 <p class="settings-section-hint" data-testid="setup-overall-hint">
                   {st().settings.overviewHint}
                 </p>
@@ -306,7 +410,14 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                 </Show>
 
                 <article class="settings-section-card settings-section-card--compact">
-                  <h4 class="settings-section-title">{st().settings.persistenceTitle}</h4>
+                  <h4 class="settings-section-title">
+                    {st().settings.persistenceTitle}{" "}
+                    <span class={setupStatusClass(controller().setupTroubleCount() >= 2 ? "needs_check" : "configured")}>
+                      {controller().setupTroubleCount() >= 2
+                        ? st().settings.statusNeedsCheck
+                        : st().settings.statusConfigured}
+                    </span>
+                  </h4>
                   <Show when={persistenceDiagnosticsError()}>
                     <p class="settings-note settings-note-warning">
                       {st().settings.persistenceUnavailable}
@@ -387,16 +498,44 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                         <Show when={!controller().llmKeySaved()}>
                           <li>{st().settings.persistenceCauseLlmKeyMissing}</li>
                         </Show>
+                        <Show when={controller().setupTroubleCount() >= 2}>
+                          <li>{st().settings.setupSmokeReportHint}</li>
+                        </Show>
                       </ul>
                     </div>
                   </Show>
-                  <button
-                    class="btn-secondary btn-compact"
-                    type="button"
-                    onClick={refreshPersistenceDiagnostics}
-                  >
-                    {st().settings.persistenceRefresh}
-                  </button>
+                  <div class="settings-form-stack">
+                    <button
+                      class="btn-secondary btn-compact"
+                      type="button"
+                      onClick={refreshPersistenceDiagnostics}
+                    >
+                      {st().settings.persistenceRefresh}
+                    </button>
+                    <button
+                      class="btn-secondary btn-compact"
+                      type="button"
+                      onClick={() => void controller().checkRuntimeConfig()}
+                    >
+                      {st().settings.runCheck}
+                    </button>
+                    <button
+                      class="btn-ghost btn-compact"
+                      type="button"
+                      onClick={() => controller().openMainPanel()}
+                    >
+                      {st().settings.openMain}
+                    </button>
+                    <Show when={controller().setupTroubleCount() >= 2}>
+                      <button
+                        class="btn-ghost btn-compact"
+                        type="button"
+                        onClick={() => void controller().copySetupIssueHint()}
+                      >
+                        {st().settings.copyIssueHint}
+                      </button>
+                    </Show>
+                  </div>
                 </article>
               </article>
             </Show>
@@ -407,7 +546,12 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                 class="settings-section-card section-card settings-section-card--compact"
                 data-testid="settings-section-speech"
               >
-                <h3 class="settings-section-title">{st().settings.navSpeech}</h3>
+                <h3 class="settings-section-title">
+                  {st().settings.navSpeech}{" "}
+                  <span class={setupStatusClass(sectionStatus("speech"))}>
+                    {setupStatusLabel(st(), sectionStatus("speech"))}
+                  </span>
+                </h3>
                 <p class="settings-section-hint">{st().settings.speechHint}</p>
                 <p class="settings-note" data-testid="speech-helper-note">
                   {st().setup.deepgramHint}
@@ -444,7 +588,12 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                 class="settings-section-card section-card"
                 data-testid="settings-section-llm"
               >
-                <h3 class="settings-section-title">{st().settings.navLlm}</h3>
+                <h3 class="settings-section-title">
+                  {st().settings.navLlm}{" "}
+                  <span class={setupStatusClass(sectionStatus("llm"))}>
+                    {setupStatusLabel(st(), sectionStatus("llm"))}
+                  </span>
+                </h3>
                 <p class="settings-section-hint">{st().settings.llmSectionHint}</p>
                 <p class="settings-note">{st().setup.llmHint}</p>
 
@@ -566,7 +715,12 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                 class="settings-section-card section-card"
                 data-testid="settings-section-hotkey"
               >
-                <h3 class="settings-section-title">{st().settings.navHotkey}</h3>
+                <h3 class="settings-section-title">
+                  {st().settings.navHotkey}{" "}
+                  <span class={setupStatusClass(sectionStatus("hotkey"))}>
+                    {setupStatusLabel(st(), sectionStatus("hotkey"))}
+                  </span>
+                </h3>
                 <p class="settings-section-hint">{st().settings.hotkeySectionHint}</p>
                 <p class="settings-note">{st().setup.hotkeyHint}</p>
                 <label class="field">
@@ -691,7 +845,12 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                 class="settings-section-card section-card settings-section-card--compact"
                 data-testid="settings-section-reports"
               >
-                <h3 class="settings-section-title">{st().settings.navReports}</h3>
+                <h3 class="settings-section-title">
+                  {st().settings.navReports}{" "}
+                  <span class={setupStatusClass(sectionStatus("reports"))}>
+                    {setupStatusLabel(st(), sectionStatus("reports"))}
+                  </span>
+                </h3>
                 <p class="settings-section-hint">{st().settings.reportsSectionHint}</p>
                 <section class="settings-subsection">
                   <h4 class="settings-subsection-title">{st().settings.reportsEverydayTitle}</h4>
@@ -793,14 +952,19 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                 class="settings-section-card section-card"
                 data-testid="settings-section-candidate-pack"
               >
-                <h3 class="settings-section-title">{st().settings.navCandidatePack}</h3>
+                <h3 class="settings-section-title">
+                  {st().settings.navCandidatePack}{" "}
+                  <span class={setupStatusClass(sectionStatus("candidatePack"))}>
+                    {setupStatusLabel(st(), sectionStatus("candidatePack"))}
+                  </span>
+                </h3>
                 <p class="settings-section-hint" data-testid="candidate-pack-summary">
                   {st().settings.candidatePackStudioHint}
                 </p>
                 <p class="field-help">
                   {st().settings.candidatePackStatus}:{" "}
                   {controller().candidatePackStatus().exists
-                    ? `${controller().candidatePackStatus().factCount} / weak ${controller().candidatePackStatus().weakFactCount}`
+                    ? `${controller().candidatePackStatus().factCount} / ${st().settings.candidatePackWeakFactsShort} ${controller().candidatePackStatus().weakFactCount}`
                     : st().settings.candidatePackEmpty}
                 </p>
                 <button
@@ -835,7 +999,20 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     {checkItemLabel(controller().runtimeCheckResult()!.stt, st())}
                   </span>
                   <span class="check-item-msg">
-                    {controller().runtimeCheckResult()!.stt.message}
+                    {runtimeCheckMessage(st(), controller().runtimeCheckResult()!.stt)}
+                  </span>
+                  <span class="check-item-action-wrap">
+                    <button
+                      class="btn-secondary btn-compact check-item-action"
+                      type="button"
+                      onClick={() =>
+                        controller().setSettingsActiveSection(
+                          runtimeCheckSection(controller().runtimeCheckResult()!.stt),
+                        )
+                      }
+                    >
+                      {runtimeCheckActionLabel(st(), controller().runtimeCheckResult()!.stt)}
+                    </button>
                   </span>
                 </div>
                 <div class={checkItemClass(controller().runtimeCheckResult()!.llm)}>
@@ -851,7 +1028,20 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     {checkItemLabel(controller().runtimeCheckResult()!.llm, st())}
                   </span>
                   <span class="check-item-msg">
-                    {controller().runtimeCheckResult()!.llm.message}
+                    {runtimeCheckMessage(st(), controller().runtimeCheckResult()!.llm)}
+                  </span>
+                  <span class="check-item-action-wrap">
+                    <button
+                      class="btn-secondary btn-compact check-item-action"
+                      type="button"
+                      onClick={() =>
+                        controller().setSettingsActiveSection(
+                          runtimeCheckSection(controller().runtimeCheckResult()!.llm),
+                        )
+                      }
+                    >
+                      {runtimeCheckActionLabel(st(), controller().runtimeCheckResult()!.llm)}
+                    </button>
                   </span>
                 </div>
                 <div class={checkItemClass(controller().runtimeCheckResult()!.settings)}>
@@ -867,7 +1057,20 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     {checkItemLabel(controller().runtimeCheckResult()!.settings, st())}
                   </span>
                   <span class="check-item-msg">
-                    {controller().runtimeCheckResult()!.settings.message}
+                    {runtimeCheckMessage(st(), controller().runtimeCheckResult()!.settings)}
+                  </span>
+                  <span class="check-item-action-wrap">
+                    <button
+                      class="btn-secondary btn-compact check-item-action"
+                      type="button"
+                      onClick={() =>
+                        controller().setSettingsActiveSection(
+                          runtimeCheckSection(controller().runtimeCheckResult()!.settings),
+                        )
+                      }
+                    >
+                      {runtimeCheckActionLabel(st(), controller().runtimeCheckResult()!.settings)}
+                    </button>
                   </span>
                 </div>
                 <p class="check-overall" data-testid="check-overall">
@@ -875,6 +1078,11 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     ? st().setup.ready
                     : st().setup.notReady}
                 </p>
+                <Show when={controller().setupTroubleCount() >= 2}>
+                  <p class="settings-note settings-note-warning">
+                    {st().settings.setupSmokeReportHint}
+                  </p>
+                </Show>
                 <Show when={runtimeSummary()}>
                   {(summary) => (
                     <p
@@ -897,6 +1105,32 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     </p>
                   )}
                 </Show>
+                <div class="settings-form-stack">
+                  <button
+                    class="btn-secondary btn-compact"
+                    type="button"
+                    disabled={controller().runtimeCheckRunning()}
+                    onClick={() => void controller().checkRuntimeConfig()}
+                  >
+                    {controller().runtimeCheckRunning() ? st().settings.checking : st().settings.runCheck}
+                  </button>
+                  <button
+                    class="btn-ghost btn-compact"
+                    type="button"
+                    onClick={() => controller().openMainPanel()}
+                  >
+                    {st().settings.openMain}
+                  </button>
+                  <Show when={controller().setupTroubleCount() >= 2}>
+                    <button
+                      class="btn-ghost btn-compact"
+                      type="button"
+                      onClick={() => void controller().copySetupIssueHint()}
+                    >
+                      {st().settings.copyIssueHint}
+                    </button>
+                  </Show>
+                </div>
               </div>
             </Show>
 

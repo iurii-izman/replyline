@@ -72,14 +72,42 @@ function SetupFocusState(props: Readonly<{ controller: ReplylineController }>) {
           )}
         </For>
       </ul>
-      <button
-        class="btn-primary"
-        data-testid="setup-first-missing-cta"
-        type="button"
-        onClick={() => controller().openSettingsPanel(firstMissingSection())}
-      >
-        {st().settings.openFirstMissing}
-      </button>
+      <div class="action-group">
+        <button
+          class="btn-primary"
+          data-testid="setup-first-missing-cta"
+          type="button"
+          onClick={() => controller().openSettingsPanel(firstMissingSection())}
+        >
+          {st().settings.openFirstMissing}
+        </button>
+        <button
+          class="btn-secondary"
+          type="button"
+          onClick={() => void controller().checkRuntimeConfig()}
+        >
+          {st().settings.runCheck}
+        </button>
+        <button
+          class="btn-ghost"
+          type="button"
+          onClick={() => controller().openSettingsPanel()}
+        >
+          {st().settings.openSettings}
+        </button>
+        <Show when={controller().setupTroubleCount() >= 2}>
+          <button
+            class="btn-ghost"
+            type="button"
+            onClick={() => void controller().copySetupIssueHint()}
+          >
+            {st().settings.copyIssueHint}
+          </button>
+        </Show>
+      </div>
+      <Show when={controller().setupTroubleCount() >= 2}>
+        <p class="empty-flow-hint">{st().settings.setupSmokeReportHint}</p>
+      </Show>
       <p class="empty-flow-hint">{st().setup.focusLocalStorageHint}</p>
     </section>
   );
@@ -868,7 +896,7 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
           <Show when={isStartupError()}>
             <section class="phase-card phase-card--error" data-testid="startup-readiness-error">
               <strong>{controller().strings().phase.error}</strong>
-              <p class="empty-flow-hint">{controller().strings().card.errorHint}</p>
+              <p class="empty-flow-hint">{controller().error() ?? controller().strings().card.errorHint}</p>
               <div class="action-group">
                 <button
                   class="btn-secondary"
@@ -882,9 +910,21 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
                   type="button"
                   onClick={() => void controller().reloadBootstrap()}
                 >
-                  {controller().strings().settings.checkSettings}
+                  {controller().strings().settings.runCheck}
                 </button>
+                <Show when={controller().setupTroubleCount() >= 2}>
+                  <button
+                    class="btn-ghost"
+                    type="button"
+                    onClick={() => void controller().copySetupIssueHint()}
+                  >
+                    {controller().strings().settings.copyIssueHint}
+                  </button>
+                </Show>
               </div>
+              <Show when={controller().setupTroubleCount() >= 2}>
+                <p class="empty-flow-hint">{controller().strings().settings.setupSmokeReportHint}</p>
+              </Show>
             </section>
           </Show>
           <Show when={!isStartupChecking() && !isStartupError() && isSetup()}>
@@ -909,14 +949,36 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
           <Show when={isError()}>
             <section class="phase-card phase-card--error" data-testid="error-recovery-card">
               <strong>{controller().strings().phase.error}</strong>
-              <p class="empty-flow-hint">{controller().strings().card.errorHint}</p>
-              <button
-                class="btn-secondary"
-                type="button"
-                onClick={() => controller().openSettingsPanel()}
-              >
-                {controller().strings().card.errorFixAction}
-              </button>
+              <p class="empty-flow-hint">{controller().error() ?? controller().strings().card.errorHint}</p>
+              <div class="action-group">
+                <button
+                  class="btn-secondary"
+                  type="button"
+                  onClick={() => void controller().retryAnalysis()}
+                  disabled={!controller().canRetry()}
+                >
+                  {controller().strings().card.retryCard}
+                </button>
+                <button
+                  class="btn-secondary"
+                  type="button"
+                  onClick={() => controller().openSettingsPanel()}
+                >
+                  {controller().strings().card.errorFixAction}
+                </button>
+                <Show when={controller().setupTroubleCount() >= 2}>
+                  <button
+                    class="btn-ghost"
+                    type="button"
+                    onClick={() => void controller().copySetupIssueHint()}
+                  >
+                    {controller().strings().settings.copyIssueHint}
+                  </button>
+                </Show>
+              </div>
+              <Show when={controller().setupTroubleCount() >= 2}>
+                <p class="empty-flow-hint">{controller().strings().settings.setupSmokeReportHint}</p>
+              </Show>
             </section>
           </Show>
         </div>
