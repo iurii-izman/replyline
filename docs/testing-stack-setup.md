@@ -13,7 +13,17 @@
 
 - `pnpm test:quick` -> fastest local loop
 - `pnpm test:unit` -> deterministic unit/component/script-unit coverage
-- `pnpm test:contracts` -> docs/copy/prompt/ipc/locale/consistency contracts
+- `pnpm test:contracts` -> docs/copy/prompt/ipc/locale plus split contract lanes
+
+`pnpm test:consistency` remains the привычный aggregator alias, but now it is a
+readable composition of focused lanes:
+
+- `pnpm test:contracts:docs`
+- `pnpm test:contracts:ui`
+- `pnpm test:contracts:model`
+- `pnpm test:contracts:runtime`
+- `pnpm test:contracts:observability`
+- `pnpm test:contracts:beta`
 
 `pnpm smoke` is the canonical compile-and-test baseline and includes:
 

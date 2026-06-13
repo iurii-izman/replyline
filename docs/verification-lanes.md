@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | quick local loop | `pnpm test:quick` | Самый быстрый локальный цикл: `typecheck` + `lint` + frontend component tests |
 | deterministic unit/component | `pnpm test:unit` | Все deterministic unit/component/script-unit проверки |
-| deterministic contracts | `pnpm test:contracts` | Docs/copy/prompt/ipc/locale/consistency contract checks |
+| deterministic contracts | `pnpm test:contracts` | Docs/copy/prompt/ipc/locale checks plus split contract lanes |
 | fast default gate | `pnpm verify:fast` | Обязательный PR/local baseline: `smoke` + security/public-footprint |
 | standard handoff gate | `pnpm verify:standard` | Локальный pre-handoff gate: `verify:fast` + lifecycle + advisory freeze report |
 | full release gate | `pnpm verify:full` | Release-quality gate: standard + strict freeze + dependency/security + runtime/product quality + strict reports |
@@ -29,7 +29,10 @@
 3. `test:contracts`
 
 - Состав: `test:consistency` + `test:doc-links` + `test:ipc-contract` + `test:locale-keys` + `test:prompt-contract` + `copy:check`.
-- Важно: `test:consistency` уже включает часть contract checks, поэтому дополнительные шаги здесь только те, которые не покрываются транзитивно.
+- `test:consistency` теперь является compatibility aggregator над явными lanes:
+  `test:contracts:docs`, `test:contracts:ui`, `test:contracts:model`,
+  `test:contracts:runtime`, `test:contracts:observability`, `test:contracts:beta`.
+- Это делает failure source явным без изменения привычной entrypoint-команды.
 
 4. `smoke`
 

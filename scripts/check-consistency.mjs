@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import process from "node:process";
 
@@ -20,6 +20,10 @@ const requiredIncludes = [
       ...guardrailTokens,
     ],
     excludes: ["Ctrl+Shift+Space"],
+  },
+  {
+    path: "docs/README.md",
+    includes: ["verification-lanes.md", "testing-stack-setup.md", "runtime-live-qa.md"],
   },
   {
     path: "docs/beta-readiness.md",
@@ -125,6 +129,17 @@ const requiredIncludes = [
   },
 ];
 
+function resolvePath(spec) {
+  const paths = spec.paths ?? [spec.path];
+  for (const relativePath of paths) {
+    const fullPath = join(cwd, relativePath);
+    if (existsSync(fullPath)) {
+      return { fullPath, relativePath };
+    }
+  }
+  return null;
+}
+
 function lineOf(content, token) {
   const lines = content.split(/\r?\n/u);
   const needle = token.toLowerCase();
@@ -139,19 +154,26 @@ function lineOf(content, token) {
 const failures = [];
 
 for (const spec of requiredIncludes) {
-  const fullPath = join(cwd, spec.path);
+  const resolved = resolvePath(spec);
+  if (!resolved) {
+    const expectedPaths = (spec.paths ?? [spec.path]).join(", ");
+    failures.push(`${expectedPaths}: required file is missing or moved`);
+    continue;
+  }
+
+  const { fullPath, relativePath } = resolved;
   const content = readFileSync(fullPath, "utf8");
 
   for (const token of spec.includes ?? []) {
     if (!content.includes(token)) {
-      failures.push(`${spec.path}: missing "${token}"`);
+      failures.push(`${relativePath}: missing "${token}"`);
     }
   }
 
   for (const token of spec.excludes ?? []) {
     const hitLine = lineOf(content, token);
     if (hitLine != null) {
-      failures.push(`${spec.path}:${hitLine}: unexpected "${token}"`);
+      failures.push(`${relativePath}:${hitLine}: unexpected "${token}"`);
     }
   }
 }
