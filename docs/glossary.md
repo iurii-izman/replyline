@@ -11,12 +11,12 @@
 
 - **capture** — короткое hotkey-gated окно записи системного аудио через WASAPI loopback. Hold-to-capture, без background recording.
 - **CommandError** — typed Rust enum для IPC ошибок (`Settings/Credential/Capture/Pipeline/Internal`) с frontend routing на settings anchors.
-- **context layer** — RAM ring buffer краткосрочной памяти между захватами. 3 entries, 1500 chars, 20-мин TTL, FIFO eviction. Подробнее в [architecture.md](architecture.md).
+- **context layer** — RAM ring buffer краткосрочного контекста между захватами. Это не shipped memory feature и не долгосрочное persistence-хранилище. Подробнее в [architecture.md](architecture.md).
 - **copy-rules** — дисциплина формулировок: банлист терминов (`stealth`, `therapy`, `emotion`), claim labeling, runtime claim language. См. [copy-rules.md](copy-rules.md).
 
 ## D
 
-- **Deepgram** — текущий STT провайдер. Поддерживается batch и streaming, default = batch.
+- **Deepgram** — текущий shipped STT провайдер. Public beta path использует batch STT; streaming/local STT не являются shipped user-facing capability.
 - **archive/strategic/** — локальный архив стратегических/roadmap-документов вне минимального публичного GitHub footprint.
 
 ## E
@@ -45,6 +45,7 @@
 
 - **measured** — claim level: подтверждён runtime artifact, не теорией. Высший уровень доверия в [benchmark-policy.md](benchmark-policy.md).
 - **mock lane** — UI-тесты с stubbed providers, без сети. Быстрый, deterministic, не доказывает runtime поведение.
+- **non-shipped track** — future/experimental направление, которое не должно описываться как доступная capability без явного статуса в canonical product docs. См. [product/limitations.md](product/limitations.md).
 
 ## P
 
@@ -54,7 +55,7 @@
 
 ## R
 
-- **RAM-only** — никакого долгосрочного хранения transcript/audio. Всё живёт в памяти процесса до закрытия окна или нового capture.
+- **RAM-only** — никакого shipped долгосрочного хранения transcript/audio или memory persistence по умолчанию. Всё живёт в памяти процесса до закрытия окна или нового capture.
 - **release lane** — runtime artifact в `reports/runtime/`, источник `measured` claims. Single source of truth для performance numbers.
 - **Replyline** — Windows-first local desktop assistant for preparing the next response in difficult work conversations and interviews.
 - **runtime probe** — отдельный binary с per-stage timing (capture → STT → LLM → render). Запускается через `pnpm probe:runtime`.

@@ -74,7 +74,6 @@ Replyline controls when capture starts and stops, local storage surfaces, and lo
 - Remote/provider-hosted LLM routes are expected to use `https://`.
 - `http://` is accepted only for local or local-network routes such as loopback, private-network, or `.local` setups.
 - A local LLM URL does not make the entire product local-only when Deepgram STT is enabled; shipped beta still sends audio to Deepgram.
-- Local STT is not a shipped beta feature unless explicitly documented elsewhere as shipped.
 
 ## User responsibility
 
@@ -88,8 +87,6 @@ The user is responsible for:
 
 Replyline does not provide legal advice and does not guarantee that any capture scenario is lawful in a specific jurisdiction.
 
-## Memory and future-boundary notes
+## Product-boundary note
 
-- Memory is a future track and is not shipped in the current beta.
-- There is no shipped memory UI, memory command surface, or automatic memory persistence layer.
-- Multilingual expansion, local STT, and broader provider tracks should be treated as future work unless a canonical product doc explicitly marks them as shipped.
+Non-shipped tracks such as memory, local STT, multilingual expansion, and broader provider expansion are documented only as limitations/future boundaries. See [limitations.md](limitations.md).

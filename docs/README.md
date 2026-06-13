@@ -43,6 +43,7 @@ Use this page as role-based navigation. For the full document inventory, merge c
 ### Internal/archive
 
 - [doc-inventory.md](doc-inventory.md) - documentation inventory, merge map, and archive candidates.
+- [archive/experimental/bilingual-interview-mode.md](archive/experimental/bilingual-interview-mode.md) - archived experimental bilingual interview concept; not shipped in current public beta.
 - [archive/handoff/beta-readiness.md](archive/handoff/beta-readiness.md) - archived beta handoff plan.
 - [release-notes/v0.2.0-beta.1.md](release-notes/v0.2.0-beta.1.md) - historical beta release note.
 - [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md) - historical/draft beta release note.
@@ -56,4 +57,4 @@ These docs stay available, but they are not part of the main visible role map on
 - legacy redirect stubs: [verification-lanes.md](verification-lanes.md), [runtime-live-qa.md](runtime-live-qa.md), [runtime-bringup.md](runtime-bringup.md), [runtime-evidence.md](runtime-evidence.md), [manual-ui-qa.md](manual-ui-qa.md), [manual-windows-ux-qa.md](manual-windows-ux-qa.md), [manual-visual-qa.md](manual-visual-qa.md), [test-feedback-template.md](test-feedback-template.md)
 - examples: `release-local-readiness.md`, `release-readiness.md`
 
-Treat these as supporting material to be merged or archived over time rather than primary entrypoints.
+Treat these as supporting material to be merged or archived over time rather than primary entrypoints. Experimental/future-track docs should stay out of the public product path unless a canonical product doc explicitly marks them as shipped.

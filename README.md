@@ -44,6 +44,7 @@ Also out of scope in current stable beta:
 - no click-through hidden overlay
 - no Advanced Mode user surface
 - no memory user surface
+- no bilingual/live-translation interview surface in the shipped public beta
 
 ## Supported Runtime Path
 
@@ -118,6 +119,7 @@ See:
 
 - [docs/product/privacy.md](docs/product/privacy.md)
 - [docs/public-vs-local-artifacts.md](docs/public-vs-local-artifacts.md)
+- [docs/product/limitations.md](docs/product/limitations.md)
 
 ## Documentation Map
 

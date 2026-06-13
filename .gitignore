@@ -45,6 +45,9 @@ docs/archive/*
 !docs/archive/handoff/
 docs/archive/handoff/*
 !docs/archive/handoff/beta-readiness.md
+!docs/archive/experimental/
+docs/archive/experimental/*
+!docs/archive/experimental/bilingual-interview-mode.md
 docs/ai-tooling-policy-matrix.md
 docs/audit-scorecard-*.md
 docs/max-upgrade-*.md

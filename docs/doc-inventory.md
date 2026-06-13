@@ -32,7 +32,7 @@
 | `docs/README.md` | Docs index | contributor | keep | `docs/README.md` | Keep as thin directory index, not as a second product README. |
 | `docs/doc-inventory.md` | Documentation inventory and restructure map | contributor | keep | `docs/doc-inventory.md` | Working map for cleanup sequencing. |
 | `docs/accessibility.md` | Keyboard and accessibility notes | public user | keep | `docs/product/accessibility.md` | End-user capability reference. |
-| `docs/bilingual-interview-mode.md` | Bilingual interview mode description | beta tester | keep | `docs/product/bilingual-interview-mode.md` | User-facing mode doc; should stay clearly beta-scoped. |
+| `docs/archive/experimental/bilingual-interview-mode.md` | Bilingual interview mode description | beta tester | archive | `docs/archive/experimental/bilingual-interview-mode.md` | Experimental track, not shipped in the current public beta; kept only as archived reference with explicit status. |
 | `docs/candidate-pack.md` | Candidate Pack behavior and boundaries | beta tester | keep | `docs/product/candidate-pack.md` | Active beta feature documentation. |
 | `docs/error-catalog.md` | Error code reference | beta tester | keep | `docs/product/error-catalog.md` | User-facing troubleshooting companion. |
 | `docs/glossary.md` | Product glossary | public user | keep | `docs/product/glossary.md` | Useful shared vocabulary for public/beta docs. |
@@ -136,12 +136,18 @@ primary beta-user documentation in the eventual docs IA.
 
 ### Experimental / future / historical docs that should not look shipped
 
+- `docs/archive/experimental/bilingual-interview-mode.md` (archived on purpose; explicit `Experimental / not shipped` status)
 - `docs/card-schema-v3-migration.md`
 - `docs/release-notes/v0.2.0-beta.1.md`
 - `docs/releases/v0.2.0-beta.2.md`
 - `docs/releases/v0.2.0-beta.2/screenshots/README.md`
 
 These are better treated as archive/history, not as active product guidance.
+
+Current cleanup decisions completed:
+
+- `Bilingual Interview Mode` moved off the main docs path into `docs/archive/experimental/`.
+- `Memory`, `Local STT`, broader provider expansion, `Advanced Mode`, and public-installer/signing future work remain canonical only as non-shipped boundaries in `docs/product/limitations.md`.
 
 ## Explicit Non-Inventory Items
 

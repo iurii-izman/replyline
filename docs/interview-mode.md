@@ -76,6 +76,7 @@ Beta constraint:
 ## Current limitations
 
 - This path does not guarantee perfect correctness for all interviews.
+- There is no shipped bilingual interview lane, live translation surface, or streaming transcript mode in the current public beta.
 - It does not provide stealth mode or invisible overlay behavior.
 - It does not provide transcript/history/team workflow UI.
 - Report scores are deterministic heuristics, not formal assessment guarantees.

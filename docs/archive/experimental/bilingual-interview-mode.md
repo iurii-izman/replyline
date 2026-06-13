@@ -1,5 +1,7 @@
 # Bilingual Interview Mode
 
+> Status: Experimental / not shipped in current public beta.
+
 ## Goal
 
 Bilingual Interview Mode adds a split pipeline for interview help:

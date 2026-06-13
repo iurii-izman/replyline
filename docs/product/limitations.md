@@ -35,6 +35,7 @@ This is the canonical public known-limitations document for the current Replylin
 
 - The shipped product posture is Russian-first.
 - English appears as a mirror/supporting layer in selected places, not as a fully finished multilingual UX.
+- There is no shipped bilingual interview mode, live translation lane, or streaming transcript interview surface in the current public beta.
 - Multilingual expansion should not be described as shipped unless explicitly documented in a canonical product doc.
 
 ## Diagnostics and storage truth
@@ -46,7 +47,10 @@ This is the canonical public known-limitations document for the current Replylin
 
 ## Explicitly non-shipped future tracks
 
+- Advanced Mode is not shipped.
+- Bilingual Interview Mode is experimental and not shipped in the current public beta.
 - Memory is not shipped.
+- There is no shipped memory UI, memory command surface, or automatic memory persistence layer.
 - Local STT is not shipped.
 - Broad provider expansion beyond the current shipped paths is not shipped unless explicitly documented.
 - Any wider cross-platform or broad public-installer story remains future work until explicitly verified and documented.
