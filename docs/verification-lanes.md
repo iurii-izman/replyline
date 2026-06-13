@@ -83,6 +83,14 @@
 - Lifecycle governance: `pnpm scripts:lifecycle`.
 - Operator release lane: `pnpm verify:release-local`.
 
+## E2E Lane Roles
+
+- `pnpm test:e2e:web:smoke`: blocking mocked Playwright lane for credential-free happy path.
+- `pnpm test:e2e:web:visual`: optional screenshot lane; keep it outside default PR-blocking web E2E because snapshots can be environment-sensitive.
+- `pnpm test:e2e:web`: current convenience alias to `test:e2e:web:smoke`.
+- `pnpm test:e2e:desktop`: optional Tauri/WebDriverIO session smoke only. Scope is limited to "desktop artifact launches and accepts input", not full desktop UX coverage.
+- `pnpm test:e2e:desktop:required`: release/operator lane with the same narrow scope, but mandatory prerequisites and non-skip behavior.
+
 ## CI Alignment
 
 - `.github/workflows/ci.yml`: blocking `verify:fast` baseline.

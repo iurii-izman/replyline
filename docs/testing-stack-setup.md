@@ -60,9 +60,12 @@ pnpm install --include=optional
 
 ## Desktop/Web E2E Policy
 
-- Deterministic credential-free happy path: `pnpm test:e2e:web`.
+- Blocking credential-free happy path: `pnpm test:e2e:web:smoke`.
+- Optional visual snapshot lane: `pnpm test:e2e:web:visual`.
+- `pnpm test:e2e:web` currently aliases the blocking smoke lane; it does not include visual snapshots by default.
 - Web E2E auto-starts local Vite server (`127.0.0.1:4173`) from Playwright config.
 - Desktop E2E (`pnpm test:e2e:desktop`) remains optional and returns `SKIP` when `TAURI_APP_PATH` is not set.
+- Desktop E2E scope is intentionally narrow: verify that a built desktop artifact launches and still accepts minimal keyboard input. It is not a full UX regression suite.
 - Desktop E2E required lane (`pnpm test:e2e:desktop:required`) is for release/operator validation and fails when prerequisites are missing.
 
 Required desktop E2E prerequisites:

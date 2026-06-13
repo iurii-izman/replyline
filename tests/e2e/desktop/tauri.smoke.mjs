@@ -1,14 +1,14 @@
 /* global describe, it, browser */
 
-describe("tauri desktop smoke", () => {
-  it("creates a desktop webdriver session", async () => {
+describe("tauri desktop artifact smoke", () => {
+  it("launches the desktop artifact and creates a webdriver session", async () => {
     const handle = await browser.getWindowHandle();
     if (!handle || handle.length === 0) {
       throw new Error("Expected a valid window handle");
     }
   });
 
-  it("accepts keyboard input without crashing", async () => {
+  it("accepts minimal keyboard input without losing the session", async () => {
     await browser.keys(["r"]);
     const stillAlive = await browser.getWindowHandle();
     if (!stillAlive) {

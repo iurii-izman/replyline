@@ -12,6 +12,22 @@ test("credential-free happy path renders shell, settings, and fixture card", asy
   await expect(page.getByTestId("settings-surface")).toBeVisible();
   await expect(page.getByTestId("settings-section-overview")).toBeVisible();
 
+  await page.locator("#settings-sidebar-tab-llm").click();
+  await expect(page.getByTestId("settings-section-llm")).toBeVisible();
+  await expect(page.locator("#settings-panel-llm select").first()).toHaveValue("openrouter_free_dev");
+
+  await page.locator("#settings-sidebar-tab-hotkey").click();
+  await expect(page.getByTestId("settings-section-hotkey")).toBeVisible();
+  await expect(page.locator("#settings-panel-hotkey input[type='checkbox']").nth(0)).not.toBeChecked();
+  await expect(page.locator("#settings-panel-hotkey input[type='checkbox']").nth(1)).not.toBeChecked();
+  await expect(page.locator("#settings-panel-hotkey input[type='checkbox']").nth(2)).toBeChecked();
+
+  await page.locator("#settings-sidebar-tab-reports").click();
+  await expect(page.getByTestId("settings-section-reports")).toBeVisible();
+  await expect(page.getByTestId("debug-trace-mode-field").locator("select")).toHaveValue(
+    "redacted",
+  );
+
   await page.getByTestId("app-header-settings-action").click();
   await expect(page.getByTestId("main-surface")).toBeVisible();
 

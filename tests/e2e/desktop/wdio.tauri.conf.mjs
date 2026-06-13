@@ -3,6 +3,7 @@ if (!process.env.TAURI_APP_PATH) {
   throw new Error("TAURI_APP_PATH is required for desktop e2e");
 }
 
+// Desktop E2E is intentionally limited to artifact/session bring-up smoke, not full UX coverage.
 export const config = {
   runner: "local",
   framework: "mocha",

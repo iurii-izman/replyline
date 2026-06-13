@@ -95,6 +95,8 @@ const matrix = {
     "format",
     "format:check",
     "test:e2e:web",
+    "test:e2e:web:smoke",
+    "test:e2e:web:visual",
     "test:e2e:web:required",
     "test:e2e:web:ui",
     "test:e2e:desktop",
