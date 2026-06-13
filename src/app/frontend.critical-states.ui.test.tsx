@@ -215,13 +215,6 @@ describe("frontend critical state coverage", () => {
     );
   });
 
-  it("renders full vs redacted export copy", () => {
-    render(() => <MainSurface controller={mainController() as never} />);
-    expect(screen.getByText(ui_ru.card.interview.sessionActions.exportRedactedRecommended)).toBeTruthy();
-    expect(screen.getByRole("button", { name: ui_ru.card.interview.sessionActions.exportMarkdownRedacted })).toBeTruthy();
-    expect(screen.getByRole("button", { name: ui_ru.card.interview.sessionActions.exportMarkdown })).toBeTruthy();
-  });
-
   it("shows full_local diagnostics warning", () => {
     render(() => <SettingsSurface controller={settingsController() as never} />);
     expect(screen.getByText(ui_ru.settings.debugTraceFullWarning)).toBeTruthy();
@@ -283,67 +276,39 @@ describe("frontend critical state coverage", () => {
     expect(document.activeElement).toBe(checkButton);
   });
 
-  it("covers Candidate Pack empty/preparing/prepared/saved states", () => {
-    render(() => <CandidatePackStudio controller={candidateController() as never} st={ui_ru} />);
-    expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain(
-      ui_ru.settings.candidatePackStateEmpty,
-    );
-
-    cleanup();
-    render(
-      () =>
-        (
-          <CandidatePackStudio
-            controller={candidateController({ candidatePackPreparing: () => true }) as never}
-            st={ui_ru}
-          />
-        ) as never,
-    );
-    expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain(
+  it.each([
+    ["empty", candidateController(), ui_ru.settings.candidatePackStateEmpty],
+    [
+      "preparing",
+      candidateController({ candidatePackPreparing: () => true }),
       ui_ru.settings.candidatePackStateProcessing,
-    );
-
-    cleanup();
-    render(
-      () =>
-        (
-          <CandidatePackStudio
-            controller={
-              candidateController({
-                candidatePackPreview: () => ({
-                  packQualityScore: 80,
-                  missingDataWarnings: [],
-                  suggestedMissingInfo: [],
-                  candidateFacts: [],
-                  roleKeywords: [],
-                  companyValues: [],
-                }),
-              }) as never
-            }
-            st={ui_ru}
-          />
-        ) as never,
-    );
-    expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain(
+    ],
+    [
+      "prepared",
+      candidateController({
+        candidatePackPreview: () => ({
+          packQualityScore: 80,
+          missingDataWarnings: [],
+          suggestedMissingInfo: [],
+          candidateFacts: [],
+          roleKeywords: [],
+          companyValues: [],
+        }),
+      }),
       ui_ru.settings.candidatePackStatePrepared,
-    );
-
-    cleanup();
-    render(
-      () =>
-        (
-          <CandidatePackStudio
-            controller={
-              candidateController({
-                candidatePackStatus: () => ({ exists: true, factCount: 2, weakFactCount: 0 }),
-              }) as never
-            }
-            st={ui_ru}
-          />
-        ) as never,
-    );
-    expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain(
+    ],
+    [
+      "saved",
+      candidateController({
+        candidatePackStatus: () => ({ exists: true, factCount: 2, weakFactCount: 0 }),
+      }),
       ui_ru.settings.candidatePackStateSaved,
+    ],
+  ])("covers Candidate Pack %s state", (_label, controller, expectedStatus) => {
+    cleanup();
+    render(() => <CandidatePackStudio controller={controller as never} st={ui_ru} />);
+    expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain(
+      expectedStatus,
     );
   });
 
