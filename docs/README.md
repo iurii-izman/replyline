@@ -2,7 +2,7 @@
 
 Документация разделена по задачам. Для первого знакомства начните с
 [`README.md`](../README.md), для тестирования с
-[`BETA_TESTING.md`](../BETA_TESTING.md).
+[`BETA_TESTING.md`](../BETA_TESTING.md). Полный список и инвентаризация файлов документации приведены в [doc-inventory.md](doc-inventory.md).
 
 ## Product And Setup
 
