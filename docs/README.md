@@ -54,7 +54,6 @@ Use this page as the final role-based map.
 ### Compatibility and history
 
 - Compatibility stubs for old links are tracked in [doc-inventory.md](doc-inventory.md). They should stay short and should not grow new policy content.
-- Common compatibility stubs still in circulation: [verification-lanes.md](verification-lanes.md), [runtime-live-qa.md](runtime-live-qa.md), [runtime-bringup.md](runtime-bringup.md), [runtime-evidence.md](runtime-evidence.md), [manual-ui-qa.md](manual-ui-qa.md), [manual-windows-ux-qa.md](manual-windows-ux-qa.md), [manual-visual-qa.md](manual-visual-qa.md), [test-feedback-template.md](test-feedback-template.md).
 - [archive/experimental/bilingual-interview-mode.md](archive/experimental/bilingual-interview-mode.md) - archived experimental bilingual interview concept; not shipped in current public beta.
 - [archive/handoff/beta-readiness.md](archive/handoff/beta-readiness.md) - archived beta handoff plan.
 - [release-notes/v0.2.0-beta.1.md](release-notes/v0.2.0-beta.1.md) - historical beta release note.

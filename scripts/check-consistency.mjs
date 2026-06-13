@@ -23,7 +23,7 @@ const requiredIncludes = [
   },
   {
     path: "docs/README.md",
-    includes: ["verification-lanes.md", "testing-stack-setup.md", "runtime-live-qa.md"],
+    includes: ["engineering/verification.md", "testing-stack-setup.md", "engineering/runtime.md"],
   },
   {
     path: "docs/archive/handoff/beta-readiness.md",
@@ -78,17 +78,22 @@ const requiredIncludes = [
     includes: [canonicalCard, "best model", "nothing is ever stored anywhere"],
   },
   {
-    path: "docs/known-limitations.md",
+    path: "docs/product/limitations.md",
     includes: [
       ...guardrailTokens,
-      "скрытых cheating сценариев",
-      "click-through скрытого overlay",
-      "Everything is fully local",
+      "There is no stealth, hidden-overlay, click-through, or cheating flow.",
+      "A local LLM endpoint does not make the shipped runtime fully local-only because the shipped STT path is still Deepgram.",
+      "There is no signed public installer yet.",
     ],
   },
   {
-    path: "docs/privacy-and-trust.md",
-    includes: ["Internal Stable Beta", "STT -> LLM -> карточка", "санитизацию/редакцию"],
+    path: "docs/product/privacy.md",
+    includes: [
+      "Deepgram",
+      "OpenAI-compatible",
+      "Default runtime does not write raw audio or transcripts to disk automatically.",
+      "debugTraceMode=full_local",
+    ],
     excludes: ["Pre-Alpha"],
   },
   {
