@@ -48,6 +48,11 @@ WorkConversation generation excludes Candidate Pack context by default.
 - Treat local pack files and interview reports as sensitive and redact before sharing.
 - Never commit raw Candidate Pack examples, full interview exports, or provider payload dumps into the public repository footprint.
 
+Canonical public privacy/trust and product-boundary docs:
+
+- [product/privacy.md](product/privacy.md)
+- [product/limitations.md](product/limitations.md)
+
 ## AI preparation boundary
 
 - AI preparation is explicit.

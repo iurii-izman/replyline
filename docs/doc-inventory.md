@@ -37,11 +37,11 @@
 | `docs/error-catalog.md` | Error code reference | beta tester | keep | `docs/product/error-catalog.md` | User-facing troubleshooting companion. |
 | `docs/glossary.md` | Product glossary | public user | keep | `docs/product/glossary.md` | Useful shared vocabulary for public/beta docs. |
 | `docs/interview-mode.md` | Interview Mode workflow | beta tester | keep | `docs/product/interview-mode.md` | Core beta-mode documentation. |
-| `docs/known-limitations.md` | Public beta limitations | public user | keep | `docs/product/known-limitations.md` | Canonical limitations page; trust-critical. |
-| `docs/privacy-policy.md` | Canonical privacy/data-flow policy | public user | keep | `docs/product/privacy-policy.md` | Should be the single canonical privacy document. |
-| `docs/privacy-and-trust.md` | Secondary privacy/trust explainer | public user | merge | `docs/product/privacy-policy.md` | Overlaps heavily with privacy policy and creates duplicate trust claims. |
+| `docs/known-limitations.md` | Legacy limitations entrypoint | public user | keep as stub | `docs/product/limitations.md` | Preserve existing links while canonical source moves. |
+| `docs/privacy-policy.md` | Legacy privacy/data-flow entrypoint | public user | keep as stub | `docs/product/privacy.md` | Preserve existing links while canonical source moves. |
+| `docs/privacy-and-trust.md` | Legacy privacy/trust explainer | public user | keep as stub | `docs/product/privacy.md` | Preserve existing links while canonical source moves. |
 | `docs/settings-reference.md` | Settings surface reference | beta tester | keep | `docs/product/settings-reference.md` | User-facing configuration guide. |
-| `docs/third-party-providers.md` | Provider route and caveats | beta tester | merge | `docs/product/provider-runtime-path.md` | Overlaps with privacy/limitations/provider setup; should become one canonical provider boundary doc. |
+| `docs/third-party-providers.md` | Legacy provider route and caveats | beta tester | keep as stub | `docs/product/privacy.md` + `docs/product/limitations.md` | Provider boundaries now live inside canonical public docs. |
 | `docs/troubleshooting.md` | Problem-solving guide | beta tester | keep | `docs/product/troubleshooting.md` | User-facing support doc. |
 | `docs/beta-doctor.md` | `beta:doctor` setup/diagnostic guide | beta tester | keep | `docs/testing/beta-doctor.md` | Belongs with tester setup and readiness checks. |
 | `docs/beta-feedback-loop.md` | Feedback intake and triage loop | release operator | keep | `docs/ops/beta-feedback-loop.md` | Operator workflow, not beta-user reading. |
@@ -97,14 +97,10 @@
 
 ### Privacy / provider / limitations overlap
 
-- `docs/privacy-policy.md` should become the single canonical public privacy doc.
-- `docs/privacy-and-trust.md` duplicates storage/provider/trust boundaries and is
-  a merge candidate into `privacy-policy.md`.
-- `docs/third-party-providers.md` repeats parts of provider caveats, cloud
-  boundaries, and local-provider posture already implied by privacy/limitations
-  docs.
-- `docs/known-limitations.md` already carries the strongest user-facing truth
-  language and should stay the canonical limitations page.
+- `docs/product/privacy.md` is the single canonical public privacy/trust/data-flow doc.
+- `docs/privacy-policy.md`, `docs/privacy-and-trust.md`, and `docs/third-party-providers.md` remain as redirect stubs for link stability.
+- `docs/product/limitations.md` is the canonical public limitations doc.
+- `docs/known-limitations.md` remains as a redirect stub for link stability.
 
 ### Runtime / evidence / QA overlap
 

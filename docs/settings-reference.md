@@ -36,7 +36,7 @@ No Advanced Mode fields in user-facing settings contract.
 
 - Remote/provider-hosted LLM routes are expected to use `https://`.
 - `http://` is accepted only for local/local-network routes (`localhost`, loopback/private ranges, `.local`) to keep local provider scenarios working.
-- This policy aligns with CSP `connect-src` rationale in `docs/privacy-and-trust.md` (`https://*` retained for user-configured OpenAI-compatible endpoints).
+- This policy aligns with CSP `connect-src` rationale in `docs/product/privacy.md` (`https://*` retained for user-configured OpenAI-compatible endpoints).
 
 ## Mode boundary reminders
 

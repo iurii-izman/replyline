@@ -112,15 +112,15 @@ Strict report gates:
 
 See:
 
-- [docs/privacy-and-trust.md](docs/privacy-and-trust.md)
+- [docs/product/privacy.md](docs/product/privacy.md)
 - [docs/public-vs-local-artifacts.md](docs/public-vs-local-artifacts.md)
 
 ## Documentation Map
 
 - [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke test for Windows testers.
 - [docs/README.md](docs/README.md) - role-based documentation map for beta users, testers, contributors, and operators.
-- [docs/privacy-policy.md](docs/privacy-policy.md) - canonical privacy, storage, and provider data-flow policy.
-- [docs/known-limitations.md](docs/known-limitations.md) - current beta scope, limitations, and non-shipped tracks.
+- [docs/product/privacy.md](docs/product/privacy.md) - canonical privacy, trust, storage, and provider data-flow policy.
+- [docs/product/limitations.md](docs/product/limitations.md) - canonical beta scope, limitations, and non-shipped tracks.
 - [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and verification expectations.
 - [.github/SECURITY.md](.github/SECURITY.md) - private vulnerability reporting.
 - [.github/SUPPORT.md](.github/SUPPORT.md) - issue routing and support paths.

@@ -80,6 +80,11 @@ Beta constraint:
 - It does not provide transcript/history/team workflow UI.
 - Report scores are deterministic heuristics, not formal assessment guarantees.
 
+Canonical public privacy/trust and product-boundary docs:
+
+- [product/privacy.md](product/privacy.md)
+- [product/limitations.md](product/limitations.md)
+
 ## Validation flow
 
 For Interview Mode changes run:

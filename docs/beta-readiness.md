@@ -158,7 +158,7 @@ Runtime probe credentials note:
 4. Keep trust language factual:
    - do not claim all processing is local-only when cloud providers are enabled
    - do not claim that nothing is ever stored anywhere
-5. Use `docs/privacy-and-trust.md` as privacy source of truth for stable beta.
+5. Use `docs/product/privacy.md` as privacy source of truth for stable beta.
 
 ## 7) Handoff acceptance checklist
 
@@ -206,7 +206,7 @@ Minimum measurements required before public beta installer claims:
 
 ## 8) Known limitations
 
-Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in every beta handoff:
+Use `docs/product/limitations.md` as canonical list. Minimum truths to keep in every beta handoff:
 
 - cross-machine and cross-call-app behavior is still `pending verification`
 - no guarantee of stable low latency across all providers/conditions

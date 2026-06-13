@@ -61,5 +61,5 @@ See also:
 
 - [docs/beta-doctor.md](beta-doctor.md)
 - [docs/beta-readiness.md](beta-readiness.md)
-- [docs/privacy-and-trust.md](privacy-and-trust.md)
+- [docs/product/privacy.md](product/privacy.md)
 - [docs/troubleshooting.md](troubleshooting.md)

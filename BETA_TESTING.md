@@ -80,5 +80,5 @@ issues, screenshots или logs.
 по инструкции из [SECURITY.md](.github/SECURITY.md), а не в public issue.
 
 Подробные ограничения продукта описаны в
-[known limitations](docs/known-limitations.md). Вопросы можно задать в
+[known limitations](docs/product/limitations.md). Вопросы можно задать в
 [GitHub Beta Operations Kit](docs/github-beta-operations-kit.md).

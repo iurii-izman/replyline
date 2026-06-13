@@ -11,8 +11,8 @@ Use this page as role-based navigation. For the full document inventory, merge c
 
 ### Product / beta user
 
-- [known-limitations.md](known-limitations.md) - current beta scope, non-shipped tracks, and platform boundaries.
-- [privacy-policy.md](privacy-policy.md) - canonical capture, storage, provider, and user-control policy.
+- [product/limitations.md](product/limitations.md) - current beta scope, non-shipped tracks, and platform boundaries.
+- [product/privacy.md](product/privacy.md) - canonical capture, storage, provider, and user-control policy.
 - [troubleshooting.md](troubleshooting.md) - setup and runtime problem-solving guide.
 - [settings-reference.md](settings-reference.md) - active settings surface and configuration reference.
 
@@ -52,6 +52,6 @@ Use this page as role-based navigation. For the full document inventory, merge c
 These docs stay available, but they are not part of the main visible role map on this page:
 
 - to be merged/archived: see [doc-inventory.md](doc-inventory.md) for the canonical cleanup map
-- examples: `privacy-and-trust.md`, `third-party-providers.md`, `beta-readiness.md`, `release-local-readiness.md`, `live-runtime-matrix.md`, `manual-ui-qa.md`, `manual-visual-qa.md`, `manual-windows-ux-qa.md`
+- examples: `beta-readiness.md`, `release-local-readiness.md`, `live-runtime-matrix.md`, `manual-ui-qa.md`, `manual-visual-qa.md`, `manual-windows-ux-qa.md`
 
 Treat these as supporting material to be merged or archived over time rather than primary entrypoints.

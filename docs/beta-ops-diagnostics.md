@@ -146,5 +146,5 @@ Scenario C: Invalid LLM route or unreachable gateway
 See also:
 
 - `docs/release-readiness.md`
-- `docs/privacy-and-trust.md`
+- `docs/product/privacy.md`
 - `docs/error-catalog.md`

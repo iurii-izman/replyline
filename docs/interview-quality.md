@@ -30,7 +30,7 @@ Dataset and expectations are documented in `docs/interview-golden-dataset-v1.md`
 
 1. Green `pnpm test:interview-quality` run (blocking).
 2. `pnpm report:interview-quality` report with totals, summary by question type, and failure reasons.
-3. Updated `docs/known-limitations.md` when behavior/coverage changed.
+3. Updated `docs/product/limitations.md` when behavior/coverage changed.
 
 Blocking means fail fast in CI/local:
 
