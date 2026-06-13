@@ -4,8 +4,8 @@ contact_links:
     url: https://github.com/iurii-izman/replyline/blob/main/BETA_TESTING.md
     about: Run the focused 15-minute Windows beta test and report sanitized results.
   - name: Beta ops routing guide
-    url: https://github.com/iurii-izman/replyline/blob/main/docs/github-beta-operations-kit.md
-    about: Labels, milestones, discussion-topic plan, and weekly health report workflow.
+    url: https://github.com/iurii-izman/replyline/blob/main/docs/engineering/operations.md
+    about: Intake, labels, diagnostics, sharing guardrails, and stale-candidate workflow.
   - name: Support Guide
     url: https://github.com/iurii-izman/replyline/blob/main/.github/SUPPORT.md
     about: Troubleshooting and support path before opening issues.

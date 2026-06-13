@@ -4,6 +4,8 @@ Canonical manual QA guide for desktop UI, Windows UX, compact visual sanity, and
 
 Run this after UI-affecting changes and before beta/release handoff. Keep notes compact, attach local artifact paths only, and never include secrets or raw transcript dumps in shared notes.
 
+Operational intake, GitHub routing, diagnostics collection, and stale handling live in [operations.md](operations.md).
+
 ## Run metadata
 
 - Date: `<YYYY-MM-DD>`

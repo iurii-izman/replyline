@@ -15,7 +15,7 @@
 - Weekly or release-wave smoke results: open the **Beta smoke report** issue form
 - Improvements: open the **Feature request** issue form
 - Beta handoff/release readiness: open a **Beta handoff release** issue template
-- Proposed Discussions topics and manual routing live in [docs/github-beta-operations-kit.md](../docs/github-beta-operations-kit.md)
+- Proposed Discussions topics and manual routing live in [docs/engineering/operations.md](../docs/engineering/operations.md)
 
 ## What Helps Triage
 

@@ -24,6 +24,7 @@ Use this page as the final role-based map.
 - [beta-doctor.md](beta-doctor.md) - environment readiness and local setup diagnostics.
 - [smoke-checks.md](smoke-checks.md) - manual smoke checklist.
 - [beta-smoke-report.md](beta-smoke-report.md) - sanitized reporting flow after a smoke run.
+- [engineering/operations.md](engineering/operations.md) - operator-facing intake, issue routing, diagnostics, and sharing guardrails.
 - [engineering/runtime.md](engineering/runtime.md) - runtime bring-up, evidence, and claim-label guide for local validation.
 - [engineering/testing.md](engineering/testing.md) - canonical engineering testing guide for profiles, fixtures, E2E, and CI alignment.
 
@@ -37,15 +38,13 @@ Use this page as the final role-based map.
 
 ### Release/operator
 
+- [engineering/operations.md](engineering/operations.md) - canonical beta/operator guide for intake, smoke reports, issue routing, diagnostics, sharing, and stale policy.
 - [engineering/release.md](engineering/release.md) - canonical engineering release guide, freeze semantics, and packaging truth.
 - [release-checklist.md](release-checklist.md) - release execution checklist.
 - [engineering/runtime.md](engineering/runtime.md) - runtime evidence policy, proof boundaries, and live validation flow.
 - [engineering/manual-qa.md](engineering/manual-qa.md) - compact operator manual QA checklist.
-- [public-vs-local-artifacts.md](public-vs-local-artifacts.md) - sharing and sensitivity rules for generated artifacts.
-- [github-beta-operations-kit.md](github-beta-operations-kit.md) - GitHub-side beta operations and routing.
-- [beta-feedback-loop.md](beta-feedback-loop.md) - beta feedback intake and follow-up loop.
-- [beta-ops-diagnostics.md](beta-ops-diagnostics.md) - operator diagnostics runbook.
-- [stale-beta-policy.md](stale-beta-policy.md) - stale beta handling policy.
+- [beta-doctor.md](beta-doctor.md) - tester-facing readiness command reference.
+- [beta-smoke-report.md](beta-smoke-report.md) - tester-facing sanitized issue attachment flow.
 
 ### Compatibility and history
 

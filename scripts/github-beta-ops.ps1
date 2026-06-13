@@ -87,7 +87,7 @@ if (-not $ApplyLabels -and -not $ApplyMilestones) {
 if (-not (Test-GhReady)) {
   Write-Warning "gh CLI is unavailable or unauthenticated. No labels or milestones were changed."
   Write-Host "Manual follow-up:"
-  Write-Host "- Review docs/github-beta-operations-kit.md"
+  Write-Host "- Review docs/engineering/operations.md"
   Write-Host "- Create labels: $($labels.Name -join ', ')"
   Write-Host "- Create milestones: $($milestones.Title -join ', ')"
   exit 0

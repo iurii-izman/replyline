@@ -415,10 +415,10 @@ function buildReport() {
     lastError,
     references: [
       { label: "Engineering release guide", path: "docs/engineering/release.md" },
+      { label: "Operations guide", path: "docs/engineering/operations.md" },
       { label: "Beta doctor", path: "docs/beta-doctor.md" },
       { label: "Troubleshooting", path: "docs/troubleshooting.md" },
       { label: "Privacy and trust", path: "docs/privacy-and-trust.md" },
-      { label: "Public vs local artifacts", path: "docs/public-vs-local-artifacts.md" },
     ],
   };
 

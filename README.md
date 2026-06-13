@@ -122,7 +122,7 @@ Engineering release source of truth:
 See:
 
 - [docs/product/privacy.md](docs/product/privacy.md)
-- [docs/public-vs-local-artifacts.md](docs/public-vs-local-artifacts.md)
+- [docs/engineering/operations.md](docs/engineering/operations.md)
 - [docs/product/limitations.md](docs/product/limitations.md)
 
 ## Documentation Map
@@ -131,6 +131,7 @@ See:
 - [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke test for Windows testers.
 - [docs/README.md](docs/README.md) - role-based documentation map for beta users, testers, contributors, and operators.
 - [docs/engineering/release.md](docs/engineering/release.md) - canonical engineering release guide and packaging truth.
+- [docs/engineering/operations.md](docs/engineering/operations.md) - canonical operator guide for beta intake, diagnostics, sharing, and issue routing.
 - [docs/product/privacy.md](docs/product/privacy.md) - canonical privacy, trust, storage, and provider data-flow policy.
 - [docs/product/limitations.md](docs/product/limitations.md) - canonical beta scope, limitations, and non-shipped tracks.
 - [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and verification expectations.

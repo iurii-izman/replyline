@@ -144,4 +144,4 @@ Use this compact template when collecting operator evidence:
 
 - [testing.md](testing.md)
 - [manual-qa.md](manual-qa.md)
-- [../public-vs-local-artifacts.md](../public-vs-local-artifacts.md)
+- [operations.md](operations.md)

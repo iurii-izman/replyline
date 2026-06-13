@@ -23,7 +23,7 @@ const requiredIncludes = [
   },
   {
     path: "docs/README.md",
-    includes: ["engineering/verification.md", "testing-stack-setup.md", "engineering/runtime.md"],
+    includes: ["engineering/verification.md", "testing-stack-setup.md", "engineering/runtime.md", "engineering/operations.md"],
   },
   {
     path: "docs/archive/handoff/beta-readiness.md",
@@ -98,7 +98,36 @@ const requiredIncludes = [
   },
   {
     path: "docs/beta-ops-diagnostics.md",
-    includes: ["diag_runtime_event", "stage", "outcome", "code"],
+    includes: ["engineering/operations.md", "diag_runtime_event", "RL_*"],
+  },
+  {
+    path: "docs/public-vs-local-artifacts.md",
+    includes: ["engineering/operations.md", "section 8"],
+  },
+  {
+    path: "docs/github-beta-operations-kit.md",
+    includes: ["engineering/operations.md", "section 4"],
+  },
+  {
+    path: "docs/beta-feedback-loop.md",
+    includes: ["engineering/operations.md", "section 5"],
+  },
+  {
+    path: "docs/stale-beta-policy.md",
+    includes: ["engineering/operations.md", "section 9"],
+  },
+  {
+    path: "docs/engineering/operations.md",
+    includes: [
+      "Operator purpose and guardrails",
+      "Smoke report flow",
+      "GitHub issue routing and labels",
+      "Feedback triage cadence",
+      "Diagnostics collection",
+      "Public vs local artifact sharing",
+      "status:stale-candidate",
+      "diag_runtime_event",
+    ],
   },
   {
     path: "landing/index.html",
