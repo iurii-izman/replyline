@@ -82,4 +82,5 @@ issues, screenshots или logs.
 
 Подробные границы продукта описаны в
 [docs/product/limitations.md](docs/product/limitations.md). Если что-то не
-завелось, начните с [docs/troubleshooting.md](docs/troubleshooting.md).
+завелось, начните с
+[docs/product/user-guide.md#8-troubleshooting-quick-table](docs/product/user-guide.md#8-troubleshooting-quick-table).

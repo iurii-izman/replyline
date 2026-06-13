@@ -17,6 +17,7 @@ Core flow: `capture -> stt -> llm -> card`
 The current public entry is a Windows **source/developer beta** for testers and contributors:
 
 - [Open the product page](https://iurii-izman.github.io/replyline/)
+- [Read the user guide](docs/product/user-guide.md)
 - [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.1)
 - [Run the 15-minute beta test](BETA_TESTING.md)
 - [Ask a question or share feedback](https://github.com/iurii-izman/replyline/discussions)
@@ -123,6 +124,7 @@ See:
 
 ## Documentation Map
 
+- [docs/product/user-guide.md](docs/product/user-guide.md) - compact user guide for setup, settings, flows, exports, troubleshooting, and keyboard notes.
 - [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke test for Windows testers.
 - [docs/README.md](docs/README.md) - role-based documentation map for beta users, testers, contributors, and operators.
 - [docs/engineering/release.md](docs/engineering/release.md) - canonical engineering release guide and packaging truth.

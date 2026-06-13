@@ -28,19 +28,20 @@
 | path | audience | final status | purpose | minimum target action |
 | --- | --- | --- | --- | --- |
 | `docs/README.md` | mixed | `canonical` | Финальная role-based карта документации. | `keep active` |
-| `docs/accessibility.md` | public user | `supporting` | Keyboard и accessibility notes. | `merge into product/user-guide.md` |
+| `docs/product/user-guide.md` | public user | `canonical` | Компактный user guide: setup, settings, flows, exports, troubleshooting, accessibility. | `keep active` |
 | `docs/beta-doctor.md` | beta tester | `canonical` | `pnpm beta:doctor` readiness guide. | `merge into engineering/operations.md` |
 | `docs/beta-smoke-report.md` | beta tester | `canonical` | Sanitized smoke-report generation and sharing. | `merge into engineering/operations.md` |
-| `docs/candidate-pack.md` | beta tester | `canonical` | Candidate Pack flow, boundaries, and storage. | `merge into product/user-guide.md` |
+| `docs/accessibility.md` | public user | `compatibility stub` | Legacy keyboard/accessibility entrypoint. | `keep short stub` |
+| `docs/candidate-pack.md` | beta tester | `compatibility stub` | Legacy Candidate Pack entrypoint. | `keep short stub` |
 | `docs/error-catalog.md` | beta tester | `canonical` | User-facing error reference. | `merge into reference/errors.md` |
 | `docs/glossary.md` | mixed | `supporting` | Shared vocabulary for product and engineering docs. | `keep active` |
-| `docs/interview-mode.md` | beta tester | `canonical` | Interview Mode workflow and report/export boundary. | `merge into product/user-guide.md` |
+| `docs/interview-mode.md` | beta tester | `compatibility stub` | Legacy Interview Mode entrypoint. | `keep short stub` |
 | `docs/product/limitations.md` | public user | `canonical` | Current beta scope, installer truth, and non-shipped tracks. | `keep active` |
 | `docs/product/privacy.md` | public user | `canonical` | Capture, storage, provider, and export trust boundary. | `keep active` |
-| `docs/settings-reference.md` | beta tester | `canonical` | Current settings surface and sensitive options. | `merge into product/user-guide.md` |
+| `docs/settings-reference.md` | beta tester | `compatibility stub` | Legacy settings entrypoint. | `keep short stub` |
 | `docs/smoke-checks.md` | beta tester | `canonical` | Manual smoke checklist. | `merge into engineering/testing.md` |
 | `docs/testing-stack-setup.md` | beta tester/contributor | `supporting` | Local test environment setup. | `merge into engineering/testing.md` |
-| `docs/troubleshooting.md` | beta tester | `canonical` | Setup/runtime troubleshooting guide. | `merge into engineering/operations.md` |
+| `docs/troubleshooting.md` | beta tester | `compatibility stub` | Legacy troubleshooting entrypoint. | `keep short stub` |
 
 ## Active Engineering And Operator Docs
 
@@ -115,9 +116,9 @@
 ## Current Count Snapshot
 
 - Active root docs count: `6`
-- Active product docs count: `14`
+- Active product docs count: `10`
 - Active engineering/operator docs count: `31`
-- Compatibility stubs count: `18`
+- Compatibility stubs count: `23`
 - Archive docs count: `6`
 
 ## Minimum Active Set

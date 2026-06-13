@@ -12,13 +12,9 @@ Use this page as the final role-based map.
 
 ### Product / beta user
 
+- [product/user-guide.md](product/user-guide.md) - compact user guide for setup, settings, WorkConversation, Interview Mode, exports, troubleshooting, and keyboard notes.
 - [product/limitations.md](product/limitations.md) - current beta scope, non-shipped tracks, and platform boundaries.
 - [product/privacy.md](product/privacy.md) - canonical capture, storage, provider, and user-control policy.
-- [settings-reference.md](settings-reference.md) - active settings surface and configuration reference.
-- [troubleshooting.md](troubleshooting.md) - setup and runtime problem-solving guide.
-- [accessibility.md](accessibility.md) - keyboard and accessibility notes.
-- [interview-mode.md](interview-mode.md) - interview workflow, reports, and boundaries.
-- [candidate-pack.md](candidate-pack.md) - Candidate Pack preparation and storage boundary.
 - [error-catalog.md](error-catalog.md) - user-facing error reference.
 - [glossary.md](glossary.md) - short vocabulary reference.
 
