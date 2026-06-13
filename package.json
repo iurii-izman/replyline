@@ -68,6 +68,7 @@
     "beta:handoff": "pwsh -File scripts/beta-handoff-bundle.ps1",
     "beta:doctor": "node scripts/beta-doctor.mjs",
     "beta:smoke-report": "pwsh -File scripts/beta-smoke-report.ps1",
+    "beta:release-check": "pwsh -File scripts/beta-release-check.ps1",
     "beta:start": "node scripts/beta-start.mjs",
     "rust:deny": "pwsh -NoProfile -Command \"Push-Location src-tauri; cargo deny check --config deny.toml advisories bans sources; $code = $LASTEXITCODE; Pop-Location; exit $code\"",
     "rust:audit": "cargo audit --quiet --file src-tauri/Cargo.lock",

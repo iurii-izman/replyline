@@ -18,6 +18,11 @@ Replyline stable beta supports two bounded paths:
 - Interview Mode: interview preparation path with Candidate Pack and session report
 - Windows-first desktop tray workflow
 
+Read alongside:
+
+- [release-checklist.md](release-checklist.md)
+- [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md)
+
 Out of scope for current beta posture:
 
 - no meeting assistant
@@ -105,7 +110,8 @@ Blocked starts never install prerequisites. Without `-Force`, they do not launch
 11. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
 12. Manual visual QA pass: follow [manual-ui-qa.md](./manual-ui-qa.md) (compact/normal/wide states + core UI scenarios)
 13. Manual Windows UX QA pass is required before beta handoff: follow [manual-windows-ux-qa.md](./manual-windows-ux-qa.md) including fullscreen geometry, sticky footer overlap, and Candidate Studio checks from [ui-layout-contract.md](./ui-layout-contract.md)
-14. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
+14. Beta release readiness gate: `pnpm beta:release-check`
+15. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
 
 Additional conditional gates:
 
@@ -125,6 +131,10 @@ Internal beta seal boundaries:
 - `pnpm beta:seal` does not prove RC/public beta readiness.
 - missing signed binary is a warning for internal beta, blocker for RC/public.
 - live evidence remains mandatory to collect during tester cycle; seal report marks pending dimensions explicitly.
+- `pnpm beta:release-check` is the honesty gate for v0.2.0-beta.2 readiness:
+  - it runs the automated checks listed in `docs/release-checklist.md`;
+  - it always leaves manual checklist items as WARN until a human reviews them;
+  - it does not imply a clean Windows profile install unless that is explicitly recorded outside the repo.
 
 Runtime preflight has two modes:
 
@@ -209,6 +219,7 @@ Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in eve
 - `pnpm beta:preflight`
 - `pnpm beta:handoff`
 - `pnpm beta:start`
+- `pnpm beta:release-check`
 
 ## 10) Interview Mode beta posture decision criteria
 
