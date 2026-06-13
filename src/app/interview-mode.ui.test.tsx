@@ -179,8 +179,8 @@ describe("interview mode integration", () => {
     renderApp(mock);
     await triggerAnalysisReady(mock);
     expect(
-      await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
-    ).toBeTruthy();
+      await screen.findAllByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
+    ).toHaveLength(2);
 
     await mock.emitShortcut({ state: "Pressed" });
     await mock.emitShortcut({ state: "Released" });

@@ -95,9 +95,8 @@ describe("main card integration", () => {
 
     await triggerAnalysisReady(mock);
     expect(
-      await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
-    ).toBeTruthy();
-    expect(screen.getByText("Повторите захват или проверьте настройки.")).toBeTruthy();
+      await screen.findAllByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
+    ).toHaveLength(2);
     expect(screen.queryByTestId("action-row")).toBeNull();
     expect(screen.queryByRole("button", { name: "Скопировать ответ" })).toBeNull();
   });
@@ -225,7 +224,7 @@ describe("main card integration", () => {
 
     fireEvent.keyDown(globalThis, { key: "r" });
     expect(
-      await screen.findByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
-    ).toBeTruthy();
+      await screen.findAllByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
+    ).toHaveLength(2);
   });
 });

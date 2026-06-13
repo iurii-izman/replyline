@@ -89,6 +89,7 @@ const matrix = {
     "smoke:template",
     "beta:handoff",
     "beta:doctor",
+    "beta:release-check",
     "beta:smoke-report",
     "beta:start",
     "beta:preflight",
