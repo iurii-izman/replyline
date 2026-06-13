@@ -1,7 +1,7 @@
 # Replyline Beta Testing
 
-Спасибо за помощь с публичной source beta. Нужен Windows 10/11 и примерно
-15 минут. Технический опыт полезен, но не обязателен.
+Спасибо за помощь с текущей публичной бета-сборкой из исходников. Нужен
+Windows 10/11 и примерно 15 минут. Технический опыт полезен, но не обязателен.
 
 ## Before You Start
 
@@ -19,7 +19,8 @@ git clone https://github.com/iurii-izman/replyline.git
 cd replyline
 git checkout v0.2.0-beta.1
 pnpm install --frozen-lockfile
-pnpm tauri dev
+pnpm beta:doctor
+pnpm beta:start
 ```
 
 В Settings настройте:
@@ -79,6 +80,6 @@ issues, screenshots или logs.
 Используйте только synthetic content. Security-sensitive findings отправляйте
 по инструкции из [SECURITY.md](.github/SECURITY.md), а не в public issue.
 
-Подробные ограничения продукта описаны в
-[known limitations](docs/product/limitations.md). Вопросы можно задать в
-[GitHub Beta Operations Kit](docs/github-beta-operations-kit.md).
+Подробные границы продукта описаны в
+[docs/product/limitations.md](docs/product/limitations.md). Если что-то не
+завелось, начните с [docs/troubleshooting.md](docs/troubleshooting.md).

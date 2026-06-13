@@ -1,6 +1,6 @@
 # Settings Reference
 
-Slim Stable Beta settings:
+Current beta settings:
 
 - `hotkey` (`string`)
 - `captureMaxSeconds` (`number`, 5..180, default `45`)

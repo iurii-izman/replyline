@@ -4,8 +4,9 @@ Start with the public entrypoints:
 
 - [README.md](../README.md) - product overview, setup path, and high-level links.
 - [BETA_TESTING.md](../BETA_TESTING.md) - short 15-minute beta smoke test.
+- [doc-inventory.md](doc-inventory.md) - final inventory with canonical docs, compatibility stubs, and archive status.
 
-Use this page as role-based navigation. For the full document inventory, merge candidates, and archive plan, see [doc-inventory.md](doc-inventory.md).
+Use this page as the final role-based map.
 
 ## Start Here By Role
 
@@ -13,13 +14,19 @@ Use this page as role-based navigation. For the full document inventory, merge c
 
 - [product/limitations.md](product/limitations.md) - current beta scope, non-shipped tracks, and platform boundaries.
 - [product/privacy.md](product/privacy.md) - canonical capture, storage, provider, and user-control policy.
-- [troubleshooting.md](troubleshooting.md) - setup and runtime problem-solving guide.
 - [settings-reference.md](settings-reference.md) - active settings surface and configuration reference.
+- [troubleshooting.md](troubleshooting.md) - setup and runtime problem-solving guide.
+- [accessibility.md](accessibility.md) - keyboard and accessibility notes.
+- [interview-mode.md](interview-mode.md) - interview workflow, reports, and boundaries.
+- [candidate-pack.md](candidate-pack.md) - Candidate Pack preparation and storage boundary.
+- [error-catalog.md](error-catalog.md) - user-facing error reference.
+- [glossary.md](glossary.md) - short vocabulary reference.
 
 ### Beta tester
 
 - [BETA_TESTING.md](../BETA_TESTING.md) - canonical short beta smoke path.
 - [beta-doctor.md](beta-doctor.md) - environment readiness and local setup diagnostics.
+- [smoke-checks.md](smoke-checks.md) - manual smoke checklist.
 - [beta-smoke-report.md](beta-smoke-report.md) - sanitized reporting flow after a smoke run.
 - [engineering/runtime.md](engineering/runtime.md) - runtime bring-up, evidence, and claim-label guide for local validation.
 - [testing-stack-setup.md](testing-stack-setup.md) - local test environment setup for deeper validation.
@@ -30,6 +37,7 @@ Use this page as role-based navigation. For the full document inventory, merge c
 - [architecture.md](architecture.md) - core system structure and boundaries.
 - [copy-rules.md](copy-rules.md) - product/trust wording rules for docs and UI copy.
 - [engineering/verification.md](engineering/verification.md) - validation model and lane expectations.
+- [test-inventory.md](test-inventory.md) - test surface inventory and owners.
 
 ### Release/operator
 
@@ -39,22 +47,16 @@ Use this page as role-based navigation. For the full document inventory, merge c
 - [engineering/manual-qa.md](engineering/manual-qa.md) - compact operator manual QA checklist.
 - [public-vs-local-artifacts.md](public-vs-local-artifacts.md) - sharing and sensitivity rules for generated artifacts.
 - [github-beta-operations-kit.md](github-beta-operations-kit.md) - GitHub-side beta operations and routing.
+- [beta-feedback-loop.md](beta-feedback-loop.md) - beta feedback intake and follow-up loop.
+- [beta-ops-diagnostics.md](beta-ops-diagnostics.md) - operator diagnostics runbook.
+- [stale-beta-policy.md](stale-beta-policy.md) - stale beta handling policy.
 
-### Internal/archive
+### Compatibility and history
 
-- [doc-inventory.md](doc-inventory.md) - documentation inventory, merge map, and archive candidates.
+- Compatibility stubs for old links are tracked in [doc-inventory.md](doc-inventory.md). They should stay short and should not grow new policy content.
+- Common compatibility stubs still in circulation: [verification-lanes.md](verification-lanes.md), [runtime-live-qa.md](runtime-live-qa.md), [runtime-bringup.md](runtime-bringup.md), [runtime-evidence.md](runtime-evidence.md), [manual-ui-qa.md](manual-ui-qa.md), [manual-windows-ux-qa.md](manual-windows-ux-qa.md), [manual-visual-qa.md](manual-visual-qa.md), [test-feedback-template.md](test-feedback-template.md).
 - [archive/experimental/bilingual-interview-mode.md](archive/experimental/bilingual-interview-mode.md) - archived experimental bilingual interview concept; not shipped in current public beta.
 - [archive/handoff/beta-readiness.md](archive/handoff/beta-readiness.md) - archived beta handoff plan.
 - [release-notes/v0.2.0-beta.1.md](release-notes/v0.2.0-beta.1.md) - historical beta release note.
 - [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md) - historical/draft beta release note.
 - [card-schema-v3-migration.md](card-schema-v3-migration.md) - historical migration note.
-
-## Secondary Docs
-
-These docs stay available, but they are not part of the main visible role map on this page:
-
-- to be merged/archived: see [doc-inventory.md](doc-inventory.md) for the canonical cleanup map
-- legacy redirect stubs: [verification-lanes.md](verification-lanes.md), [runtime-live-qa.md](runtime-live-qa.md), [runtime-bringup.md](runtime-bringup.md), [runtime-evidence.md](runtime-evidence.md), [manual-ui-qa.md](manual-ui-qa.md), [manual-windows-ux-qa.md](manual-windows-ux-qa.md), [manual-visual-qa.md](manual-visual-qa.md), [test-feedback-template.md](test-feedback-template.md)
-- examples: `release-local-readiness.md`, `release-readiness.md`
-
-Treat these as supporting material to be merged or archived over time rather than primary entrypoints. Experimental/future-track docs should stay out of the public product path unless a canonical product doc explicitly marks them as shipped.

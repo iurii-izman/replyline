@@ -96,14 +96,14 @@
 
 - Try a more capable model (e.g. `gpt-4o-mini` or larger).
 - A complete short question is supported; make sure the system audio is audible and clear.
-- Temperature is internally fixed at 0.25 (deterministic). Not exposed as a user setting in the current stable beta.
+- Temperature is internally fixed at 0.25 (deterministic). Not exposed as a user setting in the current beta.
 - If using a custom system prompt, try clearing it to use the built-in prompt.
 
 ## 7. STT returns no transcript
 
 **Symptoms:** Capture completes but transcript is empty.
 
-**Current STT path:** Replyline stable beta uses Deepgram batch HTTP STT (no user-facing streaming STT toggle in Settings).
+**Current STT path:** Replyline currently uses Deepgram batch HTTP STT (no user-facing streaming STT toggle in Settings).
 
 **Causes:**
 
@@ -131,7 +131,7 @@
 
 - Reduce `captureMaxSeconds` in settings (shorter captures = faster processing).
 - Use a faster/smaller LLM model.
-- For lowest latency on the LLM side, use a local LLM provider (Ollama with GPU). Local STT (e.g. Whisper.cpp) is not available in the current stable beta.
+- For lowest latency on the LLM side, use a local LLM provider (Ollama with GPU). Local STT (e.g. Whisper.cpp) is not available in the current beta.
 
 ## 9. "Cannot find module" or build errors after update
 

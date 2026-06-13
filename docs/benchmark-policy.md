@@ -1,6 +1,7 @@
 # Replyline Benchmark Policy
 
-Replyline uses three labels for performance and runtime claims.
+Short reference for runtime claim labels. The canonical guide now lives in
+[docs/engineering/runtime.md](engineering/runtime.md).
 
 | Label                  | Meaning                                                      |
 | ---------------------- | ------------------------------------------------------------ |
@@ -10,36 +11,14 @@ Replyline uses three labels for performance and runtime claims.
 
 ## Rules
 
-- Do not call latency `measured` without a saved JSON or Markdown artifact under `reports/runtime`.
-- Do not treat `pnpm smoke` as runtime proof.
-- Do not treat `pnpm test:ui` as runtime proof.
-- Do not treat one lucky run as product truth when repeated runs are noisy.
-- Prefer repeated runs (`pnpm probe:bench -- -Repeats 2`, `pnpm probe:durations:avg`) before changing the user-facing default.
-- If artifacts are missing for the current build family, downgrade claims to `pending verification`.
-- Scope all `measured` wording to the workstation(s) that produced evidence.
-- `measured` never means cross-machine or cross-call-app readiness by itself.
-
-## Reporting format
-
-When writing docs or release notes, use this format:
-
-- `target`: intended number or behavior
-- `measured`: include evidence source path (example: `reports/runtime/<file>.json`)
-- `pending verification`: explain what evidence is missing (example: repeated live-call runs)
-
-Runtime helpers:
-
-- `pnpm runtime:preflight` for machine-local readiness signal snapshot
-- `pnpm benchmark:evidence` to scaffold a compact evidence note from runtime reports
-
-## Current posture
-
-- Runtime route is designed for short captures first.
-- `120-180s` remains available but should be labeled `pending verification` for fast-path messaging unless repeated evidence says otherwise.
+- Do not call latency `measured` without a saved artifact under `reports/runtime`.
+- Do not treat `pnpm smoke`, `pnpm verify:*`, or mocked UI/E2E lanes as runtime proof.
+- Do not turn one successful workstation run into a broad product claim.
+- If current-build evidence is missing or stale, downgrade the claim to `pending verification`.
+- Scope every `measured` claim to the machine and scenario family that produced the artifact.
 
 ## See also
 
-- [engineering/verification.md](engineering/verification.md) — verify lanes и их границы.
-- [engineering/runtime.md](engineering/runtime.md) — где живут runtime claims, evidence и proof boundaries.
-
-- [copy-rules.md](copy-rules.md) — формулировки и баны.
+- [engineering/runtime.md](engineering/runtime.md) - canonical claim-label, runtime-proof, and evidence-boundary guide.
+- [engineering/verification.md](engineering/verification.md) - verify lanes and what they do or do not prove.
+- [copy-rules.md](copy-rules.md) - wording guardrails for public/runtime claims.

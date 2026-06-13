@@ -4,9 +4,9 @@
 [![Pages](https://github.com/iurii-izman/replyline/actions/workflows/pages.yml/badge.svg)](https://iurii-izman.github.io/replyline/)
 [![Beta](https://img.shields.io/github/v/release/iurii-izman/replyline?include_prereleases&label=beta)](https://github.com/iurii-izman/replyline/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)](docs/runtime-bringup.md)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)](docs/product/limitations.md)
 
-Windows-first desktop tray app for difficult live work conversations and interview practice (public beta posture).
+Windows-first desktop tray app for difficult live work conversations and interview practice.
 
 Core flow: `capture -> stt -> llm -> card`
 
@@ -14,7 +14,7 @@ Core flow: `capture -> stt -> llm -> card`
 
 ## Public Beta
 
-The current release is a **source/developer prerelease** for Windows testers and contributors:
+The current public entry is a Windows **source/developer beta** for testers and contributors:
 
 - [Open the product page](https://iurii-izman.github.io/replyline/)
 - [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.1)
@@ -22,7 +22,7 @@ The current release is a **source/developer prerelease** for Windows testers and
 - [Ask a question or share feedback](https://github.com/iurii-izman/replyline/discussions)
 
 No unsigned artifact is presented as a public installer. Until an Authenticode-signed build
-passes the release workflow, use the source setup below.
+is verified and published, use the source setup below.
 
 ## What It Does
 
@@ -37,14 +37,14 @@ If the LLM returns a vague `next_move`, Rust repairs it with bounded context heu
 
 Replyline is not a meeting assistant, not a transcript tool, and not a speaking coach.
 
-Also out of scope in current stable beta:
+Not in the current beta:
 
 - no transcript/history/team workflow UI
 - no hidden cheating workflow
 - no click-through hidden overlay
 - no Advanced Mode user surface
 - no memory user surface
-- no bilingual/live-translation interview surface in the shipped public beta
+- no bilingual/live-translation interview surface in the current public beta
 
 ## Supported Runtime Path
 

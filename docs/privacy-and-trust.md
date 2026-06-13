@@ -2,10 +2,10 @@
 
 Canonical document moved to [docs/product/privacy.md](product/privacy.md).
 
-This stub remains to preserve existing links.
+This stub exists only to preserve existing links.
 
-Legacy compatibility notes:
+Legacy compatibility markers retained for repo contracts:
 
-- Contract note: this page previously carried `Internal Stable Beta` wording.
-- Runtime shorthand remains the same: `STT -> LLM -> карточка`.
+- This page previously carried `Internal Stable Beta` wording.
+- Runtime shorthand remains `STT -> LLM -> карточка`.
 - Local logs and routine traces still rely on санитизацию/редакцию rather than raw dumps.

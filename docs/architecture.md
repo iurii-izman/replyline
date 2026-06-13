@@ -1,6 +1,6 @@
 # Architecture
 
-Replyline Slim Stable Beta architecture.
+Architecture reference for the current Replyline beta.
 
 ## Frontend boundaries
 

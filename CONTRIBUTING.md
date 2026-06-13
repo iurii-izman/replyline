@@ -6,7 +6,7 @@ described there for enforcement concerns.
 
 ## Scope
 
-Keep Replyline in Slim Stable Beta scope:
+Keep Replyline in the current beta scope:
 
 - single user path: `capture -> stt -> llm -> card`
 - compact settings only

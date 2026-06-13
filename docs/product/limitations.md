@@ -1,6 +1,6 @@
 # Replyline Known Limitations
 
-This is the canonical public known-limitations document for the current Replyline beta.
+Canonical public-beta limits, packaging truth, and non-shipped tracks.
 
 ## Stage and platform
 

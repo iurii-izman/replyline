@@ -7,7 +7,7 @@
 
 ## Context
 
-Replyline has two production paths in current stable beta:
+Replyline has two production paths in the current beta:
 
 - WorkConversation path based on `CardSchemaV3` and legacy UI projection `gist / say_now / next_move`.
 - Interview path based on `InterviewCardSchemaV1` with dedicated cards (`question`, `answer`, `signals`, `risks`, `followUps`, `clarifier`).

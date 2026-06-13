@@ -1,159 +1,120 @@
 # Replyline Documentation Inventory
 
-Инвентаризация текущих markdown-документов и минимальная целевая структура без
-перемещений/удалений на этом шаге.
+Финальный каталог после реструктуризации. Здесь фиксируется текущая роль
+каждого `*.md` в корне репозитория и каждого `docs/**/*.md`.
 
-## Proposed Minimal Target Structure
+## Status Legend
 
-- `README.md`, `BETA_TESTING.md`, `CHANGELOG.md`, `CONTRIBUTING.md`: корневые
-  точки входа.
-- `docs/product/`: пользовательские и beta-facing product docs.
-- `docs/testing/`: smoke, QA, verification, tester workflows.
-- `docs/ops/`: release, handoff, evidence, operator runbooks.
-- `docs/engineering/`: architecture, ADR, contracts, internal technical guides.
-- `docs/archive/`: historical release notes, migration notes, superseded docs.
+- `entrypoint` - основная точка входа.
+- `canonical` - активный source of truth.
+- `supporting` - активный вспомогательный документ.
+- `compatibility stub` - короткий redirect для старых ссылок; новой политики здесь быть не должно.
+- `historical archive` - история/черновик/архив; не использовать как active guidance.
 
-## Inventory
+## Root Docs
 
-| path | current role | audience | keep / merge / archive / delete candidate | proposed destination | reason |
-| --- | --- | --- | --- | --- | --- |
-| `README.md` | Repo landing and product overview | public user | keep | `README.md` | Public entry point; should stay short and honest about beta posture. |
-| `BETA_TESTING.md` | 15-minute beta tester guide | beta tester | keep | `BETA_TESTING.md` | Canonical tester entry point; already linked from root docs. |
-| `CHANGELOG.md` | Version history | public user | keep | `CHANGELOG.md` | Standard public release history. |
-| `CODE_OF_CONDUCT.md` | Community policy | contributor | keep | `CODE_OF_CONDUCT.md` | Standard repo governance document. |
-| `CONTRIBUTING.md` | Contribution and verification workflow | contributor | keep | `CONTRIBUTING.md` | Canonical contributor workflow and checks. |
-| `AGENTS.md` | AI-agent repository policy | contributor | keep | `AGENTS.md` | Repo-wide automation contract; not product docs, but active developer docs. |
-| `.github/SECURITY.md` | Security reporting policy | public user | keep | `.github/SECURITY.md` | Public GitHub security route should remain separate. |
-| `.github/SUPPORT.md` | Support routing | public user | keep | `.github/SUPPORT.md` | Public GitHub support routing. |
-| `.github/PULL_REQUEST_TEMPLATE.md` | Default PR checklist | contributor | keep | `.github/PULL_REQUEST_TEMPLATE.md` | Active contributor template. |
-| `.github/PULL_REQUEST_TEMPLATE/beta-handoff.md` | Beta handoff PR checklist | release operator | keep | `.github/PULL_REQUEST_TEMPLATE/beta-handoff.md` | Release/operator PR checklist, not beta-user docs. |
-| `.github/ISSUE_TEMPLATE/beta_handoff_release.md` | Legacy markdown beta handoff issue template | release operator | delete candidate | `.github/ISSUE_TEMPLATE/beta_handoff_release.yml` | Markdown issue template overlaps with newer form-based templates and should not remain the long-term surface. |
-| `.github/copilot-instructions.md` | IDE assistant guidance | contributor | keep | `.github/copilot-instructions.md` | Developer-only automation context. |
-| `docs/README.md` | Docs index | contributor | keep | `docs/README.md` | Keep as thin directory index, not as a second product README. |
-| `docs/doc-inventory.md` | Documentation inventory and restructure map | contributor | keep | `docs/doc-inventory.md` | Working map for cleanup sequencing. |
-| `docs/accessibility.md` | Keyboard and accessibility notes | public user | keep | `docs/product/accessibility.md` | End-user capability reference. |
-| `docs/archive/experimental/bilingual-interview-mode.md` | Bilingual interview mode description | beta tester | archive | `docs/archive/experimental/bilingual-interview-mode.md` | Experimental track, not shipped in the current public beta; kept only as archived reference with explicit status. |
-| `docs/candidate-pack.md` | Candidate Pack behavior and boundaries | beta tester | keep | `docs/product/candidate-pack.md` | Active beta feature documentation. |
-| `docs/error-catalog.md` | Error code reference | beta tester | keep | `docs/product/error-catalog.md` | User-facing troubleshooting companion. |
-| `docs/glossary.md` | Product glossary | public user | keep | `docs/product/glossary.md` | Useful shared vocabulary for public/beta docs. |
-| `docs/interview-mode.md` | Interview Mode workflow | beta tester | keep | `docs/product/interview-mode.md` | Core beta-mode documentation. |
-| `docs/known-limitations.md` | Legacy limitations entrypoint | public user | keep as stub | `docs/product/limitations.md` | Preserve existing links while canonical source moves. |
-| `docs/privacy-policy.md` | Legacy privacy/data-flow entrypoint | public user | keep as stub | `docs/product/privacy.md` | Preserve existing links while canonical source moves. |
-| `docs/privacy-and-trust.md` | Legacy privacy/trust explainer | public user | keep as stub | `docs/product/privacy.md` | Preserve existing links while canonical source moves. |
-| `docs/settings-reference.md` | Settings surface reference | beta tester | keep | `docs/product/settings-reference.md` | User-facing configuration guide. |
-| `docs/third-party-providers.md` | Legacy provider route and caveats | beta tester | keep as stub | `docs/product/privacy.md` + `docs/product/limitations.md` | Provider boundaries now live inside canonical public docs. |
-| `docs/troubleshooting.md` | Problem-solving guide | beta tester | keep | `docs/product/troubleshooting.md` | User-facing support doc. |
-| `docs/beta-doctor.md` | `beta:doctor` setup/diagnostic guide | beta tester | keep | `docs/testing/beta-doctor.md` | Belongs with tester setup and readiness checks. |
-| `docs/beta-feedback-loop.md` | Feedback intake and triage loop | release operator | keep | `docs/ops/beta-feedback-loop.md` | Operator workflow, not beta-user reading. |
-| `docs/beta-ops-diagnostics.md` | Beta ops diagnostic runbook | release operator | keep | `docs/ops/beta-ops-diagnostics.md` | Internal/operator runbook. |
-| `docs/archive/handoff/beta-readiness.md` | Historical beta handoff checklist | internal archive | archive | `docs/engineering/release.md` | Archived after release/handoff guidance was consolidated. |
-| `docs/beta-smoke-report.md` | Sanitized smoke report instructions | beta tester | keep | `docs/testing/beta-smoke-report.md` | Active tester-facing reporting guide. |
-| `docs/github-beta-operations-kit.md` | GitHub-side beta operations guidance | release operator | keep | `docs/ops/github-beta-operations-kit.md` | Operator-facing process doc, not product docs. |
-| `docs/live-runtime-matrix.md` | Live runtime coverage matrix | release operator | merge | `docs/testing/runtime-live-qa.md` | Same operator lane as live QA; should not be split across two docs. |
-| `docs/manual-ui-qa.md` | Manual UI checklist | release operator | merge | `docs/testing/manual-qa.md` | Should be one consolidated manual QA checklist. |
-| `docs/manual-visual-qa.md` | Manual visual QA checklist | release operator | merge | `docs/testing/manual-qa.md` | Same lane as other manual QA docs. |
-| `docs/manual-windows-ux-qa.md` | Manual Windows UX checklist | release operator | merge | `docs/testing/manual-qa.md` | Same lane as other manual QA docs. |
-| `docs/public-vs-local-artifacts.md` | Artifact sharing and sensitivity rules | release operator | keep | `docs/ops/public-vs-local-artifacts.md` | Important operator trust boundary; not general user-facing docs. |
-| `docs/release-checklist.md` | Release execution checklist | release operator | keep | `docs/ops/release-checklist.md` | Internal release procedure. |
-| `docs/release-freeze-matrix.md` | Redirect stub to engineering release guide | release operator | keep | `docs/engineering/release.md` | Kept as a compatibility link for existing references. |
-| `docs/release-incident-classification.md` | Redirect stub to engineering release guide | release operator | keep | `docs/engineering/release.md` | Kept as a compatibility link for existing references. |
-| `docs/release-local-readiness.md` | Redirect stub to engineering release guide | release operator | keep | `docs/engineering/release.md` | Old path kept only for compatibility. |
-| `docs/release-readiness.md` | Redirect stub to engineering release guide | release operator | keep | `docs/engineering/release.md` | Old path kept only for compatibility. |
-| `docs/runtime-evidence.md` | Runtime evidence policy and claim labels | release operator | keep | `docs/ops/runtime-evidence.md` | Canonical evidence/claim policy. |
-| `docs/runtime-live-qa.md` | Live runtime QA runbook | release operator | keep | `docs/testing/runtime-live-qa.md` | Main operator/tester live-validation guide. |
-| `docs/smoke-checks.md` | Manual smoke checklist | beta tester | keep | `docs/testing/smoke-checks.md` | Canonical smoke path for testers. |
-| `docs/stale-beta-policy.md` | Stale beta handling policy | release operator | keep | `docs/ops/stale-beta-policy.md` | Operator-only release hygiene doc. |
-| `docs/test-feedback-template.md` | Test feedback template | beta tester | keep | `docs/testing/test-feedback-template.md` | Tester-facing reporting template. |
-| `docs/test-inventory.md` | Test surface inventory | contributor | keep | `docs/engineering/test-inventory.md` | Engineering inventory, not end-user docs. |
-| `docs/testing-stack-setup.md` | Test environment setup | contributor | keep | `docs/testing/testing-stack-setup.md` | Contributor/tester setup doc. |
-| `docs/verification-lanes.md` | Verification profile model | contributor | keep | `docs/testing/verification-lanes.md` | Active verification reference. |
-| `docs/architecture.md` | System architecture overview | contributor | keep | `docs/engineering/architecture.md` | Canonical engineering architecture doc. |
-| `docs/adr/0001-interview-card-engine.md` | Architecture decision record | contributor | keep | `docs/engineering/adr/0001-interview-card-engine.md` | ADR should stay preserved and isolated. |
-| `docs/benchmark-policy.md` | Performance/evidence labeling policy | contributor | merge | `docs/ops/runtime-evidence.md` | Claim-label policy is tightly coupled to runtime evidence and need not live separately. |
-| `docs/card-schema-v3-migration.md` | Historical migration note | internal archive | archive | `docs/archive/card-schema-v3-migration.md` | Historical migration doc should not look like active shipped guidance. |
-| `docs/copy-rules.md` | Product/trust wording contract | contributor | keep | `docs/engineering/copy-rules.md` | Active repo policy doc for docs/product copy. |
-| `docs/interview-golden-dataset-v1.md` | Interview evaluation dataset spec | contributor | keep | `docs/engineering/interview-golden-dataset-v1.md` | Internal evaluation asset spec. |
-| `docs/interview-quality.md` | Interview quality gate | contributor | keep | `docs/engineering/interview-quality.md` | Engineering quality contract. |
-| `docs/model-ladder.md` | Model/provider selection ladder | contributor | keep | `docs/engineering/model-ladder.md` | Technical provider/model policy. |
-| `docs/observability-v2.md` | Observability/logging design | contributor | keep | `docs/engineering/observability-v2.md` | Internal technical contract. |
-| `docs/product-scenario-benchmark.md` | Product scenario benchmark method | contributor | keep | `docs/engineering/product-scenario-benchmark.md` | Internal benchmark method, not product docs. |
-| `docs/prompt-contract-lane.md` | Prompt contract verification lane | contributor | keep | `docs/engineering/prompt-contract-lane.md` | Engineering contract doc. |
-| `docs/runtime-bringup.md` | Runtime bring-up guide | contributor | keep | `docs/testing/runtime-bringup.md` | Setup/verification guide fits testing lane better than product docs. |
-| `docs/runtime-decisions.md` | Runtime architecture decisions | contributor | keep | `docs/engineering/runtime-decisions.md` | Internal design rationale. |
-| `docs/runtime-persistence-debug.md` | Local persistence/debug guide | contributor | keep | `docs/engineering/runtime-persistence-debug.md` | Internal troubleshooting for developers/operators. |
-| `docs/runtime-probe-credentials.md` | Probe credentials setup | contributor | keep | `docs/engineering/runtime-probe-credentials.md` | Internal runtime probe setup, not beta-user docs. |
-| `docs/runtime-quality-harness.md` | Synthetic runtime quality harness | contributor | keep | `docs/engineering/runtime-quality-harness.md` | Engineering validation framework. |
-| `docs/runtime-scenario-matrix.md` | Deterministic runtime scenario matrix | contributor | keep | `docs/engineering/runtime-scenario-matrix.md` | Internal scenario coverage reference. |
-| `docs/rust-dependency-security.md` | Rust dependency review policy | contributor | keep | `docs/engineering/rust-dependency-security.md` | Internal dependency/security policy. |
-| `docs/script-lifecycle-matrix.md` | Script lifecycle and ownership matrix | contributor | keep | `docs/engineering/script-lifecycle-matrix.md` | Engineering maintenance inventory. |
-| `docs/secrets-management.md` | Secrets handling guide | contributor | keep | `docs/engineering/secrets-management.md` | Internal security/setup doc. |
-| `docs/test-quality-fixtures.md` | Test fixtures guidance | contributor | keep | `docs/engineering/test-quality-fixtures.md` | Internal testing guidance. |
-| `docs/ui-layout-contract.md` | UI layout contract | contributor | keep | `docs/engineering/ui-layout-contract.md` | Internal UI contract. |
-| `docs/release-notes/v0.2.0-beta.1.md` | Historical beta release notes | internal archive | archive | `docs/release-notes/v0.2.0-beta.1.md` | Historical release note moved out of the visible release draft area. |
-| `docs/releases/v0.2.0-beta.2.md` | Draft/historical beta release notes | internal archive | archive | `docs/archive/releases/v0.2.0-beta.2.md` | Draft release note should not appear as active shipped guidance. |
-| `docs/releases/v0.2.0-beta.2/screenshots/README.md` | Screenshot checklist for a past release | internal archive | archive | `docs/archive/releases/v0.2.0-beta.2/screenshots/README.md` | Release-artifact helper for a past beta, not active docs. |
+| path | audience | final status | purpose |
+| --- | --- | --- | --- |
+| `README.md` | public user | `entrypoint` | Главная product/start page. |
+| `BETA_TESTING.md` | beta tester | `entrypoint` | Короткий beta smoke path для тестеров. |
+| `CHANGELOG.md` | public user | `supporting` | Публичная история релизов и draft notes. |
+| `CONTRIBUTING.md` | contributor | `entrypoint` | Канонический contributor workflow и verify lanes. |
+| `CODE_OF_CONDUCT.md` | contributor | `supporting` | Community policy. |
+| `AGENTS.md` | contributor/automation | `canonical` | Repo-wide automation contract. |
 
-## Duplicate And Ambiguous Groups
+## Active Product And Tester Docs
 
-### Privacy / provider / limitations overlap
+| path | audience | final status | purpose |
+| --- | --- | --- | --- |
+| `docs/README.md` | mixed | `canonical` | Финальная role-based карта документации. |
+| `docs/accessibility.md` | public user | `supporting` | Keyboard и accessibility notes. |
+| `docs/beta-doctor.md` | beta tester | `canonical` | `pnpm beta:doctor` readiness guide. |
+| `docs/beta-smoke-report.md` | beta tester | `canonical` | Sanitized smoke-report generation and sharing. |
+| `docs/candidate-pack.md` | beta tester | `canonical` | Candidate Pack flow, boundaries, and storage. |
+| `docs/error-catalog.md` | beta tester | `canonical` | User-facing error reference. |
+| `docs/glossary.md` | mixed | `supporting` | Shared vocabulary for product and engineering docs. |
+| `docs/interview-mode.md` | beta tester | `canonical` | Interview Mode workflow and report/export boundary. |
+| `docs/product/limitations.md` | public user | `canonical` | Current beta scope, installer truth, and non-shipped tracks. |
+| `docs/product/privacy.md` | public user | `canonical` | Capture, storage, provider, and export trust boundary. |
+| `docs/settings-reference.md` | beta tester | `canonical` | Current settings surface and sensitive options. |
+| `docs/smoke-checks.md` | beta tester | `canonical` | Manual smoke checklist. |
+| `docs/testing-stack-setup.md` | beta tester/contributor | `supporting` | Local test environment setup. |
+| `docs/troubleshooting.md` | beta tester | `canonical` | Setup/runtime troubleshooting guide. |
 
-- `docs/product/privacy.md` is the single canonical public privacy/trust/data-flow doc.
-- `docs/privacy-policy.md`, `docs/privacy-and-trust.md`, and `docs/third-party-providers.md` remain as redirect stubs for link stability.
-- `docs/product/limitations.md` is the canonical public limitations doc.
-- `docs/known-limitations.md` remains as a redirect stub for link stability.
+## Active Engineering And Operator Docs
 
-### Runtime / evidence / QA overlap
+| path | audience | final status | purpose |
+| --- | --- | --- | --- |
+| `docs/adr/0001-interview-card-engine.md` | contributor | `canonical` | ADR for interview-card architecture split. |
+| `docs/architecture.md` | contributor | `canonical` | High-level system structure and code boundaries. |
+| `docs/benchmark-policy.md` | contributor | `supporting` | Short runtime-claim label shorthand; canonical rules live in `docs/engineering/runtime.md`. |
+| `docs/beta-feedback-loop.md` | release operator | `canonical` | Feedback intake and follow-up loop. |
+| `docs/beta-ops-diagnostics.md` | release operator | `canonical` | Operator diagnostics runbook. |
+| `docs/copy-rules.md` | contributor | `canonical` | Product/trust wording guardrails. |
+| `docs/doc-inventory.md` | contributor | `canonical` | Final documentation inventory and status map. |
+| `docs/engineering/manual-qa.md` | release operator | `canonical` | Manual QA checklist. |
+| `docs/engineering/release.md` | release operator | `canonical` | Release decision, freeze, packaging, and handoff truth. |
+| `docs/engineering/runtime.md` | release operator/contributor | `canonical` | Runtime proof, evidence, and claim-label guide. |
+| `docs/engineering/verification.md` | contributor | `canonical` | Verify lanes and lane boundaries. |
+| `docs/github-beta-operations-kit.md` | release operator | `canonical` | GitHub-side beta operations guide. |
+| `docs/interview-golden-dataset-v1.md` | contributor | `canonical` | Interview evaluation dataset spec. |
+| `docs/interview-quality.md` | contributor | `canonical` | Interview quality gate and reporting contract. |
+| `docs/model-ladder.md` | contributor | `canonical` | Model/provider selection policy. |
+| `docs/observability-v2.md` | contributor | `canonical` | Observability and logging design contract. |
+| `docs/product-scenario-benchmark.md` | contributor | `canonical` | Product benchmark method and scenario framing. |
+| `docs/prompt-contract-lane.md` | contributor | `canonical` | Prompt-contract lane definition. |
+| `docs/public-vs-local-artifacts.md` | release operator | `canonical` | Public vs local artifact sharing policy. |
+| `docs/release-checklist.md` | release operator | `canonical` | Release execution checklist. |
+| `docs/rust-dependency-security.md` | contributor | `canonical` | Rust dependency review and security policy. |
+| `docs/runtime-decisions.md` | contributor | `canonical` | Runtime architecture decisions and anti-goals. |
+| `docs/runtime-persistence-debug.md` | contributor | `canonical` | Local persistence/debug guide. |
+| `docs/runtime-probe-credentials.md` | contributor | `canonical` | Runtime probe credential setup. |
+| `docs/runtime-scenario-matrix.md` | contributor | `canonical` | Deterministic runtime scenario coverage map. |
+| `docs/script-lifecycle-matrix.md` | contributor | `canonical` | Script ownership and lifecycle matrix. |
+| `docs/secrets-management.md` | contributor | `canonical` | Secrets handling guide. |
+| `docs/stale-beta-policy.md` | release operator | `canonical` | Stale beta handling policy. |
+| `docs/test-inventory.md` | contributor | `canonical` | Test surface inventory and ownership map. |
+| `docs/test-quality-fixtures.md` | contributor | `canonical` | Fixture and test-quality guidance. |
+| `docs/ui-layout-contract.md` | contributor | `canonical` | Desktop UI layout contract. |
 
-- `docs/runtime-evidence.md` is the right canonical policy doc for claim labels
-  and evidence meaning.
-- `docs/live-runtime-matrix.md` and `docs/runtime-live-qa.md` belong to the same
-  live-validation lane and should converge.
-- `docs/manual-ui-qa.md`, `docs/manual-visual-qa.md`, and
-  `docs/manual-windows-ux-qa.md` should become one manual QA checklist.
-- `docs/smoke-checks.md`, `docs/runtime-bringup.md`, and `docs/beta-smoke-report.md`
-  are adjacent but serve different moments; they should stay separate and cross-link
-  rather than drift into copy-pasted checklists.
+## Compatibility Stubs
 
-### Release / handoff docs not needed by beta users
+| path | audience | final status | canonical target |
+| --- | --- | --- | --- |
+| `docs/known-limitations.md` | public user | `compatibility stub` | `docs/product/limitations.md` |
+| `docs/live-runtime-matrix.md` | release operator | `compatibility stub` | `docs/engineering/runtime.md` |
+| `docs/manual-ui-qa.md` | release operator | `compatibility stub` | `docs/engineering/manual-qa.md` |
+| `docs/manual-visual-qa.md` | release operator | `compatibility stub` | `docs/engineering/manual-qa.md` |
+| `docs/manual-windows-ux-qa.md` | release operator | `compatibility stub` | `docs/engineering/manual-qa.md` |
+| `docs/privacy-and-trust.md` | public user | `compatibility stub` | `docs/product/privacy.md` |
+| `docs/privacy-policy.md` | public user | `compatibility stub` | `docs/product/privacy.md` |
+| `docs/release-freeze-matrix.md` | release operator | `compatibility stub` | `docs/engineering/release.md` |
+| `docs/release-incident-classification.md` | release operator | `compatibility stub` | `docs/engineering/release.md` |
+| `docs/release-local-readiness.md` | release operator | `compatibility stub` | `docs/engineering/release.md` |
+| `docs/release-readiness.md` | release operator | `compatibility stub` | `docs/engineering/release.md` |
+| `docs/runtime-bringup.md` | mixed | `compatibility stub` | `docs/engineering/runtime.md` |
+| `docs/runtime-evidence.md` | mixed | `compatibility stub` | `docs/engineering/runtime.md` |
+| `docs/runtime-live-qa.md` | mixed | `compatibility stub` | `docs/engineering/runtime.md` and `docs/engineering/manual-qa.md` |
+| `docs/runtime-quality-harness.md` | contributor | `compatibility stub` | `docs/engineering/runtime.md` |
+| `docs/test-feedback-template.md` | beta tester | `compatibility stub` | `docs/engineering/manual-qa.md` |
+| `docs/third-party-providers.md` | beta tester | `compatibility stub` | `docs/product/privacy.md` and `docs/product/limitations.md` |
+| `docs/verification-lanes.md` | contributor | `compatibility stub` | `docs/engineering/verification.md` |
 
-- `docs/archive/handoff/beta-readiness.md`
-- `docs/beta-feedback-loop.md`
-- `docs/beta-ops-diagnostics.md`
-- `docs/github-beta-operations-kit.md`
-- `docs/public-vs-local-artifacts.md`
-- `docs/release-checklist.md`
-- `docs/release-freeze-matrix.md`
-- `docs/release-incident-classification.md`
-- `docs/release-local-readiness.md`
-- `docs/release-readiness.md`
-- `docs/engineering/release.md`
-- `docs/stale-beta-policy.md`
-- `.github/PULL_REQUEST_TEMPLATE/beta-handoff.md`
-- `.github/ISSUE_TEMPLATE/beta_handoff_release.md`
+## Historical And Archive Docs
 
-These should remain available for operators/contributors but should not read like
-primary beta-user documentation in the eventual docs IA.
+| path | audience | final status | note |
+| --- | --- | --- | --- |
+| `docs/archive/experimental/bilingual-interview-mode.md` | internal archive | `historical archive` | Experimental concept, explicitly not shipped in the current public beta. |
+| `docs/archive/handoff/beta-readiness.md` | internal archive | `historical archive` | Archived handoff plan. |
+| `docs/card-schema-v3-migration.md` | internal archive | `historical archive` | Migration note kept for reference only. |
+| `docs/release-notes/v0.2.0-beta.1.md` | internal archive | `historical archive` | Historical public beta release note. |
+| `docs/releases/v0.2.0-beta.2.md` | internal archive | `historical archive` | Draft/historical release note, not active product guidance. |
+| `docs/releases/v0.2.0-beta.2/screenshots/README.md` | internal archive | `historical archive` | Historical screenshot checklist for the beta 2 draft. |
 
-### Experimental / future / historical docs that should not look shipped
+## Out Of Scope Generated Artifacts
 
-- `docs/archive/experimental/bilingual-interview-mode.md` (archived on purpose; explicit `Experimental / not shipped` status)
-- `docs/card-schema-v3-migration.md`
-- `docs/release-notes/v0.2.0-beta.1.md`
-- `docs/releases/v0.2.0-beta.2.md`
-- `docs/releases/v0.2.0-beta.2/screenshots/README.md`
+Эти markdown-файлы были зачеканы на ссылки, но не являются частью активной
+карты документации:
 
-These are better treated as archive/history, not as active product guidance.
-
-Current cleanup decisions completed:
-
-- `Bilingual Interview Mode` moved off the main docs path into `docs/archive/experimental/`.
-- `Memory`, `Local STT`, broader provider expansion, `Advanced Mode`, and public-installer/signing future work remain canonical only as non-shipped boundaries in `docs/product/limitations.md`.
-
-## Explicit Non-Inventory Items
-
-These files were reviewed as docs-like artifacts but are not part of the primary
-documentation inventory:
-
-- `reports/*.md`: generated evidence/report artifacts, not maintained docs
-- `tests/fixtures/runtime-live-evidence/good/runtime-live-qa.md`: test fixture
-- `landing/robots.txt`: site config, not documentation
+- `reports/*.md` - generated reports/evidence artifacts
+- `tests/fixtures/runtime-live-evidence/good/runtime-live-qa.md` - test fixture

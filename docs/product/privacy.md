@@ -1,6 +1,6 @@
 # Replyline Privacy, Trust, and Data Flow
 
-This is the canonical public privacy/trust/data-flow document for the current Replyline beta.
+Canonical public-beta privacy, storage, and provider data-flow guide.
 
 ## What Replyline captures
 
