@@ -202,6 +202,7 @@ Use `docs/known-limitations.md` as canonical list. Minimum truths to keep in eve
 - no guarantee of stable low latency across all providers/conditions
 - no transcript/history/team workflows in current stable-beta product scope
 - no meeting assistant, no transcript tool, no speaking coach
+- keyboard-only coverage and current limitations are documented in [accessibility.md](accessibility.md)
 
 ## 9) Command naming standard
 

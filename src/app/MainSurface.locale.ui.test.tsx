@@ -1,4 +1,6 @@
-import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
+import userEvent from "@testing-library/user-event";
+import { createSignal } from "solid-js";
 import { describe, expect, it, vi } from "vitest";
 import { MainSurface } from "./MainSurface";
 import { ui_en, ui_ru, type UiStrings } from "./locale";
@@ -49,6 +51,14 @@ function createController(strings: UiStrings, overrides: Record<string, unknown>
     clearDisabledReason: () => null,
     clearContext: vi.fn(),
     copyCurrentCard: vi.fn(),
+    interviewCardKeys: () => ["answer", "question", "signals", "risks", "followUps"],
+    activeInterviewCardIndex: () => 0,
+    activeInterviewCardKey: () => "answer",
+    selectInterviewCardIndex: vi.fn(),
+    nextInterviewCard: vi.fn(),
+    prevInterviewCard: vi.fn(),
+    pinnedInterviewCard: () => null,
+    togglePinInterviewCard: vi.fn(),
     phaseLabel: () => strings.phase.idleReady,
     interviewSession: () => null,
     interviewReport: () => null,
@@ -90,6 +100,38 @@ describe("MainSurface state-driven view", () => {
     expect(screen.queryByTestId("action-row")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Перейти к первому незаполненному шагу" }));
     expect(openSettingsPanel).toHaveBeenCalled();
+  });
+
+  it("setup CTA stays keyboard reachable and activates with Enter", async () => {
+    const user = userEvent.setup();
+    const openSettingsPanel = vi.fn();
+    render(
+      () =>
+        (
+          <MainSurface
+            controller={
+              createController(ui_ru, {
+                setupRequired: () => true,
+                setupSteps: () => [
+                  { label: "1. Речь", readyLabel: "", missingLabel: "", ready: false },
+                  { label: "2. Ответ / LLM", readyLabel: "", missingLabel: "", ready: false },
+                  { label: "3. Горячая клавиша", readyLabel: "", missingLabel: "", ready: true },
+                ],
+                openSettingsPanel,
+              }) as never
+            }
+          />
+        ) as never,
+    );
+
+    const cta = screen.getByTestId("setup-first-missing-cta");
+    await user.tab();
+    await user.tab();
+    await user.tab();
+    await user.tab();
+    expect(document.activeElement).toBe(cta);
+    await user.keyboard("{Enter}");
+    expect(openSettingsPanel).toHaveBeenCalledWith("speech");
   });
 
   it("idle state renders readiness without side panel", () => {
@@ -205,6 +247,42 @@ describe("MainSurface state-driven view", () => {
     expect(copyCurrentCard).toHaveBeenCalled();
   });
 
+  it("copy action and action row remain keyboard reachable", async () => {
+    const user = userEvent.setup();
+    const copyCurrentCard = vi.fn();
+    render(
+      () =>
+        (
+          <MainSurface
+            controller={
+              createController(ui_ru, {
+                mainUiState: () => "ready",
+                phase: () => "ready",
+                card: () => ({
+                  mode: "work",
+                  gist: "g",
+                  sayNow: "say",
+                  nextMove: "next",
+                  charsBand: "normal",
+                }),
+                copyCurrentCard,
+              }) as never
+            }
+          />
+        ) as never,
+    );
+
+    const copy = screen.getByRole("button", { name: "Скопировать ответ" });
+    await user.tab();
+    expect(document.activeElement).toBe(copy);
+    await user.keyboard("{Enter}");
+    await waitFor(() => expect(copyCurrentCard).toHaveBeenCalled());
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Пересобрать" }));
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Очистить" }));
+  });
+
   it("side panel appears only when useful", () => {
     render(
       () =>
@@ -259,6 +337,66 @@ describe("MainSurface state-driven view", () => {
         ) as never,
     );
     expect(screen.getByTestId("main-side-panel")).toBeTruthy();
+  });
+
+  it("interview carousel keeps roving focus and ArrowRight moves cards", async () => {
+    const user = userEvent.setup();
+    const [activeIndex, setActiveIndex] = createSignal(0);
+    const interviewCard = {
+      mode: "interview",
+      gist: "g",
+      sayNow: "say",
+      nextMove: "next",
+      charsBand: "normal",
+      interview: {
+        answer: { main: "Main", short: "Short", strong: "Strong", structure: "STAR" },
+        question: {
+          rawTranscript: "raw",
+          cleanQuestion: "clean",
+          interviewerIntent: "intent",
+          questionType: "behavioral",
+          confidence: "high",
+        },
+        signals: { mustMention: ["ownership"], keywords: ["impact"] },
+        risks: { weakPoints: ["wp"], avoid: ["avoid"], safeReframe: "safe" },
+        followUps: [{ question: "q", bridgeAnswer: "a" }],
+        clarifier: { needed: false, text: null },
+      },
+    };
+    render(
+      () =>
+        (
+          <MainSurface
+            controller={
+              createController(ui_ru, {
+                mainUiState: () => "ready",
+                phase: () => "ready",
+                card: () => interviewCard,
+                interviewCardKeys: () => ["answer", "question", "signals", "risks", "followUps"],
+                activeInterviewCardIndex: activeIndex,
+                activeInterviewCardKey: () =>
+                  ["answer", "question", "signals", "risks", "followUps"][activeIndex()] ?? "answer",
+                selectInterviewCardIndex: (next: number) => setActiveIndex(next),
+                nextInterviewCard: () => setActiveIndex((current) => Math.min(current + 1, 4)),
+                prevInterviewCard: () => setActiveIndex((current) => Math.max(current - 1, 0)),
+                pinnedInterviewCard: () => null,
+                togglePinInterviewCard: vi.fn(),
+              }) as never
+            }
+          />
+        ) as never,
+    );
+
+    const answerTab = screen.getByRole("tab", { name: "1. Ответ" });
+    const questionTab = screen.getByRole("tab", { name: "2. Вопрос" });
+    expect(answerTab.getAttribute("tabindex")).toBe("0");
+    expect(questionTab.getAttribute("tabindex")).toBe("-1");
+
+    answerTab.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(activeIndex()).toBe(1);
+    expect(document.activeElement).toBe(questionTab);
+    expect(screen.getByTestId("section-interview-question")).toBeTruthy();
   });
 
   it("error state renders recovery card without answer actions", () => {

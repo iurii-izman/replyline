@@ -125,12 +125,43 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
   const yesNo = (value: boolean): string =>
     value ? st().settings.persistenceValueYes : st().settings.persistenceValueNo;
 
-  const focusSectionByOffset = (delta: number) => {
+  const mobileTabRefs: HTMLButtonElement[] = [];
+  const sidebarTabRefs: HTMLButtonElement[] = [];
+
+  const focusSectionByIndex = (index: number, refs: HTMLButtonElement[]) => {
+    const nextSection = sections[index];
+    if (!nextSection) return;
+    controller().setSettingsActiveSection(nextSection.id);
+    refs[index]?.focus();
+  };
+
+  const focusSectionByOffset = (delta: number, refs: HTMLButtonElement[]) => {
     const currentIndex = sections.findIndex((section) => section.id === activeSection());
     const safeIndex = Math.max(currentIndex, 0);
     const nextIndex = (safeIndex + delta + sections.length) % sections.length;
-    const nextSection = sections[nextIndex];
-    if (nextSection) controller().setSettingsActiveSection(nextSection.id);
+    focusSectionByIndex(nextIndex, refs);
+  };
+
+  const handleSectionKeyDown = (event: KeyboardEvent, refs: HTMLButtonElement[]) => {
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      focusSectionByOffset(1, refs);
+      return;
+    }
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      focusSectionByOffset(-1, refs);
+      return;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusSectionByIndex(0, refs);
+      return;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      focusSectionByIndex(sections.length - 1, refs);
+    }
   };
 
   return (
@@ -147,59 +178,60 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
           class="settings-nav-mobile"
           data-testid="settings-nav-mobile"
           role="tablist"
+          aria-orientation="horizontal"
           aria-label={st().settings.title}
         >
           <For each={sections}>
-            {(section) => (
-              <button
-                class={`settings-nav-chip ${activeSection() === section.id ? "is-active" : ""}`}
-                type="button"
-                id={`settings-mobile-tab-${section.id}`}
-                role="tab"
-                aria-selected={activeSection() === section.id}
-                aria-controls={`settings-panel-${section.id}`}
-                tabindex={activeSection() === section.id ? 0 : -1}
-                onClick={() => controller().setSettingsActiveSection(section.id)}
-              >
-                {section.label}
-              </button>
-            )}
+            {(section, index) => {
+              const tabIndex = index();
+              return (
+                <button
+                  ref={(element) => {
+                    mobileTabRefs[tabIndex] = element;
+                  }}
+                  class={`settings-nav-chip ${activeSection() === section.id ? "is-active" : ""}`}
+                  type="button"
+                  id={`settings-mobile-tab-${section.id}`}
+                  role="tab"
+                  aria-selected={activeSection() === section.id}
+                  aria-controls={`settings-panel-${section.id}`}
+                  tabIndex={activeSection() === section.id ? 0 : -1}
+                  onClick={() => focusSectionByIndex(tabIndex, mobileTabRefs)}
+                  onKeyDown={(event) => handleSectionKeyDown(event, mobileTabRefs)}
+                >
+                  {section.label}
+                </button>
+              );
+            }}
           </For>
         </div>
 
         <div class="settings-grid app-page-body">
           <aside class="settings-sidebar app-page-aside app-sidebar" data-testid="settings-sidebar">
-            <div class="settings-sidebar-inner" role="tablist" aria-label={st().settings.title}>
+            <div
+              class="settings-sidebar-inner"
+              role="tablist"
+              aria-orientation="vertical"
+              aria-label={st().settings.title}
+            >
               <For each={sections}>
                 {(section) => {
                   const status = () => sectionStatus(section.id);
+                  const tabIndex = sections.findIndex((item) => item.id === section.id);
                   return (
                     <button
+                      ref={(element) => {
+                        sidebarTabRefs[tabIndex] = element;
+                      }}
                       class={`settings-sidebar-link ${activeSection() === section.id ? "is-active" : ""}`}
                       type="button"
                       id={`settings-sidebar-tab-${section.id}`}
                       role="tab"
                       aria-selected={activeSection() === section.id}
                       aria-controls={`settings-panel-${section.id}`}
-                      tabindex={activeSection() === section.id ? 0 : -1}
-                      onClick={() => controller().setSettingsActiveSection(section.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === "ArrowDown") {
-                          event.preventDefault();
-                          focusSectionByOffset(1);
-                        } else if (event.key === "ArrowUp") {
-                          event.preventDefault();
-                          focusSectionByOffset(-1);
-                        } else if (event.key === "Home") {
-                          event.preventDefault();
-                          const firstSection = sections[0];
-                          if (firstSection) controller().setSettingsActiveSection(firstSection.id);
-                        } else if (event.key === "End") {
-                          event.preventDefault();
-                          const lastSection = sections.at(-1);
-                          if (lastSection) controller().setSettingsActiveSection(lastSection.id);
-                        }
-                      }}
+                      tabIndex={activeSection() === section.id ? 0 : -1}
+                      onClick={() => focusSectionByIndex(tabIndex, sidebarTabRefs)}
+                      onKeyDown={(event) => handleSectionKeyDown(event, sidebarTabRefs)}
                     >
                       <span class="settings-sidebar-label">{section.label}</span>
                       <span

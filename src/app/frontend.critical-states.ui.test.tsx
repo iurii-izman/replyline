@@ -1,4 +1,6 @@
-import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
+import { readFileSync } from "node:fs";
+import { cleanup, fireEvent, render, screen, within } from "@solidjs/testing-library";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { MainSurface } from "./MainSurface";
 import { SettingsSurface } from "./SettingsSurface";
@@ -252,6 +254,35 @@ describe("frontend critical state coverage", () => {
     expect(screen.getByText(ui_ru.settings.bilingualInterviewDisclaimer)).toBeTruthy();
   });
 
+  it("settings llm controls stay in tab order through the runtime check button", async () => {
+    const user = userEvent.setup();
+    render(
+      () =>
+        (
+          <SettingsSurface
+            controller={
+              settingsController({
+                settingsActiveSection: () => "llm",
+              }) as never
+            }
+          />
+        ) as never,
+    );
+
+    const sidebar = screen.getByTestId("settings-sidebar");
+    const llmTab = within(sidebar).getByRole("tab", { name: /Ответ \/ LLM/ });
+    const modelPreset = screen.getByLabelText(ui_ru.settings.modelPresetLabel);
+    const checkButton = screen.getByTestId("check-settings-btn");
+
+    llmTab.focus();
+    await user.tab();
+    expect(document.activeElement).toBe(modelPreset);
+    for (let index = 0; index < 10 && document.activeElement !== checkButton; index += 1) {
+      await user.tab();
+    }
+    expect(document.activeElement).toBe(checkButton);
+  });
+
   it("covers Candidate Pack empty/preparing/prepared/saved states", () => {
     render(() => <CandidatePackStudio controller={candidateController() as never} st={ui_ru} />);
     expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain(
@@ -314,5 +345,45 @@ describe("frontend critical state coverage", () => {
     expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain(
       ui_ru.settings.candidatePackStateSaved,
     );
+  });
+
+  it("candidate pack fields stay keyboard reachable through the footer actions", async () => {
+    const user = userEvent.setup();
+    render(
+      () =>
+        (
+          <CandidatePackStudio
+            controller={candidateController({ candidateRawResume: () => "CV" }) as never}
+            st={ui_ru}
+          />
+        ) as never,
+    );
+
+    const resume = screen.getByLabelText(ui_ru.settings.resumeLabel);
+    const jobDescription = screen.getByLabelText(ui_ru.settings.jdLabel);
+    const companyValues = screen.getByLabelText(ui_ru.settings.valuesLabel);
+    const prepareButton = screen.getByRole("button", { name: ui_ru.settings.prepare });
+
+    expect(prepareButton.hasAttribute("disabled")).toBe(false);
+
+    await user.tab();
+    expect(document.activeElement).toBe(resume);
+    await user.tab();
+    expect(document.activeElement).toBe(jobDescription);
+    await user.tab();
+    expect(document.activeElement).toBe(companyValues);
+    for (let index = 0; index < 20 && document.activeElement !== prepareButton; index += 1) {
+      await user.tab();
+    }
+    expect(document.activeElement).toBe(prepareButton);
+  });
+
+  it("preserves focus-visible coverage for tabs and candidate pack accordions", () => {
+    const css = readFileSync("src/App.css", "utf8");
+    expect(css).toContain(".interview-card-tab");
+    expect(css).toContain(".settings-sidebar-link");
+    expect(css).toContain(".studio-accordion-trigger");
+    expect(css).toContain(".settings-collapsible > summary");
+    expect(css).toContain(":focus-visible");
   });
 });

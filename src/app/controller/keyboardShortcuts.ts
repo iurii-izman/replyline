@@ -33,6 +33,7 @@ export function setupKeyboardShortcuts(deps: KeyboardShortcutDeps): void {
   onMount(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const editable = isEditableTarget(event.target);
+      if (event.defaultPrevented) return;
       if (event.key === "Escape") {
         deps.dismissNotice();
         deps.setError(null);
