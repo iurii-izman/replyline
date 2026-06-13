@@ -75,6 +75,14 @@ Replyline controls when capture starts and stops, local storage surfaces, and lo
 - `http://` is accepted only for local or local-network routes such as loopback, private-network, or `.local` setups.
 - A local LLM URL does not make the entire product local-only when Deepgram STT is enabled; shipped beta still sends audio to Deepgram.
 
+## CSP rationale
+
+Replyline uses a Tauri CSP with `connect-src https://*` to allow user-configured remote LLM endpoints.
+
+- `https://*` — обоснование: Пользователь сам настраивает `llm_base_url` в настройках; при сборке невозможно знать хост заранее.
+- Tauri CSP статичен на этапе сборки, поэтому используется wildcard `https://*` вместо динамического allowlist.
+- `connect-src` охватывает только явные HTTP/WebSocket запросы из webview; захват аудио идёт через Rust, минуя CSP.
+
 ## User responsibility
 
 The user is responsible for:

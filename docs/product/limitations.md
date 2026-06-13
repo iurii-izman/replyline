@@ -31,6 +31,12 @@ Canonical public-beta limits, packaging truth, and non-shipped tracks.
 - Provider availability, quotas, and retention/logging terms can change outside Replyline control.
 - A local LLM endpoint does not make the shipped runtime fully local-only because the shipped STT path is still Deepgram.
 
+## Local vs Cloud URL policy
+
+- Для удалённых LLM endpoint ожидается `https://`.
+- `http://` поддерживается только для локального/local-network режима (loopback, private network, `.local`).
+- Локальный LLM endpoint не делает продукт полностью local-only, если Deepgram STT включён.
+
 ## Language and UX boundary
 
 - The shipped product posture is Russian-first.

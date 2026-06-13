@@ -23,7 +23,7 @@ const requiredIncludes = [
   },
   {
     path: "docs/README.md",
-    includes: ["engineering/runtime.md", "engineering/operations.md"],
+    includes: ["engineering/runtime.md", "engineering/operations.md", "engineering/architecture.md", "reference/glossary.md"],
   },
   {
     path: "docs/archive/handoff/beta-readiness.md",
@@ -39,7 +39,7 @@ const requiredIncludes = [
       "pnpm verify:fast",
       "pnpm verify:full",
     ],
-    excludes: ["primary instruction", "alpha-only", "releases/v0.2.0-beta.2.md"],
+    excludes: ["primary instruction", "alpha-only"],
   },
   {
     path: "docs/beta-doctor.md",
@@ -100,22 +100,7 @@ const requiredIncludes = [
     path: "docs/reference/errors.md",
     includes: ["diag_runtime_event", "RL_*", "CommandError"],
   },
-  {
-    path: "docs/public-vs-local-artifacts.md",
-    includes: ["engineering/operations.md", "section 8"],
-  },
-  {
-    path: "docs/github-beta-operations-kit.md",
-    includes: ["engineering/operations.md", "section 4"],
-  },
-  {
-    path: "docs/beta-feedback-loop.md",
-    includes: ["engineering/operations.md", "section 5"],
-  },
-  {
-    path: "docs/stale-beta-policy.md",
-    includes: ["engineering/operations.md", "section 9"],
-  },
+
   {
     path: "docs/engineering/operations.md",
     includes: [

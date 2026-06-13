@@ -226,7 +226,7 @@ Use `docs/product/limitations.md` as canonical list. Minimum truths to keep in e
 
 ## 10) Interview Mode beta posture decision criteria
 
-Decide posture per tester wave using `docs/beta-feedback-loop.md` ledger:
+Decide posture per tester wave using the feedback triage section in [../../engineering/operations.md](../../engineering/operations.md):
 
 - `core beta`:
   - usefulness median >= 4/5 for Interview scenarios,

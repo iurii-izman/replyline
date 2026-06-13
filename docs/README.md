@@ -4,7 +4,6 @@ Start with the public entrypoints:
 
 - [README.md](../README.md) - product overview, setup path, and high-level links.
 - [BETA_TESTING.md](../BETA_TESTING.md) - short 15-minute beta smoke test.
-- [doc-inventory.md](doc-inventory.md) - final inventory with canonical docs, compatibility stubs, and archive status.
 
 Use this page as the final role-based map.
 
@@ -16,7 +15,7 @@ Use this page as the final role-based map.
 - [product/limitations.md](product/limitations.md) - current beta scope, non-shipped tracks, and platform boundaries.
 - [product/privacy.md](product/privacy.md) - canonical capture, storage, provider, and user-control policy.
 - [reference/errors.md](reference/errors.md) - canonical error and diagnostics reference.
-- [glossary.md](glossary.md) - short vocabulary reference.
+- [reference/glossary.md](reference/glossary.md) - short vocabulary reference.
 
 ### Beta tester
 
@@ -31,10 +30,9 @@ Use this page as the final role-based map.
 ### Contributor
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - canonical contributor workflow and verification lanes.
-- [architecture.md](architecture.md) - core system structure and boundaries.
+- [engineering/architecture.md](engineering/architecture.md) - core system structure and boundaries.
 - [copy-rules.md](copy-rules.md) - product/trust wording rules for docs and UI copy.
 - [engineering/testing.md](engineering/testing.md) - canonical testing and verification guide.
-- [test-inventory.md](test-inventory.md) - audit note from the test-surface consolidation.
 
 ### Release/operator
 
