@@ -142,6 +142,6 @@ Use this compact template when collecting operator evidence:
 
 ## See also
 
-- [verification.md](verification.md)
+- [testing.md](testing.md)
 - [manual-qa.md](manual-qa.md)
 - [../public-vs-local-artifacts.md](../public-vs-local-artifacts.md)

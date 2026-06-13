@@ -20,5 +20,5 @@ Short reference for runtime claim labels. The canonical guide now lives in
 ## See also
 
 - [engineering/runtime.md](engineering/runtime.md) - canonical claim-label, runtime-proof, and evidence-boundary guide.
-- [engineering/verification.md](engineering/verification.md) - verify lanes and what they do or do not prove.
+- [engineering/testing.md](engineering/testing.md) - verify lanes and what they do or do not prove.
 - [copy-rules.md](copy-rules.md) - wording guardrails for public/runtime claims.

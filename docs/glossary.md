@@ -38,7 +38,7 @@
 
 ## L
 
-- **lane** — изолированная категория верификации. Canonical verify reference: [engineering/verification.md](engineering/verification.md).
+- **lane** — изолированная категория верификации. Canonical verify reference: [engineering/testing.md](engineering/testing.md).
 - **live-runtime matrix** — компактный шаблон операторских live-проверок на реальных call-приложениях. См. appendix в [engineering/runtime.md](engineering/runtime.md).
 
 ## M
@@ -50,7 +50,7 @@
 ## P
 
 - **pending verification** — claim level: пока без artifact, ждёт runtime proof. Допустимо для альфы, но должно явно метиться.
-- **prompt-contract** — deterministic check JSON shape LLM ответа против fixtures. Не вызывает реальный API. См. [prompt-contract-lane.md](prompt-contract-lane.md).
+- **prompt-contract** — deterministic check JSON shape LLM ответа против fixtures. Не вызывает реальный API. См. [engineering/testing.md](engineering/testing.md).
 - **PROMPT_VERSION** — версия system prompt, фиксируется в LLM payload и runtime artifacts. Текущее значение: `v2`.
 
 ## R

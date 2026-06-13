@@ -1,5 +1,7 @@
 # Replyline Prompt-Contract Lane
 
+Canonical lane policy moved to [docs/engineering/testing.md](engineering/testing.md).
+
 This lane keeps the result-card contract stable without requiring any provider calls.
 
 ## Command
@@ -38,8 +40,6 @@ Default mode is deterministic and local-only. Scenario checks add a small produc
 
 For those claims, use runtime lanes and evidence artifacts.
 
-Fixture lane boundary map: [test-quality-fixtures.md](test-quality-fixtures.md).
-
 ## Related guards
 
 - `scripts/check-prompt-contract.mjs` — prompt/schema/copy regression checks
@@ -47,5 +47,5 @@ Fixture lane boundary map: [test-quality-fixtures.md](test-quality-fixtures.md).
 
 See also:
 
-- `docs/engineering/verification.md`
+- `docs/engineering/testing.md`
 - `docs/engineering/runtime.md`

@@ -88,6 +88,6 @@ Do not treat manual QA as complete if runtime-sensitive flows are visually green
 
 ## See also
 
-- [verification.md](verification.md)
+- [testing.md](testing.md)
 - [runtime.md](runtime.md)
 - [../ui-layout-contract.md](../ui-layout-contract.md)

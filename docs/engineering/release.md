@@ -161,7 +161,7 @@ Evidence still required before public installer claims:
 
 ## Related Docs
 
-- [engineering/verification.md](verification.md)
+- [engineering/testing.md](testing.md)
 - [engineering/runtime.md](runtime.md)
 - [release-checklist.md](../release-checklist.md)
 - [public-vs-local-artifacts.md](../public-vs-local-artifacts.md)

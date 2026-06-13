@@ -23,6 +23,7 @@ These instructions apply to the whole repository.
 - `pnpm verify:full` is the release profile (standard + strict freeze/dependency/runtime/report gates).
 - `pnpm verify:extended` is the addon nightly/operator lane and does not replace `verify:full`.
 - `pnpm verify` is an alias to `pnpm verify:fast`.
+- Canonical testing guide: `docs/engineering/testing.md`.
 
 ## Task Lifecycle (Mandatory)
 
@@ -73,6 +74,7 @@ These instructions apply to the whole repository.
 ## Source of Truth
 
 - Follow `CONTRIBUTING.md` for contribution workflow and verification.
+- Follow `docs/engineering/testing.md` for canonical test profiles, lane boundaries, and CI alignment.
 - Follow `docs/copy-rules.md` for product/trust wording constraints.
 - Respect automated policy scripts in `scripts/check-consistency.mjs` and `scripts/check-prompt-contract.mjs`.
 - For multi-tool governance and precedence, follow `docs/ai-tooling-policy-matrix.md`.

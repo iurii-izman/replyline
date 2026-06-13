@@ -25,15 +25,15 @@ Use this page as the final role-based map.
 - [smoke-checks.md](smoke-checks.md) - manual smoke checklist.
 - [beta-smoke-report.md](beta-smoke-report.md) - sanitized reporting flow after a smoke run.
 - [engineering/runtime.md](engineering/runtime.md) - runtime bring-up, evidence, and claim-label guide for local validation.
-- [testing-stack-setup.md](testing-stack-setup.md) - local test environment setup for deeper validation.
+- [engineering/testing.md](engineering/testing.md) - canonical engineering testing guide for profiles, fixtures, E2E, and CI alignment.
 
 ### Contributor
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - canonical contributor workflow and verification lanes.
 - [architecture.md](architecture.md) - core system structure and boundaries.
 - [copy-rules.md](copy-rules.md) - product/trust wording rules for docs and UI copy.
-- [engineering/verification.md](engineering/verification.md) - validation model and lane expectations.
-- [test-inventory.md](test-inventory.md) - test surface inventory and owners.
+- [engineering/testing.md](engineering/testing.md) - canonical testing and verification guide.
+- [test-inventory.md](test-inventory.md) - audit note from the test-surface consolidation.
 
 ### Release/operator
 
@@ -50,6 +50,8 @@ Use this page as the final role-based map.
 ### Compatibility and history
 
 - Compatibility stubs for old links are tracked in [doc-inventory.md](doc-inventory.md). They should stay short and should not grow new policy content.
+- [engineering/verification.md](engineering/verification.md) - compatibility stub to the canonical testing guide.
+- [testing-stack-setup.md](testing-stack-setup.md) - compatibility stub to the canonical testing guide.
 - [archive/experimental/bilingual-interview-mode.md](archive/experimental/bilingual-interview-mode.md) - archived experimental bilingual interview concept; not shipped in current public beta.
 - [archive/handoff/beta-readiness.md](archive/handoff/beta-readiness.md) - archived beta handoff plan.
 - [release-notes/v0.2.0-beta.1.md](release-notes/v0.2.0-beta.1.md) - historical beta release note.

@@ -84,13 +84,15 @@ pnpm verify:full
 
 ## Validation Profiles
 
+- Canonical engineering testing guide: [docs/engineering/testing.md](docs/engineering/testing.md)
 - `pnpm test:quick` - fastest local loop (`typecheck` + `lint` + `test:ui`)
 - `pnpm test:unit` - deterministic unit/component/script-unit suite
 - `pnpm test:contracts` - docs/copy/prompt/ipc/locale/consistency contracts
+- `pnpm smoke` - canonical compile-and-test baseline
 - `pnpm verify:fast` - default local/PR profile (`smoke` + security lane + public-footprint guard)
 - `pnpm verify:standard` - local pre-handoff profile (`verify:fast` + lifecycle + advisory freeze report)
 - `pnpm verify:full` - release-quality profile (`verify:standard` + strict freeze/dependency/runtime/report gates)
-- `pnpm verify:extended` - addon-only nightly/operator lane (coverage + fixtures + optional E2E/experimental), runs separately from `verify:full`
+- `pnpm verify:extended` - addon-only nightly/operator lane, separate from `verify:full`
 
 Release-freeze command semantics:
 
@@ -106,6 +108,7 @@ Strict report gates:
 Engineering release source of truth:
 
 - [docs/engineering/release.md](docs/engineering/release.md)
+- [docs/engineering/testing.md](docs/engineering/testing.md)
 
 ## Privacy Baseline
 

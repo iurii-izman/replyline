@@ -26,6 +26,8 @@ pnpm install --frozen-lockfile
 pnpm verify:fast
 ```
 
+Canonical testing guide: [docs/engineering/testing.md](docs/engineering/testing.md)
+
 ## Local handoff profile
 
 ```bash
@@ -46,6 +48,8 @@ pnpm verify:full
 - `pnpm audit:npm`
 - runtime/product quality gates
 - strict evidence reports
+
+Green in one lane does not mean green everywhere. `smoke`, `verify:*`, deterministic fixture lanes, and E2E lanes prove different things.
 
 Release policy, freeze semantics, incident severity, and packaging truth live in
 [docs/engineering/release.md](docs/engineering/release.md).
