@@ -157,7 +157,7 @@ Write-Host "==> Required release docs and assets"
 Test-PathStatus -Name "CHANGELOG.md" -Path (Join-Path $repoRoot "CHANGELOG.md") -Required | Out-Null
 Test-PathStatus -Name "release notes draft" -Path (Join-Path $repoRoot "docs/releases/v0.2.0-beta.2.md") -Required | Out-Null
 Test-PathStatus -Name "release checklist" -Path (Join-Path $repoRoot "docs/release-checklist.md") -Required | Out-Null
-Test-PathStatus -Name "beta readiness doc" -Path (Join-Path $repoRoot "docs/beta-readiness.md") -Required | Out-Null
+Test-PathStatus -Name "engineering release guide" -Path (Join-Path $repoRoot "docs/engineering/release.md") -Required | Out-Null
 Test-PathStatus -Name "beta smoke report doc" -Path (Join-Path $repoRoot "docs/beta-smoke-report.md") -Required | Out-Null
 Test-PathStatus -Name "beta doctor doc" -Path (Join-Path $repoRoot "docs/beta-doctor.md") -Required | Out-Null
 Test-PathStatus -Name "release screenshots checklist" -Path (Join-Path $repoRoot "docs/releases/v0.2.0-beta.2/screenshots/README.md") -Required | Out-Null

@@ -414,7 +414,7 @@ function buildReport() {
     checks,
     lastError,
     references: [
-      { label: "Beta readiness", path: "docs/beta-readiness.md" },
+      { label: "Engineering release guide", path: "docs/engineering/release.md" },
       { label: "Beta doctor", path: "docs/beta-doctor.md" },
       { label: "Troubleshooting", path: "docs/troubleshooting.md" },
       { label: "Privacy and trust", path: "docs/privacy-and-trust.md" },

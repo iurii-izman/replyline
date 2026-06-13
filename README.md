@@ -101,6 +101,10 @@ Strict report gates:
 - `pnpm report:interview-quality:strict`
 - `pnpm report:release-readiness:strict`
 
+Engineering release source of truth:
+
+- [docs/engineering/release.md](docs/engineering/release.md)
+
 ## Privacy Baseline
 
 - API keys are stored in OS keyring (Windows Credential Manager), not in plain-text settings.
@@ -119,6 +123,7 @@ See:
 
 - [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke test for Windows testers.
 - [docs/README.md](docs/README.md) - role-based documentation map for beta users, testers, contributors, and operators.
+- [docs/engineering/release.md](docs/engineering/release.md) - canonical engineering release guide and packaging truth.
 - [docs/product/privacy.md](docs/product/privacy.md) - canonical privacy, trust, storage, and provider data-flow policy.
 - [docs/product/limitations.md](docs/product/limitations.md) - canonical beta scope, limitations, and non-shipped tracks.
 - [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and verification expectations.

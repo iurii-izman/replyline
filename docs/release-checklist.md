@@ -21,7 +21,7 @@ Canonical checklist for beta release readiness and handoff review.
 
 ## Required docs and artifacts
 
-- [Beta readiness](beta-readiness.md)
+- [Engineering release guide](engineering/release.md)
 - [Sanitized smoke report](beta-smoke-report.md)
 - [Release notes draft](releases/v0.2.0-beta.2.md)
 - [Screenshot checklist](releases/v0.2.0-beta.2/screenshots/README.md)

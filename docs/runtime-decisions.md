@@ -73,4 +73,4 @@ That future layer should:
 See also:
 
 - `docs/engineering/runtime.md`
-- `docs/release-readiness.md`
+- `docs/engineering/release.md`

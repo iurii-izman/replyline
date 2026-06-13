@@ -46,7 +46,7 @@
 | `docs/beta-doctor.md` | `beta:doctor` setup/diagnostic guide | beta tester | keep | `docs/testing/beta-doctor.md` | Belongs with tester setup and readiness checks. |
 | `docs/beta-feedback-loop.md` | Feedback intake and triage loop | release operator | keep | `docs/ops/beta-feedback-loop.md` | Operator workflow, not beta-user reading. |
 | `docs/beta-ops-diagnostics.md` | Beta ops diagnostic runbook | release operator | keep | `docs/ops/beta-ops-diagnostics.md` | Internal/operator runbook. |
-| `docs/beta-readiness.md` | Beta handoff/readiness checklist | release operator | merge | `docs/ops/release-readiness.md` | Overlaps with release readiness and local readiness gates. |
+| `docs/archive/handoff/beta-readiness.md` | Historical beta handoff checklist | internal archive | archive | `docs/engineering/release.md` | Archived after release/handoff guidance was consolidated. |
 | `docs/beta-smoke-report.md` | Sanitized smoke report instructions | beta tester | keep | `docs/testing/beta-smoke-report.md` | Active tester-facing reporting guide. |
 | `docs/github-beta-operations-kit.md` | GitHub-side beta operations guidance | release operator | keep | `docs/ops/github-beta-operations-kit.md` | Operator-facing process doc, not product docs. |
 | `docs/live-runtime-matrix.md` | Live runtime coverage matrix | release operator | merge | `docs/testing/runtime-live-qa.md` | Same operator lane as live QA; should not be split across two docs. |
@@ -55,10 +55,10 @@
 | `docs/manual-windows-ux-qa.md` | Manual Windows UX checklist | release operator | merge | `docs/testing/manual-qa.md` | Same lane as other manual QA docs. |
 | `docs/public-vs-local-artifacts.md` | Artifact sharing and sensitivity rules | release operator | keep | `docs/ops/public-vs-local-artifacts.md` | Important operator trust boundary; not general user-facing docs. |
 | `docs/release-checklist.md` | Release execution checklist | release operator | keep | `docs/ops/release-checklist.md` | Internal release procedure. |
-| `docs/release-freeze-matrix.md` | Freeze/guardrail matrix | release operator | keep | `docs/ops/release-freeze-matrix.md` | Internal release-control document. |
-| `docs/release-incident-classification.md` | Release incident severity model | release operator | keep | `docs/ops/release-incident-classification.md` | Internal incident taxonomy. |
-| `docs/release-local-readiness.md` | Local release gate | release operator | merge | `docs/ops/release-readiness.md` | Duplicates readiness gates already covered elsewhere. |
-| `docs/release-readiness.md` | Canonical release gate | release operator | keep | `docs/ops/release-readiness.md` | Best candidate for single canonical readiness document. |
+| `docs/release-freeze-matrix.md` | Redirect stub to engineering release guide | release operator | keep | `docs/engineering/release.md` | Kept as a compatibility link for existing references. |
+| `docs/release-incident-classification.md` | Redirect stub to engineering release guide | release operator | keep | `docs/engineering/release.md` | Kept as a compatibility link for existing references. |
+| `docs/release-local-readiness.md` | Redirect stub to engineering release guide | release operator | keep | `docs/engineering/release.md` | Old path kept only for compatibility. |
+| `docs/release-readiness.md` | Redirect stub to engineering release guide | release operator | keep | `docs/engineering/release.md` | Old path kept only for compatibility. |
 | `docs/runtime-evidence.md` | Runtime evidence policy and claim labels | release operator | keep | `docs/ops/runtime-evidence.md` | Canonical evidence/claim policy. |
 | `docs/runtime-live-qa.md` | Live runtime QA runbook | release operator | keep | `docs/testing/runtime-live-qa.md` | Main operator/tester live-validation guide. |
 | `docs/smoke-checks.md` | Manual smoke checklist | beta tester | keep | `docs/testing/smoke-checks.md` | Canonical smoke path for testers. |
@@ -89,7 +89,7 @@
 | `docs/secrets-management.md` | Secrets handling guide | contributor | keep | `docs/engineering/secrets-management.md` | Internal security/setup doc. |
 | `docs/test-quality-fixtures.md` | Test fixtures guidance | contributor | keep | `docs/engineering/test-quality-fixtures.md` | Internal testing guidance. |
 | `docs/ui-layout-contract.md` | UI layout contract | contributor | keep | `docs/engineering/ui-layout-contract.md` | Internal UI contract. |
-| `docs/releases/v0.2.0-beta.1.md` | Historical beta release notes | internal archive | archive | `docs/archive/releases/v0.2.0-beta.1.md` | Historical release note should not compete with current docs index. |
+| `docs/release-notes/v0.2.0-beta.1.md` | Historical beta release notes | internal archive | archive | `docs/release-notes/v0.2.0-beta.1.md` | Historical release note moved out of the visible release draft area. |
 | `docs/releases/v0.2.0-beta.2.md` | Draft/historical beta release notes | internal archive | archive | `docs/archive/releases/v0.2.0-beta.2.md` | Draft release note should not appear as active shipped guidance. |
 | `docs/releases/v0.2.0-beta.2/screenshots/README.md` | Screenshot checklist for a past release | internal archive | archive | `docs/archive/releases/v0.2.0-beta.2/screenshots/README.md` | Release-artifact helper for a past beta, not active docs. |
 
@@ -116,7 +116,7 @@
 
 ### Release / handoff docs not needed by beta users
 
-- `docs/beta-readiness.md`
+- `docs/archive/handoff/beta-readiness.md`
 - `docs/beta-feedback-loop.md`
 - `docs/beta-ops-diagnostics.md`
 - `docs/github-beta-operations-kit.md`
@@ -126,6 +126,7 @@
 - `docs/release-incident-classification.md`
 - `docs/release-local-readiness.md`
 - `docs/release-readiness.md`
+- `docs/engineering/release.md`
 - `docs/stale-beta-policy.md`
 - `.github/PULL_REQUEST_TEMPLATE/beta-handoff.md`
 - `.github/ISSUE_TEMPLATE/beta_handoff_release.md`
@@ -136,7 +137,7 @@ primary beta-user documentation in the eventual docs IA.
 ### Experimental / future / historical docs that should not look shipped
 
 - `docs/card-schema-v3-migration.md`
-- `docs/releases/v0.2.0-beta.1.md`
+- `docs/release-notes/v0.2.0-beta.1.md`
 - `docs/releases/v0.2.0-beta.2.md`
 - `docs/releases/v0.2.0-beta.2/screenshots/README.md`
 

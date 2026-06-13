@@ -1,14 +1,18 @@
 # Beta Readiness Handoff
 
+Historical handoff document retained for traceability.
+
+Active release source of truth moved to [docs/engineering/release.md](../../engineering/release.md).
+
 Single handoff doc for preparing a public-beta-ready build posture.
 
 ## Status and purpose
 
-- Status: active beta handoff context doc for current cycle.
-- Purpose: product scope, validation matrix, and packaging-truth boundaries for beta communication.
+- Status: archived beta handoff context doc from the previous cycle.
+- Purpose: preserve product scope, validation matrix, and packaging-truth boundaries used during beta handoff.
 - Relationship:
-  - release blockers and hard gates remain in [release-readiness.md](release-readiness.md);
-  - strict local gate composition remains in [release-local-readiness.md](release-local-readiness.md).
+  - active release blockers and hard gates now live in [../../engineering/release.md](../../engineering/release.md);
+  - this file remains history, not the active release gate.
 
 ## 1) Product scope
 
@@ -20,15 +24,14 @@ Replyline stable beta supports two bounded paths:
 
 Read alongside:
 
-- [release-checklist.md](release-checklist.md)
-- [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md)
+- [../../release-checklist.md](../../release-checklist.md)
+- [../../releases/v0.2.0-beta.2.md](../../releases/v0.2.0-beta.2.md)
 
 Out of scope for current beta posture:
 
 - no meeting assistant
 - no transcript tool
 - no speaking coach
-- no stealth cheating features
 - no transcript/history/team workflow UI
 - no click-through/invisible overlay
 - no Advanced Mode user surface
@@ -108,8 +111,8 @@ Blocked starts never install prerequisites. Without `-Force`, they do not launch
 9. Beta preflight lane: `pnpm beta:preflight`
 10. Interview quality report artifact: `pnpm report:interview-quality`
 11. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
-12. Manual QA pass: follow [engineering/manual-qa.md](./engineering/manual-qa.md) for compact/normal/wide states, Windows UX, Candidate Studio, and privacy/export checks
-13. Keep [ui-layout-contract.md](./ui-layout-contract.md) as the detailed layout contract when a manual QA finding points to geometry, sticky footer overlap, or scroll ownership regressions
+12. Manual QA pass: follow [../../engineering/manual-qa.md](../../engineering/manual-qa.md) for compact/normal/wide states, Windows UX, Candidate Studio, and privacy/export checks
+13. Keep [../../ui-layout-contract.md](../../ui-layout-contract.md) as the detailed layout contract when a manual QA finding points to geometry, sticky footer overlap, or scroll ownership regressions
 14. Beta release readiness gate: `pnpm beta:release-check`
 15. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
 
@@ -212,7 +215,7 @@ Use `docs/product/limitations.md` as canonical list. Minimum truths to keep in e
 - no guarantee of stable low latency across all providers/conditions
 - no transcript/history/team workflows in current stable-beta product scope
 - no meeting assistant, no transcript tool, no speaking coach
-- keyboard-only coverage and current limitations are documented in [accessibility.md](accessibility.md)
+- keyboard-only coverage and current limitations are documented in [../../accessibility.md](../../accessibility.md)
 
 ## 9) Command naming standard
 

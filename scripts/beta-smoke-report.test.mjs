@@ -61,7 +61,7 @@ const report = {
     source: "app.log",
     summary: "Authorization: Bearer sk-fake-secret-token",
   },
-  references: [{ label: "Beta readiness", path: "docs/beta-readiness.md" }],
+  references: [{ label: "Engineering release guide", path: "docs/engineering/release.md" }],
 };
 
 const safeReport = sanitizeDeep(report);

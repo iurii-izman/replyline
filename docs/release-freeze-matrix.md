@@ -1,41 +1,5 @@
-# Stable Beta Release Freeze + Regression Matrix
+# Release Freeze Matrix
 
-## Baseline required scenarios
+Moved to [docs/engineering/release.md](engineering/release.md).
 
-Source of truth: `docs/release-freeze-baseline.json`.
-
-| Scenario                               | Path                                          | Expected outcome                                                       |
-| -------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
-| bootstrap-load                         | launch -> `load_bootstrap`                    | UI reaches `idle` or `settings`, no crash                              |
-| hotkey-capture-release                 | hold/release hotkey                           | transitions `capturing -> transcribing -> analyzing/ready`             |
-| capture-stop-analyze                   | `capture_stop_and_analyze`                    | user gets valid `gist / say_now / next_move` card or user-safe error   |
-| retry-last-analysis                    | `retry_last_analysis`                         | card regenerates from last transcript, or user-safe "nothing to retry" |
-| settings-save-and-reload               | save settings + restart                       | persisted values survive restart                                       |
-| secrets-persist-separate-from-settings | save keys                                     | secrets not written into `settings.json`                               |
-| clear-context                          | clear from UI/tray                            | context flags reset to inactive/0                                      |
-| runtime-probe-and-evidence             | `pnpm probe:runtime` + `pnpm evidence:bundle` | runtime JSON artifact exists                                           |
-
-## Freeze guardrails
-
-- No stack expansion.
-- No architecture boundary drift (`model.ts`, `platform.ts`, `controller.ts`).
-- Runtime/security lanes must stay intact (`pnpm verify`, `pnpm rust:deps`, `pnpm audit:npm`).
-
-## Change visibility check
-
-Run:
-
-```bash
-pnpm release:freeze:check
-```
-
-The check emits:
-
-- changed files in local scope (`unstaged + staged + untracked`);
-- files outside the freeze allowlist/guardrails;
-- a machine-readable artifact at `reports/release-freeze-check.json`.
-
-When `--base <ref>` is provided (CI path), the check keeps three-dot comparison semantics
-(`<base>...HEAD`) and does not include local untracked files.
-
-`pnpm release:freeze:check:strict` fails if out-of-freeze files are detected.
+Freeze baseline source of truth remains `docs/release-freeze-baseline.json`.

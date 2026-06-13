@@ -26,7 +26,7 @@ const requiredIncludes = [
     includes: ["verification-lanes.md", "testing-stack-setup.md", "runtime-live-qa.md"],
   },
   {
-    path: "docs/beta-readiness.md",
+    path: "docs/archive/handoff/beta-readiness.md",
     includes: [
       "WorkConversation",
       "Interview Mode",
@@ -124,8 +124,13 @@ const requiredIncludes = [
     includes: ["Unknown preset ids fall back safely", "OpenRouter presets"],
   },
   {
-    path: "docs/release-freeze-matrix.md",
-    includes: ["Source of truth: `docs/release-freeze-baseline.json`."],
+    path: "docs/engineering/release.md",
+    includes: [
+      "Canonical engineering source of truth for release decisions",
+      "docs/release-freeze-baseline.json",
+      "Unsigned artifacts are internal artifacts only.",
+      "A public release binary is allowed only after an Authenticode-verified signed package exists.",
+    ],
   },
 ];
 

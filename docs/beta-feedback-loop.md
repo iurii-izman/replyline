@@ -9,7 +9,7 @@ Use `docs/engineering/manual-qa.md` for every trusted beta session.
 Capture these fields:
 
 - frequency: once / sometimes / always
-- severity: S0/S1/S2/S3 (`docs/release-incident-classification.md`)
+- severity: S0/S1/S2/S3 (`docs/engineering/release.md`)
 - reproducibility: high / medium / low
 - action: fix now / schedule / monitor
 

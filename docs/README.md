@@ -33,7 +33,7 @@ Use this page as role-based navigation. For the full document inventory, merge c
 
 ### Release/operator
 
-- [release-readiness.md](release-readiness.md) - canonical release readiness gate.
+- [engineering/release.md](engineering/release.md) - canonical engineering release guide, freeze semantics, and packaging truth.
 - [release-checklist.md](release-checklist.md) - release execution checklist.
 - [engineering/runtime.md](engineering/runtime.md) - runtime evidence policy, proof boundaries, and live validation flow.
 - [engineering/manual-qa.md](engineering/manual-qa.md) - compact operator manual QA checklist.
@@ -43,7 +43,8 @@ Use this page as role-based navigation. For the full document inventory, merge c
 ### Internal/archive
 
 - [doc-inventory.md](doc-inventory.md) - documentation inventory, merge map, and archive candidates.
-- [releases/v0.2.0-beta.1.md](releases/v0.2.0-beta.1.md) - historical beta release note.
+- [archive/handoff/beta-readiness.md](archive/handoff/beta-readiness.md) - archived beta handoff plan.
+- [release-notes/v0.2.0-beta.1.md](release-notes/v0.2.0-beta.1.md) - historical beta release note.
 - [releases/v0.2.0-beta.2.md](releases/v0.2.0-beta.2.md) - historical/draft beta release note.
 - [card-schema-v3-migration.md](card-schema-v3-migration.md) - historical migration note.
 
@@ -53,6 +54,6 @@ These docs stay available, but they are not part of the main visible role map on
 
 - to be merged/archived: see [doc-inventory.md](doc-inventory.md) for the canonical cleanup map
 - legacy redirect stubs: [verification-lanes.md](verification-lanes.md), [runtime-live-qa.md](runtime-live-qa.md), [runtime-bringup.md](runtime-bringup.md), [runtime-evidence.md](runtime-evidence.md), [manual-ui-qa.md](manual-ui-qa.md), [manual-windows-ux-qa.md](manual-windows-ux-qa.md), [manual-visual-qa.md](manual-visual-qa.md), [test-feedback-template.md](test-feedback-template.md)
-- examples: `beta-readiness.md`, `release-local-readiness.md`
+- examples: `release-local-readiness.md`, `release-readiness.md`
 
 Treat these as supporting material to be merged or archived over time rather than primary entrypoints.

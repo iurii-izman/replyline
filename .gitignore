@@ -41,7 +41,10 @@ AI/
 # Local-only internal artifacts kept out of GitHub footprint
 .windsurf/
 .zed/
-docs/archive/
+docs/archive/*
+!docs/archive/handoff/
+docs/archive/handoff/*
+!docs/archive/handoff/beta-readiness.md
 docs/ai-tooling-policy-matrix.md
 docs/audit-scorecard-*.md
 docs/max-upgrade-*.md

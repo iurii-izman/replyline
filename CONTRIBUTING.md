@@ -47,6 +47,9 @@ pnpm verify:full
 - runtime/product quality gates
 - strict evidence reports
 
+Release policy, freeze semantics, incident severity, and packaging truth live in
+[docs/engineering/release.md](docs/engineering/release.md).
+
 ## Solo workflow mode
 
 - Repository currently assumes one active developer.
