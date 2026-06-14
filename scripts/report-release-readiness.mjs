@@ -15,7 +15,7 @@ const REQUIRED_SCRIPTS = [
   "scripts:lifecycle",
   "test:security-lanes",
   "test:public-footprint",
-  "test:runtime-quality",
+  "test:quality",
   "report:sonar-residual",
   "report:live-evidence-pack",
 ];

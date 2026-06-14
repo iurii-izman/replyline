@@ -11,7 +11,7 @@ Green in one lane does not mean green everywhere. `pnpm smoke`, `pnpm verify:*`,
 | Quick local loop | `pnpm test:quick` | Fast local iteration | `typecheck`, `lint`, `test:ui` | Full compile baseline, Rust checks, contracts, runtime, release readiness |
 | Default verification | `pnpm verify` | Required baseline for normal code changes | Alias to `verify:fast` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
 | Release-quality gate | `pnpm verify:full` | Release decisions and dependency-sensitive handoff | `verify:standard` + strict freeze/dependency gates + one canonical `test:quality` pass + artifact-only runtime summary + release-readiness report | Optional addon lanes, manual QA, live-provider proof |
-| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture gate, optional E2E, experimental lanes | It does not replace `verify:full` or rerun canonical quality gates |
+| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture checks/gate, optional E2E, experimental lanes | It does not replace `verify:full` or rerun canonical quality gates |
 
 Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before release-sensitive handoff `pnpm verify:full`.
 

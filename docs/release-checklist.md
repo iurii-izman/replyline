@@ -14,10 +14,13 @@ Canonical checklist for beta release readiness and handoff review.
 - `pnpm beta:smoke-report`
 - `pnpm verify`
 - `pnpm verify:full`
-- `pnpm test:interview-quality`
-- `pnpm report:interview-quality:strict`
+- `pnpm test:quality`
 - `pnpm test:doc-links`
 - `pnpm release:freeze:check:strict`
+
+## Advisory evidence
+
+- `pnpm report:interview-quality:strict` when you need a dedicated interview-quality report after the canonical gate
 
 ## Required docs and artifacts
 

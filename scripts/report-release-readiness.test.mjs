@@ -33,7 +33,7 @@ function setupFixture({
     "test:security-lanes": "node scripts/check-security-lanes.mjs",
     "test:public-footprint":
       "node scripts/check-public-footprint.mjs && node scripts/check-report-secret-leaks.mjs",
-    "test:runtime-quality": "node scripts/test-runtime-quality.mjs",
+    "test:quality": "node scripts/test-quality.mjs",
     "test:e2e:desktop": "node scripts/run-tauri-driver-tests.mjs",
     "test:e2e:desktop:required": "node scripts/run-tauri-driver-tests.mjs --required",
     "test:report-secret-leaks": "node scripts/check-report-secret-leaks.mjs",
@@ -96,7 +96,7 @@ function setupFixture({
     "console.log('ok')\n",
     "utf8",
   );
-  writeFileSync(join(root, "scripts", "test-runtime-quality.mjs"), "console.log('ok')\n", "utf8");
+  writeFileSync(join(root, "scripts", "test-quality.mjs"), "console.log('ok')\n", "utf8");
   writeFileSync(join(root, "scripts", "run-tauri-driver-tests.mjs"), "console.log('ok')\n", "utf8");
   writeFileSync(
     join(root, ".github", "workflows", "release-on-tag.yml"),

@@ -90,7 +90,7 @@
     "verify:standard": "pnpm verify:fast && pnpm scripts:lifecycle && pnpm release:freeze:check",
     "verify:full": "pnpm verify:standard && pnpm release:freeze:check:strict && pnpm rust:deps && pnpm audit:npm && pnpm test:quality && pnpm report:runtime-quality:strict && pnpm report:release-readiness:strict",
     "verify": "pnpm verify:fast",
-    "verify:extended": "pnpm test:ui:coverage && pnpm test:fixture-gate && pnpm test:optional:e2e:web && pnpm test:optional:e2e:desktop && pnpm test:experimental",
+    "verify:extended": "pnpm test:ui:coverage && pnpm test:fixtures && pnpm test:fixture-gate && pnpm test:optional:e2e:web && pnpm test:optional:e2e:desktop && pnpm test:experimental",
     "test:quality": "pnpm test:interview-quality && pnpm test:runtime-answer-quality:gate && pnpm test:product-scenarios:gate && pnpm test:say-now-scenarios && pnpm check:slo",
     "test:e2e:web": "pnpm test:e2e:web:smoke",
     "test:e2e:web:smoke": "node scripts/run-optional-lane.mjs --tool pnpm --checkPackage @playwright/test --exec pnpm -- exec playwright test tests/e2e/web/smoke.spec.ts",

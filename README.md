@@ -85,7 +85,7 @@ Then configure runtime settings in app UI:
 - [docs/product/privacy.md](docs/product/privacy.md) - capture, storage, providers, and sharing boundaries.
 - [docs/product/limitations.md](docs/product/limitations.md) - current beta scope and non-shipped tracks.
 - [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and required validation.
-- [docs/engineering/testing.md](docs/engineering/testing.md) - canonical verification profiles, including `test:quality`, `verify:full`, and addon-only `verify:extended`.
+- [docs/engineering/testing.md](docs/engineering/testing.md) - canonical verification profiles, including single-pass `test:quality`, `verify:full`, and addon-only `verify:extended`.
 - [docs/README.md](docs/README.md) - short role-based map for product, contributor, and operator paths.
 
 ## Security and Support

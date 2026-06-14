@@ -52,8 +52,8 @@ pnpm verify:full
 - `pnpm release:freeze:check:strict`
 - `pnpm rust:deps`
 - `pnpm audit:npm`
-- runtime/product quality lanes
-- strict evidence reports
+- one canonical `pnpm test:quality` pass
+- artifact-only strict summary/readiness reports
 
 ### Required conditional gates
 
@@ -63,8 +63,10 @@ pnpm verify:full
 
 ### Evidence/report gates used in release decisions
 
+- Blocking inside `pnpm verify:full`:
 - `pnpm report:release-readiness:strict`
 - `pnpm report:runtime-quality:strict`
+- Advisory/manual when extra interview evidence is needed:
 - `pnpm report:interview-quality:strict`
 
 These reports do not replace the verify lanes. They provide structured evidence for final release judgment.
