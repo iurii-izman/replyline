@@ -106,7 +106,6 @@ const matrix = {
     "test:e2e:desktop",
     "test:e2e:desktop:required",
     "test:ux:lighthouse",
-    "test:optional:ux:lighthouse",
   ],
   advisory: [
     "release:freeze:check",
@@ -118,7 +117,6 @@ const matrix = {
     "report:release-readiness",
     "test:fixture-gate",
     "test:fixtures",
-    "test:optional:e2e:desktop",
     "test:optional:e2e:web",
     "test:ui:coverage",
     "verify:extended",
@@ -126,10 +124,7 @@ const matrix = {
     "verify:release-local:required-e2e",
   ],
   experimental: [
-    "test:perf:k6",
     "test:sec:zap",
-    "test:optional:perf:k6",
-    "test:optional:sec:zap",
     "test:experimental",
   ],
 };

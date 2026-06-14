@@ -11,7 +11,7 @@ Green in one lane does not mean green everywhere. `pnpm smoke`, `pnpm verify:*`,
 | Quick local loop | `pnpm test:quick` | Fast local iteration | `typecheck`, `lint`, `test:ui` | Full compile baseline, Rust checks, contracts, runtime, release readiness |
 | Default verification | `pnpm verify` | Required baseline for normal code changes | Alias to `verify:fast` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
 | Release-quality gate | `pnpm verify:full` | Release decisions and dependency-sensitive handoff | `verify:standard` + strict freeze/dependency gates + one canonical `test:quality` pass + artifact-only runtime summary + release-readiness report | Optional addon lanes, manual QA, live-provider proof |
-| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture checks/gate, optional E2E, experimental lanes | It does not replace `verify:full` or rerun canonical quality gates |
+| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture checks/gate, optional E2E, targeted experimental security/UX lanes | It does not replace `verify:full` or rerun canonical quality gates |
 
 Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before release-sensitive handoff `pnpm verify:full`.
 
@@ -35,7 +35,7 @@ Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before rel
 - `pnpm verify:full`
   - use for release decisions, dependency changes, release-sensitive contract changes, or when strict freeze/dependency/quality/report gates are required
 - `pnpm verify:extended`
-  - use only after the required baseline is already green and you explicitly want addon confidence from coverage, fixture gate, optional E2E, or experimental tooling
+  - use only after the required baseline is already green and you explicitly want addon confidence from coverage, fixture gate, optional E2E, or targeted ZAP/Lighthouse coverage
 - `pnpm test:quality`
   - use when you need the canonical deterministic quality bundle without rerunning the rest of `verify:full`
 - `pnpm test:unit`
@@ -189,7 +189,7 @@ Keep these lanes distinct. Do not collapse them into one generic “quality” s
 - Optional
   - targeted developer tools, runtime probes, operator helpers, wrappers, and report generators not required for every PR
 - Experimental
-  - machine-dependent lanes such as k6, ZAP, and Lighthouse
+  - machine-dependent addon lanes such as ZAP and Lighthouse
 
 Blocking report lanes must use explicit `:strict` names. Canonical docs and workflows should point to public canonical profiles first. Internal building blocks may remain, but they are not equivalent to canonical public profiles.
 
@@ -212,6 +212,7 @@ CI and local profiles should stay semantically aligned, but exact workflow compo
 
 - `pnpm verify` -> `pnpm verify:fast`
 - `pnpm test:e2e:web` -> `pnpm test:e2e:web:smoke`
+- `pnpm test:optional:e2e:web` -> `pnpm test:e2e:web:smoke && pnpm test:e2e:web:visual`
 - `pnpm report:interview-quality` -> `pnpm report:interview-quality:strict`
 - `pnpm report:runtime-quality` -> `pnpm report:runtime-quality:strict`
 

@@ -17,7 +17,7 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm test:quick` | `public canonical` | Fast local loop |
 | `pnpm verify` | `public canonical` | Default validation profile; alias to `verify:fast` |
 | `pnpm verify:full` | `public canonical` | Release-quality profile; runs canonical `test:quality` exactly once |
-| `pnpm verify:extended` | `public canonical` | Addon lane after required baseline; coverage + fixture/E2E/experimental only, without rerunning runtime/product/interview quality |
+| `pnpm verify:extended` | `public canonical` | Addon lane after required baseline; coverage + fixture/E2E + targeted experimental ZAP/Lighthouse only, without rerunning runtime/product/interview quality |
 | `pnpm test:quality` | `public canonical` | Canonical deterministic quality gate: interview + runtime-answer + product-scenarios + say-now + SLO |
 | `pnpm check:runtime-answer-quality` | `public canonical` | Canonical threshold gate for deterministic runtime-answer assertions; report artifact lives in `report:runtime-answer-quality` |
 | `pnpm check:product-scenarios` | `public canonical` | Canonical threshold gate for deterministic product-scenario assertions; report artifact lives in `report:product-quality` |
@@ -32,7 +32,9 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm test:doc-links` | `targeted` | Markdown link integrity |
 | `pnpm scripts:lifecycle` | `targeted` | Script lifecycle classification validation |
 | `pnpm test:e2e:web:smoke` | `targeted` | Web smoke E2E lane |
+| `pnpm test:optional:e2e:web` | `targeted` | Readable extended-lane bundle for web smoke + visual E2E |
 | `pnpm test:e2e:desktop` | `operator` | Optional workstation-dependent desktop lane |
+| `pnpm test:experimental` | `targeted` | Minimal experimental aggregate: ZAP + Lighthouse only |
 | `pnpm verify:release-local` | `operator` | Local release-oriented composition |
 | `pnpm test:e2e:web` | `deprecated alias` | Compatibility alias to `test:e2e:web:smoke` |
 | `pnpm verify:fast` via `pnpm verify` | `deprecated alias` | Alias relationship only; canonical public name is `verify` |
