@@ -6,7 +6,16 @@ Architecture reference for the current Replyline beta.
 
 Source-of-truth split (must stay stable):
 
-- `src/app/model.ts` — app state/types, DTO contracts, deterministic error mapping helpers
+- `src/app/model/settings.ts` — Phase, Panel, AppSettings, DEFAULT_SETTINGS, MainUiState
+- `src/app/model/errors.ts` — CommandError parsing, user-safe error mapping
+- `src/app/model/cards.ts` — Analysis card DTOs, interview card schema V1, asAnalysisCard
+- `src/app/model/interview.ts` — Interview report/session DTOs
+- `src/app/model/candidatePack.ts` — Candidate Pack DTOs and draft types
+- `src/app/model/diagnostics.ts` — Bootstrap, setup status, persistence diagnostics DTOs
+- `src/app/model/hotkeys.ts` — Hotkey normalization and KeyboardEvent parsing
+- `src/app/model/routeMode.ts` — LLM route mode detection (local/cloud)
+- `src/app/model/bilingualExperimental.ts` — Bilingual interview DTOs, state, gated by default
+- `src/app/model/index.ts` — Barrel re-export, canonical import surface (`from "./model"`)
 - `src/app/platform.ts` — Tauri/browser bridge (`invoke`, listeners, shortcuts, clipboard, window)
 - `src/app/controller.ts` — re-export entry for controller layer (`controller/index.ts`)
 - `src/app/controller/index.ts` — orchestration composition and app-level state wiring

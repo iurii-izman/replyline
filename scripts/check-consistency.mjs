@@ -119,7 +119,7 @@ const requiredIncludes = [
     includes: [canonicalHotkey],
   },
   {
-    path: "src/app/model.ts",
+    paths: ["src/app/model/settings.ts", "src/app/model.ts"],
     includes: [canonicalHotkey, "schemaVersion: 10", "selectedModelPreset", "debugTraceMode"],
   },
   {
