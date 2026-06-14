@@ -42,12 +42,12 @@ pnpm verify:full
 
 `verify:full` includes:
 
-- internal pre-handoff composition (`verify:standard`)
+- `pnpm verify`
 - `pnpm release:freeze:check:strict`
 - `pnpm rust:deps`
 - `pnpm audit:npm`
 - one canonical `pnpm test:quality` pass
-- strict release/runtime reports
+- artifact-only strict release/runtime reports
 
 Green in one lane does not mean green everywhere. `smoke`, `verify:*`, `check:*`, `report:*`, and E2E lanes prove different things.
 

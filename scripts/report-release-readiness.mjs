@@ -10,7 +10,6 @@ const DEFAULT_ROOT = join(__dirname, "..");
 
 const REQUIRED_SCRIPTS = [
   "verify",
-  "verify:fast",
   "verify:full",
   "scripts:lifecycle",
   "test:security-lanes",
@@ -372,15 +371,15 @@ export function runReleaseReadiness(options = {}) {
     }
   }
 
-  const verifyFast = pkg.scripts?.["verify:fast"] ?? "";
+  const verifyScript = pkg.scripts?.verify ?? "";
   if (
-    !verifyFast ||
-    !verifyFast.includes("pnpm smoke") ||
-    !verifyFast.includes("pnpm test:security-lanes") ||
-    !verifyFast.includes("pnpm test:public-footprint")
+    !verifyScript ||
+    !verifyScript.includes("pnpm smoke") ||
+    !verifyScript.includes("pnpm test:security-lanes") ||
+    !verifyScript.includes("pnpm test:public-footprint")
   ) {
     const msg =
-      "verify:fast is missing or weakened (must include smoke + security-lanes + public-footprint).";
+      "verify is missing or weakened (must include smoke + security-lanes + public-footprint).";
     blockers.push(msg);
     staticGateBlockers.push(msg);
   }

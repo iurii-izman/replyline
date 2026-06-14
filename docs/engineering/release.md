@@ -35,7 +35,7 @@ pnpm verify
 pnpm release:freeze:check
 ```
 
-`verify` is the default public validation profile for normal code changes. Internal automation may still refer to `verify:fast`, but that name is not a public canonical entrypoint.
+`verify` is the default public validation profile for normal code changes.
 
 ### Release-quality decision
 
@@ -47,7 +47,7 @@ pnpm verify:full
 
 `verify:full` is the release-quality profile and includes:
 
-- internal pre-handoff composition such as `pnpm verify:standard`
+- `pnpm verify`
 - `pnpm release:freeze:check:strict`
 - `pnpm rust:deps`
 - `pnpm audit:npm`

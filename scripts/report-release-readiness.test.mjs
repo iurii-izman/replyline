@@ -24,11 +24,10 @@ function setupFixture({
 
   const today = "2026-05-22";
   const scripts = {
-    verify: includeRequiredScripts ? "pnpm verify:fast" : "pnpm smoke",
-    "verify:fast": includeRequiredScripts
+    verify: includeRequiredScripts
       ? "pnpm smoke && pnpm test:security-lanes && pnpm test:public-footprint"
       : "pnpm smoke",
-    "verify:full": "pnpm verify:fast",
+    "verify:full": "pnpm verify",
     "scripts:lifecycle": "node scripts/check-script-lifecycle.mjs",
     "test:security-lanes": "node scripts/check-security-lanes.mjs",
     "test:public-footprint":
@@ -177,7 +176,7 @@ function setupFixture({
   const fixture = setupFixture({ includeRequiredScripts: false });
   const result = runReleaseReadiness({ strict: true, root: fixture.root, now: fixture.now });
   assert.equal(
-    result.blockers.some((x) => x.includes("verify:fast is missing or weakened")),
+    result.blockers.some((x) => x.includes("verify is missing or weakened")),
     true,
   );
 }

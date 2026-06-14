@@ -105,6 +105,7 @@
     "docs/beta-feedback-loop.md",
     "docs/test-feedback-template.md",
     "docs/runtime-decisions.md",
+    "docs/scripts-inventory.md",
     "pnpm-lock.yaml",
     "src-tauri/src/bin/runtime_probe.rs",
     "src-tauri/src/bin/fixture_gate.rs",

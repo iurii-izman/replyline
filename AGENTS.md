@@ -20,7 +20,6 @@ These instructions apply to the whole repository.
 
 - Public profiles: `pnpm test:quick`, `pnpm verify`, `pnpm verify:full`, `pnpm verify:extended`.
 - Internal building blocks: `pnpm test:unit`, `pnpm test:contracts`, `pnpm test:quality`, `pnpm smoke`.
-- Internal compatibility aliases: `pnpm verify:fast` behind `pnpm verify`, `pnpm verify:standard` behind `pnpm verify:full`.
 - Canonical testing guide: `docs/engineering/testing.md`.
 
 ## Task Lifecycle (Mandatory)
