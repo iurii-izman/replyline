@@ -64,7 +64,6 @@ const matrix = {
     "probe:runtime",
     "probe:bench",
     "probe:durations",
-    "probe:durations:avg",
     "probe:live-source",
     "probe:soak",
     "evidence:bundle",
@@ -108,9 +107,7 @@ const matrix = {
     "test:ui:coverage",
     "verify:extended",
   ],
-  experimental: [
-    "test:sec:zap",
-  ],
+  experimental: ["test:sec:zap"],
 };
 
 const missing = [];
@@ -129,7 +126,9 @@ for (const [className, list] of Object.entries(matrix)) {
 }
 
 const classified = new Set(Object.values(matrix).flat());
-const unclassified = Object.keys(scripts).filter((name) => !classified.has(name));
+const unclassified = Object.keys(scripts).filter(
+  (name) => !classified.has(name) && !name.startsWith("//"),
+);
 
 if (missing.length > 0 || unclassified.length > 0 || duplicateAcrossClasses.length > 0) {
   console.error(`[script-lifecycle] missing scripts: ${missing.join(", ")}`);
