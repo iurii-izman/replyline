@@ -34,7 +34,6 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm test:e2e:web:smoke` | `targeted` | Web smoke E2E lane |
 | `pnpm test:optional:e2e:web` | `targeted` | Readable extended-lane bundle for web smoke + visual E2E |
 | `pnpm test:e2e:desktop` | `operator` | Optional workstation-dependent desktop lane |
-| `pnpm test:experimental` | `targeted` | Minimal experimental aggregate: ZAP + Lighthouse only |
 | `pnpm verify:release-local` | `operator` | Local release-oriented composition |
 | `pnpm test:e2e:web` | `deprecated alias` | Compatibility alias to `test:e2e:web:smoke` |
 | `pnpm verify:fast` via `pnpm verify` | `deprecated alias` | Alias relationship only; canonical public name is `verify` |

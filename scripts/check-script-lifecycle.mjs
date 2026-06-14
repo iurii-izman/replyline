@@ -125,7 +125,6 @@ const matrix = {
   ],
   experimental: [
     "test:sec:zap",
-    "test:experimental",
   ],
 };
 
