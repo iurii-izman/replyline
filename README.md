@@ -49,6 +49,17 @@ Not in the current beta:
 - no memory user surface
 - no bilingual/live-translation interview surface in the current public beta
 
+## Engineering highlights
+
+Built for correctness and trust, not hype:
+
+- **Tauri v2 + Rust backend** — WASAPI loopback capture, typed IPC contract (38 commands, 9 categories), settings migration chain v1→v10, corrupt-file quarantine.
+- **Solid.js + TypeScript frontend** — Controller pattern with 10 domain modules, deterministic error mapping, mock platform for UI tests (137 tests).
+- **Deepgram STT + OpenAI-compatible LLM route** — User-configured providers, RAM-only transcripts, redacted export as default sharing path.
+- **Privacy-first local storage** — API keys in Windows Credential Manager, settings in local JSON, no background recording, no transcript history DB.
+- **Quality gates** — `pnpm verify` (blocking CI), `pnpm verify:full` (release), advisory release-freeze guard, 283 automated tests (146 Rust + 137 TS), security lane checks, public footprint guard, secret leak scanner.
+- **Release discipline** — Honest beta posture (unsigned artifacts stay internal), Authenticode-gated public binary, changelog, release notes, operator evidence bundle.
+
 ## Supported Runtime Path
 
 - OS: Windows 10/11
