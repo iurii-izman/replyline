@@ -39,6 +39,7 @@ const matrix = {
     "test:locale-keys",
     "test:quality",
     "test:product-scenarios:unit",
+    "test:public-footprint-guard",
     "test:prompt-contract",
     "test:public-footprint",
     "test:quick",

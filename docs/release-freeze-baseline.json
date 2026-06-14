@@ -50,6 +50,7 @@
     "scripts/check-security-lanes.mjs",
     "scripts/check-prompt-contract.mjs",
     "scripts/check-public-footprint.mjs",
+    "scripts/check-public-footprint.test.mjs",
     "scripts/check-release-freeze.mjs",
     "scripts/check-release-freeze.test.mjs",
     "scripts/beta-smoke-report.mjs",
