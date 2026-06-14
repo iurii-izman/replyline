@@ -17,9 +17,11 @@ Core flow: `capture -> stt -> llm -> card`
 The current public entry is a Windows **source/developer beta** for testers and contributors:
 
 - [Open the product page](https://iurii-izman.github.io/replyline/)
-- [Read the user guide](docs/product/user-guide.md)
-- [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.1)
 - [Run the 15-minute beta test](BETA_TESTING.md)
+- [Read the user guide](docs/product/user-guide.md)
+- [Read privacy and data-flow boundaries](docs/product/privacy.md)
+- [Read current beta limitations](docs/product/limitations.md)
+- [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.1)
 - [Ask a question or share feedback](https://github.com/iurii-izman/replyline/discussions)
 
 No unsigned artifact is presented as a public installer. Until an Authenticode-signed build
@@ -82,55 +84,15 @@ For release candidate validation:
 pnpm verify:full
 ```
 
-## Validation Profiles
-
-- Canonical verification guide: [docs/engineering/verification.md](docs/engineering/verification.md)
-- `pnpm test:quick` - fastest local loop before broader verification
-- `pnpm verify` - default validation profile for normal code changes
-- `pnpm verify:full` - release-quality profile with strict freeze/dependency/runtime/report gates
-- `pnpm verify:extended` - addon-only nightly/operator lane, separate from `verify:full`
-
-Release-freeze command semantics:
-
-- advisory: `pnpm release:freeze:check` (captures attention-required findings for handoff text)
-- blocking: `pnpm release:freeze:check:strict` (non-zero exit when findings exist)
-
-Strict report gates:
-
-- `pnpm report:runtime-quality:strict`
-- `pnpm report:interview-quality:strict`
-- `pnpm report:release-readiness:strict`
-
-Engineering release source of truth:
-
-- [docs/engineering/release.md](docs/engineering/release.md)
-- [docs/engineering/verification.md](docs/engineering/verification.md)
-
-## Privacy Baseline
-
-- API keys are stored in OS keyring (Windows Credential Manager), not in plain-text settings.
-- Logging pipeline applies layered sanitization and secret redaction.
-- Full transcript / full prompt are not logged by default (`redact_transcript_like` + `safe_preview`).
-- Settings includes a local diagnostics surface via `debugTraceMode` and `debugTraceRetentionDays` (`off` / `redacted` / `full_local`).
-- STT/LLM providers can receive audio/text when configured by user.
-- Runtime/evidence artifacts may contain sensitive content when explicitly generated under `reports/`.
-
-See:
-
-- [docs/product/privacy.md](docs/product/privacy.md)
-- [docs/engineering/operations.md](docs/engineering/operations.md)
-- [docs/product/limitations.md](docs/product/limitations.md)
-
 ## Documentation Map
 
-- [docs/product/user-guide.md](docs/product/user-guide.md) - compact user guide for setup, settings, flows, exports, troubleshooting, and keyboard notes.
-- [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke test for Windows testers.
-- [docs/README.md](docs/README.md) - role-based documentation map for beta users, testers, contributors, and operators.
-- [docs/engineering/release.md](docs/engineering/release.md) - canonical engineering release guide and packaging truth.
-- [docs/engineering/operations.md](docs/engineering/operations.md) - canonical operator guide for beta intake, diagnostics, sharing, and issue routing.
-- [docs/product/privacy.md](docs/product/privacy.md) - canonical privacy, trust, storage, and provider data-flow policy.
-- [docs/product/limitations.md](docs/product/limitations.md) - canonical beta scope, limitations, and non-shipped tracks.
-- [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and verification expectations.
+- [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke path for Windows testers.
+- [docs/product/user-guide.md](docs/product/user-guide.md) - setup, settings, flows, exports, and troubleshooting.
+- [docs/product/privacy.md](docs/product/privacy.md) - capture, storage, providers, and sharing boundaries.
+- [docs/product/limitations.md](docs/product/limitations.md) - current beta scope and non-shipped tracks.
+- [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and required validation.
+- [docs/engineering/release.md](docs/engineering/release.md) - release decision and packaging truth.
+- [docs/README.md](docs/README.md) - short role-based map for product, contributor, and operator paths.
 - [.github/SECURITY.md](.github/SECURITY.md) - private vulnerability reporting.
 - [.github/SUPPORT.md](.github/SUPPORT.md) - issue routing and support paths.
 
