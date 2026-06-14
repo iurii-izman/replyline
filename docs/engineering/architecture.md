@@ -33,6 +33,7 @@ UI surfaces remain view-focused and do not own orchestration:
 - `src/app/MainSurface.tsx`
 - `src/app/SettingsSurface.tsx`
 - `src/app/CandidatePackStudio.tsx`
+- `src/app/settings/settingsViewModel.ts` — Pure UI helpers (check item labels, status classes, runtime check messages)
 
 ## Backend ownership map
 

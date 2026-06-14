@@ -2,114 +2,18 @@ import { For, Show } from "solid-js";
 import { ANSWER_PROFILE_OPTIONS, resolveAnswerProfileOption } from "./answerProfiles";
 import type { ReplylineController } from "./controller";
 import { MODEL_PRESETS, resolveModelPreset } from "./modelPresets";
-import { detectLlmRouteModeFromHost, type CheckItemDto, type SettingsSectionId } from "./model";
-import type { UiStrings } from "./locale";
+import { detectLlmRouteModeFromHost, type SettingsSectionId } from "./model";
 import { CheckIcon, CircleIcon, XIcon } from "./ui/icons";
-
-function checkItemLabel(item: CheckItemDto, st: UiStrings): string {
-  switch (item.code) {
-    case "ok":
-      return st.checks.code.ok;
-    case "missing_key":
-      return st.checks.code.missing_key;
-    case "config_error":
-      return st.checks.code.config_error;
-    case "auth_error":
-      return st.checks.code.auth_error;
-    case "endpoint_error":
-      return st.checks.code.endpoint_error;
-    case "network_error":
-      return st.checks.code.network_error;
-    case "skipped":
-      return st.checks.code.skipped;
-    case "error":
-      return st.checks.code.error;
-    default:
-      return item.code;
-  }
-}
-
-function checkItemClass(item: CheckItemDto): string {
-  return item.ok ? "check-item is-ok" : "check-item is-fail";
-}
-
-type SetupStatusTone =
-  | "configured"
-  | "missing"
-  | "needs_check"
-  | "check_failed"
-  | "ready"
-  | "optional";
-
-function setupStatusLabel(st: UiStrings, tone: SetupStatusTone): string {
-  switch (tone) {
-    case "configured":
-      return st.settings.statusConfigured;
-    case "missing":
-      return st.settings.statusMissing;
-    case "needs_check":
-      return st.settings.statusNeedsCheck;
-    case "check_failed":
-      return st.settings.statusCheckFailed;
-    case "ready":
-      return st.settings.statusReady;
-    case "optional":
-      return st.settings.statusOptional;
-  }
-}
-
-function setupStatusClass(tone: SetupStatusTone): string {
-  if (tone === "ready" || tone === "configured") return "status-pill is-ready";
-  if (tone === "needs_check") return "status-pill is-setup-needed";
-  if (tone === "check_failed" || tone === "missing") return "status-pill is-error";
-  return "status-pill";
-}
-
-function runtimeCheckSection(item: CheckItemDto): SettingsSectionId {
-  if (item.code === "missing_key") return "speech";
-  if (item.code === "auth_error" || item.code === "endpoint_error" || item.code === "network_error")
-    return "llm";
-  if (item.code === "config_error") return "overview";
-  return "overview";
-}
-
-function runtimeCheckMessage(st: UiStrings, item: CheckItemDto): string {
-  switch (item.code) {
-    case "ok":
-      return st.settings.runtimeCheckOk;
-    case "missing_key":
-      return st.errors.missingDeepgramKey;
-    case "config_error":
-      return st.errors.runtimeCheckFailed;
-    case "auth_error":
-      return st.errors.runtimeCheckAuth;
-    case "endpoint_error":
-      return st.errors.runtimeCheckEndpoint;
-    case "network_error":
-      return st.errors.runtimeCheckNetwork;
-    case "skipped":
-      return st.settings.runtimeCheckSkipped;
-    case "error":
-      return st.errors.runtimeCheckFailed;
-    default:
-      return st.errors.runtimeCheckFailed;
-  }
-}
-
-function runtimeCheckActionLabel(st: UiStrings, item: CheckItemDto): string {
-  switch (item.code) {
-    case "missing_key":
-      return st.settings.openSpeechSection;
-    case "auth_error":
-    case "endpoint_error":
-    case "network_error":
-      return st.settings.openReplySection;
-    case "config_error":
-      return st.settings.openSettings;
-    default:
-      return st.settings.runCheck;
-  }
-}
+import {
+  checkItemLabel,
+  checkItemClass,
+  type SetupStatusTone,
+  setupStatusLabel,
+  setupStatusClass,
+  runtimeCheckSection,
+  runtimeCheckMessage,
+  runtimeCheckActionLabel,
+} from "./settings/settingsViewModel";
 
 export function SettingsSurface(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
