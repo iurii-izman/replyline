@@ -31,6 +31,6 @@ Historical audit artifact for the verification surface. Active guidance moved to
 ### Alias note
 
 - `pnpm verify` -> `pnpm verify:fast`
-- `pnpm test:e2e:web` -> `pnpm test:e2e:web:smoke`
+- `pnpm verify:full` -> internal pre-handoff composition + strict release/dependency gates
 
 This file is archival and should not be expanded into a second canonical guide.

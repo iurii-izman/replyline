@@ -87,7 +87,7 @@ jobs:
 
       - name: Credential-free web e2e (blocking)
         if: success()
-        run: pnpm test:e2e:web
+        run: pnpm test:e2e:web:smoke
 
       - name: Fetch base ref for release-freeze check
         if: success() || failure()

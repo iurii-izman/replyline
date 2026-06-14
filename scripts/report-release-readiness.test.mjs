@@ -24,11 +24,11 @@ function setupFixture({
 
   const today = "2026-05-22";
   const scripts = {
+    verify: includeRequiredScripts ? "pnpm verify:fast" : "pnpm smoke",
     "verify:fast": includeRequiredScripts
       ? "pnpm smoke && pnpm test:security-lanes && pnpm test:public-footprint"
       : "pnpm smoke",
     "verify:full": "pnpm verify:fast",
-    "verify:release-local": "pnpm verify:fast && pnpm report:release-readiness:strict",
     "scripts:lifecycle": "node scripts/check-script-lifecycle.mjs",
     "test:security-lanes": "node scripts/check-security-lanes.mjs",
     "test:public-footprint":

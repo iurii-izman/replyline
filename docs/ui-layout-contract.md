@@ -169,7 +169,7 @@ A page can use both classes on the same element when both semantics apply.
 
 ## Regression Rules
 
-The `test:ui-shell-contract` gate is required to catch shell/layout regressions early. It must fail on:
+The `test:contracts:ui` gate is required to catch shell/layout regressions early. It must fail on:
 
 - default window shell drift (`decorations=false`, `alwaysOnTop=true`, `skipTaskbar=true`)
 - custom close action in `ChromeSurface` that competes with native close semantics

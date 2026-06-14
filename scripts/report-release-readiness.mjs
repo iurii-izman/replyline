@@ -9,9 +9,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = join(__dirname, "..");
 
 const REQUIRED_SCRIPTS = [
+  "verify",
   "verify:fast",
   "verify:full",
-  "verify:release-local",
   "scripts:lifecycle",
   "test:security-lanes",
   "test:public-footprint",

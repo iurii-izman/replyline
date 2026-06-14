@@ -11,8 +11,8 @@ These are the commands contributors should see first.
 | Profile | Command | Purpose | Includes | Does not prove |
 | --- | --- | --- | --- | --- |
 | Quick local loop | `pnpm test:quick` | Fast iteration before a broader gate | `typecheck`, `lint`, `test:ui` | Rust compile/tests, contracts, release readiness, runtime/provider behavior |
-| Default verification | `pnpm verify` | Required default baseline for normal changes | alias to `verify:fast` | release-only strict gates, dependency audits, addon lanes, live-provider proof |
-| Release profile | `pnpm verify:full` | Release and handoff decision lane | `verify:standard` + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + one canonical `test:quality` pass + strict reports | optional addon lanes, manual QA, live-provider proof |
+| Default verification | `pnpm verify` | Required default baseline for normal changes | `smoke`, `test:security-lanes`, `test:public-footprint` | release-only strict gates, dependency audits, addon lanes, live-provider proof |
+| Release profile | `pnpm verify:full` | Release and handoff decision lane | internal pre-handoff composition + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + one canonical `test:quality` pass + strict reports | optional addon lanes, manual QA, live-provider proof |
 | Addon/nightly/operator | `pnpm verify:extended` | Extra confidence after the required baseline is green | coverage, fixture hygiene/gate, optional E2E, experimental security/UX lanes | it does not replace `verify:full` or rerun canonical quality gates |
 
 Normal flow:
@@ -32,10 +32,11 @@ These commands are supported and important, but they are not the primary public 
 | Quality bundle | `pnpm test:quality` | Canonical deterministic quality pass | interview, runtime-answer, product-scenarios, `say_now`, SLO checks | compile/build health, dependency audits, live-provider behavior |
 | Compile-and-test baseline | `pnpm smoke` | Broad local quality gate before verify profiles | build + Rust compile/lint/fmt + `test:unit` + `test:contracts` | release freeze, dependency audits, optional E2E, live-provider proof |
 
-Implementation note:
+Internal compatibility note:
 
-- `pnpm verify:fast` is the internal implementation behind `pnpm verify`.
-- `pnpm verify:standard` is the internal pre-handoff composition used by `pnpm verify:full`.
+- `pnpm verify:fast` is kept as an internal compatibility alias behind `pnpm verify`.
+- `pnpm verify:standard` is kept as an internal compatibility composition behind `pnpm verify:full`.
+- These names are stable for internal automation/backward compatibility, but they are not public canonical entrypoints.
 
 ## 3. Targeted lanes
 
@@ -44,7 +45,6 @@ Use these when the task or failure mode is narrower than a full profile.
 ### E2E
 
 - `pnpm test:e2e:web:smoke` is the canonical web smoke lane.
-- `pnpm test:e2e:web` is only a compatibility alias to `test:e2e:web:smoke`.
 - `pnpm test:e2e:web:visual` is optional visual drift coverage.
 - `pnpm test:e2e:desktop` is workstation-dependent and optional.
 - `pnpm test:e2e:desktop:required` is the non-optional desktop validation lane when environment prerequisites are guaranteed.
@@ -145,7 +145,7 @@ Boundary rule:
   - reruns `pnpm verify:full` before packaging tag artifacts
 - `.github/workflows/windows-packaging-manual.yml`
   - packaging/operator workflow
-  - requires at least `pnpm verify:fast` before building internal artifacts
+  - requires `pnpm verify` before building internal artifacts
 - `.github/workflows/extended-quality.yml`
   - runs `pnpm verify:full` as the baseline and `pnpm verify:extended` as addon-only follow-up
   - `PASS_WITH_SKIP` is valid only for skipped optional addon tooling, never for skipped blocking baseline checks
@@ -167,7 +167,7 @@ Classification rules:
 
 - Public documentation should point to canonical public profiles first.
 - Internal building blocks may stay stable without becoming public entrypoints.
-- Aliases do not change lifecycle class.
+- Internal compatibility aliases such as `verify:fast` and `verify:standard` must not be documented as canonical public profiles.
 - A passing addon lane does not upgrade a missing baseline into a pass.
 
 ## Related guides

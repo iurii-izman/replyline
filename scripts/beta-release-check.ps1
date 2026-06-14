@@ -117,9 +117,9 @@ $checks = @(
     nextAction = "Fix the failing release-quality lane before release handoff."
   },
   @{
-    name       = "report:interview-quality"
+    name       = "report:interview-quality:strict"
     command    = "pnpm"
-    args       = @("report:interview-quality")
+    args       = @("report:interview-quality:strict")
     nextAction = "Regenerate the advisory interview-quality report after fixing the failure."
   },
   @{

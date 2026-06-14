@@ -92,6 +92,7 @@
     "docs/engineering/testing.md",
     "docs/engineering/runtime.md",
     "docs/troubleshooting.md",
+    "docs/ui-layout-contract.md",
     "scripts/check-report-secret-leaks.mjs",
     "scripts/check-script-lifecycle.mjs",
     "scripts/report-runtime-quality-summary.mjs",

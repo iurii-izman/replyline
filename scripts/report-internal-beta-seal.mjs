@@ -10,7 +10,11 @@ const COMMANDS = [
   { name: "verify:fast", command: ["pnpm", "verify:fast"], blocking: true },
   { name: "test:doc-links", command: ["pnpm", "test:doc-links"], blocking: true },
   { name: "copy:check", command: ["pnpm", "copy:check"], blocking: true },
-  { name: "report:runtime-quality", command: ["pnpm", "report:runtime-quality"], blocking: true },
+  {
+    name: "report:runtime-quality:strict",
+    command: ["pnpm", "report:runtime-quality:strict"],
+    blocking: true,
+  },
   { name: "report:product-quality", command: ["pnpm", "report:product-quality"], blocking: true },
   {
     name: "report:live-evidence-pack",
@@ -159,7 +163,9 @@ function main() {
       "live multi-machine evidence is pending and must be collected during tester cycle.",
     );
   }
-  warnings.push("public beta readiness is not asserted by beta:seal and requires RC/public gates.");
+  warnings.push(
+    "public beta readiness is not asserted by report:internal-beta-seal and requires RC/public gates.",
+  );
   for (const rrWarn of releaseReadiness.warnings) {
     warnings.push(`release-readiness warning: ${rrWarn}`);
   }

@@ -42,7 +42,7 @@ pnpm verify:full
 
 `verify:full` includes:
 
-- `pnpm verify:standard`
+- internal pre-handoff composition (`verify:standard`)
 - `pnpm release:freeze:check:strict`
 - `pnpm rust:deps`
 - `pnpm audit:npm`

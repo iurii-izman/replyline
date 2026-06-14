@@ -30,7 +30,7 @@ Lean stable-beta manual matrix для критичных runtime путей.
 ## Relationship to verification lanes
 
 - Baseline automated gate: `pnpm verify`.
-- Strict local pre-handoff gate: `pnpm verify:release-local`.
+- Strict local pre-handoff gate: `pnpm verify:full`.
 - Manual smoke checks дополняют automated gates и не заменяются `release-on-tag` workflow.
 
 `release-on-tag` публикует release notes; он не является packaging lane.

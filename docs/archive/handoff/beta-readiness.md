@@ -109,12 +109,12 @@ Blocked starts never install prerequisites. Without `-Force`, they do not launch
 7. Full verify: `pnpm verify:full`
 8. Extended verify: `pnpm verify:extended`
 9. Beta preflight lane: `pnpm beta:preflight`
-10. Interview quality report artifact: `pnpm report:interview-quality`
-11. Runtime preflight contract drift check (fixture mode): `pnpm test:runtime-preflight-contract`
+10. Interview quality report artifact: `pnpm report:interview-quality:strict`
+11. Runtime preflight contract drift check (fixture mode): `pnpm test:contracts:runtime`
 12. Manual QA pass: follow [../../engineering/manual-qa.md](../../engineering/manual-qa.md) for compact/normal/wide states, Windows UX, Candidate Studio, and privacy/export checks
 13. Keep [../../ui-layout-contract.md](../../ui-layout-contract.md) as the detailed layout contract when a manual QA finding points to geometry, sticky footer overlap, or scroll ownership regressions
 14. Beta release readiness gate: `pnpm beta:release-check`
-15. Internal tester cycle seal (operator one-command report): `pnpm beta:seal`
+15. Internal tester cycle seal (operator one-command report): `pnpm report:internal-beta-seal`
 
 Additional conditional gates:
 
@@ -125,13 +125,13 @@ Additional conditional gates:
   - `pnpm release:freeze:check:strict` = blocking freeze gate for final handoff / release-quality decisions
 - Desktop E2E gate split:
   - PR/dev baseline: `pnpm test:e2e:desktop` can `SKIP` when desktop artifact is unavailable
-  - internal beta handoff: `pnpm beta:seal` is required; `pnpm test:e2e:desktop:required` remains recommended when artifact exists
+  - internal beta handoff: `pnpm report:internal-beta-seal` is required; `pnpm test:e2e:desktop:required` remains recommended when artifact exists
   - RC/public beta handoff: `pnpm test:e2e:desktop:required` is required (non-skipped)
 
 Internal beta seal boundaries:
 
-- `pnpm beta:seal` confirms internal tester readiness only (ready / ready-with-warnings / blocked).
-- `pnpm beta:seal` does not prove RC/public beta readiness.
+- `pnpm report:internal-beta-seal` confirms internal tester readiness only (ready / ready-with-warnings / blocked).
+- `pnpm report:internal-beta-seal` does not prove RC/public beta readiness.
 - missing signed binary is a warning for internal beta, blocker for RC/public.
 - live evidence remains mandatory to collect during tester cycle; seal report marks pending dimensions explicitly.
 - `pnpm beta:release-check` is the honesty gate for v0.2.0-beta.2 readiness:
@@ -142,7 +142,7 @@ Internal beta seal boundaries:
 Runtime preflight has two modes:
 
 - real mode (`pnpm runtime:preflight`): reads `%APPDATA%\com.replyline.app\settings.json`
-- fixture contract mode (`pnpm test:runtime-preflight-contract`): runs `scripts/runtime-preflight.ps1` against `tests/fixtures/runtime/*.json` via `-SettingsPath` and does not depend on local `%APPDATA%`
+- fixture contract mode (`pnpm test:contracts:runtime`): runs `scripts/runtime-preflight.ps1` against `tests/fixtures/runtime/*.json` via `-SettingsPath` and does not depend on local `%APPDATA%`
 
 Runtime probe credentials note:
 
@@ -168,7 +168,7 @@ Runtime probe credentials note:
 Release handoff is blocked unless all items are complete:
 
 1. Baseline is green (`pnpm smoke`, `pnpm verify:fast`).
-2. Interview quality report is attached (`pnpm report:interview-quality`).
+2. Interview quality report is attached (`pnpm report:interview-quality:strict`).
 3. Privacy checklist is passed.
 4. Model presets and caveats are reviewed.
 5. Known limitations are reviewed and updated.
