@@ -10,6 +10,9 @@ const scripts = pkg.scripts ?? {};
 const matrix = {
   required: [
     "build",
+    "check:product-scenarios",
+    "check:runtime-answer-quality",
+    "check:say-now-scenarios",
     "check:slo",
     "copy:check",
     "lint",

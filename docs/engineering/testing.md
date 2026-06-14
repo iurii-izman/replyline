@@ -24,7 +24,7 @@ Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before rel
 | Compile-and-test baseline | `pnpm smoke` | Any behavior change before broader verification | build/compile checks + `test:unit` + `test:contracts` | Public-footprint/security lane, freeze, dependency/runtime quality, live proof |
 | Default PR/local gate | `pnpm verify:fast` | Required baseline for code changes and default PR gate | `smoke` + `test:security-lanes` + `test:public-footprint` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
 | Local pre-handoff gate | `pnpm verify:standard` | Substantial local handoff | `verify:fast` + `scripts:lifecycle` + advisory `release:freeze:check` | Strict freeze, dependency audits, canonical quality evidence |
-| Canonical quality gate | `pnpm test:quality` | Single deterministic quality pass used by release-oriented profiles | `test:interview-quality`, `test:runtime-answer-quality:gate`, `test:product-scenarios:gate`, `test:say-now-scenarios`, `check:slo` | Compile baseline, contracts, latency parser unit coverage, live-provider proof |
+| Canonical quality gate | `pnpm test:quality` | Single deterministic quality pass used by release-oriented profiles | `test:interview-quality`, `check:runtime-answer-quality`, `check:product-scenarios`, `check:say-now-scenarios`, `check:slo` | Compile baseline, contracts, latency parser unit coverage, live-provider proof |
 
 ## When To Run What
 
@@ -67,8 +67,11 @@ These lanes are suitable for CI and local regression because they do not require
 
 - `pnpm test:quality`
 - `pnpm test:runtime-quality` (compatibility alias to `test:quality`)
-- `pnpm report:runtime-quality:strict`
+- `pnpm check:runtime-answer-quality`
+- `pnpm check:product-scenarios`
+- `pnpm check:say-now-scenarios`
 - `pnpm check:slo`
+- `pnpm report:runtime-quality:strict`
 - local runtime probes and evidence/report commands
 
 These lanes validate deterministic interview quality, synthetic runtime-answer quality, product scenarios, `say_now` heuristics, and SLO thresholds. They are stronger than pure schema checks, but they are still not proof of real provider behavior on a real machine.
@@ -134,7 +137,8 @@ E2E lanes validate launch and UI flow. They do not prove provider latency, STT a
 
 ### Product scenarios
 
-- Command: `pnpm test:product-scenarios`
+- Check: `pnpm check:product-scenarios`
+- Compatibility aliases: `pnpm test:product-scenarios`, `pnpm test:product-scenarios:gate`
 - Report lane: `pnpm report:product-quality`
 - Dataset family:
   - `tests/fixtures/product-scenarios/*.json`
@@ -170,9 +174,10 @@ E2E lanes validate launch and UI flow. They do not prove provider latency, STT a
 
 - `prompt-contract` owns schema and contract drift
 - `interview-quality` owns interview-card deterministic quality
-- `product-scenarios` owns product benchmark usefulness
+- `check:product-scenarios` owns product benchmark threshold assertions
 - `test:quality` composes the canonical deterministic quality bundle once
-- `runtime-answer-quality` owns synthetic runtime-answer thresholds within that bundle
+- `check:runtime-answer-quality` owns synthetic runtime-answer threshold assertions within that bundle
+- `check:say-now-scenarios` owns deterministic `say_now` threshold assertions
 
 Keep these lanes distinct. Do not collapse them into one generic “quality” signal.
 
@@ -213,9 +218,12 @@ CI and local profiles should stay semantically aligned, but exact workflow compo
 - `pnpm report:interview-quality` -> `pnpm report:interview-quality:strict`
 - `pnpm report:runtime-quality` -> `pnpm report:runtime-quality:strict`
 - `pnpm test:runtime-quality` -> `pnpm test:quality`
-- `pnpm test:runtime-answer-quality` -> `pnpm test:runtime-answer-quality:gate`
-- `pnpm test:product-scenarios` -> `pnpm test:product-scenarios:gate`
-- `pnpm check:slo` and `pnpm test:slo-budget` are equivalent threshold lanes
+- `pnpm test:runtime-answer-quality` -> `pnpm check:runtime-answer-quality`
+- `pnpm test:runtime-answer-quality:gate` -> `pnpm check:runtime-answer-quality`
+- `pnpm test:product-scenarios` -> `pnpm check:product-scenarios`
+- `pnpm test:product-scenarios:gate` -> `pnpm check:product-scenarios`
+- `pnpm test:say-now-scenarios` -> `pnpm check:say-now-scenarios`
+- `pnpm test:slo-budget` -> `pnpm check:slo`
 
 Prefer canonical names in docs, workflows, and handoff notes. Keep compatibility aliases short-lived and explicitly documented.
 

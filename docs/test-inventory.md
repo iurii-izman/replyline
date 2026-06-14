@@ -19,6 +19,10 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm verify:full` | `public canonical` | Release-quality profile; runs canonical `test:quality` exactly once |
 | `pnpm verify:extended` | `public canonical` | Addon lane after required baseline; coverage + fixture/E2E/experimental only, without rerunning runtime/product/interview quality |
 | `pnpm test:quality` | `public canonical` | Canonical deterministic quality gate: interview + runtime-answer + product-scenarios + say-now + SLO |
+| `pnpm check:runtime-answer-quality` | `public canonical` | Canonical threshold gate for deterministic runtime-answer assertions; report artifact lives in `report:runtime-answer-quality` |
+| `pnpm check:product-scenarios` | `public canonical` | Canonical threshold gate for deterministic product-scenario assertions; report artifact lives in `report:product-quality` |
+| `pnpm check:say-now-scenarios` | `public canonical` | Canonical threshold gate for deterministic `say_now` scenario assertions |
+| `pnpm check:slo` | `public canonical` | Canonical SLO threshold gate |
 | `pnpm test:unit` | `internal building block` | Deterministic unit/component/script-unit baseline |
 | `pnpm test:contracts` | `internal building block` | Deterministic docs/copy/prompt/ipc/locale baseline |
 | `pnpm smoke` | `internal building block` | Compile-and-test baseline under `verify:fast` |
@@ -32,7 +36,12 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm verify:release-local` | `operator` | Local release-oriented composition |
 | `pnpm test:e2e:web` | `deprecated alias` | Compatibility alias to `test:e2e:web:smoke` |
 | `pnpm verify:fast` via `pnpm verify` | `deprecated alias` | Alias relationship only; canonical public name is `verify` |
-| `pnpm check:slo` | `deprecated alias` | Equivalent threshold lane alongside `test:slo-budget` |
+| `pnpm test:slo-budget` | `deprecated alias` | Compatibility alias to the canonical `check:slo` threshold gate |
 | `pnpm test:runtime-quality` | `deprecated alias` | Compatibility alias to `test:quality`; do not use as a second quality pass or as a separate release gate |
+| `pnpm test:runtime-answer-quality` | `deprecated alias` | Compatibility alias to `check:runtime-answer-quality` |
+| `pnpm test:runtime-answer-quality:gate` | `deprecated alias` | Legacy gate alias to `check:runtime-answer-quality` |
+| `pnpm test:product-scenarios` | `deprecated alias` | Compatibility alias to `check:product-scenarios` |
+| `pnpm test:product-scenarios:gate` | `deprecated alias` | Legacy gate alias to `check:product-scenarios` |
+| `pnpm test:say-now-scenarios` | `deprecated alias` | Compatibility alias to `check:say-now-scenarios` |
 
 Compatibility aliases are intentionally preserved for transition safety, but they are not canonical profile names and must not be documented as equivalent public profiles.

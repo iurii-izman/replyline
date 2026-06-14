@@ -8,4 +8,4 @@ Compatibility aliases are not canonical profiles just because they resolve to th
 
 - `pnpm verify` is the public canonical profile name; `pnpm verify:fast` remains an internal building block
 - `pnpm test:e2e:web` is a compatibility alias, not a canonical E2E profile
-- equivalent threshold wrappers such as `check:slo` and `test:slo-budget` should stay classified explicitly rather than implied equal to a public profile
+- canonical threshold gates live under `check:*`; legacy `test:*` wrappers such as `test:slo-budget` are compatibility aliases only

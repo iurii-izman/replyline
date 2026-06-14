@@ -345,8 +345,8 @@ export function runReleaseReadiness(options = {}) {
     }
   }
 
-  if (!hasScript(pkg, "test:product-scenarios")) {
-    warnings.push("test:product-scenarios is not configured.");
+  if (!hasScript(pkg, "check:product-scenarios")) {
+    warnings.push("check:product-scenarios is not configured.");
   }
 
   if (!hasScript(pkg, "report:release-readiness")) {
@@ -402,7 +402,7 @@ export function runReleaseReadiness(options = {}) {
     runtimeArtifactBlockers.push(msg);
   }
 
-  const hasProductScenarioScript = hasScript(pkg, "test:product-scenarios");
+  const hasProductScenarioScript = hasScript(pkg, "check:product-scenarios");
   if (hasProductScenarioScript && !productScenarioToday) {
     const msg = "Missing product scenario benchmark report for today.";
     blockers.push(msg);

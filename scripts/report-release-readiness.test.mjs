@@ -40,7 +40,7 @@ function setupFixture({
     "report:release-readiness": "node scripts/report-release-readiness.mjs",
     "report:sonar-residual": "node scripts/report-sonar-residual-readiness.mjs",
     "report:live-evidence-pack": "node scripts/report-live-evidence-pack.mjs",
-    "test:product-scenarios": "node scripts/evaluate-product-scenarios.mjs",
+    "check:product-scenarios": "node scripts/evaluate-product-scenarios.mjs",
     "custom:missing": includeMissingScriptRef
       ? "node scripts/missing-file.mjs"
       : "node scripts/check-release-freeze.mjs",

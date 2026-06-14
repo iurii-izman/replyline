@@ -8,7 +8,7 @@ This lane keeps the result-card contract stable without requiring any provider c
 
 ```bash
 pnpm test:prompt-contract
-pnpm test:say-now-scenarios
+pnpm check:say-now-scenarios
 ```
 
 Default mode is deterministic and local-only. Scenario checks add a small product-shaped gate on example cards (deadline, pushback, escalation, ownership, «не обзор») using explicit heuristics only — no LLM-as-judge.

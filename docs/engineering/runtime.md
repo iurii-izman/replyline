@@ -123,7 +123,7 @@ Rules:
 It validates:
 
 - answer-card contract and policy checks
-- synthetic runtime-answer, product-scenario, and SLO checks
+- synthetic runtime-answer, product-scenario, `say_now`, and SLO checks
 - regression drift across runtime/interview/say-now fixture lanes
 
 It does not validate:

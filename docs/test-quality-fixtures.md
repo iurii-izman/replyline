@@ -8,8 +8,8 @@ Use that guide for:
 - deterministic fixture responsibilities
 - canonical `test:quality` composition:
 - `test:interview-quality`
-- `test:runtime-answer-quality:gate`
-- `test:product-scenarios:gate`
-- `test:say-now-scenarios`
+- `check:runtime-answer-quality`
+- `check:product-scenarios`
+- `check:say-now-scenarios`
 - `check:slo`
 - strict/report gate expectations, including that `report:interview-quality:strict` remains advisory/manual instead of a second blocking full-profile pass
