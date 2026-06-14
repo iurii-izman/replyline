@@ -10,7 +10,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const libPath = join(root, "src-tauri", "src", "lib.rs");
 const commandsPath = join(root, "src-tauri", "src", "commands.rs");
-const modelPath = join(root, "src", "app", "model.ts");
+const modelPath = join(root, "src", "app", "model", "settings.ts");
+const modelCardsPath = join(root, "src", "app", "model", "cards.ts");
 const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
 const settingsRustPath = join(root, "src-tauri", "src", "settings.rs");
 const typesRustPath = join(root, "src-tauri", "src", "types.rs");
@@ -24,7 +25,13 @@ const COMMAND_CATEGORIES = {
     "capture_bilingual_answer",
     "export_bilingual_interview_report",
   ],
-  settings: ["save_settings", "get_setup_status", "check_stt_config", "check_llm_config", "check_runtime_config"],
+  settings: [
+    "save_settings",
+    "get_setup_status",
+    "check_stt_config",
+    "check_llm_config",
+    "check_runtime_config",
+  ],
   secrets: ["save_secret", "delete_secret"],
   report: [
     "start_interview_session",
@@ -42,7 +49,12 @@ const COMMAND_CATEGORIES = {
     "prepare_candidate_pack",
     "save_prepared_candidate_pack",
   ],
-  diagnostics: ["get_persistence_diagnostics", "get_trace_status", "open_trace_folder", "clear_debug_traces"],
+  diagnostics: [
+    "get_persistence_diagnostics",
+    "get_trace_status",
+    "open_trace_folder",
+    "clear_debug_traces",
+  ],
   trayWindow: ["sync_tray_ui_phase", "refresh_tray_menu", "tray_open_main"],
 };
 
@@ -55,15 +67,23 @@ function flattenCategoryMap(categoryMap) {
 const libText = readFileSync(libPath, "utf8");
 const commandsText = readFileSync(commandsPath, "utf8");
 const modelText = readFileSync(modelPath, "utf8");
+const modelCardsText = readFileSync(modelCardsPath, "utf8");
 const interviewRustText = readFileSync(interviewRustPath, "utf8");
 const settingsRustText = readFileSync(settingsRustPath, "utf8");
 const typesRustText = readFileSync(typesRustPath, "utf8");
 
-const registered = new Set([...libText.matchAll(/commands::(\w+)/g)].map((m) => m[1]));
+// Command registration now lives in the replyline_commands! macro in commands.rs.
+// Scan both files to catch any migration drift.
+const registered = new Set(
+  [
+    ...libText.matchAll(/commands::(\w+)/g),
+    ...commandsText.matchAll(/\$crate::commands::(\w+)/g),
+  ].map((m) => m[1]),
+);
 const declared = new Set(
-  [...commandsText.matchAll(/#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g)].map(
-    (m) => m[1],
-  ),
+  [
+    ...commandsText.matchAll(/#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g),
+  ].map((m) => m[1]),
 );
 
 const categorizedEntries = flattenCategoryMap(COMMAND_CATEGORIES);
@@ -76,7 +96,7 @@ const missingInRegistration = [...categorized].filter((name) => !registered.has(
 const uncategorizedRegistered = [...registered].filter((name) => !categorized.has(name));
 const unregisteredDeclared = [...declared].filter((name) => !registered.has(name));
 const registeredWithoutDeclaration = [...registered].filter((name) => !declared.has(name));
-const releaseBlockExcludesDebug = libText.includes("#[cfg(not(any(debug_assertions, test)))]");
+const registryMacroPresent = commandsText.includes("macro_rules! replyline_commands");
 
 if (
   duplicateCategorized.length ||
@@ -84,7 +104,7 @@ if (
   uncategorizedRegistered.length ||
   unregisteredDeclared.length ||
   registeredWithoutDeclaration.length ||
-  !releaseBlockExcludesDebug
+  !registryMacroPresent
 ) {
   console.error("IPC handler contract mismatch.");
   if (duplicateCategorized.length) {
@@ -97,13 +117,19 @@ if (
     console.error("Registered but not categorized:", uncategorizedRegistered.join(", "));
   }
   if (unregisteredDeclared.length) {
-    console.error("Declared #[tauri::command] but not registered:", unregisteredDeclared.join(", "));
+    console.error(
+      "Declared #[tauri::command] but not registered:",
+      unregisteredDeclared.join(", "),
+    );
   }
   if (registeredWithoutDeclaration.length) {
-    console.error("Registered in lib.rs but missing #[tauri::command] declaration:", registeredWithoutDeclaration.join(", "));
+    console.error(
+      "Registered in lib.rs but missing #[tauri::command] declaration:",
+      registeredWithoutDeclaration.join(", "),
+    );
   }
-  if (!releaseBlockExcludesDebug) {
-    console.error("Missing release cfg block for invoke_handler.");
+  if (!registryMacroPresent) {
+    console.error("Missing replyline_commands! macro in src-tauri/src/commands.rs.");
   }
   process.exit(1);
 }
@@ -124,7 +150,9 @@ const staticContractChecks = [
     message: "Settings default drift: hotkey must be Ctrl+Alt+Space in TS and Rust",
   },
   {
-    ok: modelText.includes('llmBaseUrl: ""') && typesRustText.includes('llm_base_url: "".to_string()'),
+    ok:
+      modelText.includes('llmBaseUrl: ""') &&
+      typesRustText.includes('llm_base_url: "".to_string()'),
     message: "Settings default drift: llmBaseUrl must be empty in TS and Rust",
   },
   {
@@ -149,13 +177,14 @@ const staticContractChecks = [
   {
     ok:
       modelText.includes('activeAnswerProfile: "interview_default"') &&
-      typesRustText.includes("active_answer_profile: crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID.to_string()"),
+      typesRustText.includes(
+        "active_answer_profile: crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID.to_string()",
+      ),
     message:
       "Settings default drift: activeAnswerProfile must be interview_default / DEFAULT_ANSWER_PROFILE_ID",
   },
   {
-    ok:
-      modelText.includes("windowOpacity: 100") && typesRustText.includes("window_opacity: 100"),
+    ok: modelText.includes("windowOpacity: 100") && typesRustText.includes("window_opacity: 100"),
     message: "Settings default drift: windowOpacity must be 100 in TS and Rust",
   },
   {
@@ -201,13 +230,17 @@ const staticContractChecks = [
     message: "Settings range drift: captureMaxSeconds must be validated as 5..=180 in Rust",
   },
   {
-    ok: settingsRustText.includes("if ![70u8, 80u8, 90u8, 100u8].contains(&settings.window_opacity) {"),
+    ok: settingsRustText.includes(
+      "if ![70u8, 80u8, 90u8, 100u8].contains(&settings.window_opacity) {",
+    ),
     message: "Settings range drift: windowOpacity allowed values must be [70,80,90,100] in Rust",
   },
   {
     ok:
       modelText.includes("windowOpacity: 100 | 90 | 80 | 70;") &&
-      settingsRustText.includes("if ![70u8, 80u8, 90u8, 100u8].contains(&settings.window_opacity) {"),
+      settingsRustText.includes(
+        "if ![70u8, 80u8, 90u8, 100u8].contains(&settings.window_opacity) {",
+      ),
     message: "Settings type/range drift: windowOpacity options must match in TS and Rust",
   },
   {
@@ -218,29 +251,32 @@ const staticContractChecks = [
       "Settings range drift: translationDebounceMs/translationMinWordCount sanitize ranges must remain stable",
   },
   {
-    ok: interviewRustText.includes("pub short: String") && modelText.includes("short: string;"),
+    ok:
+      interviewRustText.includes("pub short: String") && modelCardsText.includes("short: string;"),
     message: "Interview answer.short drift: Rust/TS must both be string",
   },
   {
-    ok: interviewRustText.includes("pub strong: String") && modelText.includes("strong: string;"),
+    ok:
+      interviewRustText.includes("pub strong: String") &&
+      modelCardsText.includes("strong: string;"),
     message: "Interview answer.strong drift: Rust/TS must both be string",
   },
   {
     ok:
       interviewRustText.includes("pub safe_reframe: String") &&
-      modelText.includes("safeReframe: string;"),
+      modelCardsText.includes("safeReframe: string;"),
     message: "Interview risks.safeReframe drift: Rust/TS must both be string",
   },
   {
     ok:
       interviewRustText.includes("pub confidence: InterviewConfidence") &&
-      modelText.includes('confidence: "low" | "medium" | "high";'),
+      modelCardsText.includes('confidence: "low" | "medium" | "high";'),
     message: "Interview question.confidence drift between Rust/TS",
   },
   {
     ok:
       interviewRustText.includes("pub text: Option<String>") &&
-      modelText.includes("text?: string | null;"),
+      modelCardsText.includes("text?: string | null;"),
     message: "Interview clarifier drift: expected clarifier.text on both sides",
   },
 ];
