@@ -1,13 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, "..");
 const runtimeQualityDir = join(rootDir, "reports", "runtime-quality");
 const runtimeDir = join(rootDir, "reports", "runtime");
-const fixturesDir = join(rootDir, "tests", "fixtures", "runtime-quality");
 
 function todayStamp() {
   return new Date().toISOString().slice(0, 10);
@@ -15,20 +13,6 @@ function todayStamp() {
 
 function ensureDir(path) {
   mkdirSync(path, { recursive: true });
-}
-
-function runNode(scriptRelativePath, envExtras = {}) {
-  const result = spawnSync(process.execPath, [join(rootDir, scriptRelativePath)], {
-    cwd: rootDir,
-    encoding: "utf8",
-    env: { ...process.env, ...envExtras },
-  });
-  return {
-    ok: result.status === 0,
-    status: result.status,
-    stdout: result.stdout,
-    stderr: result.stderr,
-  };
 }
 
 function readJsonIfExists(path) {
@@ -93,11 +77,11 @@ function renderMarkdown(summary) {
   lines.push(`Overall pass: ${summary.pass}`);
   lines.push("");
   lines.push("## Inputs");
-  lines.push(`- latency parser: ${summary.steps.latencyParser.ok ? "pass" : "fail"}`);
-  lines.push(`- slo check: ${summary.steps.sloCheck.ok ? "pass" : "fail"}`);
-  lines.push(`- answer quality: ${summary.steps.answerQuality.ok ? "pass" : "fail"}`);
-  lines.push(`- interview quality: ${summary.steps.interviewQuality.ok ? "pass" : "fail"}`);
-  lines.push(`- say-now scenarios: ${summary.steps.sayNowScenarios.ok ? "pass" : "fail"}`);
+  lines.push(`- canonical quality evidence: ${summary.steps.qualityEvidence.ok ? "present" : "missing"}`);
+  lines.push(`- runtime answer report: ${summary.steps.answerQuality.ok ? "present" : "missing"}`);
+  lines.push(`- product scenario report: ${summary.steps.productScenarios.ok ? "present" : "missing"}`);
+  lines.push(`- latency summary artifact: ${summary.steps.latencySummary.ok ? "present" : "missing"}`);
+  lines.push(`- note: ${summary.steps.note}`);
   lines.push("");
   lines.push("## Latency Metrics");
   if (summary.latencyMetrics) {
@@ -137,6 +121,12 @@ function renderMarkdown(summary) {
     );
     lines.push(`- averageScore=${summary.answerQualityAggregate.averageScore}`);
   }
+  if (summary.productScenarioSummary) {
+    lines.push("");
+    lines.push("## Product Scenarios");
+    lines.push(`- overallScore=${summary.productScenarioSummary.overallScore}`);
+    lines.push(`- pass=${summary.productScenarioSummary.pass}`);
+  }
   return lines.join("\n");
 }
 
@@ -144,20 +134,14 @@ function main() {
   ensureDir(runtimeQualityDir);
   ensureDir(runtimeDir);
 
-  const sampleLog = join(fixturesDir, "pipeline-latency-sample.log");
-  const latencyParser = runNode("scripts/parse-pipeline-latency.mjs", {
-    REPLYLINE_LOG_PATH: sampleLog,
-  });
-  const sloCheck = runNode("scripts/check-slo-budget.mjs");
-  const answerQuality = runNode("scripts/evaluate-runtime-answer-quality.mjs");
-  const interviewQuality = runNode("scripts/test-interview-quality.mjs");
-  const sayNowScenarios = runNode("scripts/check-say-now-scenarios.mjs");
-
   const latencySummary = readJsonIfExists(join(runtimeDir, "pipeline-latency-summary.json"));
   const baselineSummary = readJsonIfExists(
     join(runtimeQualityDir, `runtime-quality-summary-${yesterdayStamp()}.json`),
   );
   const answerQualityReport = latestRuntimeAnswerReport();
+  const productScenarioReport = readJsonIfExists(
+    join(rootDir, "reports", "product-quality", `product-scenario-benchmark-${todayStamp()}.json`),
+  );
   const latencyMetrics = computeLatencyMetrics(latencySummary);
   const baselineLatencyMetrics = baselineSummary?.latencyMetrics ?? null;
   const baselineComparison = [
@@ -192,22 +176,31 @@ function main() {
 
   const summary = {
     generatedAt: new Date().toISOString(),
-    pass:
-      latencyParser.ok &&
-      sloCheck.ok &&
-      answerQuality.ok &&
-      interviewQuality.ok &&
-      sayNowScenarios.ok,
+    pass: Boolean(answerQualityReport) && Boolean(productScenarioReport),
     steps: {
-      latencyParser,
-      sloCheck,
-      answerQuality,
-      interviewQuality,
-      sayNowScenarios,
+      qualityEvidence: {
+        ok: Boolean(answerQualityReport) && Boolean(productScenarioReport),
+      },
+      answerQuality: {
+        ok: Boolean(answerQualityReport),
+      },
+      productScenarios: {
+        ok: Boolean(productScenarioReport),
+      },
+      latencySummary: {
+        ok: Boolean(latencySummary),
+      },
+      note: "Built from existing quality artifacts; does not rerun quality lanes.",
     },
     latencyMetrics,
     baselineComparison,
     answerQualityAggregate: answerQualityReport?.aggregate ?? null,
+    productScenarioSummary: productScenarioReport
+      ? {
+          overallScore: productScenarioReport.overallScore ?? null,
+          pass: productScenarioReport.pass ?? null,
+        }
+      : null,
   };
 
   const stamp = todayStamp();

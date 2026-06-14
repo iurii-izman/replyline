@@ -10,8 +10,8 @@ Green in one lane does not mean green everywhere. `pnpm smoke`, `pnpm verify:*`,
 | --- | --- | --- | --- | --- |
 | Quick local loop | `pnpm test:quick` | Fast local iteration | `typecheck`, `lint`, `test:ui` | Full compile baseline, Rust checks, contracts, runtime, release readiness |
 | Default verification | `pnpm verify` | Required baseline for normal code changes | Alias to `verify:fast` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
-| Release-quality gate | `pnpm verify:full` | Release decisions and dependency-sensitive handoff | `verify:standard` + strict freeze/dependency/runtime/report gates | Optional addon lanes, manual QA, live-provider proof |
-| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture hygiene, runtime/product scenario reruns, optional E2E, experimental lanes | It does not replace `verify:full` |
+| Release-quality gate | `pnpm verify:full` | Release decisions and dependency-sensitive handoff | `verify:standard` + strict freeze/dependency gates + one canonical `test:quality` pass + artifact-only runtime summary + release-readiness report | Optional addon lanes, manual QA, live-provider proof |
+| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture gate, optional E2E, experimental lanes | It does not replace `verify:full` or rerun canonical quality gates |
 
 Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before release-sensitive handoff `pnpm verify:full`.
 
@@ -21,9 +21,10 @@ Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before rel
 | --- | --- | --- | --- | --- |
 | Deterministic unit baseline | `pnpm test:unit` | Focused unit/component/script-unit regression | Rust tests, UI tests, parser/evaluator/report unit lanes | Build, contract lanes, security, runtime, release readiness |
 | Deterministic contract baseline | `pnpm test:contracts` | Prompt/docs/IPC/locale/policy drift detection | `test:consistency`, `test:doc-links`, IPC, locale, prompt, copy lanes | Runtime quality, product usefulness, live-provider behavior |
-| Compile-and-test baseline | `pnpm smoke` | Any behavior change before broader verification | build/compile checks + `test:unit` + `test:contracts` + `test:interview-quality` | Public-footprint/security lane, freeze, dependency audits, runtime/live proof |
+| Compile-and-test baseline | `pnpm smoke` | Any behavior change before broader verification | build/compile checks + `test:unit` + `test:contracts` | Public-footprint/security lane, freeze, dependency/runtime quality, live proof |
 | Default PR/local gate | `pnpm verify:fast` | Required baseline for code changes and default PR gate | `smoke` + `test:security-lanes` + `test:public-footprint` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
-| Local pre-handoff gate | `pnpm verify:standard` | Substantial local handoff | `verify:fast` + `scripts:lifecycle` + advisory `release:freeze:check` | Strict freeze, dependency audits, runtime/product benchmark evidence |
+| Local pre-handoff gate | `pnpm verify:standard` | Substantial local handoff | `verify:fast` + `scripts:lifecycle` + advisory `release:freeze:check` | Strict freeze, dependency audits, canonical quality evidence |
+| Canonical quality gate | `pnpm test:quality` | Single deterministic quality pass used by release-oriented profiles | `test:interview-quality`, `test:runtime-answer-quality:gate`, `test:product-scenarios:gate`, `test:say-now-scenarios`, `check:slo` | Compile baseline, contracts, latency parser unit coverage, live-provider proof |
 
 ## When To Run What
 
@@ -32,9 +33,11 @@ Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before rel
 - `pnpm verify`
   - use for every normal code change and as the public default validation profile
 - `pnpm verify:full`
-  - use for release decisions, dependency changes, release-sensitive contract changes, or when strict freeze/dependency/runtime/report gates are required
+  - use for release decisions, dependency changes, release-sensitive contract changes, or when strict freeze/dependency/quality/report gates are required
 - `pnpm verify:extended`
-  - use only after the required baseline is already green and you explicitly want addon confidence from coverage, optional E2E, or experimental tooling
+  - use only after the required baseline is already green and you explicitly want addon confidence from coverage, fixture gate, optional E2E, or experimental tooling
+- `pnpm test:quality`
+  - use when you need the canonical deterministic quality bundle without rerunning the rest of `verify:full`
 - `pnpm test:unit`
   - internal building block for targeted unit/component/script-unit diagnosis without the full smoke profile
 - `pnpm test:contracts`
@@ -60,14 +63,15 @@ For release/handoff readiness, include `pnpm release:freeze:check` or use `pnpm 
 
 These lanes are suitable for CI and local regression because they do not require real provider calls or live workstation conditions.
 
-### Runtime-quality lanes
+### Quality lanes
 
-- `pnpm test:runtime-quality`
+- `pnpm test:quality`
+- `pnpm test:runtime-quality` (compatibility alias to `test:quality`)
 - `pnpm report:runtime-quality:strict`
 - `pnpm check:slo`
 - local runtime probes and evidence/report commands
 
-These lanes validate synthetic runtime-answer quality, latency parsing, and available runtime artifacts. They are stronger than pure schema checks, but they are still not proof of real provider behavior on a real machine.
+These lanes validate deterministic interview quality, synthetic runtime-answer quality, product scenarios, `say_now` heuristics, and SLO thresholds. They are stronger than pure schema checks, but they are still not proof of real provider behavior on a real machine.
 
 ### Live-provider / workstation proof
 
@@ -116,7 +120,7 @@ E2E lanes validate launch and UI flow. They do not prove provider latency, STT a
 ### Interview quality
 
 - Command: `pnpm test:interview-quality`
-- Strict evidence lane: `pnpm report:interview-quality:strict`
+- Strict evidence lane: `pnpm report:interview-quality:strict` (advisory/manual; not rerun inside blocking `verify:full`)
 - Dataset: `tests/fixtures/interview-quality/golden-dataset-v1.json`
 - Scope:
   - `InterviewCardSchemaV1` shape
@@ -142,19 +146,24 @@ E2E lanes validate launch and UI flow. They do not prove provider latency, STT a
   - live-provider behavior
   - GUI/runtime path on a real machine
 
-### Runtime quality
+### Canonical quality
 
-- Command: `pnpm test:runtime-quality`
+- Command: `pnpm test:quality`
+- Compatibility alias: `pnpm test:runtime-quality`
 - Inputs:
-  - runtime-answer fixtures
-  - quality thresholds
-  - latency parser fixtures/artifacts
+  - interview-quality golden dataset
+  - runtime-answer fixtures and thresholds
+  - product-scenario fixtures/golden datasets
   - SLO budget check
   - `say_now` heuristic scenarios
 - Scope:
+  - deterministic interview-card quality
   - synthetic runtime-answer quality
+  - product scenario usefulness/guardrails
   - runtime artifact threshold checks without live providers
 - Does not prove:
+  - compile/build health
+  - contract drift outside these quality datasets
   - end-to-end provider behavior in a real call app
 
 ### Fixture boundary rule
@@ -162,7 +171,8 @@ E2E lanes validate launch and UI flow. They do not prove provider latency, STT a
 - `prompt-contract` owns schema and contract drift
 - `interview-quality` owns interview-card deterministic quality
 - `product-scenarios` owns product benchmark usefulness
-- `runtime-quality` owns synthetic runtime-answer and artifact thresholds
+- `test:quality` composes the canonical deterministic quality bundle once
+- `runtime-answer-quality` owns synthetic runtime-answer thresholds within that bundle
 
 Keep these lanes distinct. Do not collapse them into one generic “quality” signal.
 
@@ -202,6 +212,7 @@ CI and local profiles should stay semantically aligned, but exact workflow compo
 - `pnpm test:e2e:web` -> `pnpm test:e2e:web:smoke`
 - `pnpm report:interview-quality` -> `pnpm report:interview-quality:strict`
 - `pnpm report:runtime-quality` -> `pnpm report:runtime-quality:strict`
+- `pnpm test:runtime-quality` -> `pnpm test:quality`
 - `pnpm test:runtime-answer-quality` -> `pnpm test:runtime-answer-quality:gate`
 - `pnpm test:product-scenarios` -> `pnpm test:product-scenarios:gate`
 - `pnpm check:slo` and `pnpm test:slo-budget` are equivalent threshold lanes

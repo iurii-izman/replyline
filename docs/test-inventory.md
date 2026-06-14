@@ -17,7 +17,8 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm test:quick` | `public canonical` | Fast local loop |
 | `pnpm verify` | `public canonical` | Default validation profile; alias to `verify:fast` |
 | `pnpm verify:full` | `public canonical` | Release-quality profile |
-| `pnpm verify:extended` | `public canonical` | Addon lane after required baseline |
+| `pnpm verify:extended` | `public canonical` | Addon lane after required baseline; coverage + fixture/E2E/experimental only |
+| `pnpm test:quality` | `public canonical` | Canonical deterministic quality gate used by release-oriented profiles |
 | `pnpm test:unit` | `internal building block` | Deterministic unit/component/script-unit baseline |
 | `pnpm test:contracts` | `internal building block` | Deterministic docs/copy/prompt/ipc/locale baseline |
 | `pnpm smoke` | `internal building block` | Compile-and-test baseline under `verify:fast` |
@@ -32,5 +33,6 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm test:e2e:web` | `deprecated alias` | Compatibility alias to `test:e2e:web:smoke` |
 | `pnpm verify:fast` via `pnpm verify` | `deprecated alias` | Alias relationship only; canonical public name is `verify` |
 | `pnpm check:slo` | `deprecated alias` | Equivalent threshold lane alongside `test:slo-budget` |
+| `pnpm test:runtime-quality` | `deprecated alias` | Compatibility alias to `test:quality`; do not use as a second quality pass |
 
 Compatibility aliases are intentionally preserved for transition safety, but they are not canonical profile names and must not be documented as equivalent public profiles.

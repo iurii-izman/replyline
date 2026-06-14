@@ -4,6 +4,6 @@ Canonical fixture-boundary guidance moved to [engineering/testing.md](engineerin
 
 Use that guide for:
 
-- prompt-contract vs interview-quality vs product-scenarios vs runtime-quality boundaries
+- prompt-contract vs interview-quality vs product-scenarios vs `test:quality` boundaries
 - deterministic fixture responsibilities
-- strict/report gate expectations
+- canonical `test:quality` composition and strict/report gate expectations
