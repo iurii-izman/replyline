@@ -47,7 +47,8 @@
     "src-tauri/src/providers/deepgram.rs",
     "src-tauri/src/providers/openai_compatible.rs",
     "src-tauri/src/providers/candidate_pack_provider.rs",
-    "src/app/model.ts",
+    "src/app/model/index.ts",
+    "src/app/model/settings.ts",
     "src/app/platform.ts",
     "src/app/controller.ts",
     "docs/engineering/release.md",
@@ -120,7 +121,12 @@
       "src-tauri/src/providers/openai_compatible.rs",
       "src-tauri/src/providers/candidate_pack_provider.rs"
     ],
-    "criticalFrontendModules": ["src/app/model.ts", "src/app/platform.ts", "src/app/controller.ts"],
+    "criticalFrontendModules": [
+      "src/app/model/index.ts",
+      "src/app/model/settings.ts",
+      "src/app/platform.ts",
+      "src/app/controller.ts"
+    ],
     "criticalDocs": [
       "docs/engineering/release.md",
       "docs/engineering/testing.md",

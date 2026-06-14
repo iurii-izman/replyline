@@ -1,5 +1,13 @@
 import { strict as assert } from "node:assert";
-import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
@@ -149,6 +157,15 @@ function setupFixture() {
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+}
+
+{
+  // Baseline integrity: all guardrailPaths must exist in the repo.
+  const baseline = JSON.parse(
+    readFileSync(join(repoRoot, "docs", "release-freeze-baseline.json"), "utf8"),
+  );
+  const missing = baseline.guardrailPaths.filter((p) => !existsSync(join(repoRoot, p)));
+  assert.deepEqual(missing, [], `Stale baseline paths: ${missing.join(", ")}`);
 }
 
 console.log("All check-release-freeze tests passed.");
