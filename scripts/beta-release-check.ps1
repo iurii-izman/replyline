@@ -78,7 +78,7 @@ function Invoke-CommandCheck {
 
 function Add-ManualChecklist {
   $manualItems = @(
-    @{ name = "first-run setup UX audit"; action = "Verify first-launch guidance, settings flow, and readiness hints in docs/release-checklist.md." },
+    @{ name = "first-run setup UX audit"; action = "Verify first-launch guidance, settings flow, and readiness hints in docs/engineering/release.md." },
     @{ name = "keyboard-only accessibility"; action = "Verify the entire release flow can be driven with keyboard only." },
     @{ name = "clean Windows profile install"; action = "Verify on a separate clean Windows profile before release claims." },
     @{ name = "Deepgram setup path"; action = "Verify key entry, error handling, and recovery steps." },
@@ -86,7 +86,7 @@ function Add-ManualChecklist {
     @{ name = "custom OpenAI-compatible path"; action = "Verify custom endpoint and model configuration." },
     @{ name = "Candidate Pack preparation"; action = "Verify prepare/save/clear and preview flow in Interview Mode." },
     @{ name = "Interview report export"; action = "Verify full and redacted export paths before sharing." },
-    @{ name = "uninstall/clear local data note"; action = "Verify the uninstall and local data guidance in docs/release-checklist.md." }
+    @{ name = "uninstall/clear local data note"; action = "Verify the uninstall and local data guidance in docs/engineering/release.md." }
   )
 
   foreach ($item in $manualItems) {
@@ -144,7 +144,6 @@ Write-Host ""
 Write-Host "==> Required release docs and assets"
 Test-PathStatus -Name "CHANGELOG.md" -Path (Join-Path $repoRoot "CHANGELOG.md") -Required | Out-Null
 Test-PathStatus -Name "release notes draft" -Path (Join-Path $repoRoot "docs/releases/v0.2.0-beta.2.md") -Required | Out-Null
-Test-PathStatus -Name "release checklist" -Path (Join-Path $repoRoot "docs/release-checklist.md") -Required | Out-Null
 Test-PathStatus -Name "engineering release guide" -Path (Join-Path $repoRoot "docs/engineering/release.md") -Required | Out-Null
 Test-PathStatus -Name "beta smoke report doc" -Path (Join-Path $repoRoot "docs/beta-smoke-report.md") -Required | Out-Null
 Test-PathStatus -Name "beta doctor doc" -Path (Join-Path $repoRoot "docs/beta-doctor.md") -Required | Out-Null

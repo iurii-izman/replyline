@@ -1,6 +1,6 @@
 # Replyline Documentation Inventory
 
-Audit artifact for the post-collapse docs pass. This file is not an entrypoint and should not be used as active guidance; start from [README.md](../README.md) or [docs/README.md](README.md).
+Audit artifact for the post-collapse docs pass. This file is not an entrypoint and should not be used as active guidance; start from [README.md](../../../README.md) or [docs/README.md](../../README.md).
 
 ## Active minimum map
 
@@ -29,20 +29,14 @@ Audit artifact for the post-collapse docs pass. This file is not an entrypoint a
 ## Supporting but not primary
 
 - Beta support: `docs/beta-doctor.md`, `docs/beta-smoke-report.md`, `docs/smoke-checks.md`
-- Contributor/release support: `docs/copy-rules.md`, `docs/release-checklist.md`, `docs/engineering/manual-qa.md`
+- Contributor/release support: `docs/copy-rules.md`, `docs/engineering/manual-qa.md`
 - Reference/supporting engineering notes remain valid, but they are not start-here documents.
 
 ## Compatibility stubs
 
-Legacy paths that now redirect readers to canonical docs:
+Legacy public paths retained for compatibility:
 
-- `docs/accessibility.md`
-- `docs/architecture.md`
-- `docs/candidate-pack.md`
-- `docs/glossary.md`
 - `docs/interview-mode.md`
-- `docs/interview-quality.md`
-- `docs/product-scenario-benchmark.md`
 - `docs/settings-reference.md`
 - `docs/troubleshooting.md`
 
@@ -56,7 +50,7 @@ Legacy paths that now redirect readers to canonical docs:
 
 - Root entrypoints: `5`
 - Canonical docs in active map: `11`
-- Compatibility stubs: `9`
+- Compatibility stubs: `3`
 - Archive/historical buckets: `3`
 
 ## Out-of-scope generated artifacts

@@ -14,7 +14,6 @@ Use this page as the short role-based map.
 - [product/user-guide.md](product/user-guide.md) - setup, settings, flows, exports, and troubleshooting.
 - [product/privacy.md](product/privacy.md) - capture, storage, providers, and sharing boundaries.
 - [product/limitations.md](product/limitations.md) - current beta scope and non-shipped tracks.
-- [reference/glossary.md](reference/glossary.md) - short vocabulary reference for product and beta terms.
 
 ### Contributor
 
@@ -28,8 +27,4 @@ Use this page as the short role-based map.
 - [engineering/release.md](engineering/release.md) - release decision, freeze semantics, and packaging truth.
 - [engineering/runtime.md](engineering/runtime.md) - runtime proof, evidence labels, and live validation boundaries.
 - [engineering/operations.md](engineering/operations.md) - beta intake, diagnostics, sharing, and issue routing.
-- [release-checklist.md](release-checklist.md) - compact release execution checklist.
-
-### Archive
-
-- [doc-inventory.md](doc-inventory.md) - audit artifact listing active docs and archive records.
+- [engineering/manual-qa.md](engineering/manual-qa.md) - operator manual QA checklist for UI, privacy, and Windows UX.

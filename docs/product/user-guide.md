@@ -68,6 +68,7 @@ Diagnostics notes:
 - `debugTraceMode=redacted` is the safer default for routine triage.
 - `debugTraceMode=full_local` can store sensitive local artifacts such as transcript, prompts, responses, and WAV files.
 - There is no user-facing Advanced Mode in the shipped beta.
+- Local vs Cloud URL policy: use `https://` for remote/provider-hosted routes; reserve `http://` for local or local-network endpoints only.
 
 ## 4. WorkConversation flow
 

@@ -24,7 +24,7 @@ Replyline stable beta supports two bounded paths:
 
 Read alongside:
 
-- [../../release-checklist.md](../../release-checklist.md)
+- [../../engineering/release.md](../../engineering/release.md)
 
 
 Out of scope for current beta posture:
@@ -135,7 +135,7 @@ Internal beta seal boundaries:
 - missing signed binary is a warning for internal beta, blocker for RC/public.
 - live evidence remains mandatory to collect during tester cycle; seal report marks pending dimensions explicitly.
 - `pnpm beta:release-check` is the honesty gate for v0.2.0-beta.2 readiness:
-  - it runs the automated checks listed in `docs/release-checklist.md`;
+  - it runs the automated checks listed in `docs/engineering/release.md`;
   - it always leaves manual checklist items as WARN until a human reviews them;
   - it does not imply a clean Windows profile install unless that is explicitly recorded outside the repo.
 
@@ -215,7 +215,7 @@ Use `docs/product/limitations.md` as canonical list. Minimum truths to keep in e
 - no guarantee of stable low latency across all providers/conditions
 - no transcript/history/team workflows in current stable-beta product scope
 - no meeting assistant, no transcript tool, no speaking coach
-- keyboard-only coverage and current limitations are documented in [../../accessibility.md](../../accessibility.md)
+- keyboard-only coverage and current limitations are documented in [../../product/user-guide.md#9-accessibility--keyboard-notes](../../product/user-guide.md#9-accessibility--keyboard-notes)
 
 ## 9) Command naming standard
 

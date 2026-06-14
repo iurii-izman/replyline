@@ -30,9 +30,9 @@ area:privacy-trust:
           - "src-tauri/src/privacy.rs"
           - "src-tauri/src/credentials.rs"
           - "src-tauri/src/app_log.rs"
-          - "docs/privacy*.md"
+          - "docs/product/privacy.md"
           - "docs/copy-rules.md"
-          - "docs/known-limitations.md"
+          - "docs/product/limitations.md"
 
 area:build-ci:
   - changed-files:

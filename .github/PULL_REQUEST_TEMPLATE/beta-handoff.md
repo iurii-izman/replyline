@@ -15,7 +15,7 @@
 
 - [ ] No sensitive keys/tokens in diff or attachments
 - [ ] Docs do not claim unsupported privacy guarantees
-- [ ] Wording aligned with `docs/copy-rules.md` and `docs/privacy-and-trust.md`
+- [ ] Wording aligned with `docs/copy-rules.md` and `docs/product/privacy.md`
 
 ### Notes
 

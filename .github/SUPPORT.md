@@ -3,8 +3,8 @@
 ## Before Opening an Issue
 
 1. Read [README.md](../README.md)
-2. Check [docs/troubleshooting.md](../docs/troubleshooting.md)
-3. Confirm stable-beta scope in [docs/known-limitations.md](../docs/known-limitations.md)
+2. Check [docs/product/user-guide.md#8-troubleshooting-quick-table](../docs/product/user-guide.md#8-troubleshooting-quick-table)
+3. Confirm stable-beta scope in [docs/product/limitations.md](../docs/product/limitations.md)
 4. For a structured beta run, follow [BETA_TESTING.md](../BETA_TESTING.md)
 
 ## Where to Ask

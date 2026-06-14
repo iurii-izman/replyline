@@ -23,7 +23,12 @@ const requiredIncludes = [
   },
   {
     path: "docs/README.md",
-    includes: ["engineering/runtime.md", "engineering/operations.md", "engineering/architecture.md", "reference/glossary.md"],
+    includes: [
+      "engineering/runtime.md",
+      "engineering/operations.md",
+      "engineering/architecture.md",
+      "engineering/manual-qa.md",
+    ],
   },
   {
     path: "docs/archive/handoff/beta-readiness.md",
@@ -50,22 +55,13 @@ const requiredIncludes = [
     includes: ["pnpm beta:smoke-report", "smoke-report.md", "smoke-report.json", "GitHub issue"],
   },
   {
-    path: "docs/interview-mode.md",
+    path: "docs/product/user-guide.md",
     includes: [
-      "start_interview_session",
-      "end_interview_session",
-      "export_interview_report_markdown",
-      "InterviewCardSchemaV1",
-      "CardSchemaV3",
-    ],
-  },
-  {
-    path: "docs/candidate-pack.md",
-    includes: [
-      "candidate-pack.v1.json",
-      "candidate-pack-latest.json",
-      "Raw `resume`, raw `job description`, raw `company values` are not written to app logs",
-      "provider",
+      "## 3. Settings reference",
+      "`llmBaseUrl`",
+      "## 5. Interview Mode flow",
+      "## 6. Candidate Pack inside Interview Mode",
+      "## 8. Troubleshooting quick table",
     ],
   },
   {

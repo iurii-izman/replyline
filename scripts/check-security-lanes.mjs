@@ -169,7 +169,7 @@ function checkCspDecision() {
 
   const privacyDoc = readFileSync(resolve(repoRoot, "docs/product/privacy.md"), "utf8");
   const providersDoc = readFileSync(resolve(repoRoot, "docs/product/limitations.md"), "utf8");
-  const settingsDoc = readFileSync(resolve(repoRoot, "docs/settings-reference.md"), "utf8");
+  const settingsDoc = readFileSync(resolve(repoRoot, "docs/product/user-guide.md"), "utf8");
 
   const requiredPrivacyMarkers = [
     "https://*",
@@ -203,7 +203,7 @@ function checkCspDecision() {
 
   if (!settingsDoc.includes("`llmBaseUrl`") || !settingsDoc.includes("Local vs Cloud URL policy")) {
     console.error(
-      "[privacy-lane] docs/settings-reference.md must mention `llmBaseUrl` and link to Local vs Cloud URL policy rationale.",
+      "[privacy-lane] docs/product/user-guide.md must mention `llmBaseUrl` and link to Local vs Cloud URL policy rationale.",
     );
     return false;
   }

@@ -164,10 +164,56 @@ Evidence still required before public installer claims:
 10. Link the active release notes draft plus evidence artifacts, not a historical handoff plan.
 11. Record residual risks explicitly when using `Conditional Go`.
 
+## Manual Release Checklist
+
+These checks stay manual even when `pnpm beta:release-check` is green.
+
+### Setup and accessibility
+
+- First launch shows the expected setup guidance.
+- Missing provider inputs are explained clearly.
+- Settings save and return flow remains obvious.
+- The release flow remains usable with keyboard only.
+- Focus order stays predictable in Settings and Interview Mode.
+- Primary actions have visible focus states.
+
+### Windows environment sanity
+
+- Verified on a separate clean Windows profile.
+- App starts without relying on pre-existing local state.
+- The evidence is recorded as manual proof, not an automated claim.
+
+### Provider setup paths
+
+- Deepgram key entry, error handling, and recovery steps remain clear.
+- OpenRouter base URL, key, and model selection remain understandable.
+- Custom OpenAI-compatible endpoint and model configuration still work as documented.
+
+### Interview and export paths
+
+- Candidate Pack prepare/save/clear and preview flow still work in Interview Mode.
+- Full markdown export remains explicitly sensitive.
+- Redacted markdown export remains the preferred sharing path.
+
+### Local data and screenshots
+
+- Release notes explain how to clear local reports and app data.
+- The docs distinguish uninstall from local data cleanup.
+- No claim is made that uninstall removes every local artifact automatically.
+- Release screenshots stay under `docs/releases/v0.2.0-beta.2/screenshots/`.
+- Capture first-run, Settings, Interview Mode, Candidate Pack, and export states.
+
+## Reporting Rule
+
+- Use the sanitized smoke report for issue filing.
+- Do not paste raw transcripts, prompts, Candidate Pack values, or provider bodies into public issue text.
+- Link the report instead of paraphrasing raw diagnostic output.
+
 ## Related Docs
 
 - [engineering/testing.md](testing.md)
 - [engineering/runtime.md](runtime.md)
-- [release-checklist.md](../release-checklist.md)
 - [engineering/operations.md](operations.md)
+- [engineering/manual-qa.md](manual-qa.md)
+- [beta-smoke-report.md](../beta-smoke-report.md)
 - [release-notes/v0.2.0-beta.1.md](../release-notes/v0.2.0-beta.1.md)

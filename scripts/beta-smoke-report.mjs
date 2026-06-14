@@ -417,7 +417,7 @@ function buildReport() {
       { label: "Engineering release guide", path: "docs/engineering/release.md" },
       { label: "Operations guide", path: "docs/engineering/operations.md" },
       { label: "Beta doctor", path: "docs/beta-doctor.md" },
-      { label: "Troubleshooting", path: "docs/troubleshooting.md" },
+      { label: "Troubleshooting", path: "docs/product/user-guide.md#8-troubleshooting-quick-table" },
       { label: "Privacy and trust", path: "docs/product/privacy.md" },
     ],
   };
