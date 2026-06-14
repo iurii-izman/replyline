@@ -25,14 +25,15 @@ Use this page as the final role-based map.
 - [beta-smoke-report.md](beta-smoke-report.md) - sanitized reporting flow after a smoke run.
 - [engineering/operations.md](engineering/operations.md) - operator-facing intake, issue routing, diagnostics, and sharing guardrails.
 - [engineering/runtime.md](engineering/runtime.md) - runtime bring-up, evidence, and claim-label guide for local validation.
-- [engineering/testing.md](engineering/testing.md) - canonical engineering testing guide for profiles, fixtures, E2E, and CI alignment.
+- [engineering/verification.md](engineering/verification.md) - canonical public verification guide for the supported profile set.
+- [engineering/testing.md](engineering/testing.md) - detailed engineering testing guide for fixtures, E2E, lifecycle, and CI alignment.
 
 ### Contributor
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - canonical contributor workflow and verification lanes.
 - [engineering/architecture.md](engineering/architecture.md) - core system structure and boundaries.
 - [copy-rules.md](copy-rules.md) - product/trust wording rules for docs and UI copy.
-- [engineering/testing.md](engineering/testing.md) - canonical testing and verification guide.
+- [engineering/verification.md](engineering/verification.md) - canonical verification profile guide.
 
 ### Release/operator
 

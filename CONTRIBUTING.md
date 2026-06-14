@@ -23,15 +23,15 @@ Keep Replyline in the current beta scope:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm verify:fast
+pnpm verify
 ```
 
-Canonical testing guide: [docs/engineering/testing.md](docs/engineering/testing.md)
+Canonical verification guide: [docs/engineering/verification.md](docs/engineering/verification.md)
 
 ## Local handoff profile
 
 ```bash
-pnpm verify:standard
+pnpm verify
 ```
 
 ## Release candidate profile
@@ -40,7 +40,7 @@ pnpm verify:standard
 pnpm verify:full
 ```
 
-`verify:full` includes:
+`verify:full` includes internal building blocks such as:
 
 - `pnpm verify:standard`
 - `pnpm release:freeze:check:strict`

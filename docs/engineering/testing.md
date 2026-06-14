@@ -1,40 +1,50 @@
 # Engineering Testing Guide
 
-Canonical engineering source of truth for test profiles, verification lanes, fixture quality gates, E2E scope, lifecycle policy, and CI alignment.
+Detailed engineering source of truth for verification lane composition, fixture quality gates, E2E scope, lifecycle policy, and CI alignment. For the small public profile set contributors should memorize, use [verification.md](verification.md).
 
 Green in one lane does not mean green everywhere. `pnpm smoke`, `pnpm verify:*`, deterministic fixture gates, runtime-quality lanes, and E2E lanes prove different things and must not be used as substitutes for each other.
 
-## Test Profile Matrix
+## Public / canonical profiles
 
 | Profile | Command | Primary use | Includes | Does not prove |
 | --- | --- | --- | --- | --- |
 | Quick local loop | `pnpm test:quick` | Fast local iteration | `typecheck`, `lint`, `test:ui` | Full compile baseline, Rust checks, contracts, runtime, release readiness |
+| Default verification | `pnpm verify` | Required baseline for normal code changes | Alias to `verify:fast` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
+| Release-quality gate | `pnpm verify:full` | Release decisions and dependency-sensitive handoff | `verify:standard` + strict freeze/dependency/runtime/report gates | Optional addon lanes, manual QA, live-provider proof |
+| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture hygiene, runtime/product scenario reruns, optional E2E, experimental lanes | It does not replace `verify:full` |
+
+Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before release-sensitive handoff `pnpm verify:full`.
+
+## Internal building blocks
+
+| Profile | Command | Primary use | Includes | Does not prove |
+| --- | --- | --- | --- | --- |
 | Deterministic unit baseline | `pnpm test:unit` | Focused unit/component/script-unit regression | Rust tests, UI tests, parser/evaluator/report unit lanes | Build, contract lanes, security, runtime, release readiness |
 | Deterministic contract baseline | `pnpm test:contracts` | Prompt/docs/IPC/locale/policy drift detection | `test:consistency`, `test:doc-links`, IPC, locale, prompt, copy lanes | Runtime quality, product usefulness, live-provider behavior |
 | Compile-and-test baseline | `pnpm smoke` | Any behavior change before broader verification | build/compile checks + `test:unit` + `test:contracts` + `test:interview-quality` | Public-footprint/security lane, freeze, dependency audits, runtime/live proof |
 | Default PR/local gate | `pnpm verify:fast` | Required baseline for code changes and default PR gate | `smoke` + `test:security-lanes` + `test:public-footprint` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
 | Local pre-handoff gate | `pnpm verify:standard` | Substantial local handoff | `verify:fast` + `scripts:lifecycle` + advisory `release:freeze:check` | Strict freeze, dependency audits, runtime/product benchmark evidence |
-| Release-quality gate | `pnpm verify:full` | Release decisions and dependency-sensitive handoff | `verify:standard` + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + runtime/product quality + strict reports | Optional addon lanes, manual QA, live-provider proof |
-| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture hygiene, runtime/product scenario reruns, optional E2E, experimental lanes | It does not replace `verify:full` |
 
 ## When To Run What
 
 - `pnpm test:quick`
   - use during small UI or TypeScript iteration when you want the shortest feedback loop
-- `pnpm test:unit`
-  - use when changing Rust logic, frontend model/controller behavior, or script evaluators and you want deterministic regression coverage without the full smoke profile
-- `pnpm test:contracts`
-  - use for docs/prompt/copy/IPC/locale/policy edits and before docs-heavy handoff
-- `pnpm smoke`
-  - use for any behavior change before finishing work; this is the canonical compile-and-test baseline
-- `pnpm verify:fast`
-  - use for every code change and as the default local/PR validation profile
-- `pnpm verify:standard`
-  - use before substantial local handoff when lifecycle and advisory freeze checks matter
+- `pnpm verify`
+  - use for every normal code change and as the public default validation profile
 - `pnpm verify:full`
   - use for release decisions, dependency changes, release-sensitive contract changes, or when strict freeze/dependency/runtime/report gates are required
 - `pnpm verify:extended`
   - use only after the required baseline is already green and you explicitly want addon confidence from coverage, optional E2E, or experimental tooling
+- `pnpm test:unit`
+  - internal building block for targeted unit/component/script-unit diagnosis without the full smoke profile
+- `pnpm test:contracts`
+  - internal building block for prompt/docs/IPC/locale/policy drift diagnosis
+- `pnpm smoke`
+  - internal compile-and-test baseline used by the default verify lane
+- `pnpm verify:fast`
+  - internal implementation of `pnpm verify`
+- `pnpm verify:standard`
+  - internal pre-handoff composition used by `pnpm verify:full`
 
 If `package.json` or `pnpm-lock.yaml` changes, run `pnpm audit:npm`.
 If Rust dependencies or `src-tauri/Cargo.toml` changes, run `pnpm rust:deps`.
@@ -169,7 +179,7 @@ Keep these lanes distinct. Do not collapse them into one generic “quality” s
 - Experimental
   - machine-dependent lanes such as k6, ZAP, and Lighthouse
 
-Blocking report lanes must use explicit `:strict` names. Canonical docs and workflows should point to non-alias names, while compatibility aliases may remain temporarily.
+Blocking report lanes must use explicit `:strict` names. Canonical docs and workflows should point to public canonical profiles first. Compatibility aliases and internal building blocks may remain temporarily, but they are not equivalent to canonical public profiles.
 
 ## CI Alignment
 

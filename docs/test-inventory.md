@@ -1,16 +1,36 @@
-# Test Inventory Audit Note
+# Test Inventory
 
-Canonical testing policy moved to [engineering/testing.md](engineering/testing.md).
+Status inventory for the verification surface. Canonical guidance lives in [engineering/verification.md](engineering/verification.md) and [engineering/testing.md](engineering/testing.md).
 
-This file remains only as a historical audit note from the 2026-06-13 test-surface cleanup. It is not a source of truth for profile policy, lane boundaries, or CI expectations.
+## Status legend
 
-Key audit outcomes preserved here:
+- `public canonical` - main profile that contributors should run and docs should present as a primary entry point
+- `internal building block` - supported command used to compose a canonical profile or targeted workflow, but not advertised as the main profile
+- `targeted` - focused lane for a specific scope such as docs, contracts, E2E, reports, or probes
+- `operator` - workstation- or release-operations-oriented lane
+- `deprecated alias` - compatibility wrapper; do not treat it as equal to a canonical profile
 
-- `verify:fast -> verify:standard -> verify:full` is the required baseline chain.
-- `verify:extended` is a separate addon lane and does not replace `verify:full`.
-- `verify:full` intentionally re-runs interview-quality evaluation through `report:interview-quality:strict` for evidence output.
-- `test:fixtures` overlaps partly with `test:prompt-contract`, but remains the lighter fixture-hygiene addon lane.
-- `verify`/`verify:fast`, `test:e2e:web`/`test:e2e:web:smoke`, and `check:slo`/`test:slo-budget` are compatibility aliases.
-- Optional wrappers may report `SKIP`; that must not be presented as full validation.
+## Inventory
 
-For current commands, when-to-run guidance, fixture boundaries, strict/report gates, and CI alignment, use [engineering/testing.md](engineering/testing.md).
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm test:quick` | `public canonical` | Fast local loop |
+| `pnpm verify` | `public canonical` | Default validation profile; alias to `verify:fast` |
+| `pnpm verify:full` | `public canonical` | Release-quality profile |
+| `pnpm verify:extended` | `public canonical` | Addon lane after required baseline |
+| `pnpm test:unit` | `internal building block` | Deterministic unit/component/script-unit baseline |
+| `pnpm test:contracts` | `internal building block` | Deterministic docs/copy/prompt/ipc/locale baseline |
+| `pnpm smoke` | `internal building block` | Compile-and-test baseline under `verify:fast` |
+| `pnpm verify:fast` | `internal building block` | Internal implementation behind `verify` |
+| `pnpm verify:standard` | `internal building block` | Internal pre-handoff composition behind `verify:full` |
+| `pnpm test:consistency` | `targeted` | Policy/content consistency guard |
+| `pnpm test:doc-links` | `targeted` | Markdown link integrity |
+| `pnpm scripts:lifecycle` | `targeted` | Script lifecycle classification validation |
+| `pnpm test:e2e:web:smoke` | `targeted` | Web smoke E2E lane |
+| `pnpm test:e2e:desktop` | `operator` | Optional workstation-dependent desktop lane |
+| `pnpm verify:release-local` | `operator` | Local release-oriented composition |
+| `pnpm test:e2e:web` | `deprecated alias` | Compatibility alias to `test:e2e:web:smoke` |
+| `pnpm verify:fast` via `pnpm verify` | `deprecated alias` | Alias relationship only; canonical public name is `verify` |
+| `pnpm check:slo` | `deprecated alias` | Equivalent threshold lane alongside `test:slo-budget` |
+
+Compatibility aliases are intentionally preserved for transition safety, but they are not canonical profile names and must not be documented as equivalent public profiles.

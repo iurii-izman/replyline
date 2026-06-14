@@ -41,7 +41,8 @@
 | path | audience | final status | purpose |
 | --- | --- | --- | --- |
 | `docs/engineering/architecture.md` | contributor | `canonical` | High-level system structure and code boundaries. |
-| `docs/engineering/testing.md` | contributor | `canonical` | Test profiles, verification lanes, fixture boundaries, E2E policy, lifecycle, and CI alignment. |
+| `docs/engineering/verification.md` | contributor | `canonical` | Public verification profiles and recommended developer flow. |
+| `docs/engineering/testing.md` | contributor | `canonical` | Detailed lane composition, fixture boundaries, E2E policy, lifecycle, and CI alignment. |
 | `docs/engineering/runtime.md` | release operator/contributor | `canonical` | Runtime proof, evidence, and claim-label guide. |
 | `docs/engineering/release.md` | release operator | `canonical` | Release decision, freeze, packaging, and handoff truth. |
 | `docs/engineering/operations.md` | release operator | `canonical` | Compact beta/operator guide for intake, routing, diagnostics, sharing, and stale policy. |
