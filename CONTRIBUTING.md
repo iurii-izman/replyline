@@ -26,7 +26,7 @@ pnpm install --frozen-lockfile
 pnpm verify
 ```
 
-Canonical testing and verification guide: [docs/engineering/testing.md](docs/engineering/testing.md)
+Canonical testing guide: [docs/engineering/testing.md](docs/engineering/testing.md)
 
 ## Local handoff profile
 
@@ -40,16 +40,16 @@ pnpm verify
 pnpm verify:full
 ```
 
-`verify:full` includes internal building blocks such as:
+`verify:full` includes:
 
 - `pnpm verify:standard`
 - `pnpm release:freeze:check:strict`
 - `pnpm rust:deps`
 - `pnpm audit:npm`
-- runtime/product quality gates
-- strict evidence reports
+- one canonical `pnpm test:quality` pass
+- strict release/runtime reports
 
-Green in one lane does not mean green everywhere. `smoke`, `verify:*`, deterministic fixture lanes, and E2E lanes prove different things.
+Green in one lane does not mean green everywhere. `smoke`, `verify:*`, `check:*`, `report:*`, and E2E lanes prove different things.
 
 Release policy, freeze semantics, incident severity, and packaging truth live in
 [docs/engineering/release.md](docs/engineering/release.md).

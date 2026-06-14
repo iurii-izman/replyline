@@ -39,27 +39,24 @@ Legacy paths that now redirect readers to canonical docs:
 - `docs/accessibility.md`
 - `docs/architecture.md`
 - `docs/candidate-pack.md`
-- `docs/engineering/verification.md`
 - `docs/glossary.md`
 - `docs/interview-mode.md`
 - `docs/interview-quality.md`
 - `docs/product-scenario-benchmark.md`
-- `docs/script-lifecycle-matrix.md`
 - `docs/settings-reference.md`
-- `docs/test-quality-fixtures.md`
 - `docs/troubleshooting.md`
 
 ## Archive / historical
 
 - `docs/archive/` - archived concepts and handoff notes; not active guidance
+- `docs/archive/handoff/test-inventory.md` - historical test-surface audit
 - `docs/release-notes/` - historical release notes
-- `docs/test-inventory.md` - historical test-surface audit
 
 ## Count snapshot
 
 - Root entrypoints: `5`
 - Canonical docs in active map: `11`
-- Compatibility stubs: `12`
+- Compatibility stubs: `9`
 - Archive/historical buckets: `3`
 
 ## Out-of-scope generated artifacts

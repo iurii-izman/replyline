@@ -18,11 +18,10 @@ These instructions apply to the whole repository.
 
 ## Verification Profiles
 
-- `pnpm verify:fast` is the default PR/local profile (required).
-- `pnpm verify:standard` is the default local pre-handoff profile.
-- `pnpm verify:full` is the release profile (standard + strict freeze/dependency/runtime/report gates).
-- `pnpm verify:extended` is the addon nightly/operator lane and does not replace `verify:full`.
-- `pnpm verify` is an alias to `pnpm verify:fast`.
+- Public profiles: `pnpm test:quick`, `pnpm verify`, `pnpm verify:full`, `pnpm verify:extended`.
+- Internal building blocks: `pnpm test:unit`, `pnpm test:contracts`, `pnpm test:quality`, `pnpm smoke`.
+- `pnpm verify:fast` remains the implementation behind `pnpm verify`.
+- `pnpm verify:standard` remains the local pre-handoff composition behind `pnpm verify:full`.
 - Canonical testing guide: `docs/engineering/testing.md`.
 
 ## Task Lifecycle (Mandatory)

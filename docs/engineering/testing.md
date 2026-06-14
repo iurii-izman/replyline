@@ -1,233 +1,177 @@
 # Engineering Testing Guide
 
-Detailed engineering source of truth for verification lane composition, fixture quality gates, E2E scope, lifecycle policy, and CI alignment.
+Canonical guide for testing, verification, fixture boundaries, CI mapping, and script lifecycle semantics.
 
-Green in one lane does not mean green everywhere. `pnpm smoke`, `pnpm verify:*`, deterministic fixture gates, runtime-quality lanes, and E2E lanes prove different things and must not be used as substitutes for each other.
+Green in one lane does not mean green everywhere. `test:*`, `check:*`, `report:*`, `probe:*`, `smoke`, and `verify:*` cover different risks and are not interchangeable.
 
-## Public / canonical profiles
+## 1. Public profiles
 
-| Profile | Command | Primary use | Includes | Does not prove |
+These are the commands contributors should see first.
+
+| Profile | Command | Purpose | Includes | Does not prove |
 | --- | --- | --- | --- | --- |
-| Quick local loop | `pnpm test:quick` | Fast local iteration | `typecheck`, `lint`, `test:ui` | Full compile baseline, Rust checks, contracts, runtime, release readiness |
-| Default verification | `pnpm verify` | Required baseline for normal code changes | Alias to `verify:fast` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
-| Release-quality gate | `pnpm verify:full` | Release decisions and dependency-sensitive handoff | `verify:standard` + strict freeze/dependency gates + one canonical `test:quality` pass + artifact-only runtime summary + release-readiness report | Optional addon lanes, manual QA, live-provider proof |
-| Addon/nightly/operator lane | `pnpm verify:extended` | Extra confidence after baseline is already green | coverage, fixture checks/gate, optional E2E, targeted experimental security/UX lanes | It does not replace `verify:full` or rerun canonical quality gates |
+| Quick local loop | `pnpm test:quick` | Fast iteration before a broader gate | `typecheck`, `lint`, `test:ui` | Rust compile/tests, contracts, release readiness, runtime/provider behavior |
+| Default verification | `pnpm verify` | Required default baseline for normal changes | alias to `verify:fast` | release-only strict gates, dependency audits, addon lanes, live-provider proof |
+| Release profile | `pnpm verify:full` | Release and handoff decision lane | `verify:standard` + `release:freeze:check:strict` + `rust:deps` + `audit:npm` + one canonical `test:quality` pass + strict reports | optional addon lanes, manual QA, live-provider proof |
+| Addon/nightly/operator | `pnpm verify:extended` | Extra confidence after the required baseline is green | coverage, fixture hygiene/gate, optional E2E, experimental security/UX lanes | it does not replace `verify:full` or rerun canonical quality gates |
 
-Ordinary developer flow is `pnpm test:quick`, then `pnpm verify`, and before release-sensitive handoff `pnpm verify:full`.
+Normal flow:
 
-## Internal building blocks
+1. `pnpm test:quick`
+2. `pnpm verify`
+3. `pnpm verify:full` when release-sensitive or handoff-ready confidence is required
 
-| Profile | Command | Primary use | Includes | Does not prove |
+## 2. Internal building blocks
+
+These commands are supported and important, but they are not the primary public entrypoints.
+
+| Building block | Command | Purpose | Includes | Does not prove |
 | --- | --- | --- | --- | --- |
-| Deterministic unit baseline | `pnpm test:unit` | Focused unit/component/script-unit regression | Rust tests, UI tests, parser/evaluator/report unit lanes | Build, contract lanes, security, runtime, release readiness |
-| Deterministic contract baseline | `pnpm test:contracts` | Prompt/docs/IPC/locale/policy drift detection | `test:consistency`, `test:doc-links`, IPC, locale, prompt, copy lanes | Runtime quality, product usefulness, live-provider behavior |
-| Compile-and-test baseline | `pnpm smoke` | Any behavior change before broader verification | build/compile checks + `test:unit` + `test:contracts` | Public-footprint/security lane, freeze, dependency/runtime quality, live proof |
-| Default PR/local gate | `pnpm verify:fast` | Required baseline for code changes and default PR gate | `smoke` + `test:security-lanes` + `test:public-footprint` | Release-only strict gates, addon lanes, manual QA, live-provider proof |
-| Local pre-handoff gate | `pnpm verify:standard` | Substantial local handoff | `verify:fast` + `scripts:lifecycle` + advisory `release:freeze:check` | Strict freeze, dependency audits, canonical quality evidence |
-| Canonical quality gate | `pnpm test:quality` | Single deterministic quality pass used by release-oriented profiles | `test:interview-quality`, `check:runtime-answer-quality`, `check:product-scenarios`, `check:say-now-scenarios`, `check:slo` | Compile baseline, contracts, latency parser unit coverage, live-provider proof |
+| Unit baseline | `pnpm test:unit` | Deterministic unit/component/script-unit regression | Rust tests, UI tests, parser/evaluator/report unit lanes | full build baseline, contracts, runtime/provider behavior |
+| Contract baseline | `pnpm test:contracts` | Deterministic drift detection | docs/copy/prompt/IPC/locale checks | runtime quality, usefulness, live-provider behavior |
+| Quality bundle | `pnpm test:quality` | Canonical deterministic quality pass | interview, runtime-answer, product-scenarios, `say_now`, SLO checks | compile/build health, dependency audits, live-provider behavior |
+| Compile-and-test baseline | `pnpm smoke` | Broad local quality gate before verify profiles | build + Rust compile/lint/fmt + `test:unit` + `test:contracts` | release freeze, dependency audits, optional E2E, live-provider proof |
 
-## When To Run What
+Implementation note:
 
-- `pnpm test:quick`
-  - use during small UI or TypeScript iteration when you want the shortest feedback loop
-- `pnpm verify`
-  - use for every normal code change and as the public default validation profile
-- `pnpm verify:full`
-  - use for release decisions, dependency changes, release-sensitive contract changes, or when strict freeze/dependency/quality/report gates are required
-- `pnpm verify:extended`
-  - use only after the required baseline is already green and you explicitly want addon confidence from coverage, fixture gate, optional E2E, or targeted ZAP/Lighthouse coverage
-- `pnpm test:quality`
-  - use when you need the canonical deterministic quality bundle without rerunning the rest of `verify:full`
-- `pnpm test:unit`
-  - internal building block for targeted unit/component/script-unit diagnosis without the full smoke profile
-- `pnpm test:contracts`
-  - internal building block for prompt/docs/IPC/locale/policy drift diagnosis
-- `pnpm smoke`
-  - internal compile-and-test baseline used by the default verify lane
-- `pnpm verify:fast`
-  - internal implementation of `pnpm verify`
-- `pnpm verify:standard`
-  - internal pre-handoff composition used by `pnpm verify:full`
+- `pnpm verify:fast` is the internal implementation behind `pnpm verify`.
+- `pnpm verify:standard` is the internal pre-handoff composition used by `pnpm verify:full`.
 
-If `package.json` or `pnpm-lock.yaml` changes, run `pnpm audit:npm`.
-If Rust dependencies or `src-tauri/Cargo.toml` changes, run `pnpm rust:deps`.
-For release/handoff readiness, include `pnpm release:freeze:check` or use `pnpm verify:full`.
+## 3. Targeted lanes
 
-## Deterministic Vs Runtime And Live-Provider Lanes
+Use these when the task or failure mode is narrower than a full profile.
 
-### Deterministic lanes
+### E2E
 
-- `test:quick`, `test:unit`, `test:contracts`, `smoke`, `verify:fast`, and most of `verify:full`
-- prompt contract, interview quality, runtime-answer fixture scoring, and product scenarios
-- provider-free synthetic/runtime fixtures and mocked UI/E2E flows
+- `pnpm test:e2e:web:smoke` is the canonical web smoke lane.
+- `pnpm test:e2e:web` is only a compatibility alias to `test:e2e:web:smoke`.
+- `pnpm test:e2e:web:visual` is optional visual drift coverage.
+- `pnpm test:e2e:desktop` is workstation-dependent and optional.
+- `pnpm test:e2e:desktop:required` is the non-optional desktop validation lane when environment prerequisites are guaranteed.
 
-These lanes are suitable for CI and local regression because they do not require real provider calls or live workstation conditions.
+E2E proves launch and UI flow, not real provider latency, STT accuracy, or live LLM behavior.
 
-### Quality lanes
+### Runtime probes
 
-- `pnpm test:quality`
-- `pnpm check:runtime-answer-quality`
-- `pnpm check:product-scenarios`
-- `pnpm check:say-now-scenarios`
-- `pnpm check:slo`
+- `pnpm probe:runtime`
+- `pnpm probe:bench`
+- `pnpm probe:durations`
+- `pnpm probe:live-source`
+- `pnpm runtime:preflight`
+- `pnpm evidence:bundle`
+
+These lanes are operator/runtime evidence tools. They are not substitutes for deterministic CI gates.
+
+### Reports
+
 - `pnpm report:runtime-quality:strict`
-- local runtime probes and evidence/report commands
+- `pnpm report:release-readiness:strict`
+- `pnpm report:interview-quality:strict`
+- `pnpm report:runtime-answer-quality`
+- `pnpm report:product-quality`
 
-These lanes validate deterministic interview quality, synthetic runtime-answer quality, product scenarios, `say_now` heuristics, and SLO thresholds. They are stronger than pure schema checks, but they are still not proof of real provider behavior on a real machine.
+Reports summarize or enforce evidence thresholds. They should not be renamed as `test:*` unless they become blocking validation lanes.
 
-### Live-provider / workstation proof
+### Dependency/security
 
-- manual runtime bring-up
-- runtime probes with credentials
-- operator manual QA
-- desktop artifact validation on the target workstation
+- `pnpm rust:deps` owns Rust dependency policy and audit checks.
+- `pnpm audit:npm` owns npm production dependency audit checks.
+- `pnpm test:security-lanes` and `pnpm test:public-footprint` stay inside the verify baseline.
+- `pnpm test:sec:zap` is addon/experimental coverage, not baseline verification.
 
-Use [runtime.md](runtime.md) for proof labels and live-validation policy. Do not upgrade claims to runtime-measured or provider-proven from `pnpm smoke`, `pnpm verify:*`, or mocked E2E alone.
+## 4. Naming policy
 
-## E2E Lanes
+- Use `test:*` for deterministic validation lanes and profile building blocks.
+- Use `check:*` for focused threshold/policy assertions that fail on unmet criteria without being broad profiles.
+- Use `report:*` for evidence or summary generation, including strict report gates.
+- Use `probe:*` for runtime/operator measurement commands that inspect an environment instead of proving canonical CI health.
 
-| Lane | Command | Status | Notes |
-| --- | --- | --- | --- |
-| Web smoke | `pnpm test:e2e:web:smoke` | blocking in CI, optional locally | Credential-free happy-path regression for the web shell |
-| Web alias | `pnpm test:e2e:web` | compatibility alias | Currently points to the smoke lane only |
-| Web visual | `pnpm test:e2e:web:visual` | optional | Screenshot drift lane when visual evidence matters |
-| Web required | `pnpm test:e2e:web:required` | required when skip is unacceptable | Runs smoke spec without optional wrapper |
-| Desktop optional | `pnpm test:e2e:desktop` | optional | Returns `SKIP` outside prepared environments |
-| Desktop required | `pnpm test:e2e:desktop:required` | required for operator/release artifact validation | Fails when prerequisites are missing |
+Rules:
 
-Desktop prerequisites:
+- Public docs should present `pnpm verify`, `pnpm verify:full`, and `pnpm verify:extended` before internal implementation commands.
+- Compatibility aliases are not canonical profiles just because they resolve to the same underlying command.
+- Canonical threshold assertions live under `check:*`.
+- Blocking evidence-style commands should use explicit `:strict` suffixes.
 
-- build artifact with `pnpm tauri build`
-- set `TAURI_APP_PATH`
-- ensure optional packages and desktop driver tooling are installed
-
-E2E lanes validate launch and UI flow. They do not prove provider latency, STT accuracy, or real LLM behavior.
-
-## Quality Fixtures
+## 5. Quality fixture responsibilities
 
 ### Prompt contract
 
 - Command: `pnpm test:prompt-contract`
-- Supporting lane: `pnpm test:fixtures`
-- Scope:
-  - `CardSchemaV3` contract
-  - deterministic V3-to-legacy mapping
-  - banned wording/drift
-  - prompt source guardrails
-  - fixture corpus hygiene
-- Does not prove:
-  - product usefulness
-  - runtime/provider behavior
+- Owns schema shape, deterministic mapping rules, banned wording/drift, and prompt-source guardrails.
+- Does not own product usefulness or runtime behavior.
+
+### Say-now
+
+- Command: `pnpm check:say-now-scenarios`
+- Owns deterministic `say_now` threshold assertions and repair-policy coverage inside the quality bundle.
 
 ### Interview quality
 
 - Command: `pnpm test:interview-quality`
-- Strict evidence lane: `pnpm report:interview-quality:strict` (advisory/manual; not rerun inside blocking `verify:full`)
-- Dataset: `tests/fixtures/interview-quality/golden-dataset-v1.json`
-- Scope:
-  - `InterviewCardSchemaV1` shape
-  - word-limit/profile rules
-  - no fabricated metrics or resume anchors
-  - direct-answer / STAR-like expectations
-  - clarifier policy
-- Does not prove:
-  - all real interview questions
-  - cross-provider equivalence
+- Strict evidence lane: `pnpm report:interview-quality:strict`
+- Owns interview-card quality expectations against the golden dataset.
+
+### Runtime answer quality
+
+- Command: `pnpm check:runtime-answer-quality`
+- Unit support lane: `pnpm test:runtime-answer-quality:unit`
+- Owns deterministic runtime-answer scoring and thresholds.
 
 ### Product scenarios
 
-- Check: `pnpm check:product-scenarios`
+- Command: `pnpm check:product-scenarios`
 - Report lane: `pnpm report:product-quality`
-- Dataset family:
-  - `tests/fixtures/product-scenarios/*.json`
-  - `tests/fixtures/product-scenarios/golden/*.json`
-  - `tests/fixtures/product-scenarios/negative-cases.json`
-- Scope:
-  - scenario benchmark for usefulness, brevity, tone, next step, hallucination, privacy
-- Does not prove:
-  - live-provider behavior
-  - GUI/runtime path on a real machine
+- Owns deterministic scenario usefulness, brevity, trust, and privacy assertions.
 
-### Canonical quality
+Boundary rule:
 
-- Command: `pnpm test:quality`
-- Inputs:
-  - interview-quality golden dataset
-  - runtime-answer fixtures and thresholds
-  - product-scenario fixtures/golden datasets
-  - SLO budget check
-  - `say_now` heuristic scenarios
-- Scope:
-  - deterministic interview-card quality
-  - synthetic runtime-answer quality
-  - product scenario usefulness/guardrails
-  - runtime artifact threshold checks without live providers
-- Does not prove:
-  - compile/build health
-  - contract drift outside these quality datasets
-  - end-to-end provider behavior in a real call app
+- `pnpm test:quality` composes the canonical deterministic quality bundle exactly once.
+- `prompt-contract` covers schema/contract drift.
+- `interview-quality` covers interview-card quality.
+- `check:runtime-answer-quality` covers synthetic runtime-answer thresholds.
+- `check:say-now-scenarios` covers `say_now` thresholds.
+- `check:product-scenarios` covers product benchmark thresholds.
 
-### Fixture boundary rule
-
-- `prompt-contract` owns schema and contract drift
-- `interview-quality` owns interview-card deterministic quality
-- `check:product-scenarios` owns product benchmark threshold assertions
-- `test:quality` composes the canonical deterministic quality bundle once
-- `check:runtime-answer-quality` owns synthetic runtime-answer threshold assertions within that bundle
-- `check:say-now-scenarios` owns deterministic `say_now` threshold assertions
-
-Keep these lanes distinct. Do not collapse them into one generic “quality” signal.
-
-## Script Lifecycle Policy
-
-`pnpm scripts:lifecycle` verifies that every package script has exactly one lifecycle class from `scripts/check-script-lifecycle.mjs`.
-
-- Required
-  - build, test, policy, security, and release commands on the blocking path of `test:quick`, `test:unit`, `test:contracts`, `smoke`, `verify:fast`, `verify:standard`, and `verify:full`
-- Advisory
-  - readiness, addon, and evidence commands reviewed intentionally but not part of the default PR gate; includes `verify:extended`, `verify:release-local`, and advisory reports such as `release:freeze:check`
-- Optional
-  - targeted developer tools, runtime probes, operator helpers, wrappers, and report generators not required for every PR
-- Experimental
-  - machine-dependent addon lanes such as ZAP and Lighthouse
-
-Blocking report lanes must use explicit `:strict` names. Canonical docs and workflows should point to public canonical profiles first. Internal building blocks may remain, but they are not equivalent to canonical public profiles.
-
-## CI Alignment
+## 6. CI alignment
 
 - `.github/workflows/ci.yml`
   - blocking PR/main lane
-  - runs `verify`, blocking web smoke E2E, and strict freeze guard
-  - does not bootstrap `cargo-deny` or `cargo-audit`
+  - runs `pnpm verify`, blocking web smoke E2E, and strict release-freeze guard
 - `.github/workflows/dependency-checks.yml`
   - scheduled/manual dependency lane
   - owns `pnpm rust:deps` and `pnpm audit:npm`
-- `.github/workflows/extended-quality.yml`
-  - non-blocking addon workflow
-  - runs `verify:full` as the baseline and `verify:extended` as addon-only follow-up
-  - must surface `PASS`, `PASS_WITH_SKIP`, or `FAIL_NON_BLOCKING`
-  - `PASS_WITH_SKIP` is valid only for skipped optional addon tools, never for skipped blocking baseline checks
 - `.github/workflows/release-on-tag.yml`
-  - reruns release-relevant verification for immutable tag flow
-  - requires `pnpm verify:full` before packaging a tag artifact
+  - reruns `pnpm verify:full` before packaging tag artifacts
 - `.github/workflows/windows-packaging-manual.yml`
-  - packaging/operator workflow; should not bypass required verification expectations
+  - packaging/operator workflow
   - requires at least `pnpm verify:fast` before building internal artifacts
+- `.github/workflows/extended-quality.yml`
+  - runs `pnpm verify:full` as the baseline and `pnpm verify:extended` as addon-only follow-up
+  - `PASS_WITH_SKIP` is valid only for skipped optional addon tooling, never for skipped blocking baseline checks
 
-CI and local profiles should stay semantically aligned, but exact workflow composition may differ by platform or blocking semantics.
+## 7. Lifecycle classification
 
-## Remaining Aliases
+`pnpm scripts:lifecycle` validates that each package script has exactly one lifecycle class.
 
-- `pnpm verify` -> `pnpm verify:fast`
-- `pnpm test:e2e:web` -> `pnpm test:e2e:web:smoke`
-- `pnpm test:optional:e2e:web` -> `pnpm test:e2e:web:smoke && pnpm test:e2e:web:visual`
-- `pnpm report:interview-quality` -> `pnpm report:interview-quality:strict`
-- `pnpm report:runtime-quality` -> `pnpm report:runtime-quality:strict`
+- `required`
+  - blocking path commands used by canonical local/CI verification
+- `advisory`
+  - intentional but non-default handoff or evidence lanes such as addon verification and advisory reports
+- `optional`
+  - targeted developer/operator helpers, probes, wrappers, and non-required reports
+- `experimental`
+  - machine-dependent addon lanes such as optional security/UX tooling
 
-Prefer canonical names in docs, workflows, and handoff notes.
+Classification rules:
 
-## Related Guides
+- Public documentation should point to canonical public profiles first.
+- Internal building blocks may stay stable without becoming public entrypoints.
+- Aliases do not change lifecycle class.
+- A passing addon lane does not upgrade a missing baseline into a pass.
 
-- [release.md](release.md)
+## Related guides
+
 - [runtime.md](runtime.md)
+- [release.md](release.md)
 - [manual-qa.md](manual-qa.md)

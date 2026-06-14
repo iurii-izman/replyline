@@ -20,7 +20,7 @@ Use this page as the short role-based map.
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - canonical contributor workflow and verification lanes.
 - [engineering/architecture.md](engineering/architecture.md) - core system structure and boundaries.
-- [engineering/testing.md](engineering/testing.md) - canonical testing profiles and lane boundaries.
+- [engineering/testing.md](engineering/testing.md) - canonical testing guide for profiles, targeted lanes, fixture boundaries, CI mapping, and lifecycle policy.
 - [copy-rules.md](copy-rules.md) - wording rules for docs and UI copy.
 
 ### Release/operator
@@ -32,4 +32,4 @@ Use this page as the short role-based map.
 
 ### Archive
 
-- [doc-inventory.md](doc-inventory.md) - audit artifact listing active docs, compatibility stubs, and historical records.
+- [doc-inventory.md](doc-inventory.md) - audit artifact listing active docs and archive records.
