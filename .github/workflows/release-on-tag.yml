@@ -139,8 +139,8 @@ jobs:
           cargo deny --version
           cargo audit --version
 
-      - name: Prebuild verification gate
-        run: pnpm verify
+      - name: Release-quality verification gate
+        run: pnpm verify:full
 
       - name: Prepare optional signing certificate
         id: signing

@@ -18,6 +18,7 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm verify` | `public canonical` | Default validation profile; alias to `verify:fast` |
 | `pnpm verify:full` | `public canonical` | Release-quality profile; runs canonical `test:quality` exactly once |
 | `pnpm verify:extended` | `public canonical` | Addon lane after required baseline; coverage + fixture/E2E + targeted experimental ZAP/Lighthouse only, without rerunning runtime/product/interview quality |
+| `.github/workflows/dependency-checks.yml` | `operator` | Scheduled/manual CI lane for `rust:deps` and `audit:npm`; keeps fast PR CI free of dependency-tool bootstrap cost |
 | `pnpm test:quality` | `public canonical` | Canonical deterministic quality gate: interview + runtime-answer + product-scenarios + say-now + SLO |
 | `pnpm check:runtime-answer-quality` | `public canonical` | Canonical threshold gate for deterministic runtime-answer assertions; report artifact lives in `report:runtime-answer-quality` |
 | `pnpm check:product-scenarios` | `public canonical` | Canonical threshold gate for deterministic product-scenario assertions; report artifact lives in `report:product-quality` |
@@ -39,3 +40,5 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm verify:fast` via `pnpm verify` | `deprecated alias` | Alias relationship only; canonical public name is `verify` |
 
 Compatibility aliases are intentionally narrow and must not be documented as equivalent public profiles.
+
+Workflow note: `PASS_WITH_SKIP` is valid only for optional addon tooling in non-blocking workflows such as `extended-quality.yml`; it must not be used to present skipped blocking validation as a pass.
