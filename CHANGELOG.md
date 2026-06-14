@@ -7,16 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Release readiness work continues for v0.2.0-beta.2.
-
-## [0.2.0-beta.2] - Draft
-
 ### Added
 
 - `pnpm beta:release-check` for release readiness review.
-- `docs/engineering/release.md` as the canonical release guide for automated and manual release checks.
-- `docs/releases/v0.2.0-beta.2.md` as the beta 2 release notes draft.
-- `docs/releases/v0.2.0-beta.2/screenshots/README.md` as the screenshot checklist placeholder.
+- `docs/engineering/release.md` as the canonical release guide.
+- Release-freeze guard (advisory in CI, strict in `verify:full` and release workflows).
+- Repository scorecard (`docs/repo-scorecard.md`).
+- Bilingual interview mode (experimental, disabled by default — see `docs/archive/experimental/`).
+
+### Changed
+
+- CI: release-freeze is advisory in normal CI, strict only in release-quality workflows.
+- Release-freeze baseline reduced from 181 to 63 critical paths with categories.
+- Frontend model split into 10 domain modules under `src/app/model/`.
+- Tauri command registry centralized in `replyline_commands!` macro.
+- Commands module converted to directory (`src-tauri/src/commands/`).
+- Settings surface helpers extracted to `settings/settingsViewModel.ts`.
+- Workflows hardened: concurrency, timeouts, least-privilege permissions, CI summary.
+- Bilingual feature defaults to fully disabled (`bilingualInterviewEnabled: false`, `liveTranslationEnabled: false`).
+- SonarQubeCloud findings triaged (6 issues fixed).
+
+### Security
+
+- Bilingual commands gated behind `require_experimental_bilingual()` — not callable when disabled.
+- Experimental bilingual feature gated behind `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` env flag.
+- Release-on-tag workflow permissions moved to job level (least privilege).
 
 ## [0.2.0-beta.1] - 2026-06-12
 
