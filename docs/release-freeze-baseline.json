@@ -40,7 +40,6 @@
     "docs/adr/0001-interview-card-engine.md",
     "docs/architecture.md",
     "docs/benchmark-policy.md",
-    "docs/verification-lanes.md",
     "docs/smoke-checks.md",
     "docs/copy-rules.md",
     "docs/release-freeze-baseline.json",
