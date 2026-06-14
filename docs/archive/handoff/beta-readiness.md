@@ -102,7 +102,7 @@ Blocked starts never install prerequisites. Without `-Force`, they do not launch
 
 1. Dev loop: `pnpm test:quick`
 2. Smoke gate: `pnpm smoke`
-3. Fast verify: `pnpm verify:fast`
+3. Default verify: `pnpm verify`
 4. Beta doctor: `pnpm beta:doctor`
 5. Guided beta start/readiness: `pnpm beta:start -- -NoLaunch`
 6. Sanitized smoke report: `pnpm beta:smoke-report`
@@ -167,7 +167,7 @@ Runtime probe credentials note:
 
 Release handoff is blocked unless all items are complete:
 
-1. Baseline is green (`pnpm smoke`, `pnpm verify:fast`).
+1. Baseline is green (`pnpm smoke`, `pnpm verify`).
 2. Interview quality report is attached (`pnpm report:interview-quality:strict`).
 3. Privacy checklist is passed.
 4. Model presets and caveats are reviewed.

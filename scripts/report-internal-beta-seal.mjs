@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, "..");
 
 const COMMANDS = [
-  { name: "verify:fast", command: ["pnpm", "verify:fast"], blocking: true },
+  { name: "verify", command: ["pnpm", "verify"], blocking: true },
   { name: "test:doc-links", command: ["pnpm", "test:doc-links"], blocking: true },
   { name: "copy:check", command: ["pnpm", "copy:check"], blocking: true },
   {
@@ -216,7 +216,7 @@ function main() {
     ...(testerKit.ok ? ["- missing: none"] : testerKit.missing.map((row) => `- missing: ${row}`)),
     "",
     "## Public footprint status",
-    `- verify:fast: ${commandResults.find((row) => row.name === "verify:fast")?.status ?? "not-run"}`,
+    `- verify: ${commandResults.find((row) => row.name === "verify")?.status ?? "not-run"}`,
     `- release-readiness blockers: ${releaseReadiness.blockers.length}`,
     "",
     "## Recommended next manual actions",

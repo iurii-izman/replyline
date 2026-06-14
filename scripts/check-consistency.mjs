@@ -36,7 +36,7 @@ const requiredIncludes = [
       "pnpm beta:smoke-report",
       "pnpm beta:start",
       "pnpm beta:preflight",
-      "pnpm verify:fast",
+      "pnpm verify",
       "pnpm verify:full",
     ],
     excludes: ["primary instruction", "alpha-only"],

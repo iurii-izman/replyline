@@ -909,7 +909,13 @@ mod tests {
 
     #[test]
     fn settings_path_uses_override_env_var() {
-        let dir = std::env::temp_dir().join("replyline-settings-override-path");
+        let dir = std::env::temp_dir().join(format!(
+            "replyline-settings-override-path-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("time")
+                .as_nanos()
+        ));
         std::fs::create_dir_all(&dir).expect("mkdir");
         with_settings_override_env(&dir, || {
             let path = settings_path().expect("settings_path");

@@ -17,8 +17,6 @@ Historical audit artifact for the verification surface. Active guidance moved to
 - `pnpm test:contracts`
 - `pnpm test:quality`
 - `pnpm smoke`
-- `pnpm verify:fast`
-- `pnpm verify:standard`
 
 ### Targeted lanes
 
@@ -30,7 +28,7 @@ Historical audit artifact for the verification surface. Active guidance moved to
 
 ### Alias note
 
-- `pnpm verify` -> `pnpm verify:fast`
+- Internal compatibility aliases remained available for automation/backward compatibility in the prior cycle.
 - `pnpm verify:full` -> internal pre-handoff composition + strict release/dependency gates
 
 This file is archival and should not be expanded into a second canonical guide.

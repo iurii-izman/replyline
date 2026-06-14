@@ -20,8 +20,7 @@ These instructions apply to the whole repository.
 
 - Public profiles: `pnpm test:quick`, `pnpm verify`, `pnpm verify:full`, `pnpm verify:extended`.
 - Internal building blocks: `pnpm test:unit`, `pnpm test:contracts`, `pnpm test:quality`, `pnpm smoke`.
-- `pnpm verify:fast` remains the implementation behind `pnpm verify`.
-- `pnpm verify:standard` remains the local pre-handoff composition behind `pnpm verify:full`.
+- Internal compatibility aliases: `pnpm verify:fast` behind `pnpm verify`, `pnpm verify:standard` behind `pnpm verify:full`.
 - Canonical testing guide: `docs/engineering/testing.md`.
 
 ## Task Lifecycle (Mandatory)
@@ -51,10 +50,10 @@ These instructions apply to the whole repository.
 - Docs-only edits:
   - run targeted doc/policy checks when relevant (`pnpm test:consistency`, `pnpm test:doc-links`)
 - Any code behavior change (default):
-  - run `pnpm verify:fast`
+  - run `pnpm verify`
 - Substantial code change before handoff:
-  - run `pnpm smoke` (already included in `verify:fast`)
-  - run `pnpm verify:standard`
+  - run `pnpm smoke` (already included in `pnpm verify`)
+  - run `pnpm verify:full`
 - If `package.json` or `pnpm-lock.yaml` changed:
   - additionally run `pnpm audit:npm`
 - If `src-tauri/Cargo.toml` or Rust dependency graph changed:
