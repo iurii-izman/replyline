@@ -77,6 +77,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Local quality and security gate
+        id: verify_gate
         run: pnpm verify
 
       - name: Install optional Playwright tooling
@@ -87,6 +88,7 @@ jobs:
 
       - name: Credential-free web e2e (blocking)
         if: success()
+        id: e2e_smoke
         run: pnpm test:e2e:web:smoke
 
       - name: Fetch base ref for release-freeze check
@@ -138,6 +140,31 @@ jobs:
           name: release-freeze-check-${{ github.run_id }}
           path: reports/release-freeze-check.json
           if-no-files-found: warn
+
+      - name: CI summary
+        if: always()
+        shell: pwsh
+        run: |
+          $rfArtifact = "reports/release-freeze-check.json"
+          $rfStatus = "skipped"
+          $rfOutside = @()
+          if (Test-Path -LiteralPath $rfArtifact) {
+            try {
+              $rf = Get-Content -LiteralPath $rfArtifact -Raw | ConvertFrom-Json
+              $rfStatus = $rf.status
+              $rfOutside = $rf.outsideFreeze
+            } catch {}
+          }
+
+          "## CI Summary" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- **verify**: ${{ steps.verify_gate.outcome || 'skipped' }}" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- **e2e**: ${{ steps.e2e_smoke.outcome || 'skipped' }}" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- **release-freeze**: $rfStatus" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          if ($rfOutside.Count -gt 0) {
+            "- **outside-allowlist files**: $($rfOutside -join ', ')" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          }
+          "- **run**: [#${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload test artifacts
         if: always()

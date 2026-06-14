@@ -221,3 +221,35 @@ Use [manual-qa.md](manual-qa.md) for the canonical operator checklist covering:
 - Candidate Pack Studio and privacy-sensitive surfaces
 
 For beta testers, keep the quick smoke flow in [BETA_TESTING.md](../../BETA_TESTING.md) and the compact tester matrix in [../smoke-checks.md](../smoke-checks.md).
+
+## 11. Notification hygiene and CI noise reduction
+
+### GitHub notification filters
+
+Create custom filters in GitHub notification settings to separate signal from noise:
+
+| Filter | Purpose |
+| --- | --- |
+| `repo:iurii-izman/replyline reason:ci_activity` | CI failures only — check daily, clear after triage |
+| `repo:iurii-izman/replyline reason:assign` | Direct assignment — immediate review |
+| `repo:iurii-izman/replyline reason:mention` | Mentions — same-day review |
+| `repo:iurii-izman/replyline reason:security_alert` | Dependabot/security — immediate review |
+| `repo:iurii-izman/replyline is:issue` | Issues — daily triage |
+| `repo:iurii-izman/replyline is:pr author:@me` | Own PRs — as needed |
+
+### Workflow noise design
+
+| Workflow | Noise level | Action |
+| --- | --- | --- |
+| CI (push/PR) | Low — only fails on real gate issues | Advisory release-freeze, concurrency cancels stale runs |
+| Extended Quality (weekly) | Low — non-blocking, concurrency cancels stale runs, FAIl_NON_BLOCKING status |
+| Dependency Checks (weekly) | Low — concurrency cancels stale runs |
+| Release On Tag (tag push) | Critical — blocking, always review |
+| Auto Close Deps PRs (push) | None — automated, silent |
+
+### Reducing SonarQubeCloud comment noise
+
+SonarQubeCloud may post PR comments for new issues. Configuration lives in `sonar-project.properties`. To reduce noise:
+- Focus on new issues only (default); acknowledged/won't-fix issues stay silent
+- Adjust quality gate thresholds in SonarQubeCloud dashboard if comments are too frequent for minor issues
+- Use custom notification filter: `repo:iurii-izman/replyline bot:sonarqubecloud`
