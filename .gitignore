@@ -49,7 +49,6 @@ docs/archive/handoff/*
 !docs/archive/experimental/
 docs/archive/experimental/*
 !docs/archive/experimental/bilingual-interview-mode.md
-docs/ai-tooling-policy-matrix.md
 docs/audit-scorecard-*.md
 docs/max-upgrade-*.md
 docs-cleanup-task.md
@@ -70,7 +69,6 @@ interview-exports/
 .env
 .env.*
 !.env.keys.example
-!.env.keys
 scripts/runtime-probe-env.local.ps1
 *.pem
 *.key

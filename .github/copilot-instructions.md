@@ -15,7 +15,7 @@ Use this file as a thin adapter to repository policy.
 
 - `AGENTS.md`
 - `CONTRIBUTING.md`
-- `docs/ai-tooling-policy-matrix.md`
+- `docs/engineering/testing.md`
 - `docs/copy-rules.md`
 
 ## Mandatory Behavior

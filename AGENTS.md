@@ -74,14 +74,12 @@ These instructions apply to the whole repository.
 - Follow `CONTRIBUTING.md` for contribution workflow and verification.
 - Follow `docs/engineering/testing.md` for canonical test profiles, lane boundaries, and CI alignment.
 - Follow `docs/copy-rules.md` for product/trust wording constraints.
-- Respect automated policy scripts in `scripts/check-consistency.mjs` and `scripts/check-prompt-contract.mjs`.
-- For multi-tool governance and precedence, follow `docs/ai-tooling-policy-matrix.md`.
 
 ## Cursor/Codex Rule Hygiene
 
 - Keep this file high-signal and concise; avoid restating full docs when a file reference is enough.
 - If instructions become large or path-specific, split scoped guidance into `.cursor/rules` and keep `AGENTS.md` as canonical cross-tool summary.
-- Keep `AGENTS.md` and `CLAUDE.md` semantically aligned to avoid conflicting instructions across agent surfaces.
+- Keep repository-level guidance semantically aligned across supported agent surfaces to avoid conflicting instructions.
 
 ## Language / Язык общения
 
