@@ -8,7 +8,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, "..");
 const outputDir = join(rootDir, "artifacts", "beta-health-report");
 const packageJsonPath = join(rootDir, "package.json");
-const defaultLatencySummaryPath = join(rootDir, "scripts", "reports", "runtime", "pipeline-latency-summary.json");
+const defaultLatencySummaryPath = join(
+  rootDir,
+  "reports",
+  "runtime",
+  "pipeline-latency-summary.json",
+);
 const trackedMilestones = ["v0.2.0-beta.2", "beta-feedback", "provider-compatibility"];
 const trackedLabels = [
   "area:setup",
@@ -87,7 +92,12 @@ function gitSha(run = runCommand) {
 function detectGh(run = runCommand) {
   const version = run("gh", ["--version"]);
   if (version.missingTool || !version.ok) {
-    return { available: false, authenticated: false, mode: "manual", note: "gh CLI unavailable; GitHub sections left as manual placeholders." };
+    return {
+      available: false,
+      authenticated: false,
+      mode: "manual",
+      note: "gh CLI unavailable; GitHub sections left as manual placeholders.",
+    };
   }
 
   const auth = run("gh", ["auth", "status"]);
@@ -100,7 +110,12 @@ function detectGh(run = runCommand) {
     };
   }
 
-  return { available: true, authenticated: true, mode: "live", note: "GitHub data loaded via gh CLI." };
+  return {
+    available: true,
+    authenticated: true,
+    mode: "live",
+    note: "GitHub data loaded via gh CLI.",
+  };
 }
 
 function labelNames(issue) {
@@ -154,13 +169,19 @@ function loadLatencySummary(path = defaultLatencySummaryPath) {
   const llmRequest = json.stages.llm_request;
 
   if (releaseToCard) {
-    lines.push(`release_to_card p50=${releaseToCard.p50Ms}ms p95=${releaseToCard.p95Ms}ms count=${releaseToCard.count}`);
+    lines.push(
+      `release_to_card p50=${releaseToCard.p50Ms}ms p95=${releaseToCard.p95Ms}ms count=${releaseToCard.count}`,
+    );
   }
   if (sttRequest) {
-    lines.push(`stt_request p50=${sttRequest.p50Ms}ms p95=${sttRequest.p95Ms}ms failPercent=${sttRequest.failPercent}%`);
+    lines.push(
+      `stt_request p50=${sttRequest.p50Ms}ms p95=${sttRequest.p95Ms}ms failPercent=${sttRequest.failPercent}%`,
+    );
   }
   if (llmRequest) {
-    lines.push(`llm_request p50=${llmRequest.p50Ms}ms p95=${llmRequest.p95Ms}ms failPercent=${llmRequest.failPercent}%`);
+    lines.push(
+      `llm_request p50=${llmRequest.p50Ms}ms p95=${llmRequest.p95Ms}ms failPercent=${llmRequest.failPercent}%`,
+    );
   }
 
   return {
@@ -183,8 +204,30 @@ function loadGithubData(run, repo) {
     };
   }
 
-  const issuesResult = run("gh", ["issue", "list", "--repo", repo, "--state", "open", "--limit", "200", "--json", "number,title,labels,updatedAt,url"]);
-  const prsResult = run("gh", ["pr", "list", "--repo", repo, "--state", "all", "--limit", "10", "--json", "number,title,state,updatedAt,url,isDraft"]);
+  const issuesResult = run("gh", [
+    "issue",
+    "list",
+    "--repo",
+    repo,
+    "--state",
+    "open",
+    "--limit",
+    "200",
+    "--json",
+    "number,title,labels,updatedAt,url",
+  ]);
+  const prsResult = run("gh", [
+    "pr",
+    "list",
+    "--repo",
+    repo,
+    "--state",
+    "all",
+    "--limit",
+    "10",
+    "--json",
+    "number,title,state,updatedAt,url,isDraft",
+  ]);
   const milestonesResult = run("gh", ["api", `repos/${repo}/milestones?state=all&per_page=100`]);
 
   const issues = issuesResult.ok ? JSON.parse(issuesResult.stdout || "[]") : [];
@@ -194,23 +237,36 @@ function loadGithubData(run, repo) {
   return { gh, issues, prs, milestones };
 }
 
-function buildNextActions({ staleCandidates, setupPainPoints, providerCompatibilityNotes, milestones }) {
+function buildNextActions({
+  staleCandidates,
+  setupPainPoints,
+  providerCompatibilityNotes,
+  milestones,
+}) {
   const actions = [];
   if (staleCandidates.length > 0) {
     actions.push(`Human review needed for ${staleCandidates.length} stale candidate issue(s).`);
   }
   if (setupPainPoints.length > 0) {
-    actions.push("Review setup blockers and decide whether docs or beta:doctor should absorb them.");
+    actions.push(
+      "Review setup blockers and decide whether docs or beta:doctor should absorb them.",
+    );
   }
   if (providerCompatibilityNotes.length > 0) {
-    actions.push("Update provider compatibility coverage and close the highest-friction routes first.");
+    actions.push(
+      "Update provider compatibility coverage and close the highest-friction routes first.",
+    );
   }
   const missingMilestones = milestones.filter((milestone) => milestone.state === "missing");
   if (missingMilestones.length > 0) {
-    actions.push(`Create missing milestones: ${missingMilestones.map((item) => item.title).join(", ")}.`);
+    actions.push(
+      `Create missing milestones: ${missingMilestones.map((item) => item.title).join(", ")}.`,
+    );
   }
   if (actions.length === 0) {
-    actions.push("Fill the manual review sections and confirm current beta priorities for the next week.");
+    actions.push(
+      "Fill the manual review sections and confirm current beta priorities for the next week.",
+    );
   }
   return actions;
 }
@@ -258,7 +314,12 @@ export function buildReport({
     launchChannelPerformance: latencySummary,
     usefulFeedback,
     staleCandidates,
-    nextActions: buildNextActions({ staleCandidates, setupPainPoints, providerCompatibilityNotes, milestones }),
+    nextActions: buildNextActions({
+      staleCandidates,
+      setupPainPoints,
+      providerCompatibilityNotes,
+      milestones,
+    }),
   };
 
   return { report, markdown: renderMarkdown(report) };
@@ -266,7 +327,10 @@ export function buildReport({
 
 function renderIssueLines(items, emptyText) {
   if (items.length === 0) return [`- ${emptyText}`];
-  return items.map((item) => `- #${item.number} ${item.title} (${item.updatedAt || "unknown update"}) [link](${item.url})`);
+  return items.map(
+    (item) =>
+      `- #${item.number} ${item.title} (${item.updatedAt || "unknown update"}) [link](${item.url})`,
+  );
 }
 
 export function renderMarkdown(report) {
@@ -300,7 +364,9 @@ export function renderMarkdown(report) {
     lines.push("- No recent PRs returned by `gh pr list`.");
   } else {
     for (const pr of report.recentPrs) {
-      lines.push(`- #${pr.number} ${pr.title} [${pr.state}] (${pr.updatedAt || "unknown update"}) [link](${pr.url})`);
+      lines.push(
+        `- #${pr.number} ${pr.title} [${pr.state}] (${pr.updatedAt || "unknown update"}) [link](${pr.url})`,
+      );
     }
   }
   lines.push("");
@@ -311,15 +377,27 @@ export function renderMarkdown(report) {
     lines.push("| milestone | state | open | closed |");
     lines.push("| --- | --- | --- | --- |");
     for (const milestone of report.milestones) {
-      lines.push(`| ${milestone.title} | ${milestone.state} | ${milestone.openIssues ?? "-"} | ${milestone.closedIssues ?? "-"} |`);
+      lines.push(
+        `| ${milestone.title} | ${milestone.state} | ${milestone.openIssues ?? "-"} | ${milestone.closedIssues ?? "-"} |`,
+      );
     }
   }
   lines.push("");
   lines.push("## Provider Compatibility Notes");
-  lines.push(...renderIssueLines(report.providerCompatibilityNotes, "No `type:compatibility` issues in the current query. Add manual notes if compatibility feedback exists elsewhere."));
+  lines.push(
+    ...renderIssueLines(
+      report.providerCompatibilityNotes,
+      "No `type:compatibility` issues in the current query. Add manual notes if compatibility feedback exists elsewhere.",
+    ),
+  );
   lines.push("");
   lines.push("## Setup Pain Points");
-  lines.push(...renderIssueLines(report.setupPainPoints, "No `area:setup` issues in the current query. Add manual tester friction notes if needed."));
+  lines.push(
+    ...renderIssueLines(
+      report.setupPainPoints,
+      "No `area:setup` issues in the current query. Add manual tester friction notes if needed.",
+    ),
+  );
   lines.push("");
   lines.push("## Launch Channel Performance");
   if (!report.launchChannelPerformance.available) {
@@ -334,10 +412,20 @@ export function renderMarkdown(report) {
   }
   lines.push("");
   lines.push("## Useful Feedback");
-  lines.push(...renderIssueLines(report.usefulFeedback, "No `type:feedback` issues in the current query. Add manual highlights from the latest tester wave."));
+  lines.push(
+    ...renderIssueLines(
+      report.usefulFeedback,
+      "No `type:feedback` issues in the current query. Add manual highlights from the latest tester wave.",
+    ),
+  );
   lines.push("");
   lines.push("## Stale Candidates Requiring Human Confirmation");
-  lines.push(...renderIssueLines(report.staleCandidates, "No current `status:stale-candidate` issues returned."));
+  lines.push(
+    ...renderIssueLines(
+      report.staleCandidates,
+      "No current `status:stale-candidate` issues returned.",
+    ),
+  );
   lines.push("");
   lines.push("## Next Actions");
   for (const action of report.nextActions) {
@@ -345,7 +433,9 @@ export function renderMarkdown(report) {
   }
   lines.push("");
   lines.push("## Notes");
-  lines.push("- This report is a local scaffold only. It does not submit, comment, or close anything automatically.");
+  lines.push(
+    "- This report is a local scaffold only. It does not submit, comment, or close anything automatically.",
+  );
   lines.push("- Keep private smoke artifacts local; reference sanitized attachments instead.");
   return `${lines.join("\n")}\n`;
 }
@@ -361,7 +451,9 @@ function main() {
   const { report, markdown } = buildReport();
   const outputPath = writeReportFiles(report, markdown);
   console.log(`[beta-health-report] markdown: ${relative(rootDir, outputPath)}`);
-  console.log(`[beta-health-report] mode=${report.gh.mode} appVersion=${report.appVersion} sha=${report.gitSha}`);
+  console.log(
+    `[beta-health-report] mode=${report.gh.mode} appVersion=${report.appVersion} sha=${report.gitSha}`,
+  );
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
