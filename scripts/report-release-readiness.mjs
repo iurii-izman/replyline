@@ -173,7 +173,10 @@ function validateScriptFileRefs(root, pkg, blockers) {
     );
   }
 
-  return { scannedScriptFiles: [...refs].sort(), missingScriptRefs: missing };
+  return {
+    scannedScriptFiles: [...refs].sort((a, b) => a.localeCompare(b)),
+    missingScriptRefs: missing,
+  };
 }
 
 function buildRiskSnapshot(state, blockers, warnings) {

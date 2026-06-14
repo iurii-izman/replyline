@@ -163,8 +163,10 @@ function runFixtureCase(fixtureCase) {
     `schema.missingExpectedFields is not an array (${fixtureName})`,
   );
 
-  const expectedMissingFieldsSorted = [...fixtureCase.expectedMissingFields].sort();
-  const actualMissingFieldsSorted = [...missingExpectedFields].sort();
+  const expectedMissingFieldsSorted = [...fixtureCase.expectedMissingFields].sort((a, b) =>
+    a.localeCompare(b),
+  );
+  const actualMissingFieldsSorted = [...missingExpectedFields].sort((a, b) => a.localeCompare(b));
   assert(
     JSON.stringify(actualMissingFieldsSorted) === JSON.stringify(expectedMissingFieldsSorted),
     `Unexpected schema.missingExpectedFields (${fixtureName}): expected=${expectedMissingFieldsSorted.join(", ")} actual=${actualMissingFieldsSorted.join(", ")}`,

@@ -30,7 +30,7 @@ function sanitizeValue(value: string | number | boolean): string {
 
 function serialize(fields: UiEventFields): string {
   const chunks: string[] = [];
-  for (const key of Object.keys(fields).sort()) {
+  for (const key of Object.keys(fields).sort((a, b) => a.localeCompare(b))) {
     if (isForbiddenKey(key)) continue;
     const raw = fields[key];
     if (raw === null || raw === undefined) continue;

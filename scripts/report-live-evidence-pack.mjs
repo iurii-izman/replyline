@@ -110,7 +110,10 @@ function collectEvidenceRows(reportsDir) {
       const parsed = readJson(filePath);
       rows.push(...parseEvidenceRows(parsed, resolve(filePath)));
     } catch (error) {
-      parseErrors.push({ path: resolve(filePath), error: error instanceof Error ? error.message : String(error) });
+      parseErrors.push({
+        path: resolve(filePath),
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -193,7 +196,11 @@ function collectSummary(rows) {
   const missingScenarios = REQUIRED_SCENARIOS.filter((scenario) => !scenarios.has(scenario));
   const averageUsefulness =
     usefulnessScores.length > 0
-      ? Number((usefulnessScores.reduce((sum, current) => sum + current, 0) / usefulnessScores.length).toFixed(2))
+      ? Number(
+          (
+            usefulnessScores.reduce((sum, current) => sum + current, 0) / usefulnessScores.length
+          ).toFixed(2),
+        )
       : null;
 
   return {
@@ -216,7 +223,7 @@ function collectSummary(rows) {
       multiMachineCoverage: uniqueMachines.size >= 2 ? [] : ["need at least 2 distinct machines"],
       crossTesterCoverage: uniqueTesters.size >= 2 ? [] : ["need at least 2 testers"],
     },
-    coveredCallApps: Array.from(callApps).sort(),
+    coveredCallApps: Array.from(callApps).sort((a, b) => a.localeCompare(b)),
   };
 }
 
@@ -320,7 +327,9 @@ export function runLiveEvidencePackReport(options = {}) {
     `- blockers: ${evidenceSummary.blockers.length ? evidenceSummary.blockers.join(" | ") : "none"}`,
     "",
     "## Structured Evidence Files",
-    ...(evidenceScan.files.length === 0 ? ["- none found"] : evidenceScan.files.map((path) => `- ${path}`)),
+    ...(evidenceScan.files.length === 0
+      ? ["- none found"]
+      : evidenceScan.files.map((path) => `- ${path}`)),
     "",
     "## Missing Dimensions",
     `- required fields missing: ${evidenceSummary.missingDimensions.requiredFields.length ? evidenceSummary.missingDimensions.requiredFields.join(", ") : "none"}`,
@@ -332,7 +341,9 @@ export function runLiveEvidencePackReport(options = {}) {
     "## Supporting Runtime Artifacts",
     "| id | present | path |",
     "| --- | --- | --- |",
-    ...supportingRefs.map((item) => `| ${item.id} | ${item.present ? "yes" : "no"} | ${item.path ?? "n/a"} |`),
+    ...supportingRefs.map(
+      (item) => `| ${item.id} | ${item.present ? "yes" : "no"} | ${item.path ?? "n/a"} |`,
+    ),
     "",
     "## Pending Verification Guardrail",
     measured
