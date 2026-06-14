@@ -50,4 +50,4 @@ Interview path must not include:
 
 - WorkConversation and Interview paths can evolve independently with contract checks.
 - Docs and guardrails must always reflect that cloud providers may receive data when configured.
-- Interview quality lane (`test:interview-quality` + `report:interview-quality`) is required for release/handoff confidence.
+- Canonical release/handoff confidence comes from `test:quality`; `report:interview-quality:strict` remains an interview-specific advisory evidence lane when needed.

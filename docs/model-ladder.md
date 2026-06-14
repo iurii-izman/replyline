@@ -32,4 +32,5 @@ Do not publish a permanent "best model" claim. Re-validate with interview qualit
 
 1. Preset metadata reviewed (`lastReviewedAt`, fallback ladder).
 2. Credits caveats and free-tier caveats documented.
-3. `pnpm test:interview-quality` and `pnpm report:interview-quality` reviewed.
+3. `pnpm test:quality` reviewed.
+4. `pnpm report:interview-quality:strict` reviewed when the preset change needs interview-specific evidence.

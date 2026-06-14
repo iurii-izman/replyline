@@ -47,7 +47,6 @@ pnpm verify:full
 
 `verify:full` is the release-quality profile and includes:
 
-- `pnpm verify`
 - internal pre-handoff building blocks such as `pnpm verify:standard`
 - `pnpm release:freeze:check:strict`
 - `pnpm rust:deps`
@@ -149,11 +148,11 @@ Evidence still required before public installer claims:
 ## Release Operator Checklist
 
 1. Confirm scope: the release stays within the current product direction and freeze guardrails.
-2. Run `pnpm verify` for the default local validation pass.
+2. Run `pnpm verify` only when you need the default non-release baseline separately.
 3. Run `pnpm test:doc-links` for docs/path updates.
 4. Run `pnpm test:consistency` when policy/docs contract content changed.
 5. Run `pnpm release:freeze:check` and summarize any advisory findings.
-6. Run `pnpm verify:full` for a release-quality decision.
+6. Run `pnpm verify:full` for the single release-quality decision pass.
 7. Review `pnpm report:release-readiness:strict` output and capture blockers/warnings.
 8. Classify any open incidents as `S0`/`S1`/`S2`/`S3`.
 9. Verify packaging truth before any public claim:

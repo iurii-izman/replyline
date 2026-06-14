@@ -111,28 +111,16 @@ $checks = @(
     nextAction = "Open artifacts/beta-smoke-report/smoke-report.md and attach the sanitized report."
   },
   @{
-    name       = "smoke"
+    name       = "verify:full"
     command    = "pnpm"
-    args       = @("smoke")
-    nextAction = "Fix the failing smoke lane before release handoff."
-  },
-  @{
-    name       = "verify"
-    command    = "pnpm"
-    args       = @("verify")
-    nextAction = "Fix the failing verify lane before release handoff."
-  },
-  @{
-    name       = "test:interview-quality"
-    command    = "pnpm"
-    args       = @("test:interview-quality")
-    nextAction = "Fix the interview-quality regression before release handoff."
+    args       = @("verify:full")
+    nextAction = "Fix the failing release-quality lane before release handoff."
   },
   @{
     name       = "report:interview-quality"
     command    = "pnpm"
     args       = @("report:interview-quality")
-    nextAction = "Regenerate the interview-quality report after fixing the failure."
+    nextAction = "Regenerate the advisory interview-quality report after fixing the failure."
   },
   @{
     name       = "test:doc-links"

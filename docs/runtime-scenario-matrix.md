@@ -39,7 +39,6 @@ Supporting deterministic lanes:
 ```bash
 pnpm test:quality
 pnpm test:fixtures
-pnpm test:interview-quality
 ```
 
 Release confidence lane keeps this matrix under the default public verification profile:

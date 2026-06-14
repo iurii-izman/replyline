@@ -29,7 +29,6 @@ assignees: []
 
 ## Validation profile
 
-- [ ] `pnpm verify`
 - [ ] `pnpm verify:full` (release candidate baseline)
 - [ ] `pnpm release:freeze:check`
 

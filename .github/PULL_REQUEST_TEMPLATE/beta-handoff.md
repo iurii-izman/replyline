@@ -8,7 +8,6 @@
 
 ### Evidence
 
-- [ ] `pnpm verify` executed
 - [ ] `pnpm verify:full` executed (or reason documented)
 - [ ] Runtime/evidence references included when claims depend on runtime behavior
 
