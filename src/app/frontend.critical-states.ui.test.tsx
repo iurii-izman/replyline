@@ -110,7 +110,7 @@ function settingsController(overrides: Record<string, unknown> = {}) {
       keepOnTopDuringCapture: false,
       interviewCompactMode: false,
       bilingualInterviewEnabled: false,
-      liveTranslationEnabled: true,
+      liveTranslationEnabled: false,
       translationDebounceMs: 600,
       translationMinWordCount: 3,
       interviewReportRetentionDays: 0,
@@ -155,7 +155,9 @@ function settingsController(overrides: Record<string, unknown> = {}) {
 describe("frontend critical state coverage", () => {
   it("shows WorkConversation default mode banner", () => {
     render(() => <MainSurface controller={mainController() as never} />);
-    expect(screen.getByTestId("mode-state-banner").textContent).toContain(ui_ru.card.modeWorkDefault);
+    expect(screen.getByTestId("mode-state-banner").textContent).toContain(
+      ui_ru.card.modeWorkDefault,
+    );
   });
 
   it("shows Interview Mode active banner", () => {

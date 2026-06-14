@@ -51,6 +51,7 @@ docs/archive/handoff/*
 !docs/archive/experimental/
 docs/archive/experimental/*
 !docs/archive/experimental/bilingual-interview-mode.md
+!docs/archive/experimental/bilingual-implementation-status.md
 docs/audit-scorecard-*.md
 docs/max-upgrade-*.md
 docs-cleanup-task.md

@@ -63,9 +63,17 @@ Command grouping is enforced by `scripts/check-ipc-handler-contract.mjs`:
 - `report`: interview session/report/export commands
 - `diagnostics`: persistence/trace diagnostics
 - `trayWindow`: tray/menu/window sync commands
+- `bilingual`: experimental bilingual interview commands (gated by `bilingualInterviewEnabled`, disabled by default)
 
-The checker fails on:
+## Experimental tracks
 
-- registered command without category
-- declared `#[tauri::command]` missing in `invoke_handler`
-- categorized command missing in `invoke_handler`
+Features that exist in the codebase but are gated/disabled by default and not shipped in the current public beta.
+
+### Bilingual Interview Mode
+
+- **Status:** Experimental, disabled by default (`bilingualInterviewEnabled: false`, `liveTranslationEnabled: false`).
+- **Scope:** Split pipeline for interview help — passive EN transcript streaming + RU translation + hotkey-triggered answer card generation.
+- **Code:** `src-tauri/src/bilingual/` (Rust backend), `src/app/BilingualInterviewSurface.tsx` (frontend).
+- **Commands:** `start_bilingual_session`, `stop_bilingual_session`, `capture_bilingual_answer`, `export_bilingual_interview_report` — registered but callable only when feature flag is enabled.
+- **Docs:** `docs/archive/experimental/bilingual-implementation-status.md`.
+- **Activation:** See activation checklist in the archive doc. Do not enable without completing manual QA on ≥2 Windows machines, sustained soak testing, and backend command guard.

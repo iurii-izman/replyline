@@ -18,41 +18,37 @@ export type MockPlatformOptions = {
   analysisError?: unknown;
   analysisCard?: Record<string, unknown>;
   candidatePackStatus?: { exists: boolean; factCount: number; weakFactCount: number };
-  candidatePack?:
-    | {
-        candidateSummary: string;
-        targetRole: string;
-        resumeFacts: Array<{ id: string; title: string; claim: string; evidence: string }>;
-        jobDescription: {
-          title: string;
-          company: string;
-          requirements: string[];
-          responsibilities: string[];
-          keywords: string[];
-        };
-        companyValues: string[];
-        answerConstraints: {
-          avoidClaims: string[];
-          preferredExamples: string[];
-          language: string;
-        };
-      }
-    | null;
-  candidatePackPreview?:
-    | {
-        packQualityScore: number;
-        missingDataWarnings: string[];
-        suggestedMissingInfo: string[];
-        candidateFacts: Array<{
-          fact: string;
-          evidence: string;
-          strength: "strong" | "medium" | "weak";
-          metrics: string[];
-        }>;
-        roleKeywords: string[];
-        companyValues: string[];
-      }
-    | null;
+  candidatePack?: {
+    candidateSummary: string;
+    targetRole: string;
+    resumeFacts: Array<{ id: string; title: string; claim: string; evidence: string }>;
+    jobDescription: {
+      title: string;
+      company: string;
+      requirements: string[];
+      responsibilities: string[];
+      keywords: string[];
+    };
+    companyValues: string[];
+    answerConstraints: {
+      avoidClaims: string[];
+      preferredExamples: string[];
+      language: string;
+    };
+  } | null;
+  candidatePackPreview?: {
+    packQualityScore: number;
+    missingDataWarnings: string[];
+    suggestedMissingInfo: string[];
+    candidateFacts: Array<{
+      fact: string;
+      evidence: string;
+      strength: "strong" | "medium" | "weak";
+      metrics: string[];
+    }>;
+    roleKeywords: string[];
+    companyValues: string[];
+  } | null;
 };
 
 export type SetupMockPlatformOverrides = {
@@ -81,7 +77,7 @@ export const defaultMockSettings = {
   bilingualInterviewEnabled: false,
   interviewInputLanguage: "en",
   translationLanguage: "ru",
-  liveTranslationEnabled: true,
+  liveTranslationEnabled: false,
   translationDebounceMs: 600,
   translationMinWordCount: 3,
   bilingualRetentionBehavior: "session_only",
@@ -311,9 +307,7 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
   };
 }
 
-export function createSetupMockPlatform(
-  overrides: SetupMockPlatformOverrides = {},
-): MockPlatform {
+export function createSetupMockPlatform(overrides: SetupMockPlatformOverrides = {}): MockPlatform {
   const base = createMockPlatform({
     analysisCard: { gist: "g", sayNow: "say", nextMove: "next" },
   });
@@ -356,7 +350,9 @@ export function createSetupMockPlatform(
       return {
         deepgramKeyPresent: deepgramPresent,
         llmKeyPresent: llmPresent,
-        llmRouteConfigured: Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim()),
+        llmRouteConfigured: Boolean(
+          settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim(),
+        ),
         runtimePathReady: runtimeReady(),
       };
     }

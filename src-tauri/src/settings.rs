@@ -274,7 +274,7 @@ fn migrate_v9_to_v10(value: &mut serde_json::Value) {
         obj.entry("translationLanguage")
             .or_insert(serde_json::json!("ru"));
         obj.entry("liveTranslationEnabled")
-            .or_insert(serde_json::json!(true));
+            .or_insert(serde_json::json!(false));
         obj.entry("translationDebounceMs")
             .or_insert(serde_json::json!(600));
         obj.entry("translationMinWordCount")
@@ -777,7 +777,7 @@ mod tests {
         assert_eq!(migrated["bilingualInterviewEnabled"], false);
         assert_eq!(migrated["interviewInputLanguage"], "en");
         assert_eq!(migrated["translationLanguage"], "ru");
-        assert_eq!(migrated["liveTranslationEnabled"], true);
+        assert_eq!(migrated["liveTranslationEnabled"], false);
         assert_eq!(migrated["translationDebounceMs"], 600);
         assert_eq!(migrated["translationMinWordCount"], 3);
         assert_eq!(migrated["bilingualRetentionBehavior"], "session_only");
@@ -806,7 +806,7 @@ mod tests {
             "bilingualInterviewEnabled": false,
             "interviewInputLanguage": "en",
             "translationLanguage": "ru",
-            "liveTranslationEnabled": true,
+            "liveTranslationEnabled": false,
             "translationDebounceMs": 600,
             "translationMinWordCount": 3,
             "bilingualRetentionBehavior": "session_only",

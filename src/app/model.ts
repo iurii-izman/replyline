@@ -529,7 +529,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   bilingualInterviewEnabled: false,
   interviewInputLanguage: "en",
   translationLanguage: "ru",
-  liveTranslationEnabled: true,
+  liveTranslationEnabled: false,
   translationDebounceMs: 600,
   translationMinWordCount: 3,
   bilingualRetentionBehavior: "session_only",

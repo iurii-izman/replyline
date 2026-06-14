@@ -279,7 +279,7 @@ describe("model", () => {
       expect(DEFAULT_SETTINGS.bilingualInterviewEnabled).toBe(false);
       expect(DEFAULT_SETTINGS.interviewInputLanguage).toBe("en");
       expect(DEFAULT_SETTINGS.translationLanguage).toBe("ru");
-      expect(DEFAULT_SETTINGS.liveTranslationEnabled).toBe(true);
+      expect(DEFAULT_SETTINGS.liveTranslationEnabled).toBe(false);
       expect(DEFAULT_SETTINGS.translationDebounceMs).toBe(600);
       expect(DEFAULT_SETTINGS.translationMinWordCount).toBe(3);
       expect(DEFAULT_SETTINGS.bilingualRetentionBehavior).toBe("session_only");
