@@ -185,7 +185,7 @@ Blocking report lanes must use explicit `:strict` names. Canonical docs and work
 
 - `.github/workflows/ci.yml`
   - blocking PR/main lane
-  - runs `verify:fast`, blocking web smoke E2E, and strict freeze guard
+  - runs `verify`, blocking web smoke E2E, and strict freeze guard
 - `.github/workflows/extended-quality.yml`
   - non-blocking addon workflow
   - must surface `PASS`, `PASS_WITH_SKIP`, or `FAIL_NON_BLOCKING`

@@ -22,5 +22,5 @@ Use this file as a thin adapter to repository policy.
 
 - Keep changes scoped and avoid unrelated refactors.
 - Follow architecture boundaries from `AGENTS.md` and `CONTRIBUTING.md`.
-- Before claiming completion on substantial changes, run required checks (`pnpm verify:fast` and dependency-specific gates when applicable).
+- Before claiming completion on substantial changes, run required checks (`pnpm verify` and dependency-specific gates when applicable).
 - Do not present unverified behavior or benchmark claims as facts.

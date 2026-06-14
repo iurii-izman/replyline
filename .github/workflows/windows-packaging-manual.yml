@@ -38,7 +38,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Prebuild verification gate
-        run: pnpm verify:fast
+        run: pnpm verify
 
       - name: Build Windows artifacts (no publish)
         run: pnpm tauri build

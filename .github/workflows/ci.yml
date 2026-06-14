@@ -88,8 +88,8 @@ jobs:
           cargo deny --version
           cargo audit --version
 
-      - name: Local quality and security gate (fail-fast)
-        run: pnpm verify:fast
+      - name: Local quality and security gate
+        run: pnpm verify
 
       - name: Install optional Playwright tooling
         if: success()

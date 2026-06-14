@@ -117,10 +117,10 @@ $checks = @(
     nextAction = "Fix the failing smoke lane before release handoff."
   },
   @{
-    name       = "verify:fast"
+    name       = "verify"
     command    = "pnpm"
-    args       = @("verify:fast")
-    nextAction = "Fix the failing verify:fast lane before release handoff."
+    args       = @("verify")
+    nextAction = "Fix the failing verify lane before release handoff."
   },
   @{
     name       = "test:interview-quality"

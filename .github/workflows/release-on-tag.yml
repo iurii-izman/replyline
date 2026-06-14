@@ -140,7 +140,7 @@ jobs:
           cargo audit --version
 
       - name: Prebuild verification gate
-        run: pnpm verify:fast
+        run: pnpm verify
 
       - name: Prepare optional signing certificate
         id: signing

@@ -240,7 +240,7 @@ export function buildReport({
     gitSha: gitSha(run),
     gh: githubData.gh,
     validationSummaryPlaceholder: [
-      "- [ ] `pnpm verify:fast` reviewed for this week",
+      "- [ ] `pnpm verify` reviewed for this week",
       "- [ ] `pnpm smoke` reviewed for this week",
       "- [ ] `pnpm release:freeze:check` reviewed for this week",
     ],

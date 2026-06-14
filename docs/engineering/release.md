@@ -31,11 +31,11 @@ Decision rules:
 Run:
 
 ```bash
-pnpm verify:standard
+pnpm verify
 pnpm release:freeze:check
 ```
 
-`verify:standard` is the default local pre-handoff profile. It includes `verify:fast`, lifecycle validation, and the advisory freeze report.
+`verify` is the default public validation profile for normal code changes. It currently resolves through internal building blocks such as `verify:fast`.
 
 ### Release-quality decision
 
@@ -47,7 +47,8 @@ pnpm verify:full
 
 `verify:full` is the release-quality profile and includes:
 
-- `pnpm verify:standard`
+- `pnpm verify`
+- internal pre-handoff building blocks such as `pnpm verify:standard`
 - `pnpm release:freeze:check:strict`
 - `pnpm rust:deps`
 - `pnpm audit:npm`
@@ -146,7 +147,7 @@ Evidence still required before public installer claims:
 ## Release Operator Checklist
 
 1. Confirm scope: the release stays within the current product direction and freeze guardrails.
-2. Run `pnpm verify:standard` for local pre-handoff validation.
+2. Run `pnpm verify` for the default local validation pass.
 3. Run `pnpm test:doc-links` for docs/path updates.
 4. Run `pnpm test:consistency` when policy/docs contract content changed.
 5. Run `pnpm release:freeze:check` and summarize any advisory findings.

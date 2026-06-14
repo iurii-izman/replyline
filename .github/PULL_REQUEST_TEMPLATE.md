@@ -6,7 +6,7 @@
 
 ## Validation
 
-- [ ] `pnpm verify:fast`
+- [ ] `pnpm verify`
 - [ ] `pnpm verify:full` for release-sensitive or substantial changes
 - [ ] Additional conditional dependency/security gates were run when required
 

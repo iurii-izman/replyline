@@ -12,10 +12,10 @@ Canonical checklist for beta release readiness and handoff review.
 
 - `pnpm beta:doctor`
 - `pnpm beta:smoke-report`
-- `pnpm smoke`
-- `pnpm verify:fast`
+- `pnpm verify`
+- `pnpm verify:full`
 - `pnpm test:interview-quality`
-- `pnpm report:interview-quality`
+- `pnpm report:interview-quality:strict`
 - `pnpm test:doc-links`
 - `pnpm release:freeze:check:strict`
 

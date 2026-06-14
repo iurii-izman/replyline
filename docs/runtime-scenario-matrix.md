@@ -41,8 +41,8 @@ pnpm test:fixtures
 pnpm test:interview-quality
 ```
 
-Release confidence lane keeps this matrix under the existing fast verification profile:
+Release confidence lane keeps this matrix under the default public verification profile:
 
 ```bash
-pnpm verify:fast
+pnpm verify
 ```
