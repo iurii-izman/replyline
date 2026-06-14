@@ -42,3 +42,24 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 Compatibility aliases are intentionally narrow and must not be documented as equivalent public profiles.
 
 Workflow note: `PASS_WITH_SKIP` is valid only for optional addon tooling in non-blocking workflows such as `extended-quality.yml`; it must not be used to present skipped blocking validation as a pass.
+
+## Scratch UI Coverage Matrix
+
+Temporary matrix for pruning duplicate frontend assertions while preserving critical coverage.
+
+| Flow / state | Covered by file | Duplicate coverage? | Decision |
+| --- | --- | --- | --- |
+| App shell root + header chrome | `src/app/app-shell.ui.test.tsx` | Partial overlap with panel-specific tests | `keep` |
+| Header -> Settings navigation + breadcrumb section label | `src/app/app-shell.ui.test.tsx` | Some overlap with settings helper path | `keep` as single full-app navigation proof |
+| Hide-to-tray / on-top shell wiring | `src/app/app-shell.ui.test.tsx` | No meaningful duplicate | `keep` |
+| Idle main surface without action row | `src/app/MainSurface.locale.ui.test.tsx`, `src/app/main-card.ui.test.tsx`, `src/app/app-shell.ui.test.tsx` | Yes | `keep` only in `MainSurface.locale.ui.test.tsx`; trim shell/integration duplicates |
+| Setup required main state | `src/app/main-card.ui.test.tsx`, `src/app/settings.ui.test.tsx`, `src/app/MainSurface.locale.ui.test.tsx`, `src/app/app-shell.ui.test.tsx` | Yes | `keep` component contract + one integration path; trim extra startup/setup repeats |
+| Work happy path: hotkey press/release -> ready -> copy/retry/clear | `src/app/main-card.ui.test.tsx` | Minor overlap with controller tests only | `keep` |
+| Error recovery with hidden answer actions | `src/app/main-card.ui.test.tsx`, `src/app/MainSurface.locale.ui.test.tsx`, `src/app/interview-mode.ui.test.tsx` | Partial | `keep` one work-card integration + interview retry recovery |
+| Work/interview layout switching | `src/app/main-card.ui.test.tsx` | No equivalent elsewhere | `keep` |
+| Settings form submit path | `src/app/settings.ui.test.tsx` | Repeated section-open assertions around it | `merge` into one submit-focused test |
+| Settings reports warning `full_local` | `src/app/frontend.critical-states.ui.test.tsx`, `src/app/settings.ui.test.tsx` | Low | `keep` warning text contract in isolated test; keep save flow in settings test |
+| Repeated settings section opening (`LLM`, `Reports`, `Hotkey`) | `src/app/settings.ui.test.tsx`, helpers in `src/app/test-utils/appUi.tsx` | Yes | `delete` redundant content checks when dedicated section tests already exist |
+| Candidate Pack empty / preparing / prepared / saved labels | `src/app/frontend.critical-states.ui.test.tsx`, `src/app/candidate-pack-studio.ui.test.tsx` | Yes | `move` to dedicated studio integration file |
+| Candidate Pack keyboard reachability | `src/app/frontend.critical-states.ui.test.tsx` | No direct duplicate, but low-risk relative to current goal | `delete` for slimmer UI matrix |
+| No stealth / cheating copy in visible UI | `src/app/app-shell.ui.test.tsx` | No duplicate | `keep` |

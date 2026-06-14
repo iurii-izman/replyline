@@ -24,11 +24,6 @@ describe("settings integration", () => {
     expect(screen.getByRole("button", { name: /Сохран/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
 
-    openSettingsSection(/Ответ \/ LLM/i);
-    expect(screen.getByText("Профиль ответа")).toBeTruthy();
-    expect(screen.getByText("Профиль модели")).toBeTruthy();
-    expect(screen.getByTestId("answer-profile-field")).toBeTruthy();
-
     openSettingsSection(/Отчёты/i);
     expect(screen.getByText("Срок хранения отчётов интервью")).toBeTruthy();
     expect(screen.getAllByText("Только ручная очистка").length).toBeGreaterThanOrEqual(1);
@@ -177,19 +172,6 @@ describe("setup wizard integration", () => {
     await waitFor(() => expect(screen.getByText("Укажите URL и модель LLM-шлюза.")).toBeTruthy());
     fireEvent.click(screen.getByTestId("setup-first-missing-cta"));
     expect(screen.getByTestId("settings-section-llm")).toBeTruthy();
-
-    const readyMock = createSetupMockPlatform({
-      deepgramKeyPresent: true,
-      llmBaseUrl: "https://api.example.com/v1",
-      llmModel: "gpt-4o-mini",
-      runtimeReady: true,
-    });
-    cleanup();
-    renderApp(readyMock);
-    await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
-    fireEvent.click(screen.getByTitle("Настройки"));
-    await waitFor(() => expect(screen.getByTestId("settings-surface")).toBeTruthy());
-    expect(screen.getByRole("button", { name: "Проверить настройки" })).toBeTruthy();
   });
 
   it("saves setup fields, returns to main, and avoids empty secret overwrite", async () => {
@@ -300,23 +282,7 @@ describe("setup wizard integration", () => {
     );
   });
 
-  it("covers startup checking, startup ready, and resolved setup-required states", async () => {
-    const readyMock = createSetupMockPlatform({
-      deepgramKeyPresent: true,
-      llmKeyPresent: true,
-      llmBaseUrl: "https://api.example.com/v1",
-      llmModel: "gpt-4o-mini",
-      runtimeReady: true,
-    });
-    renderApp(readyMock);
-    await waitFor(() => expect(screen.getByTestId("main-state-idle")).toBeTruthy());
-    await waitFor(() =>
-      expect(readyMock.invoke.mock.calls.some((call) => call[0] === "get_setup_status")).toBe(
-        true,
-      ),
-    );
-    expect(screen.queryByTestId("main-state-setup")).toBeNull();
-
+  it("covers startup checking before bootstrap resolves", async () => {
     let resolveBootstrap: ((value: unknown) => void) | null = null;
     const bootstrapPromise = new Promise((resolve) => {
       resolveBootstrap = resolve;
@@ -344,17 +310,5 @@ describe("setup wizard integration", () => {
       canRetryLastTranscript: false,
     });
     await waitFor(() => expect(screen.queryByTestId("startup-checking")).toBeNull());
-
-    const setupMock = createSetupMockPlatform({
-      deepgramKeyPresent: false,
-      llmKeyPresent: false,
-      llmBaseUrl: "",
-      llmModel: "",
-      runtimeReady: false,
-    });
-    cleanup();
-    renderApp(setupMock);
-    await waitFor(() => expect(screen.getByTestId("main-state-setup")).toBeTruthy());
-    expect(screen.getAllByText("Нужно завершить настройку").length).toBeGreaterThan(0);
   });
 });

@@ -1,12 +1,7 @@
-import { cleanup, fireEvent, screen, waitFor } from "@solidjs/testing-library";
+import { fireEvent, screen, waitFor } from "@solidjs/testing-library";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import {
-  createMockPlatform,
-  createSetupMockPlatform,
-  uiStateFixtures,
-  type MockPlatform,
-} from "./test-utils/mockPlatform";
+import { createMockPlatform, createSetupMockPlatform, type MockPlatform } from "./test-utils/mockPlatform";
 import { openCandidatePackStudio, renderApp, triggerAnalysisReady } from "./test-utils/appUi";
 
 describe("app shell integration", () => {
@@ -16,15 +11,13 @@ describe("app shell integration", () => {
     mock = createMockPlatform();
   });
 
-  it("renders app shell and main landmarks in default fixture", async () => {
+  it("renders app shell chrome in default fixture", async () => {
     renderApp(mock);
 
     const appRoot = await screen.findByTestId("app-root");
     expect(appRoot).toBeTruthy();
     expect(screen.getByTestId("app-workarea")).toBeTruthy();
     expect(screen.getByTestId("app-view").contains(screen.getByTestId("main-surface"))).toBe(true);
-    expect(screen.getByTestId("main-card-body")).toBeTruthy();
-    expect(screen.queryByTestId("action-row")).toBeNull();
     expect(screen.queryByTitle("Выход")).toBeNull();
   });
 
@@ -115,31 +108,9 @@ describe("app shell integration", () => {
     const appView = screen.getByTestId("app-view");
     expect(mainSurface.className).toContain("app-page");
     expect(appView.contains(mainSurface)).toBe(true);
-    expect(screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout")).toBeNull();
 
     await openCandidatePackStudio();
     expect(appView.contains(screen.getByTestId("candidate-pack-studio"))).toBe(true);
-    expect(screen.getByTestId("candidate-pack-ai-section")).toBeTruthy();
-    expect(screen.getByTestId("candidate-pack-preview")).toBeTruthy();
-  });
-
-  it("renders work-ready fixture in the main integration shell", async () => {
-    const workMock = createMockPlatform(uiStateFixtures.workCardReady());
-    renderApp(workMock);
-    await triggerAnalysisReady(workMock);
-    const mainLayout = screen.getByTestId("main-card-body").querySelector(".main-cockpit-layout");
-    expect(mainLayout?.className).toContain("no-side-panel");
-    expect(screen.queryByTestId("main-side-panel")).toBeNull();
-  });
-
-  it("renders candidate-preview fixture in the studio integration shell", async () => {
-    const previewMock = createMockPlatform(uiStateFixtures.candidatePackPreview());
-    cleanup();
-    renderApp(previewMock);
-    await openCandidatePackStudio();
-    await waitFor(() =>
-      expect(screen.getByTestId("candidate-pack-preview").textContent).toContain("7 / слабых 1"),
-    );
   });
 
   it("does not expose stealth or cheating copy in visible UI", async () => {

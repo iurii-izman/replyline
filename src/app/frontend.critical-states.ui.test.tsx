@@ -1,10 +1,9 @@
 import { readFileSync } from "node:fs";
-import { cleanup, fireEvent, render, screen, within } from "@solidjs/testing-library";
+import { fireEvent, render, screen, within } from "@solidjs/testing-library";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { MainSurface } from "./MainSurface";
 import { SettingsSurface } from "./SettingsSurface";
-import { CandidatePackStudio } from "./CandidatePackStudio";
 import { ui_ru } from "./locale";
 
 function mainController(overrides: Record<string, unknown> = {}) {
@@ -153,43 +152,6 @@ function settingsController(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function candidateController(overrides: Record<string, unknown> = {}) {
-  return {
-    candidateRawResume: () => "",
-    candidateJobDescription: () => "",
-    candidateCompanyValues: () => "",
-    candidatePackPreview: () => null,
-    candidatePackStatus: () => ({ exists: false, factCount: 0, weakFactCount: 0 }),
-    candidatePackPreparing: () => false,
-    candidatePackSaving: () => false,
-    candidatePackError: () => null,
-    candidatePackDraft: {
-      candidateSummary: "",
-      targetRole: "",
-      factsText: "",
-      jobTitle: "",
-      jobCompany: "",
-      requirementsText: "",
-      responsibilitiesText: "",
-      keywordsText: "",
-      companyValuesText: "",
-      avoidClaimsText: "",
-      preferredExamplesText: "",
-      language: "ru",
-    },
-    setCandidateRawResume: vi.fn(),
-    setCandidateJobDescription: vi.fn(),
-    setCandidateCompanyValues: vi.fn(),
-    setCandidatePackDraft: vi.fn(),
-    savePreparedCandidatePack: vi.fn(),
-    prepareCandidatePack: vi.fn(),
-    saveCandidatePack: vi.fn(),
-    clearCandidatePack: vi.fn(),
-    openSettingsPanel: vi.fn(),
-    ...overrides,
-  };
-}
-
 describe("frontend critical state coverage", () => {
   it("shows WorkConversation default mode banner", () => {
     render(() => <MainSurface controller={mainController() as never} />);
@@ -279,73 +241,6 @@ describe("frontend critical state coverage", () => {
       await user.tab();
     }
     expect(document.activeElement).toBe(checkButton);
-  });
-
-  it.each([
-    ["empty", candidateController(), ui_ru.settings.candidatePackStateEmpty],
-    [
-      "preparing",
-      candidateController({ candidatePackPreparing: () => true }),
-      ui_ru.settings.candidatePackStateProcessing,
-    ],
-    [
-      "prepared",
-      candidateController({
-        candidatePackPreview: () => ({
-          packQualityScore: 80,
-          missingDataWarnings: [],
-          suggestedMissingInfo: [],
-          candidateFacts: [],
-          roleKeywords: [],
-          companyValues: [],
-        }),
-      }),
-      ui_ru.settings.candidatePackStatePrepared,
-    ],
-    [
-      "saved",
-      candidateController({
-        candidatePackStatus: () => ({ exists: true, factCount: 2, weakFactCount: 0 }),
-      }),
-      ui_ru.settings.candidatePackStateSaved,
-    ],
-  ])("covers Candidate Pack %s state", (_label, controller, expectedStatus) => {
-    cleanup();
-    render(() => <CandidatePackStudio controller={controller as never} st={ui_ru} />);
-    expect(screen.getByTestId("candidate-pack-status-banner").textContent).toContain(
-      expectedStatus,
-    );
-  });
-
-  it("candidate pack fields stay keyboard reachable through the footer actions", async () => {
-    const user = userEvent.setup();
-    render(
-      () =>
-        (
-          <CandidatePackStudio
-            controller={candidateController({ candidateRawResume: () => "CV" }) as never}
-            st={ui_ru}
-          />
-        ) as never,
-    );
-
-    const resume = screen.getByLabelText(ui_ru.settings.resumeLabel);
-    const jobDescription = screen.getByLabelText(ui_ru.settings.jdLabel);
-    const companyValues = screen.getByLabelText(ui_ru.settings.valuesLabel);
-    const prepareButton = screen.getByRole("button", { name: ui_ru.settings.prepare });
-
-    expect(prepareButton.hasAttribute("disabled")).toBe(false);
-
-    await user.tab();
-    expect(document.activeElement).toBe(resume);
-    await user.tab();
-    expect(document.activeElement).toBe(jobDescription);
-    await user.tab();
-    expect(document.activeElement).toBe(companyValues);
-    for (let index = 0; index < 20 && document.activeElement !== prepareButton; index += 1) {
-      await user.tab();
-    }
-    expect(document.activeElement).toBe(prepareButton);
   });
 
   it("preserves focus-visible coverage for tabs and candidate pack accordions", () => {

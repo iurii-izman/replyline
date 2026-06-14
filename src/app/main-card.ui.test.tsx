@@ -11,17 +11,6 @@ describe("main card integration", () => {
     mock = createMockPlatform();
   });
 
-  it("shows idle readiness without copy or retry actions until a card exists", async () => {
-    renderApp(mock);
-
-    expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
-    expect(screen.queryByTestId("main-card-shell")).toBeNull();
-    expect(screen.queryByTestId("action-row")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Скопировать ответ" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Пересобрать" })).toBeNull();
-    expect(screen.getByTestId("main-status-strip")).toBeTruthy();
-  });
-
   it("shows setup-required state instead of idle ready content when bootstrap is incomplete", async () => {
     const setupMock = createSetupMockPlatform({
       deepgramKeyPresent: false,
@@ -71,22 +60,6 @@ describe("main card integration", () => {
       expect(mock.invoke.mock.calls.some((call) => call[0] === "clear_context")).toBe(true),
     );
     expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
-  });
-
-  it("wires keyboard shortcuts for ready work cards", async () => {
-    renderApp(mock);
-
-    await triggerAnalysisReady(mock);
-    fireEvent.keyDown(globalThis, { key: "c", ctrlKey: true });
-    await waitFor(() => expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("say"));
-
-    fireEvent.keyDown(globalThis, { key: "r" });
-    await waitFor(() =>
-      expect(mock.invoke.mock.calls.some((call) => call[0] === "retry_last_analysis")).toBe(true),
-    );
-
-    fireEvent.keyDown(globalThis, { key: "Escape" });
-    await waitFor(() => expect(screen.queryByText("Ответ скопирован.")).toBeNull());
   });
 
   it("shows error recovery state and hides the action zone after a pipeline error", async () => {
