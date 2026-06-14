@@ -101,6 +101,8 @@ pub fn load_bootstrap(state: State<'_, ReplylineState>) -> Result<BootstrapDto, 
 
     let runtime_ready = settings.runtime_path_configured(deepgram_key_present);
     let log_status = app_log::status().map_err(CommandError::Internal)?;
+    let experimental_bilingual_allowed =
+        std::env::var("REPLYLINE_EXPERIMENTAL_BILINGUAL").as_deref() == Ok("1");
     let _ = app_log::append_event(
         "bootstrap_loaded",
         format!(
@@ -118,6 +120,7 @@ pub fn load_bootstrap(state: State<'_, ReplylineState>) -> Result<BootstrapDto, 
         log_status,
         last_transcript_preview,
         can_retry_last_transcript,
+        experimental_bilingual_allowed,
     })
 }
 
@@ -675,11 +678,22 @@ pub fn tray_open_main(app: AppHandle) -> Result<(), CommandError> {
     Ok(())
 }
 
+fn require_experimental_bilingual() -> Result<(), CommandError> {
+    let settings = crate::settings::load().unwrap_or_default();
+    if !settings.bilingual_interview_enabled {
+        return Err(CommandError::Internal(
+            "EXPERIMENTAL_BILINGUAL_DISABLED".to_string(),
+        ));
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn start_bilingual_session(
     state: State<'_, ReplylineState>,
     app: AppHandle,
 ) -> Result<(), CommandError> {
+    require_experimental_bilingual()?;
     let mut session_state = {
         let mut guard = state
             .bilingual_session
@@ -701,6 +715,7 @@ pub async fn stop_bilingual_session(
     state: State<'_, ReplylineState>,
     app: AppHandle,
 ) -> Result<(), CommandError> {
+    require_experimental_bilingual()?;
     let mut session_state = {
         let mut guard = state
             .bilingual_session
@@ -722,6 +737,7 @@ pub async fn capture_bilingual_answer(
     state: State<'_, ReplylineState>,
     app: AppHandle,
 ) -> Result<BilingualAnswerReadyDto, CommandError> {
+    require_experimental_bilingual()?;
     let started_at = std::time::Instant::now();
     let (session_id, snapshot, translations) = {
         let guard = state
@@ -969,6 +985,7 @@ pub fn export_bilingual_interview_report(
     state: State<'_, ReplylineState>,
     input: Option<BilingualExportInputDto>,
 ) -> Result<ExportSummary, CommandError> {
+    require_experimental_bilingual()?;
     let input = input.unwrap_or(BilingualExportInputDto {
         export_type: ExportType::Full,
         output_path: None,

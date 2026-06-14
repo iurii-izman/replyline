@@ -22,6 +22,8 @@ export type BootstrapDto = {
   /// Truncated text from the last successful STT pass. Not surfaced in Slim Stable Beta UI.
   lastTranscriptPreview?: string | null;
   canRetryLastTranscript: boolean;
+  /// Whether experimental bilingual features are allowed (REPLYLINE_EXPERIMENTAL_BILINGUAL=1).
+  experimentalBilingualAllowed: boolean;
 };
 
 export type ContextStatusDto = {

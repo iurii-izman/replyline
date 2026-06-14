@@ -33,7 +33,13 @@ function checkItemClass(item: CheckItemDto): string {
   return item.ok ? "check-item is-ok" : "check-item is-fail";
 }
 
-type SetupStatusTone = "configured" | "missing" | "needs_check" | "check_failed" | "ready" | "optional";
+type SetupStatusTone =
+  | "configured"
+  | "missing"
+  | "needs_check"
+  | "check_failed"
+  | "ready"
+  | "optional";
 
 function setupStatusLabel(st: UiStrings, tone: SetupStatusTone): string {
   switch (tone) {
@@ -412,7 +418,11 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                 <article class="settings-section-card settings-section-card--compact">
                   <h4 class="settings-section-title">
                     {st().settings.persistenceTitle}{" "}
-                    <span class={setupStatusClass(controller().setupTroubleCount() >= 2 ? "needs_check" : "configured")}>
+                    <span
+                      class={setupStatusClass(
+                        controller().setupTroubleCount() >= 2 ? "needs_check" : "configured",
+                      )}
+                    >
                       {controller().setupTroubleCount() >= 2
                         ? st().settings.statusNeedsCheck
                         : st().settings.statusConfigured}
@@ -451,17 +461,16 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                           <div class="field-help">
                             {st().settings.persistenceFieldLlmRoute}:{" "}
                             {yesNo(diag().llmBaseUrlPresent && diag().llmModelPresent)} ·{" "}
-                            {st().settings.persistenceFieldLlmHost}: {diag().llmBaseUrlHost ?? "-"} ·{" "}
-                            {st().settings.persistenceFieldLlmImplication}:{" "}
+                            {st().settings.persistenceFieldLlmHost}: {diag().llmBaseUrlHost ?? "-"}{" "}
+                            · {st().settings.persistenceFieldLlmImplication}:{" "}
                             {(() => {
                               const mode = detectLlmRouteModeFromHost(diag().llmBaseUrlHost);
                               if (mode === "local") return st().settings.persistenceLlmModeLocal;
                               if (mode === "cloud") return st().settings.persistenceLlmModeCloud;
                               return st().settings.persistenceLlmModeUnknown;
                             })()}{" "}
-                            ·{" "}
-                            {st().settings.persistenceFieldLlmKey}: {yesNo(diag().llmKeyPresent)} ·{" "}
-                            {st().settings.persistenceFieldDeepgramKey}:{" "}
+                            · {st().settings.persistenceFieldLlmKey}: {yesNo(diag().llmKeyPresent)}{" "}
+                            · {st().settings.persistenceFieldDeepgramKey}:{" "}
                             {yesNo(diag().deepgramKeyPresent)} ·{" "}
                             {st().settings.persistenceFieldRuntimeReady}:{" "}
                             {yesNo(diag().runtimePathReady)}
@@ -760,33 +769,35 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                   <span class="field-label">{st().settings.compactModeLabel}</span>
                 </label>
 
-                <label class="field field-checkbox-row settings-checkbox-row">
-                  <input
-                    type="checkbox"
-                    aria-label={st().settings.bilingualInterviewEnabledLabel}
-                    checked={controller().settings.bilingualInterviewEnabled}
-                    onInput={(event) =>
-                      controller().setBilingualInterviewEnabled(event.currentTarget.checked)
-                    }
-                  />
-                  <span class="field-label">{st().settings.bilingualInterviewEnabledLabel}</span>
-                </label>
+                <Show when={controller().settings.bilingualInterviewEnabled}>
+                  <label class="field field-checkbox-row settings-checkbox-row">
+                    <input
+                      type="checkbox"
+                      aria-label={st().settings.bilingualInterviewEnabledLabel}
+                      checked={controller().settings.bilingualInterviewEnabled}
+                      onInput={(event) =>
+                        controller().setBilingualInterviewEnabled(event.currentTarget.checked)
+                      }
+                    />
+                    <span class="field-label">{st().settings.bilingualInterviewEnabledLabel}</span>
+                  </label>
 
-                <label class="field field-checkbox-row settings-checkbox-row">
-                  <input
-                    type="checkbox"
-                    aria-label={st().settings.liveTranslationEnabledLabel}
-                    checked={controller().settings.liveTranslationEnabled}
-                    onInput={(event) =>
-                      controller().setLiveTranslationEnabled(event.currentTarget.checked)
-                    }
-                  />
-                  <span class="field-label">{st().settings.liveTranslationEnabledLabel}</span>
-                </label>
+                  <label class="field field-checkbox-row settings-checkbox-row">
+                    <input
+                      type="checkbox"
+                      aria-label={st().settings.liveTranslationEnabledLabel}
+                      checked={controller().settings.liveTranslationEnabled}
+                      onInput={(event) =>
+                        controller().setLiveTranslationEnabled(event.currentTarget.checked)
+                      }
+                    />
+                    <span class="field-label">{st().settings.liveTranslationEnabledLabel}</span>
+                  </label>
 
-                <p class="settings-note settings-note-warning">
-                  {st().settings.bilingualInterviewDisclaimer}
-                </p>
+                  <p class="settings-note settings-note-warning">
+                    {st().settings.bilingualInterviewDisclaimer}
+                  </p>
+                </Show>
 
                 <label class="field">
                   <span class="field-label">{st().settings.windowOpacityLabel}</span>
@@ -866,7 +877,9 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                         )
                       }
                     >
-                      <option value="0">{st().settings.interviewReportRetentionOptionManual}</option>
+                      <option value="0">
+                        {st().settings.interviewReportRetentionOptionManual}
+                      </option>
                       <option value="7">{st().settings.interviewReportRetentionOption7d}</option>
                       <option value="30">{st().settings.interviewReportRetentionOption30d}</option>
                       <option value="90">{st().settings.interviewReportRetentionOption90d}</option>
@@ -1112,7 +1125,9 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     disabled={controller().runtimeCheckRunning()}
                     onClick={() => void controller().checkRuntimeConfig()}
                   >
-                    {controller().runtimeCheckRunning() ? st().settings.checking : st().settings.runCheck}
+                    {controller().runtimeCheckRunning()
+                      ? st().settings.checking
+                      : st().settings.runCheck}
                   </button>
                   <button
                     class="btn-ghost btn-compact"

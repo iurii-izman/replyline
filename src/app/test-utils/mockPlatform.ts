@@ -185,6 +185,7 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     runtimeReady: runtimeReady(),
     logStatus: { logPath: "", lastLine: null },
     canRetryLastTranscript: false,
+    experimentalBilingualAllowed: false,
   });
   const handleSetupStatus = () => ({
     deepgramKeyPresent: deepgramPresent,
@@ -333,6 +334,7 @@ export function createSetupMockPlatform(overrides: SetupMockPlatformOverrides = 
         runtimeReady: overrides.runtimeReady ?? runtimeReady(),
         logStatus: { logPath: "", lastLine: null },
         canRetryLastTranscript: false,
+        experimentalBilingualAllowed: false,
       };
     }
     if (command === "save_settings") {

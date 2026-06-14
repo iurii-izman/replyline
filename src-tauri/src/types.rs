@@ -166,6 +166,9 @@ pub struct BootstrapDto {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_transcript_preview: Option<String>,
     pub can_retry_last_transcript: bool,
+    /// Whether the experimental bilingual feature is allowed (env flag REPLYLINE_EXPERIMENTAL_BILINGUAL).
+    /// When false, bilingual UI and commands are gated even if settings enable it.
+    pub experimental_bilingual_allowed: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -201,6 +201,25 @@ describe("frontend critical state coverage", () => {
                 settingsActiveSection: () => "hotkey",
                 setBilingualInterviewEnabled,
                 setLiveTranslationEnabled,
+                settings: {
+                  selectedModelPreset: "custom_openai_compatible",
+                  llmBaseUrl: "https://api.example/v1",
+                  llmModel: "gpt-4o-mini",
+                  activeAnswerProfile: "interview_default",
+                  hotkey: "Ctrl+Alt+Space",
+                  captureMaxSeconds: 45,
+                  windowOpacity: 100,
+                  hideToTrayOnClose: true,
+                  keepOnTopDuringCapture: false,
+                  interviewCompactMode: false,
+                  bilingualInterviewEnabled: true,
+                  liveTranslationEnabled: false,
+                  translationDebounceMs: 600,
+                  translationMinWordCount: 3,
+                  interviewReportRetentionDays: 0,
+                  debugTraceMode: "full_local",
+                  debugTraceRetentionDays: 3,
+                },
               }) as never
             }
           />
@@ -214,6 +233,23 @@ describe("frontend critical state coverage", () => {
     expect(setBilingualInterviewEnabled).toHaveBeenCalled();
     expect(setLiveTranslationEnabled).toHaveBeenCalled();
     expect(screen.getByText(ui_ru.settings.bilingualInterviewDisclaimer)).toBeTruthy();
+  });
+
+  it("hides bilingual settings when disabled by default", () => {
+    render(
+      () =>
+        (
+          <SettingsSurface
+            controller={
+              settingsController({
+                settingsActiveSection: () => "hotkey",
+              }) as never
+            }
+          />
+        ) as never,
+    );
+    expect(screen.queryByLabelText(ui_ru.settings.bilingualInterviewEnabledLabel)).toBeNull();
+    expect(screen.queryByLabelText(ui_ru.settings.liveTranslationEnabledLabel)).toBeNull();
   });
 
   it("settings llm controls stay in tab order through the runtime check button", async () => {
