@@ -36,7 +36,8 @@ export const ui_ru = {
     idleRecordHint: "Зажмите Ctrl+Alt+Space, чтобы записать фрагмент.",
     idlePipelineHint: "После записи вы получите суть, ответ и следующий шаг.",
     setupRequiredHint: "Сначала заполните «Речь» и «Ответ / LLM».",
-    setupCompactHint: "Настройка локальная, ключи не уходят в облако.",
+    setupCompactHint:
+      "Настройки хранятся локально. Ключи нужны для доступа к облачным провайдерам.",
     phasePrefix: "Статус",
     phaseStatusIdle: "ожидание",
     phaseStatusCapturing: "запись",
@@ -485,11 +486,13 @@ export const ui_ru = {
     bootstrapLoad: "Не удалось загрузить приложение. Повторите и проверьте настройки.",
     clearContext: "Сброс контекста не выполнен. Повторите.",
     missingDeepgramKey: "Не задан ключ Deepgram. Откройте «Речь».",
-    runtimeCheckFailed: "Проверка runtime не прошла. Откройте настройки и проверьте обязательные поля.",
+    runtimeCheckFailed:
+      "Проверка runtime не прошла. Откройте настройки и проверьте обязательные поля.",
     runtimeCheckAuth: "LLM endpoint вернул ошибку авторизации. Проверьте API key.",
     runtimeCheckEndpoint: "LLM endpoint недоступен. Проверьте URL и доступность сервера.",
     runtimeCheckNetwork: "Не удалось достучаться до LLM endpoint. Проверьте сеть и URL.",
-    hotkeyRegistrationFailed: "Горячая клавиша не зарегистрировалась. Проверьте сочетание и попробуйте ещё раз.",
+    hotkeyRegistrationFailed:
+      "Горячая клавиша не зарегистрировалась. Проверьте сочетание и попробуйте ещё раз.",
     settingsCorruptRecovered:
       "Файл настроек был восстановлен после повреждения. Проверьте текущие значения и при необходимости откройте backup.",
     settingsSaveFailed: "Не удалось сохранить настройки. Проверьте поля и повторите.",
@@ -548,7 +551,7 @@ export const ui_en: UiStrings = {
     idleRecordHint: "Hold Ctrl+Alt+Space to capture a fragment.",
     idlePipelineHint: "After capture you will get gist, reply, and next step.",
     setupRequiredHint: "Set up Speech and LLM first.",
-    setupCompactHint: "Setup stays local and private.",
+    setupCompactHint: "Settings are stored locally. Keys are used to access cloud providers.",
     phasePrefix: "Phase",
     phaseStatusIdle: "idle",
     phaseStatusCapturing: "recording",
@@ -696,7 +699,8 @@ export const ui_en: UiStrings = {
     wizardTitle: "Finish setup to continue",
     focusSubtitle: "Check readiness and complete the required steps.",
     focusLocalStorageHint: "Settings data stays local.",
-    focusSmokeReportHint: "If checks fail again, copy the sanitized hint and attach beta-smoke-report.",
+    focusSmokeReportHint:
+      "If checks fail again, copy the sanitized hint and attach beta-smoke-report.",
     progress: "Setup progress",
     stepSpeech: "1. Speech",
     stepReply: "2. Reply",
