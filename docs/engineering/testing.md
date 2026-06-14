@@ -1,6 +1,6 @@
 # Engineering Testing Guide
 
-Detailed engineering source of truth for verification lane composition, fixture quality gates, E2E scope, lifecycle policy, and CI alignment. For the small public profile set contributors should memorize, use [verification.md](verification.md).
+Detailed engineering source of truth for verification lane composition, fixture quality gates, E2E scope, lifecycle policy, and CI alignment.
 
 Green in one lane does not mean green everywhere. `pnpm smoke`, `pnpm verify:*`, deterministic fixture gates, runtime-quality lanes, and E2E lanes prove different things and must not be used as substitutes for each other.
 

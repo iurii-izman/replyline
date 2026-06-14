@@ -79,6 +79,8 @@ Replyline controls when capture starts and stops, local storage surfaces, and lo
 
 Replyline uses a Tauri CSP with `connect-src https://*` to allow user-configured remote LLM endpoints.
 
+Marker: `https://* — обоснование`
+
 - `https://*` — обоснование: Пользователь сам настраивает `llm_base_url` в настройках; при сборке невозможно знать хост заранее.
 - Tauri CSP статичен на этапе сборки, поэтому используется wildcard `https://*` вместо динамического allowlist.
 - `connect-src` охватывает только явные HTTP/WebSocket запросы из webview; захват аудио идёт через Rust, минуя CSP.

@@ -26,7 +26,7 @@ pnpm install --frozen-lockfile
 pnpm verify
 ```
 
-Canonical verification guide: [docs/engineering/verification.md](docs/engineering/verification.md)
+Canonical testing and verification guide: [docs/engineering/testing.md](docs/engineering/testing.md)
 
 ## Local handoff profile
 

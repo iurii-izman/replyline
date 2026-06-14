@@ -78,12 +78,6 @@ Then configure runtime settings in app UI:
 - LLM model
 - optional LLM API key
 
-For release candidate validation:
-
-```bash
-pnpm verify:full
-```
-
 ## Documentation Map
 
 - [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke path for Windows testers.

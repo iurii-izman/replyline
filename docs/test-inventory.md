@@ -1,6 +1,6 @@
 # Test Inventory
 
-Status inventory for the verification surface. Canonical guidance lives in [engineering/verification.md](engineering/verification.md) and [engineering/testing.md](engineering/testing.md).
+Status inventory for the verification surface. Canonical guidance lives in [engineering/testing.md](engineering/testing.md); [engineering/verification.md](engineering/verification.md) remains only as a compatibility pointer.
 
 ## Status legend
 
