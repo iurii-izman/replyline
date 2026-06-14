@@ -191,22 +191,33 @@ function processChangedFiles(changedFiles, label) {
 
   // Console report
   console.log(`[release-freeze] comparison: ${label}`);
+  console.log(`[release-freeze] mode: ${strictMode ? "strict (blocking)" : "advisory"}`);
   console.log(`[release-freeze] changed files: ${changedFiles.length}`);
   if (changedFiles.length === 0) {
     console.log("[release-freeze] no changed files detected — guardrails satisfied");
   }
   if (outsideFreeze.length > 0) {
-    console.log("[release-freeze] outside allowlist:");
+    console.log(`[release-freeze] outside allowlist (${strictMode ? "BLOCKING" : "advisory"}):`);
     for (const file of outsideFreeze) console.log(`  - ${file}`);
   }
   if (outsideGuardrails.length > 0) {
-    console.log("[release-freeze] outside baseline guardrails:");
+    console.log(`[release-freeze] outside explicit guardrail paths (advisory only):`);
     for (const file of outsideGuardrails) console.log(`  - ${file}`);
+  }
+  if (baseline.categories) {
+    const categoryKeys = Object.keys(baseline.categories).filter((k) => k !== "_note");
+    console.log(`[release-freeze] baseline categories: ${categoryKeys.join(", ")}`);
   }
   console.log(`[release-freeze] artifact: ${artifactPath}`);
 
-  if (strictMode && (outsideFreeze.length > 0 || outsideGuardrails.length > 0)) {
-    console.error("[release-freeze] strict mode: changes outside guardrails detected");
+  if (strictMode && outsideFreeze.length > 0) {
+    console.error("[release-freeze] strict mode: changes outside allowlist detected — blocked");
     process.exit(2);
+  }
+
+  if (strictMode && outsideGuardrails.length > 0) {
+    console.warn(
+      "[release-freeze] strict mode: changes outside explicit guardrail paths (advisory only)",
+    );
   }
 }

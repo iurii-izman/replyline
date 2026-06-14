@@ -85,15 +85,33 @@ pnpm release:freeze:check:strict
 
 Semantics:
 
-- `pnpm release:freeze:check` is advisory. It reports changed files, outside-freeze paths, and writes `reports/release-freeze-check.json`.
-- `pnpm release:freeze:check:strict` is blocking. It exits non-zero when out-of-freeze changes are detected.
+- `pnpm release:freeze:check` is **advisory**. It reports changed files, outside-freeze paths, outside-guardrail paths, and writes `reports/release-freeze-check.json`. Never blocks CI or local dev loop.
+- `pnpm release:freeze:check:strict` is **blocking** only for files outside the allowlist (`outsideFreeze`). Files in allowlisted directories (`docs/`, `src/`, `scripts/`, `tests/`, `src-tauri/`, `.github/`) that are not in the explicit `guardrailPaths` list generate an advisory warning but do not block. Files completely outside the allowlist (e.g. new root-level configs, new top-level directories) block in strict mode.
 - In CI with `--base <ref>`, the guard uses three-dot comparison semantics and excludes local untracked files.
+
+Guard categories in baseline:
+
+| Category | Scope | Count |
+| --- | --- | --- |
+| `rootContracts` | Package manifests, lockfiles, governance | 9 |
+| `criticalWorkflows` | CI, release, packaging, dependency workflows | 7 |
+| `criticalRustModules` | Tauri backend: providers, commands, services, settings, core types | 21 |
+| `criticalFrontendModules` | Solid.js app shell: model, platform, controller | 3 |
+| `criticalDocs` | Engineering, product, privacy, release, SLO contracts | 15 |
+| `criticalPolicyScripts` | Security, consistency, footprint, lifecycle checks | 7 |
 
 Freeze guardrails:
 
 - No stack expansion.
 - No architecture boundary drift across `src/app/model.ts`, `src/app/platform.ts`, and `src/app/controller.ts`.
 - Core quality/security lanes must remain intact: `pnpm verify`, `pnpm rust:deps`, `pnpm audit:npm`.
+
+Where strict is enforced:
+
+- `pnpm verify:full` (release-quality profile)
+- `.github/workflows/release-on-tag.yml`
+- `.github/workflows/extended-quality.yml` (baseline lane)
+- Normal CI (`ci.yml`) uses advisory mode only; strict is not a PR/push gate.
 
 Baseline scenarios protected by freeze:
 

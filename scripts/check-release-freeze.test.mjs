@@ -92,11 +92,40 @@ function setupFixture() {
 {
   const root = setupFixture();
   try {
+    // File in allowlisted prefix but NOT in explicit guardrailPaths — allowed in strict mode
+    writeFileSync(join(root, "scripts", "new-helper.mjs"), "console.log('ok')\n", "utf8");
+    const strictAllowed = runFreeze(root, ["--strict"]);
+    assert.equal(strictAllowed.status, 0);
+    assert.equal(strictAllowed.artifact.changedFiles.includes("scripts/new-helper.mjs"), true);
+    assert.deepEqual(strictAllowed.artifact.outsideFreeze, []);
+    assert.equal(strictAllowed.artifact.outsideGuardrails.includes("scripts/new-helper.mjs"), true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+{
+  const root = setupFixture();
+  try {
     writeFileSync(join(root, "tmp", "outside.txt"), "outside\n", "utf8");
     const strictFail = runFreeze(root, ["--strict"]);
     assert.equal(strictFail.status, 2);
     assert.equal(strictFail.artifact.changedFiles.includes("tmp/outside.txt"), true);
     assert.equal(strictFail.artifact.outsideFreeze.includes("tmp/outside.txt"), true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+{
+  const root = setupFixture();
+  try {
+    // Advisory mode: outside-allowlist file does NOT block, just reports
+    writeFileSync(join(root, "tmp", "outside.txt"), "outside\n", "utf8");
+    const advisoryOutside = runFreeze(root);
+    assert.equal(advisoryOutside.status, 0);
+    assert.equal(advisoryOutside.artifact.changedFiles.includes("tmp/outside.txt"), true);
+    assert.equal(advisoryOutside.artifact.outsideFreeze.includes("tmp/outside.txt"), true);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
