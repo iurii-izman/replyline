@@ -36,12 +36,5 @@ Status inventory for the verification surface. Canonical guidance lives in [engi
 | `pnpm verify:release-local` | `operator` | Local release-oriented composition |
 | `pnpm test:e2e:web` | `deprecated alias` | Compatibility alias to `test:e2e:web:smoke` |
 | `pnpm verify:fast` via `pnpm verify` | `deprecated alias` | Alias relationship only; canonical public name is `verify` |
-| `pnpm test:slo-budget` | `deprecated alias` | Compatibility alias to the canonical `check:slo` threshold gate |
-| `pnpm test:runtime-quality` | `deprecated alias` | Compatibility alias to `test:quality`; do not use as a second quality pass or as a separate release gate |
-| `pnpm test:runtime-answer-quality` | `deprecated alias` | Compatibility alias to `check:runtime-answer-quality` |
-| `pnpm test:runtime-answer-quality:gate` | `deprecated alias` | Legacy gate alias to `check:runtime-answer-quality` |
-| `pnpm test:product-scenarios` | `deprecated alias` | Compatibility alias to `check:product-scenarios` |
-| `pnpm test:product-scenarios:gate` | `deprecated alias` | Legacy gate alias to `check:product-scenarios` |
-| `pnpm test:say-now-scenarios` | `deprecated alias` | Compatibility alias to `check:say-now-scenarios` |
 
-Compatibility aliases are intentionally preserved for transition safety, but they are not canonical profile names and must not be documented as equivalent public profiles.
+Compatibility aliases are intentionally narrow and must not be documented as equivalent public profiles.

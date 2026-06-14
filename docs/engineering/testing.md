@@ -66,7 +66,6 @@ These lanes are suitable for CI and local regression because they do not require
 ### Quality lanes
 
 - `pnpm test:quality`
-- `pnpm test:runtime-quality` (compatibility alias to `test:quality`)
 - `pnpm check:runtime-answer-quality`
 - `pnpm check:product-scenarios`
 - `pnpm check:say-now-scenarios`
@@ -138,7 +137,6 @@ E2E lanes validate launch and UI flow. They do not prove provider latency, STT a
 ### Product scenarios
 
 - Check: `pnpm check:product-scenarios`
-- Compatibility aliases: `pnpm test:product-scenarios`, `pnpm test:product-scenarios:gate`
 - Report lane: `pnpm report:product-quality`
 - Dataset family:
   - `tests/fixtures/product-scenarios/*.json`
@@ -153,7 +151,6 @@ E2E lanes validate launch and UI flow. They do not prove provider latency, STT a
 ### Canonical quality
 
 - Command: `pnpm test:quality`
-- Compatibility alias: `pnpm test:runtime-quality`
 - Inputs:
   - interview-quality golden dataset
   - runtime-answer fixtures and thresholds
@@ -194,7 +191,7 @@ Keep these lanes distinct. Do not collapse them into one generic “quality” s
 - Experimental
   - machine-dependent lanes such as k6, ZAP, and Lighthouse
 
-Blocking report lanes must use explicit `:strict` names. Canonical docs and workflows should point to public canonical profiles first. Compatibility aliases and internal building blocks may remain temporarily, but they are not equivalent to canonical public profiles.
+Blocking report lanes must use explicit `:strict` names. Canonical docs and workflows should point to public canonical profiles first. Internal building blocks may remain, but they are not equivalent to canonical public profiles.
 
 ## CI Alignment
 
@@ -211,21 +208,14 @@ Blocking report lanes must use explicit `:strict` names. Canonical docs and work
 
 CI and local profiles should stay semantically aligned, but exact workflow composition may differ by platform or blocking semantics.
 
-## Deprecated And Compatibility Aliases
+## Remaining Aliases
 
 - `pnpm verify` -> `pnpm verify:fast`
 - `pnpm test:e2e:web` -> `pnpm test:e2e:web:smoke`
 - `pnpm report:interview-quality` -> `pnpm report:interview-quality:strict`
 - `pnpm report:runtime-quality` -> `pnpm report:runtime-quality:strict`
-- `pnpm test:runtime-quality` -> `pnpm test:quality`
-- `pnpm test:runtime-answer-quality` -> `pnpm check:runtime-answer-quality`
-- `pnpm test:runtime-answer-quality:gate` -> `pnpm check:runtime-answer-quality`
-- `pnpm test:product-scenarios` -> `pnpm check:product-scenarios`
-- `pnpm test:product-scenarios:gate` -> `pnpm check:product-scenarios`
-- `pnpm test:say-now-scenarios` -> `pnpm check:say-now-scenarios`
-- `pnpm test:slo-budget` -> `pnpm check:slo`
 
-Prefer canonical names in docs, workflows, and handoff notes. Keep compatibility aliases short-lived and explicitly documented.
+Prefer canonical names in docs, workflows, and handoff notes.
 
 ## Related Guides
 

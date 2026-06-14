@@ -118,7 +118,7 @@ Rules:
 
 ## Synthetic harness boundary
 
-`pnpm test:quality` is the canonical deterministic quality harness. `pnpm test:runtime-quality` remains a compatibility alias to the same bundle.
+`pnpm test:quality` is the canonical deterministic quality harness.
 
 It validates:
 
