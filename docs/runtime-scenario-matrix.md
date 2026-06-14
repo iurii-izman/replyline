@@ -6,7 +6,7 @@ This matrix defines deterministic, mock-driven cross-layer scenarios for Replyli
 
 - Frontend runtime orchestration with mock platform (`src/app/App.ui.test.tsx`)
 - Interview quality fixture gates (`scripts/test-interview-quality.mjs`)
-- Fixture integrity and contracts (`scripts/run-fixture-gate.mjs`, `pnpm test:fixtures`)
+- Fixture integrity and optional gated fixture execution (`scripts/run-fixture-gate.mjs`, `pnpm test:fixture-gate`, `pnpm test:fixtures`)
 - Privacy sanitization safeguards (`src-tauri/src/app_log.rs` tests)
 
 Out of scope:
@@ -37,6 +37,7 @@ pnpm test:ui
 Supporting deterministic lanes:
 
 ```bash
+pnpm test:quality
 pnpm test:fixtures
 pnpm test:interview-quality
 ```

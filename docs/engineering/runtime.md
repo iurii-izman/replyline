@@ -118,12 +118,12 @@ Rules:
 
 ## Synthetic harness boundary
 
-`pnpm test:runtime-quality` is the fixture-based regression harness. Use it for deterministic quality/contracts and synthetic latency checks without real keys.
+`pnpm test:quality` is the canonical deterministic quality harness. `pnpm test:runtime-quality` remains a compatibility alias to the same bundle.
 
 It validates:
 
 - answer-card contract and policy checks
-- synthetic latency and SLO parsing
+- synthetic runtime-answer, product-scenario, and SLO checks
 - regression drift across runtime/interview/say-now fixture lanes
 
 It does not validate:

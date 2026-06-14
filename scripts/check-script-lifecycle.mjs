@@ -45,6 +45,7 @@ const matrix = {
     "test:quick",
     "test:release-freeze-guard",
     "test:report-release-readiness",
+    "test:report-runtime-quality-summary",
     "test:report-secret-leaks",
     "test:runtime-answer-quality",
     "test:runtime-answer-quality:gate",

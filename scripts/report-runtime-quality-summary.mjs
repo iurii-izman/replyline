@@ -1,15 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const rootDir = join(__dirname, "..");
-const runtimeQualityDir = join(rootDir, "reports", "runtime-quality");
-const runtimeDir = join(rootDir, "reports", "runtime");
-
-function todayStamp() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function ensureDir(path) {
   mkdirSync(path, { recursive: true });
@@ -18,17 +11,6 @@ function ensureDir(path) {
 function readJsonIfExists(path) {
   if (!existsSync(path)) return null;
   return JSON.parse(readFileSync(path, "utf8"));
-}
-
-function latestRuntimeAnswerReport() {
-  const path = join(runtimeQualityDir, `runtime-answer-quality-${todayStamp()}.json`);
-  return readJsonIfExists(path);
-}
-
-function yesterdayStamp() {
-  const now = new Date();
-  now.setUTCDate(now.getUTCDate() - 1);
-  return now.toISOString().slice(0, 10);
 }
 
 function metricChange(before, after) {
@@ -130,17 +112,23 @@ function renderMarkdown(summary) {
   return lines.join("\n");
 }
 
-function main() {
+export function runRuntimeQualitySummaryReport(options = {}) {
+  const rootDir = options.root ?? join(__dirname, "..");
+  const now = options.now ?? new Date();
+  const stamp = now.toISOString().slice(0, 10);
+  const runtimeQualityDir = join(rootDir, "reports", "runtime-quality");
+  const runtimeDir = join(rootDir, "reports", "runtime");
+
   ensureDir(runtimeQualityDir);
   ensureDir(runtimeDir);
 
   const latencySummary = readJsonIfExists(join(runtimeDir, "pipeline-latency-summary.json"));
   const baselineSummary = readJsonIfExists(
-    join(runtimeQualityDir, `runtime-quality-summary-${yesterdayStamp()}.json`),
+    join(runtimeQualityDir, `runtime-quality-summary-${yesterdayStampFrom(now)}.json`),
   );
-  const answerQualityReport = latestRuntimeAnswerReport();
+  const answerQualityReport = latestRuntimeAnswerReport(rootDir, stamp);
   const productScenarioReport = readJsonIfExists(
-    join(rootDir, "reports", "product-quality", `product-scenario-benchmark-${todayStamp()}.json`),
+    join(rootDir, "reports", "product-quality", `product-scenario-benchmark-${stamp}.json`),
   );
   const latencyMetrics = computeLatencyMetrics(latencySummary);
   const baselineLatencyMetrics = baselineSummary?.latencyMetrics ?? null;
@@ -175,7 +163,7 @@ function main() {
     .filter(Boolean);
 
   const summary = {
-    generatedAt: new Date().toISOString(),
+    generatedAt: now.toISOString(),
     pass: Boolean(answerQualityReport) && Boolean(productScenarioReport),
     steps: {
       qualityEvidence: {
@@ -203,17 +191,38 @@ function main() {
       : null,
   };
 
-  const stamp = todayStamp();
   const jsonPath = join(runtimeQualityDir, `runtime-quality-summary-${stamp}.json`);
   const mdPath = join(runtimeQualityDir, `runtime-quality-summary-${stamp}.md`);
 
   writeFileSync(jsonPath, JSON.stringify(summary, null, 2), "utf8");
   writeFileSync(mdPath, `${renderMarkdown(summary)}\n`, "utf8");
 
-  console.log(`runtime-quality-summary: JSON report -> ${jsonPath}`);
-  console.log(`runtime-quality-summary: MD report -> ${mdPath}`);
-
-  if (!summary.pass) process.exit(1);
+  return {
+    pass: summary.pass,
+    jsonPath: resolve(jsonPath),
+    mdPath: resolve(mdPath),
+    summary,
+  };
 }
 
-main();
+function yesterdayStampFrom(now) {
+  const prior = new Date(now);
+  prior.setUTCDate(prior.getUTCDate() - 1);
+  return prior.toISOString().slice(0, 10);
+}
+
+function latestRuntimeAnswerReport(rootDir, stamp) {
+  const path = join(rootDir, "reports", "runtime-quality", `runtime-answer-quality-${stamp}.json`);
+  return readJsonIfExists(path);
+}
+
+function main() {
+  const result = runRuntimeQualitySummaryReport();
+  console.log(`runtime-quality-summary: JSON report -> ${result.jsonPath}`);
+  console.log(`runtime-quality-summary: MD report -> ${result.mdPath}`);
+  if (!result.pass) process.exit(1);
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  main();
+}
