@@ -4,7 +4,7 @@ import { join } from "node:path";
 const root = process.cwd();
 const files = [
   "src-tauri/src/lib.rs",
-  "src-tauri/src/commands.rs",
+  "src-tauri/src/commands/mod.rs",
   "src-tauri/src/services/capture_pipeline.rs",
   "src/app/controller/hotkeys.ts",
   "src/app/controller/index.ts",

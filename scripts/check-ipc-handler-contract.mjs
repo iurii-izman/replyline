@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const libPath = join(root, "src-tauri", "src", "lib.rs");
-const commandsPath = join(root, "src-tauri", "src", "commands.rs");
+const commandsPath = join(root, "src-tauri", "src", "commands", "mod.rs");
 const modelPath = join(root, "src", "app", "model", "settings.ts");
 const modelCardsPath = join(root, "src", "app", "model", "cards.ts");
 const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
@@ -72,7 +72,7 @@ const interviewRustText = readFileSync(interviewRustPath, "utf8");
 const settingsRustText = readFileSync(settingsRustPath, "utf8");
 const typesRustText = readFileSync(typesRustPath, "utf8");
 
-// Command registration now lives in the replyline_commands! macro in commands.rs.
+// Command registration now lives in the replyline_commands! macro in commands/mod.rs.
 // Scan both files to catch any migration drift.
 const registered = new Set(
   [
@@ -129,7 +129,7 @@ if (
     );
   }
   if (!registryMacroPresent) {
-    console.error("Missing replyline_commands! macro in src-tauri/src/commands.rs.");
+    console.error("Missing replyline_commands! macro in src-tauri/src/commands/mod.rs.");
   }
   process.exit(1);
 }

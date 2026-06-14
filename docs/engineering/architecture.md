@@ -36,7 +36,7 @@ UI surfaces remain view-focused and do not own orchestration:
 
 ## Backend ownership map
 
-- `src-tauri/src/commands.rs` — IPC command boundary (registration surface in `src-tauri/src/lib.rs`)
+- `src-tauri/src/commands/mod.rs` — IPC command boundary (registration surface in `src-tauri/src/lib.rs`)
 - `src-tauri/src/settings.rs` — settings schema, migration chain, validation, corrupt-file quarantine
 - `src-tauri/src/types.rs` — IPC DTOs and `CommandError` envelope
 - `src-tauri/src/services/capture_pipeline.rs` — capture→STT→LLM orchestration

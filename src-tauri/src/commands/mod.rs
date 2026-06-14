@@ -1,10 +1,9 @@
-use std::sync::atomic::{AtomicU64, Ordering};
-
 use tauri::{AppHandle, Manager, State};
 
 use crate::app_log;
 use crate::audio::CaptureRun;
 use crate::candidate_pack;
+use crate::commands::shared::require_experimental_bilingual;
 use crate::credentials;
 use crate::fs_atomic;
 use crate::interview_card_v1::BilingualMeta;
@@ -26,11 +25,13 @@ use crate::types::{
     PrepareCandidatePackInputDto, RuntimeCheckDto, SecretSlot, SetupStatusDto, TraceStatusDto,
 };
 
-static RUN_SEQ: AtomicU64 = AtomicU64::new(0);
+pub mod shared;
+
+static RUN_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 fn next_run_id() -> String {
     let ts = chrono::Utc::now().timestamp_millis() as u64;
-    let seq = RUN_SEQ.fetch_add(1, Ordering::Relaxed);
+    let seq = RUN_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     format!("{}-{}", ts, seq)
 }
 
@@ -48,16 +49,21 @@ fn candidate_pack_save_ok_detail(saved: &candidate_pack::CandidatePackDto) -> St
     )
 }
 
-impl From<crate::settings::SettingsError> for CommandError {
-    fn from(err: crate::settings::SettingsError) -> Self {
-        Self::Settings(err.to_string())
+fn extract_log_timestamp_from_line(line: &str) -> Option<String> {
+    let ts = line.split_whitespace().next()?.trim();
+    if ts.is_empty() {
+        None
+    } else {
+        Some(ts.to_string())
     }
 }
 
-impl From<crate::credentials::CredentialError> for CommandError {
-    fn from(err: crate::credentials::CredentialError) -> Self {
-        Self::Credential(err.to_string())
-    }
+fn hash_path_for_log(path: &std::path::Path) -> String {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    let mut hasher = DefaultHasher::new();
+    path.to_string_lossy().hash(&mut hasher);
+    format!("{:x}", hasher.finish())
 }
 
 #[tauri::command]
@@ -517,23 +523,6 @@ pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, Comman
     })
 }
 
-fn extract_log_timestamp_from_line(line: &str) -> Option<String> {
-    let ts = line.split_whitespace().next()?.trim();
-    if ts.is_empty() {
-        None
-    } else {
-        Some(ts.to_string())
-    }
-}
-
-fn hash_path_for_log(path: &std::path::Path) -> String {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-    let mut hasher = DefaultHasher::new();
-    path.to_string_lossy().hash(&mut hasher);
-    format!("{:x}", hasher.finish())
-}
-
 #[tauri::command]
 pub fn delete_secret(slot: String) -> Result<(), CommandError> {
     let slot = SecretSlot::from_str(&slot)
@@ -675,16 +664,6 @@ pub fn tray_open_main(app: AppHandle) -> Result<(), CommandError> {
             .with("phase", "ui")
             .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
     );
-    Ok(())
-}
-
-fn require_experimental_bilingual() -> Result<(), CommandError> {
-    let settings = crate::settings::load().unwrap_or_default();
-    if !settings.bilingual_interview_enabled {
-        return Err(CommandError::Internal(
-            "EXPERIMENTAL_BILINGUAL_DISABLED".to_string(),
-        ));
-    }
     Ok(())
 }
 
@@ -1442,7 +1421,6 @@ pub fn clear_interview_reports(state: State<'_, ReplylineState>) -> Result<(), C
     );
     Ok(())
 }
-
 /// Single-source registry for all IPC commands.
 /// Used by lib.rs instead of duplicated generate_handler! blocks.
 #[macro_export]
