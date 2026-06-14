@@ -198,13 +198,21 @@ Blocking report lanes must use explicit `:strict` names. Canonical docs and work
 - `.github/workflows/ci.yml`
   - blocking PR/main lane
   - runs `verify`, blocking web smoke E2E, and strict freeze guard
+  - does not bootstrap `cargo-deny` or `cargo-audit`
+- `.github/workflows/dependency-checks.yml`
+  - scheduled/manual dependency lane
+  - owns `pnpm rust:deps` and `pnpm audit:npm`
 - `.github/workflows/extended-quality.yml`
   - non-blocking addon workflow
+  - runs `verify:full` as the baseline and `verify:extended` as addon-only follow-up
   - must surface `PASS`, `PASS_WITH_SKIP`, or `FAIL_NON_BLOCKING`
+  - `PASS_WITH_SKIP` is valid only for skipped optional addon tools, never for skipped blocking baseline checks
 - `.github/workflows/release-on-tag.yml`
   - reruns release-relevant verification for immutable tag flow
+  - requires `pnpm verify:full` before packaging a tag artifact
 - `.github/workflows/windows-packaging-manual.yml`
   - packaging/operator workflow; should not bypass required verification expectations
+  - requires at least `pnpm verify:fast` before building internal artifacts
 
 CI and local profiles should stay semantically aligned, but exact workflow composition may differ by platform or blocking semantics.
 

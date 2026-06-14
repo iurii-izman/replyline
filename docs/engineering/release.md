@@ -132,7 +132,10 @@ Current packaging and publication truth:
 Operational boundaries:
 
 - `release-on-tag.yml` can build Windows bundles on `v*` tags.
+- `release-on-tag.yml` must rerun `pnpm verify:full` before packaging or attaching release artifacts.
+- `.github/workflows/dependency-checks.yml` owns scheduled/manual `pnpm rust:deps` and `pnpm audit:npm` runs outside the fast PR lane.
 - `.github/workflows/windows-packaging-manual.yml` is a manual packaging lane for operator review.
+- `.github/workflows/windows-packaging-manual.yml` must run at least `pnpm verify:fast` before building artifacts.
 - If signing secrets are absent, or Authenticode verification fails, artifacts remain internal/unsigned workflow artifacts.
 - Public GitHub Release binary attachment is valid only for signed and verified Windows packages.
 - Do not claim public installer readiness from unsigned artifacts, workflow artifacts, or local builds.
