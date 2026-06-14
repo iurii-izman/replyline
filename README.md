@@ -91,10 +91,7 @@ pnpm verify:full
 - [docs/product/privacy.md](docs/product/privacy.md) - capture, storage, providers, and sharing boundaries.
 - [docs/product/limitations.md](docs/product/limitations.md) - current beta scope and non-shipped tracks.
 - [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and required validation.
-- [docs/engineering/release.md](docs/engineering/release.md) - release decision and packaging truth.
 - [docs/README.md](docs/README.md) - short role-based map for product, contributor, and operator paths.
-- [.github/SECURITY.md](.github/SECURITY.md) - private vulnerability reporting.
-- [.github/SUPPORT.md](.github/SUPPORT.md) - issue routing and support paths.
 
 ## Security and Support
 
