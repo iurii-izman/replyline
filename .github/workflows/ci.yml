@@ -108,7 +108,7 @@ jobs:
             }
           }
 
-      - name: Release-freeze guardrail check
+      - name: Release-freeze visibility check (advisory)
         if: success() || failure()
         id: release_freeze
         shell: pwsh
@@ -116,19 +116,19 @@ jobs:
           if ('${{ github.event_name }}' -eq 'pull_request') {
             $baseRef = '${{ github.event.pull_request.base.sha }}'
             Write-Host "release-freeze: comparing PR head against base $baseRef"
-            pnpm release:freeze:check:strict -- --base "$baseRef"
+            pnpm release:freeze:check -- --base "$baseRef"
           } elseif ('${{ github.event_name }}' -eq 'push') {
             $beforeSha = '${{ github.event.before }}'
             if ($beforeSha -and $beforeSha -ne '0000000000000000000000000000000000000000') {
               Write-Host "release-freeze: comparing HEAD against previous commit $beforeSha"
-              pnpm release:freeze:check:strict -- --base "$beforeSha"
+              pnpm release:freeze:check -- --base "$beforeSha"
             } else {
               Write-Host "release-freeze: comparing HEAD against HEAD~1"
-              pnpm release:freeze:check:strict -- --base HEAD~1
+              pnpm release:freeze:check -- --base HEAD~1
             }
           } else {
             Write-Host "release-freeze: workflow_dispatch — comparing working tree against HEAD"
-            pnpm release:freeze:check:strict
+            pnpm release:freeze:check
           }
 
       - name: Upload release-freeze artifact

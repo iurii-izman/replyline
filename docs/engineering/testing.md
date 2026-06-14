@@ -138,7 +138,7 @@ Boundary rule:
 
 - `.github/workflows/ci.yml`
   - blocking PR/main lane
-  - runs `pnpm verify`, blocking web smoke E2E, and strict release-freeze guard
+  - runs `pnpm verify`, blocking web smoke E2E, and advisory release-freeze guard (artifact only; strict enforcement lives in `verify:full` and release workflows)
 - `.github/workflows/dependency-checks.yml`
   - scheduled/manual dependency lane
   - owns `pnpm rust:deps` and `pnpm audit:npm`
