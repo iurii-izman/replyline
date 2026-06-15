@@ -40,12 +40,12 @@ pub mod tray_window;
 // ✅ context         — clear_context, get_context_status
 // ✅ runtime_checks  — check_stt_config, check_llm_config, check_runtime_config
 // ✅ secrets         — save_secret, delete_secret
-// ✅ bootstrap       — load_bootstrap, log_client_event, quit_app
+// ✅ bootstrap       — load_bootstrap, log_client_event, quit_app (PARTIAL: file exists, needs mod.rs cleanup)
 // ⬜ settings        — save_settings, get_setup_status, get_feedback_payload, get_persistence_diagnostics
 // ⬜ capture         — capture_start, capture_stop_and_analyze, retry_last_analysis
-// ⬜ candidate_pack  — load/save/clear/get_status/prepare/save_prepared
-// ⬜ interview       — start/end/get/export/clear interview session/report
-// ⬜ bilingual_exp   — start/stop/capture/export_bilingual_interview_report
+// ⬜ candidate_pack  — load/save/clear/get_status/prepare/save_prepared (high-coupling: shared helpers + tests)
+// ⬜ interview       — start/end/get/export/clear interview session/report (high-coupling: report flow)
+// ⬜ bilingual_exp   — start/stop/capture/export_bilingual_interview_report (high-coupling: experimental gate)
 
 static RUN_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
