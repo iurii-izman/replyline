@@ -59,6 +59,7 @@ export interface SettingsActionDeps {
   notices: NoticeApi;
   hotkeys: HotkeyApi;
   loadCandidatePack: () => Promise<void>;
+  loadContextPacks: () => Promise<void>;
 }
 
 export interface SettingsActions {
@@ -121,6 +122,8 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
       }
 
       await deps.loadCandidatePack();
+      // Load context packs after candidate pack (fire-and-forget, non-blocking)
+      deps.loadContextPacks().catch(() => {});
       const hotkeyRegistered = await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
       if (!hotkeyRegistered) {
         deps.setSettingsFormHint(deps.strings().errors.hotkeyRegistrationFailed);

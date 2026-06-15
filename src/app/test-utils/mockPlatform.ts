@@ -49,6 +49,14 @@ export type MockPlatformOptions = {
     roleKeywords: string[];
     companyValues: string[];
   } | null;
+  contextPacks?: Array<{
+    id: string;
+    title: string;
+    content: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>;
 };
 
 export type SetupMockPlatformOverrides = {
@@ -254,6 +262,28 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     }
     if (command === "export_interview_report_redacted_markdown") {
       return String.raw`C:\reports\interview-report-redacted-is-1.md`;
+    }
+    // Context pack commands
+    if (command === "list_context_packs") {
+      return { packs: options.contextPacks ?? [] };
+    }
+    if (command === "get_active_context_pack") {
+      return (options.contextPacks ?? []).find((p) => p.isActive) ?? null;
+    }
+    if (command === "get_context_pack_status") {
+      const packs = options.contextPacks ?? [];
+      return {
+        totalCount: packs.length,
+        activeId: packs.find((p) => p.isActive)?.id ?? null,
+      };
+    }
+    if (
+      command === "save_context_pack" ||
+      command === "delete_context_pack" ||
+      command === "set_active_context_pack" ||
+      command === "clear_active_context_pack"
+    ) {
+      return null;
     }
     return null;
   };

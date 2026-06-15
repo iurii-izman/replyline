@@ -74,6 +74,9 @@ function createController(strings: UiStrings, overrides: Record<string, unknown>
     exportInterviewReportMarkdown: vi.fn(),
     exportInterviewReportRedactedMarkdown: vi.fn(),
     clearInterviewReports: vi.fn(),
+    activeContextPack: () => null,
+    clearActiveContextPackAction: vi.fn(),
+    openContextPackPanel: vi.fn(),
   };
   return { ...base, ...overrides };
 }
@@ -380,7 +383,8 @@ describe("MainSurface state-driven view", () => {
                 interviewCardKeys: () => ["answer", "question", "signals", "risks", "followUps"],
                 activeInterviewCardIndex: activeIndex,
                 activeInterviewCardKey: () =>
-                  ["answer", "question", "signals", "risks", "followUps"][activeIndex()] ?? "answer",
+                  ["answer", "question", "signals", "risks", "followUps"][activeIndex()] ??
+                  "answer",
                 selectInterviewCardIndex: (next: number) => setActiveIndex(next),
                 nextInterviewCard: () => setActiveIndex((current) => Math.min(current + 1, 4)),
                 prevInterviewCard: () => setActiveIndex((current) => Math.max(current - 1, 0)),

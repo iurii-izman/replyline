@@ -15,7 +15,7 @@ export type SettingsSectionId =
   | "reports"
   | "candidatePack";
 
-export type Panel = "main" | "settings" | "candidatePackStudio";
+export type Panel = "main" | "settings" | "candidatePackStudio" | "contextPack";
 
 export type AppSettings = {
   schemaVersion: 10;

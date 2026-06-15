@@ -5,6 +5,7 @@ import type {
   ExportType,
   ExportSummary,
 } from "./model";
+import type { ContextPackDto, ContextPackListDto, ContextPackStatusDto } from "./model";
 
 async function invokeWithDevTiming<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   const hasPerf = typeof performance !== "undefined" && typeof performance.now === "function";
@@ -194,4 +195,35 @@ export function exportBilingualInterviewReport(
       }
     : undefined;
   return platform.invoke<ExportSummary | null | void>("export_bilingual_interview_report", args);
+}
+
+export function listContextPacks(platform: AppPlatform): Promise<ContextPackListDto> {
+  return platform.invoke<ContextPackListDto>("list_context_packs");
+}
+
+export function saveContextPack(
+  platform: AppPlatform,
+  input: ContextPackDto,
+): Promise<ContextPackDto> {
+  return platform.invoke<ContextPackDto>("save_context_pack", { input });
+}
+
+export function deleteContextPack(platform: AppPlatform, id: string): Promise<void> {
+  return platform.invoke<void>("delete_context_pack", { id });
+}
+
+export function setActiveContextPack(platform: AppPlatform, id: string): Promise<ContextPackDto> {
+  return platform.invoke<ContextPackDto>("set_active_context_pack", { id });
+}
+
+export function clearActiveContextPack(platform: AppPlatform): Promise<void> {
+  return platform.invoke<void>("clear_active_context_pack");
+}
+
+export function getActiveContextPack(platform: AppPlatform): Promise<ContextPackDto | null> {
+  return platform.invoke<ContextPackDto | null>("get_active_context_pack");
+}
+
+export function getContextPackStatus(platform: AppPlatform): Promise<ContextPackStatusDto> {
+  return platform.invoke<ContextPackStatusDto>("get_context_pack_status");
 }

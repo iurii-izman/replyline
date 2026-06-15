@@ -883,6 +883,34 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
           <section class="status-strip status-strip--quiet" data-testid="main-status-strip">
             <span class="status-strip-phase">{controller().phaseLabel()}</span>
           </section>
+          <Show when={controller().activeContextPack()}>
+            {(pack) => (
+              <div class="context-active-chip" data-testid="context-active-chip">
+                <span class="context-chip-label">{st().contextPack.activeLabel}:</span>
+                <span class="context-chip-title" data-testid="context-chip-title">
+                  {pack().title}
+                </span>
+                <div class="context-chip-actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    data-testid="context-chip-change-btn"
+                    onClick={() => controller().openContextPackPanel()}
+                  >
+                    {st().contextPack.changeCtx}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-danger"
+                    data-testid="context-chip-disable-btn"
+                    onClick={() => controller().clearActiveContextPackAction()}
+                  >
+                    {st().contextPack.disableCtx}
+                  </button>
+                </div>
+              </div>
+            )}
+          </Show>
         </div>
         <div class="main-card-body app-page-body" data-testid="main-card-body">
           <Show when={isStartupChecking()}>

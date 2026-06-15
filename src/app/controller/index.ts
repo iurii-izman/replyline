@@ -22,6 +22,7 @@ import {
   invokeErrorMessage,
   isConfiguredLlmRoute,
 } from "../model";
+import type { ContextPackDto, ContextPackListDto } from "../model";
 import { getUi, type UiStrings } from "../locale";
 import { currentLanguage } from "../language_profile";
 import type { AppPlatform } from "../platform";
@@ -203,6 +204,9 @@ export function useReplylineController(platform: AppPlatform) {
     llmApiKey: "",
   });
 
+  const [contextPacks, setContextPacks] = createSignal<ContextPackDto[]>([]);
+  const [activeContextPack, setActiveContextPack] = createSignal<ContextPackDto | null>(null);
+
   createEffect(() => {
     const nextOpacity = settings.windowOpacity;
     if (platform.window.setOpacity) {
@@ -341,6 +345,8 @@ export function useReplylineController(platform: AppPlatform) {
     if (panelName) setPanel(panelName);
     await emitUiEvent(platform, "window_show_setup_status_refresh_start", { phase: "window" });
     await settingsActions.refreshSetupStatus();
+    // Load context packs after settings are ready
+    loadContextPacks().catch(() => {});
     await emitUiEvent(platform, "window_show_setup_status_refresh_ok", {
       phase: "window",
       runtime_path_ready: String(setupReadinessState() === "ready"),
@@ -348,6 +354,13 @@ export function useReplylineController(platform: AppPlatform) {
     void emitUiEvent(platform, "panel_open", { panel: panelName ?? panel(), phase: "navigation" });
     await platform.window.show();
     await platform.window.setFocus();
+  }
+
+  async function loadContextPacks() {
+    const list = await platform.invoke<ContextPackListDto>("list_context_packs");
+    setContextPacks(list.packs);
+    const active = await platform.invoke<ContextPackDto | null>("get_active_context_pack");
+    setActiveContextPack(active);
   }
 
   // ── Selectors ──────────────────────────────────────────────────────────
@@ -454,6 +467,7 @@ export function useReplylineController(platform: AppPlatform) {
     notices,
     hotkeys,
     loadCandidatePack,
+    loadContextPacks,
   });
 
   // ── Lifecycle effects ──────────────────────────────────────────────────
@@ -950,6 +964,30 @@ export function useReplylineController(platform: AppPlatform) {
     setCandidateCompanyValues: (value: string) => setCandidateCompanyValues(value),
     prepareCandidatePack,
     savePreparedCandidatePack,
+    // ── ContextPack ──
+    contextPacks,
+    activeContextPack,
+    loadContextPacks,
+    saveContextPack: async (input: ContextPackDto) => {
+      await platform.invoke("save_context_pack", { input });
+      await loadContextPacks();
+    },
+    deleteContextPack: async (id: string) => {
+      await platform.invoke("delete_context_pack", { id });
+      await loadContextPacks();
+    },
+    setActiveContextPackAction: async (id: string) => {
+      await platform.invoke("set_active_context_pack", { id });
+      await loadContextPacks();
+    },
+    clearActiveContextPackAction: async () => {
+      await platform.invoke("clear_active_context_pack");
+      await loadContextPacks();
+    },
+    openContextPackPanel: () => {
+      setUserSelectedPanel(true);
+      setPanel("contextPack");
+    },
     setError,
     dismissNotice: notices.dismissNotice,
   };

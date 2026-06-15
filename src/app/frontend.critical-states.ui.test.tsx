@@ -74,6 +74,9 @@ function mainController(overrides: Record<string, unknown> = {}) {
     clearDisabledReason: () => null,
     clearContext: vi.fn(),
     copyCurrentCard: vi.fn(),
+    activeContextPack: () => null,
+    clearActiveContextPackAction: vi.fn(),
+    openContextPackPanel: vi.fn(),
     ...overrides,
   };
 }

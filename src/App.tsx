@@ -1,6 +1,7 @@
 import "./App.css";
 
 import { ShellChrome, MessagesAndFooter } from "./app/ChromeSurface";
+import { ContextPackPanel } from "./app/ContextPackPanel";
 import { CandidatePackStudioSurface } from "./app/CandidatePackStudioSurface";
 import { useReplylineController } from "./app/controller";
 import { MainSurface } from "./app/MainSurface";
@@ -16,6 +17,7 @@ function App(props: AppProps) {
   const panelClass = () => {
     if (controller.panel() === "main") return "app-view app-view--main";
     if (controller.panel() === "candidatePackStudio") return "app-view app-view--studio";
+    if (controller.panel() === "contextPack") return "app-view app-view--context-pack";
     return "app-view app-view--settings";
   };
 
@@ -28,6 +30,7 @@ function App(props: AppProps) {
             <MainSurface controller={controller} />
             <SettingsSurface controller={controller} />
             <CandidatePackStudioSurface controller={controller} />
+            <ContextPackPanel controller={controller} />
           </div>
         </div>
       </div>
