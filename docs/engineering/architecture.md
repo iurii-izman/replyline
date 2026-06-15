@@ -52,7 +52,12 @@ Extracted domains (6 of 11, 14 of 39 commands):
 - `src-tauri/src/commands/runtime_checks.rs` — `check_stt_config`, `check_llm_config`, `check_runtime_config`
 - `src-tauri/src/commands/secrets.rs` — `save_secret`, `delete_secret`
 
-Remaining in `mod.rs`: bootstrap (3), settings (3), capture (3), candidate_pack (6), interview (6), bilingual_experimental (4).
+Remaining in `mod.rs` (5 domains, 25 commands):
+- settings (4): `save_settings`, `get_setup_status`, `get_feedback_payload`, `get_persistence_diagnostics`
+- capture (3): `capture_start`, `capture_stop_and_analyze`, `retry_last_analysis`
+- candidate_pack (6): load/save/clear/get_status/prepare/save_prepared + shared helpers + tests
+- interview (6): start/end/get/export_markdown/export_redacted/clear
+- bilingual_experimental (4): start/stop/capture/export
 
 ### Other backend modules
 - `src-tauri/src/settings.rs` — settings schema, migration chain, validation, corrupt-file quarantine
