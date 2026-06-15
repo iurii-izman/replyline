@@ -1,3 +1,8 @@
+---
+name: replyline-block-runner
+description: Autonomous execution skill for Replyline development blocks. Activates when the user asks to implement a feature, fix a bug, or make changes in the Replyline repository.
+---
+
 # Replyline Block Runner
 
 Autonomous execution skill for Replyline development blocks. Activates when the user asks to implement a feature, fix a bug, or make changes in the Replyline repository.
