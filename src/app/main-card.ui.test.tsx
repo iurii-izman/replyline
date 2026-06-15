@@ -1,7 +1,11 @@
 import { cleanup, fireEvent, screen, waitFor } from "@solidjs/testing-library";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createMockPlatform, createSetupMockPlatform, type MockPlatform } from "./test-utils/mockPlatform";
+import {
+  createMockPlatform,
+  createSetupMockPlatform,
+  type MockPlatform,
+} from "./test-utils/mockPlatform";
 import { enableCompactInterviewMode, renderApp, triggerAnalysisReady } from "./test-utils/appUi";
 
 describe("main card integration", () => {
@@ -199,5 +203,23 @@ describe("main card integration", () => {
     expect(
       await screen.findAllByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
     ).toHaveLength(2);
+  });
+
+  it("renders divider between hero say-now and secondary insights", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    // Hero card and secondary sections should be separated by a divider
+    expect(screen.getByTestId("answer-hero-card")).toBeTruthy();
+    // The hr divider should be present between hero and insights
+    const dividers = document.querySelectorAll("hr.card-section-divider");
+    expect(dividers.length).toBeGreaterThanOrEqual(1);
+    // Secondary insights still visible
+    expect(screen.getByTestId("secondary-insight-cards")).toBeTruthy();
+    expect(screen.getByTestId("section-gist")).toBeTruthy();
+    expect(screen.getByTestId("section-next-move")).toBeTruthy();
   });
 });

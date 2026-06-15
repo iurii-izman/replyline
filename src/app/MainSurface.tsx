@@ -88,11 +88,7 @@ function SetupFocusState(props: Readonly<{ controller: ReplylineController }>) {
         >
           {st().settings.runCheck}
         </button>
-        <button
-          class="btn-ghost"
-          type="button"
-          onClick={() => controller().openSettingsPanel()}
-        >
+        <button class="btn-ghost" type="button" onClick={() => controller().openSettingsPanel()}>
           {st().settings.openSettings}
         </button>
         <Show when={controller().setupTroubleCount() >= 2}>
@@ -700,6 +696,7 @@ function LiveAssistShell(
           }
         >
           <LiveAnswerCard controller={controller()} />
+          <hr class="card-section-divider" aria-hidden="true" />
           <InsightStrip controller={controller()} />
         </Show>
       </article>
@@ -924,7 +921,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
           <Show when={isStartupError()}>
             <section class="phase-card phase-card--error" data-testid="startup-readiness-error">
               <strong>{controller().strings().phase.error}</strong>
-              <p class="empty-flow-hint">{controller().error() ?? controller().strings().card.errorHint}</p>
+              <p class="empty-flow-hint">
+                {controller().error() ?? controller().strings().card.errorHint}
+              </p>
               <div class="action-group">
                 <button
                   class="btn-secondary"
@@ -951,7 +950,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
                 </Show>
               </div>
               <Show when={controller().setupTroubleCount() >= 2}>
-                <p class="empty-flow-hint">{controller().strings().settings.setupSmokeReportHint}</p>
+                <p class="empty-flow-hint">
+                  {controller().strings().settings.setupSmokeReportHint}
+                </p>
               </Show>
             </section>
           </Show>
@@ -977,7 +978,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
           <Show when={isError()}>
             <section class="phase-card phase-card--error" data-testid="error-recovery-card">
               <strong>{controller().strings().phase.error}</strong>
-              <p class="empty-flow-hint">{controller().error() ?? controller().strings().card.errorHint}</p>
+              <p class="empty-flow-hint">
+                {controller().error() ?? controller().strings().card.errorHint}
+              </p>
               <div class="action-group">
                 <button
                   class="btn-secondary"
@@ -1005,7 +1008,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
                 </Show>
               </div>
               <Show when={controller().setupTroubleCount() >= 2}>
-                <p class="empty-flow-hint">{controller().strings().settings.setupSmokeReportHint}</p>
+                <p class="empty-flow-hint">
+                  {controller().strings().settings.setupSmokeReportHint}
+                </p>
               </Show>
             </section>
           </Show>
