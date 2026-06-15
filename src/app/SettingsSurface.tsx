@@ -4,6 +4,7 @@ import type { ReplylineController } from "./controller";
 import { MODEL_PRESETS, resolveModelPreset } from "./modelPresets";
 import { detectLlmRouteModeFromHost, type SettingsSectionId } from "./model";
 import { CheckIcon, CircleIcon, XIcon } from "./ui/icons";
+import { SettingsNav } from "./settings/SettingsNav";
 import {
   checkItemLabel,
   checkItemClass,
@@ -134,9 +135,6 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
   const yesNo = (value: boolean): string =>
     value ? st().settings.persistenceValueYes : st().settings.persistenceValueNo;
 
-  const mobileTabRefs: HTMLButtonElement[] = [];
-  const sidebarTabRefs: HTMLButtonElement[] = [];
-
   const focusSectionByIndex = (index: number, refs: HTMLButtonElement[]) => {
     const nextSection = sections[index];
     if (!nextSection) return;
@@ -183,80 +181,16 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
           <h2 class="section-title">{st().settings.title}</h2>
         </div>
 
-        <div
-          class="settings-nav-mobile"
-          data-testid="settings-nav-mobile"
-          role="tablist"
-          aria-orientation="horizontal"
-          aria-label={st().settings.title}
-        >
-          <For each={sections}>
-            {(section, index) => {
-              const tabIndex = index();
-              return (
-                <button
-                  ref={(element) => {
-                    mobileTabRefs[tabIndex] = element;
-                  }}
-                  class={`settings-nav-chip ${activeSection() === section.id ? "is-active" : ""}`}
-                  type="button"
-                  id={`settings-mobile-tab-${section.id}`}
-                  role="tab"
-                  aria-selected={activeSection() === section.id}
-                  aria-controls={`settings-panel-${section.id}`}
-                  tabIndex={activeSection() === section.id ? 0 : -1}
-                  onClick={() => focusSectionByIndex(tabIndex, mobileTabRefs)}
-                  onKeyDown={(event) => handleSectionKeyDown(event, mobileTabRefs)}
-                >
-                  {section.label}
-                </button>
-              );
-            }}
-          </For>
-        </div>
+        <SettingsNav
+          sections={sections}
+          activeSection={activeSection}
+          sectionStatus={sectionStatus}
+          focusSectionByIndex={focusSectionByIndex}
+          handleSectionKeyDown={handleSectionKeyDown}
+          st={st}
+        />
 
         <div class="settings-grid app-page-body">
-          <aside class="settings-sidebar app-page-aside app-sidebar" data-testid="settings-sidebar">
-            <div
-              class="settings-sidebar-inner"
-              role="tablist"
-              aria-orientation="vertical"
-              aria-label={st().settings.title}
-            >
-              <For each={sections}>
-                {(section) => {
-                  const status = () => sectionStatus(section.id);
-                  const tabIndex = sections.findIndex((item) => item.id === section.id);
-                  return (
-                    <button
-                      ref={(element) => {
-                        sidebarTabRefs[tabIndex] = element;
-                      }}
-                      class={`settings-sidebar-link ${activeSection() === section.id ? "is-active" : ""}`}
-                      type="button"
-                      id={`settings-sidebar-tab-${section.id}`}
-                      role="tab"
-                      aria-selected={activeSection() === section.id}
-                      aria-controls={`settings-panel-${section.id}`}
-                      tabIndex={activeSection() === section.id ? 0 : -1}
-                      onClick={() => focusSectionByIndex(tabIndex, sidebarTabRefs)}
-                      onKeyDown={(event) => handleSectionKeyDown(event, sidebarTabRefs)}
-                    >
-                      <span class="settings-sidebar-label">{section.label}</span>
-                      <span
-                        class={`section-status-dot section-status-${status()}`}
-                        aria-label={setupStatusLabel(st(), status())}
-                        title={setupStatusLabel(st(), status())}
-                      >
-                        <span class="section-status-dot-inner" />
-                      </span>
-                    </button>
-                  );
-                }}
-              </For>
-            </div>
-          </aside>
-
           <form
             class="settings-content app-page-main"
             onSubmit={(event) => {

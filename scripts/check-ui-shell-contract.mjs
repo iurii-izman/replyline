@@ -119,10 +119,10 @@ if (appTsx) {
 }
 
 const settingsSurface = readText("src/app/SettingsSurface.tsx");
+const settingsNav = readText("src/app/settings/SettingsNav.tsx");
 if (settingsSurface) {
   assertIncludes(settingsSurface, "settingsActiveSection()", "src/app/SettingsSurface.tsx");
   assertIncludes(settingsSurface, "setSettingsActiveSection(", "src/app/SettingsSurface.tsx");
-  assertIncludes(settingsSurface, 'data-testid="settings-sidebar"', "src/app/SettingsSurface.tsx");
 
   const sectionShowCount = (settingsSurface.match(/activeSection\(\) === "/gu) ?? []).length;
   if (sectionShowCount < 6) {
@@ -137,8 +137,16 @@ if (settingsSurface) {
     'data-testid="candidate-pack-summary"',
     "src/app/SettingsSurface.tsx",
   );
-  assertIncludes(settingsSurface, 'role="tablist"', "src/app/SettingsSurface.tsx");
-  assertIncludes(settingsSurface, 'role="tab"', "src/app/SettingsSurface.tsx");
+
+  if (settingsNav) {
+    assertIncludes(
+      settingsNav,
+      'data-testid="settings-sidebar"',
+      "src/app/settings/SettingsNav.tsx",
+    );
+    assertIncludes(settingsNav, 'role="tablist"', "src/app/settings/SettingsNav.tsx");
+    assertIncludes(settingsNav, 'role="tab"', "src/app/settings/SettingsNav.tsx");
+  }
   assertNoRegex(
     settingsSurface,
     /class="settings-content[\s\S]*?(?:w-full|max-w-none)/u,
