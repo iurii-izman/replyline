@@ -5,6 +5,11 @@ const root = process.cwd();
 const files = [
   "src-tauri/src/lib.rs",
   "src-tauri/src/commands/mod.rs",
+  "src-tauri/src/commands/diagnostics.rs",
+  "src-tauri/src/commands/tray_window.rs",
+  "src-tauri/src/commands/context.rs",
+  "src-tauri/src/commands/runtime_checks.rs",
+  "src-tauri/src/commands/secrets.rs",
   "src-tauri/src/services/capture_pipeline.rs",
   "src/app/controller/hotkeys.ts",
   "src/app/controller/index.ts",

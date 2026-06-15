@@ -13,6 +13,9 @@ const commandsPath = join(root, "src-tauri", "src", "commands", "mod.rs");
 const registryPath = join(root, "src-tauri", "src", "commands", "registry.rs");
 const diagnosticsCommandsPath = join(root, "src-tauri", "src", "commands", "diagnostics.rs");
 const trayWindowCommandsPath = join(root, "src-tauri", "src", "commands", "tray_window.rs");
+const secretsCommandsPath = join(root, "src-tauri", "src", "commands", "secrets.rs");
+const contextCommandsPath = join(root, "src-tauri", "src", "commands", "context.rs");
+const runtimeChecksCommandsPath = join(root, "src-tauri", "src", "commands", "runtime_checks.rs");
 const modelPath = join(root, "src", "app", "model", "settings.ts");
 const modelCardsPath = join(root, "src", "app", "model", "cards.ts");
 const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
@@ -77,6 +80,15 @@ const diagnosticsCommandsText = existsSync(diagnosticsCommandsPath)
 const trayWindowCommandsText = existsSync(trayWindowCommandsPath)
   ? readFileSync(trayWindowCommandsPath, "utf8")
   : "";
+const secretsCommandsText = existsSync(secretsCommandsPath)
+  ? readFileSync(secretsCommandsPath, "utf8")
+  : "";
+const contextCommandsText = existsSync(contextCommandsPath)
+  ? readFileSync(contextCommandsPath, "utf8")
+  : "";
+const runtimeChecksCommandsText = existsSync(runtimeChecksCommandsPath)
+  ? readFileSync(runtimeChecksCommandsPath, "utf8")
+  : "";
 const modelText = readFileSync(modelPath, "utf8");
 const modelCardsText = readFileSync(modelCardsPath, "utf8");
 const interviewRustText = readFileSync(interviewRustPath, "utf8");
@@ -100,14 +112,18 @@ const registered = new Set(
 );
 const declared = new Set(
   [
-    ...commandsText.matchAll(/#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g),
-    ...diagnosticsCommandsText.matchAll(
-      /#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g,
-    ),
-    ...trayWindowCommandsText.matchAll(
-      /#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g,
-    ),
-  ].map((m) => m[1]),
+    commandsText,
+    diagnosticsCommandsText,
+    trayWindowCommandsText,
+    secretsCommandsText,
+    contextCommandsText,
+    runtimeChecksCommandsText,
+  ]
+    .filter((t) => t.length > 0)
+    .flatMap((text) => [
+      ...text.matchAll(/#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g),
+    ])
+    .map((m) => m[1]),
 );
 
 const categorizedEntries = flattenCategoryMap(COMMAND_CATEGORIES);

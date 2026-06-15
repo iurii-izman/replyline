@@ -20,26 +20,29 @@ use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
     AnalysisCardDto, AppSettings, BilingualAnswerChunkDto, BilingualAnswerReadyDto,
-    BilingualExportInputDto, BootstrapDto, CandidatePackDraftDto, CheckItemDto, CommandError,
-    ContextStatusDto, ExportSummary, ExportType, FeedbackErrorDto, FeedbackPayloadDto,
-    FeedbackSettingsSummaryDto, InterviewReportDto, PersistenceDiagnosticsDto,
-    PrepareCandidatePackInputDto, RuntimeCheckDto, SecretSlot, SetupStatusDto,
+    BilingualExportInputDto, BootstrapDto, CandidatePackDraftDto, CommandError, ExportSummary,
+    ExportType, FeedbackErrorDto, FeedbackPayloadDto, FeedbackSettingsSummaryDto,
+    InterviewReportDto, PersistenceDiagnosticsDto, PrepareCandidatePackInputDto, SecretSlot,
+    SetupStatusDto,
 };
 
+pub mod context;
 pub mod diagnostics;
 pub mod registry;
+pub mod runtime_checks;
+pub mod secrets;
 pub mod shared;
 pub mod tray_window;
 
 // ── Domain split status ──
 // ✅ diagnostics     — get_trace_status, clear_debug_traces, open_trace_folder
 // ✅ tray_window     — sync_tray_ui_phase, refresh_tray_menu, tray_open_main
+// ✅ context         — clear_context, get_context_status
+// ✅ runtime_checks  — check_stt_config, check_llm_config, check_runtime_config
+// ✅ secrets         — save_secret, delete_secret
 // ⬜ bootstrap       — load_bootstrap, log_client_event, quit_app
 // ⬜ settings        — save_settings, get_setup_status, get_feedback_payload
-// ⬜ secrets         — save_secret, delete_secret, get_persistence_diagnostics
-// ⬜ context         — clear_context, get_context_status
 // ⬜ capture         — capture_start, capture_stop_and_analyze, retry_last_analysis
-// ⬜ runtime_checks  — check_stt_config, check_llm_config, check_runtime_config
 // ⬜ candidate_pack  — load/save/clear/get_status/prepare/save_prepared
 // ⬜ interview       — start/end/get/export/clear interview session/report
 // ⬜ bilingual_exp   — start/stop/capture/export_bilingual_interview_report
@@ -397,57 +400,6 @@ pub fn get_candidate_pack_status() -> Result<candidate_pack::CandidatePackStatus
 }
 
 #[tauri::command]
-pub fn save_secret(slot: String, value: String) -> Result<(), CommandError> {
-    let slot = SecretSlot::from_str(&slot)
-        .ok_or_else(|| CommandError::Internal("Unknown secret slot".to_string()))?;
-    let slot_name = match slot {
-        SecretSlot::DeepgramApiKey => "deepgram_api_key",
-        SecretSlot::LlmApiKey => "llm_api_key",
-    };
-    let _ = app_log::append_event("secret_save_attempt", slot_name);
-    let _ = observability::log_audit(
-        "credential_save_attempt",
-        Fields::new()
-            .with("source", "settings")
-            .with("phase", "settings")
-            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
-            .with("slot", slot_name),
-    );
-    let trimmed = value.trim();
-    if trimmed.is_empty() {
-        let _ = app_log::append_event("secret_save_failed", format!("{slot_name}: empty_value"));
-        return Err(CommandError::Settings("EMPTY_SECRET_NOT_SAVED".to_string()));
-    }
-    match credentials::save(slot, trimmed) {
-        Ok(()) => {
-            let _ = app_log::append_event("secret_save_ok", slot_name);
-            let _ = observability::log_audit(
-                "credential_save_ok",
-                Fields::new()
-                    .with("source", "settings")
-                    .with("phase", "settings")
-                    .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
-                    .with("slot", slot_name),
-            );
-            Ok(())
-        }
-        Err(err) => {
-            let _ = app_log::append_metadata_event(
-                "secret_save_failed",
-                vec![
-                    ("slot", slot_name.to_string()),
-                    (
-                        "error",
-                        app_log::safe_provider_error_preview(&err.to_string()),
-                    ),
-                ],
-            );
-            Err(CommandError::from(err))
-        }
-    }
-}
-
-#[tauri::command]
 pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, CommandError> {
     let settings_path = settings::settings_path()?;
     let (exists, size, modified_at) = settings::settings_file_metadata(&settings_path);
@@ -507,47 +459,6 @@ pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, Comman
         app_log_exists,
         last_log_event_time,
     })
-}
-
-#[tauri::command]
-pub fn delete_secret(slot: String) -> Result<(), CommandError> {
-    let slot = SecretSlot::from_str(&slot)
-        .ok_or_else(|| CommandError::Internal("Unknown secret slot".to_string()))?;
-    credentials::delete(slot).map_err(CommandError::from)?;
-    let slot_name = match slot {
-        SecretSlot::DeepgramApiKey => "deepgram_api_key",
-        SecretSlot::LlmApiKey => "llm_api_key",
-    };
-    let _ = observability::log_audit(
-        "credential_delete_ok",
-        Fields::new()
-            .with("source", "settings")
-            .with("phase", "settings")
-            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
-            .with("slot", slot_name),
-    );
-    Ok(())
-}
-
-#[tauri::command]
-pub fn clear_context(state: State<'_, ReplylineState>) -> Result<ContextStatusDto, CommandError> {
-    let mut guard = state
-        .context
-        .lock()
-        .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
-    guard.clear();
-    Ok(guard.status())
-}
-
-#[tauri::command]
-pub fn get_context_status(
-    state: State<'_, ReplylineState>,
-) -> Result<ContextStatusDto, CommandError> {
-    let mut guard = state
-        .context
-        .lock()
-        .map_err(|_| CommandError::Internal("Context lock poisoned".to_string()))?;
-    Ok(guard.status())
 }
 
 #[tauri::command]
@@ -994,202 +905,6 @@ pub fn export_bilingual_interview_report(
 }
 
 // ---------------------------------------------------------------------------
-// Runtime preflight checks
-// ---------------------------------------------------------------------------
-
-/// Check Deepgram STT configuration without sending audio.
-#[tauri::command]
-pub fn check_stt_config() -> Result<CheckItemDto, CommandError> {
-    match credentials::present(SecretSlot::DeepgramApiKey) {
-        Ok(true) => Ok(CheckItemDto {
-            ok: true,
-            code: "ok".to_string(),
-            message: "Deepgram API key configured".to_string(),
-            action: None,
-        }),
-        Ok(false) => Ok(CheckItemDto {
-            ok: false,
-            code: "missing_key".to_string(),
-            message: "Deepgram API key is not set".to_string(),
-            action: Some("Add your Deepgram API key in the Speech section".to_string()),
-        }),
-        Err(err) => {
-            let safe_err = crate::privacy::safe_preview(&err.to_string(), 200);
-            Ok(CheckItemDto {
-                ok: false,
-                code: "config_error".to_string(),
-                message: format!("Cannot read Deepgram key: {safe_err}"),
-                action: Some("Check system credential store availability".to_string()),
-            })
-        }
-    }
-}
-
-/// Check LLM endpoint configuration via lightweight health/model request.
-/// Does NOT send a transcript or real chat completion.
-#[tauri::command]
-pub async fn check_llm_config() -> Result<CheckItemDto, CommandError> {
-    let settings = settings::load()?;
-    let base_url = settings.llm_base_url.trim().to_string();
-    let model = settings.llm_model.trim().to_string();
-
-    if base_url.is_empty() {
-        return Ok(CheckItemDto {
-            ok: false,
-            code: "config_error".to_string(),
-            message: "LLM base URL is empty".to_string(),
-            action: Some("Set the LLM gateway URL in the Reply section".to_string()),
-        });
-    }
-
-    if model.is_empty() {
-        return Ok(CheckItemDto {
-            ok: false,
-            code: "config_error".to_string(),
-            message: "LLM model name is empty".to_string(),
-            action: Some("Set the LLM model name in the Reply section".to_string()),
-        });
-    }
-
-    let llm_key = credentials::load(SecretSlot::LlmApiKey).unwrap_or(None);
-    let base_trimmed = base_url.trim_end_matches('/');
-
-    // Try /models first (OpenAI-compatible health check).
-    let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
-        .build()
-        .map_err(|err| CommandError::Internal(format!("HTTP client: {err}")))?;
-
-    let models_url = format!("{base_trimmed}/models");
-    let mut req = client.get(&models_url);
-    if let Some(ref token) = llm_key {
-        if !token.trim().is_empty() {
-            req = req.bearer_auth(token.trim());
-        }
-    }
-
-    match req.send().await {
-        Ok(resp) if resp.status().is_success() => {
-            return Ok(CheckItemDto {
-                ok: true,
-                code: "ok".to_string(),
-                message: format!("LLM endpoint reachable: {base_trimmed} (model: {model})"),
-                action: None,
-            });
-        }
-        Ok(resp) if resp.status().as_u16() == 401 || resp.status().as_u16() == 403 => {
-            return Ok(CheckItemDto {
-                ok: false,
-                code: "auth_error".to_string(),
-                message: format!(
-                    "LLM endpoint returned {}: check your API key",
-                    resp.status()
-                ),
-                action: Some("Verify your LLM API key in the Reply section".to_string()),
-            });
-        }
-        Ok(resp) => {
-            // Non-success, non-404 — try base URL as fallback.
-            let _status = resp.status();
-        }
-        Err(_err) => {
-            // Network error to /models — try base URL as fallback.
-        }
-    }
-
-    // Fallback: try GET to base URL (some proxies expose a health endpoint at root).
-    let health_url = format!("{base_trimmed}/");
-    let mut health_req = client.get(&health_url);
-    if let Some(ref token) = llm_key {
-        if !token.trim().is_empty() {
-            health_req = health_req.bearer_auth(token.trim());
-        }
-    }
-
-    match health_req.send().await {
-        Ok(resp) if resp.status().is_success() => Ok(CheckItemDto {
-            ok: true,
-            code: "ok".to_string(),
-            message: format!("LLM endpoint reachable (root check): {base_trimmed}"),
-            action: None,
-        }),
-        Ok(resp) if resp.status().as_u16() == 401 || resp.status().as_u16() == 403 => {
-            Ok(CheckItemDto {
-                ok: false,
-                code: "auth_error".to_string(),
-                message: format!(
-                    "LLM endpoint returned {}: check your API key",
-                    resp.status()
-                ),
-                action: Some("Verify your LLM API key in the Reply section".to_string()),
-            })
-        }
-        Ok(_resp) => Ok(CheckItemDto {
-            ok: false,
-            code: "endpoint_error".to_string(),
-            message: format!(
-                "LLM endpoint unreachable: {base_trimmed}. The server may not support health checks."
-            ),
-            action: Some(
-                "Check the URL, ensure the server is running, or proceed anyway \u{2014} the capture flow may still work."
-                    .to_string(),
-            ),
-        }),
-        Err(err) => {
-            let safe_err = crate::privacy::safe_preview(&err.to_string(), 200);
-            Ok(CheckItemDto {
-                ok: false,
-                code: "network_error".to_string(),
-                message: format!("Cannot reach LLM endpoint: {safe_err}"),
-                action: Some(
-                    "Check your network connection and the LLM base URL".to_string(),
-                ),
-            })
-        }
-    }
-}
-
-/// Aggregate runtime preflight check: STT + LLM + settings validation.
-#[tauri::command]
-pub async fn check_runtime_config() -> Result<RuntimeCheckDto, CommandError> {
-    let stt = check_stt_config()?;
-
-    // LLM check is independent of STT result — always run both.
-    let llm = check_llm_config().await?;
-
-    // Settings validation.
-    let settings_result = match settings::load() {
-        Ok(ref s) => match settings::validate(s) {
-            Ok(()) => CheckItemDto {
-                ok: true,
-                code: "ok".to_string(),
-                message: "Settings valid".to_string(),
-                action: None,
-            },
-            Err(err) => CheckItemDto {
-                ok: false,
-                code: "config_error".to_string(),
-                message: format!("Settings validation failed: {err}"),
-                action: Some("Review settings fields for errors".to_string()),
-            },
-        },
-        Err(err) => CheckItemDto {
-            ok: false,
-            code: "config_error".to_string(),
-            message: format!("Cannot load settings: {err}"),
-            action: Some("Check that settings file is accessible".to_string()),
-        },
-    };
-
-    let runtime_ready = stt.ok && llm.ok && settings_result.ok;
-
-    Ok(RuntimeCheckDto {
-        stt,
-        llm,
-        settings: settings_result,
-        runtime_ready,
-    })
-}
 
 fn prepared_candidate_pack_path() -> Result<std::path::PathBuf, CommandError> {
     let settings_path = settings::settings_path().map_err(CommandError::from)?;
