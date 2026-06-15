@@ -591,5 +591,93 @@
       "say_now": "Команда слишком короткая — уточните, что именно нужно сделать, к какому сроку и кто владелец результата.",
       "next_move": "Запрошу конкретные параметры задачи перед формированием карточки."
     }
+  },
+  {
+    "id": "interview-project-failure-postmortem",
+    "mode": "interview",
+    "transcript": "Опишите самый сложный проект в вашей карьере. Что пошло не так и чему вы научились?",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["проект", "урок"],
+      "mustNotContain": ["всегда успешно", "идеально"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true,
+      "requiresGroundedTranscript": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "gist": "Самый сложный проект — миграция монолита с жёстким дедлайном.",
+      "say_now": "Situation: миграция монолита на микросервисы, 6 месяцев, команда 12 человек. Task: уложиться в дедлайн без degraded SLA. Action: ввёл feature flags, canary deploys, и split testing. Result: миграция завершена на 2 недели раньше с SLA 99.95%. Урок: технический риск нужно закладывать с запасом 30%.",
+      "next_move": "Если нужно, пришлю postmortem-шаблон и lessons learned в виде документа."
+    }
+  },
+  {
+    "id": "interview-career-growth-plan",
+    "mode": "interview",
+    "transcript": "Где вы видите себя через три года и как эта роль поможет вам туда попасть?",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["три года", "рост"],
+      "mustNotContain": ["не знаю", "посмотрим"],
+      "maxSayNowChars": 380,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "gist": "План роста: Senior → Staff Engineer за три года.",
+      "say_now": "Через три года вижу себя Staff Engineer с фокусом на распределённые системы и техническую стратегию. Эта роль даёт: владение сложными проектами, менторинг, visibility на уровне CTO. Конкретный план: год 1 — deepen systems expertise, год 2 — drive cross-team architecture, год 3 — influence roadmap.",
+      "next_move": "Могу прислать personal growth plan с quarterly milestones."
+    }
+  },
+  {
+    "id": "interview-conflict-resolution-peer",
+    "mode": "interview",
+    "transcript": "Расскажите о ситуации, когда вы не согласились с решением senior коллеги. Как вы поступили?",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["уважен", "данны"],
+      "mustNotContain": ["настоял на своём", "проигнорировал"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true,
+      "requiresGroundedTranscript": true,
+      "requiresNoRiskyAdvice": true
+    },
+    "mockCardOverrides": {
+      "gist": "Конструктивное несогласие с senior коллегой по архитектуре.",
+      "say_now": "Situation: senior коллега предложил монолит для нового сервиса. Task: я считал что микросервисы лучше для независимого деплоя. Action: подготовил comparison doc с данными по latency, cost, team autonomy. Показал цифры, а не мнение. С уважением предложил A/B эксперимент на одном компоненте. Result: коллега согласился на эксперимент, через месяц приняли микросервисы.",
+      "next_move": "Пришлю comparison doc как пример evidence-based discussion."
+    }
+  },
+  {
+    "id": "work-stakeholder-buy-in",
+    "mode": "work_conversation",
+    "transcript": "Стейкхолдеры не верят в оценку сроков. Говорят «вы всегда задерживаете». Как вернуть доверие?",
+    "candidatePack": null,
+    "expected": {
+      "mustContain": ["доверие", "данные"],
+      "mustNotContain": ["они не правы", "в прошлый раз"],
+      "maxSayNowChars": 400,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoCandidateHallucination": true,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "gist": "Восстановление доверия стейкхолдеров через прозрачность.",
+      "say_now": "Понимаю скепсис. Предлагаю восстановить доверие через данные: введу buffer 25% в оценку, weekly progress с фактом против плана, и early warning при отклонении >10%. Первый отчёт — в пятницу с historical accuracy за последние 3 спринта.",
+      "next_move": "Подготовлю прозрачный трекинг-документ с фактом/планом и отправлю в пятницу."
+    }
   }
 ]
