@@ -144,7 +144,7 @@
 ## Rust/Tauri architecture — 85/100
 
 **Good:**
-- Clean module map: commands, settings, types, state, services (capture_pipeline, pipeline_errors), providers (deepgram, llm_provider, openai_compatible, stt_provider, candidate_pack_provider), bilingual (6 modules)
+- Clean module map: commands (mod.rs + 6 extracted domain modules: bootstrap, diagnostics, tray_window, context, runtime_checks, secrets), settings, types, state, services, providers, bilingual
 - Command registry centralized in `replyline_commands!` macro
 - Settings migration chain v1→v10 with sanitization and corrupt-file quarantine
 - Interview card pipeline: CardSchemaV3 → parse → repair → map → IPC DTO
@@ -152,11 +152,10 @@
 - `diag_contract.rs` with stable `RL_*` error codes
 
 **Remaining:**
-- `commands.rs` is large (~1500 lines) — candidate for split by domain
+- `commands/mod.rs` partially split (~1020 lines, 6 of 11 domains extracted)
 - `bilingual/` module always compiled (no cfg-gating) — env flag only at runtime
-- Some modules have tight coupling to AppState (expected for Tauri)
 
-**Next:** Split commands.rs by domain → done enough.
+**Next:** Complete remaining domain extraction (settings, capture, candidate_pack, interview, bilingual_experimental).
 
 ---
 
@@ -221,10 +220,10 @@
 
 | When | What | Impact |
 |---|---|---|
-| This cycle | 13 commits: CI fix, baseline redesign, model split, command registry, bilingual quarantine, workflow hardening, scorecard | +42 score points from baseline ~40 |
+| This cycle | 14 commits: CI fix, baseline redesign, model split, command registry, bilingual quarantine, workflow hardening, scorecard, **command domain split (6/11 domains)** | +42 score points from baseline ~40 |
 | Next cycle | Bilingual live-provider QA + soak test | Unblocks P2 beta opt-in |
 | Next cycle | Signed installer setup | Unblocks public binary release |
-| Later | Split commands.rs, locale.ts, large surfaces | Maintainability polish |
+| Later | ~~Split commands.rs~~, locale.ts, large surfaces | Maintainability polish |
 
 ---
 
