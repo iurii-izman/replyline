@@ -21,7 +21,8 @@ use crate::state::ReplylineState;
 use crate::types::{
     AnalysisCardDto, AppSettings, BilingualAnswerChunkDto, BilingualAnswerReadyDto,
     BilingualExportInputDto, BootstrapDto, CandidatePackDraftDto, CheckItemDto, CommandError,
-    ContextStatusDto, ExportSummary, ExportType, InterviewReportDto, PersistenceDiagnosticsDto,
+    ContextStatusDto, ExportSummary, ExportType, FeedbackErrorDto, FeedbackPayloadDto,
+    FeedbackSettingsSummaryDto, InterviewReportDto, PersistenceDiagnosticsDto,
     PrepareCandidatePackInputDto, RuntimeCheckDto, SecretSlot, SetupStatusDto, TraceStatusDto,
 };
 
@@ -292,6 +293,65 @@ pub fn get_setup_status() -> Result<SetupStatusDto, CommandError> {
         llm_key_present,
         llm_route_configured,
         runtime_path_ready,
+    })
+}
+
+#[tauri::command]
+pub fn get_feedback_payload(
+    mode: Option<String>,
+    error_category: Option<String>,
+    error_code: Option<String>,
+    error_summary: Option<String>,
+) -> Result<FeedbackPayloadDto, CommandError> {
+    let settings = settings::load()?;
+    let pkg_version = env!("CARGO_PKG_VERSION").to_string();
+    let commit_sha = option_env!("REPLYLINE_GIT_SHA")
+        .unwrap_or("unknown")
+        .to_string();
+
+    let llm_route_kind = if settings.llm_base_url.trim().is_empty() {
+        "not_configured"
+    } else {
+        let url = settings.llm_base_url.to_lowercase();
+        if url.contains("openrouter.ai") {
+            "openrouter"
+        } else if url.contains("api.openai.com") {
+            "openai"
+        } else if url.contains("api.groq.com") {
+            "groq"
+        } else if url.contains("localhost") || url.contains("127.0.0.1") {
+            "local"
+        } else if url.starts_with("https://") {
+            "remote_https"
+        } else {
+            "custom"
+        }
+    };
+
+    let last_error = match (error_category, error_code, error_summary) {
+        (Some(cat), Some(code), Some(summary)) => Some(FeedbackErrorDto {
+            category: cat,
+            code,
+            summary,
+        }),
+        _ => None,
+    };
+
+    Ok(FeedbackPayloadDto {
+        app_version: pkg_version,
+        commit_sha,
+        mode: mode.unwrap_or_else(|| "unknown".to_string()),
+        settings_summary: FeedbackSettingsSummaryDto {
+            schema_version: settings.schema_version,
+            hotkey: settings.hotkey,
+            capture_max_seconds: settings.capture_max_seconds,
+            model_preset: settings.selected_model_preset.clone(),
+            llm_route_kind: llm_route_kind.to_string(),
+            active_profile: settings.active_answer_profile.clone(),
+            bilingual_enabled: settings.bilingual_interview_enabled,
+            trace_mode: format!("{:?}", settings.debug_trace_mode).to_lowercase(),
+        },
+        last_error,
     })
 }
 
@@ -1453,6 +1513,7 @@ macro_rules! replyline_commands {
             $crate::commands::check_llm_config,
             $crate::commands::check_runtime_config,
             $crate::commands::get_setup_status,
+            $crate::commands::get_feedback_payload,
             $crate::commands::get_persistence_diagnostics,
             $crate::commands::prepare_candidate_pack,
             $crate::commands::save_prepared_candidate_pack,

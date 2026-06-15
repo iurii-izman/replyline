@@ -51,6 +51,7 @@ const COMMAND_CATEGORIES = {
   ],
   diagnostics: [
     "get_persistence_diagnostics",
+    "get_feedback_payload",
     "get_trace_status",
     "open_trace_folder",
     "clear_debug_traces",

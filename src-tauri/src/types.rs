@@ -287,6 +287,39 @@ pub struct SetupStatusDto {
     pub runtime_path_ready: bool,
 }
 
+/// Redacted feedback payload for GitHub issue submission.
+/// No secrets, transcripts, or provider bodies.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeedbackPayloadDto {
+    pub app_version: String,
+    pub commit_sha: String,
+    pub mode: String,
+    pub settings_summary: FeedbackSettingsSummaryDto,
+    pub last_error: Option<FeedbackErrorDto>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeedbackSettingsSummaryDto {
+    pub schema_version: u32,
+    pub hotkey: String,
+    pub capture_max_seconds: u16,
+    pub model_preset: String,
+    pub llm_route_kind: String,
+    pub active_profile: String,
+    pub bilingual_enabled: bool,
+    pub trace_mode: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeedbackErrorDto {
+    pub category: String,
+    pub code: String,
+    pub summary: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TraceStatusDto {
