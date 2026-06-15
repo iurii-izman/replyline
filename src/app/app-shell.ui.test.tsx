@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor } from "@solidjs/testing-library";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { createMockPlatform, createSetupMockPlatform, type MockPlatform } from "./test-utils/mockPlatform";
-import { openCandidatePackStudio, renderApp, triggerAnalysisReady } from "./test-utils/appUi";
+import { renderApp, triggerAnalysisReady } from "./test-utils/appUi";
 
 describe("app shell integration", () => {
   let mock: MockPlatform;
@@ -101,7 +101,7 @@ describe("app shell integration", () => {
     );
   });
 
-  it("keeps responsive layout contracts across main, settings, and candidate studio panels", async () => {
+  it("keeps responsive layout contracts across main, settings, and context panels", async () => {
     renderApp(mock);
 
     const mainSurface = await screen.findByTestId("main-surface");
@@ -109,8 +109,10 @@ describe("app shell integration", () => {
     expect(mainSurface.className).toContain("app-page");
     expect(appView.contains(mainSurface)).toBe(true);
 
-    await openCandidatePackStudio();
-    expect(appView.contains(screen.getByTestId("candidate-pack-studio"))).toBe(true);
+    await waitFor(() => expect(screen.getByTestId("context-pack-open-btn")).toBeTruthy());
+    fireEvent.click(screen.getByTestId("context-pack-open-btn"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-panel")).toBeTruthy());
+    expect(appView.contains(screen.getByTestId("context-pack-panel"))).toBe(true);
   });
 
   it("does not expose stealth or cheating copy in visible UI", async () => {

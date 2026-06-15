@@ -119,7 +119,6 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
     { id: "llm", label: st().settings.navLlm },
     { id: "hotkey", label: st().settings.navHotkey },
     { id: "reports", label: st().settings.navReports },
-    { id: "candidatePack", label: st().settings.navCandidatePack },
   ];
 
   const activeSection = () => controller().settingsActiveSection();
@@ -794,37 +793,6 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                     </button>
                   </div>
                 </section>
-              </article>
-            </Show>
-
-            <Show when={activeSection() === "candidatePack"}>
-              <article
-                id="settings-panel-candidatePack"
-                class="settings-section-card section-card"
-                data-testid="settings-section-candidate-pack"
-              >
-                <h3 class="settings-section-title">
-                  {st().settings.navCandidatePack}{" "}
-                  <span class={setupStatusClass(sectionStatus("candidatePack"))}>
-                    {setupStatusLabel(st(), sectionStatus("candidatePack"))}
-                  </span>
-                </h3>
-                <p class="settings-section-hint" data-testid="candidate-pack-summary">
-                  {st().settings.candidatePackStudioHint}
-                </p>
-                <p class="field-help">
-                  {st().settings.candidatePackStatus}:{" "}
-                  {controller().candidatePackStatus().exists
-                    ? `${controller().candidatePackStatus().factCount} / ${st().settings.candidatePackWeakFactsShort} ${controller().candidatePackStatus().weakFactCount}`
-                    : st().settings.candidatePackEmpty}
-                </p>
-                <button
-                  class="btn-primary"
-                  type="button"
-                  onClick={() => controller().openCandidatePackStudioPanel()}
-                >
-                  {st().settings.openCandidatePackStudio}
-                </button>
               </article>
             </Show>
 

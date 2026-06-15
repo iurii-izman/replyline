@@ -68,7 +68,8 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
   }
 
   return (
-    <div class="context-pack-panel" data-testid="context-pack-panel">
+    <Show when={ctrl().panel() === "contextPack"}>
+      <div class="context-pack-panel" data-testid="context-pack-panel">
       <header class="context-pack-header">
         <h2>{st().contextPack.panelTitle}</h2>
         <button
@@ -152,7 +153,7 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
               data-testid="context-pack-cancel-btn"
               onClick={resetDraft}
             >
-              Cancel
+              {st().contextPack.cancel}
             </button>
           </div>
         </div>
@@ -220,6 +221,7 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
           </For>
         </div>
       </Show>
-    </div>
+      </div>
+    </Show>
   );
 }

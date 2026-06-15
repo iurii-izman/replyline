@@ -45,7 +45,7 @@ describe("createSettingsActions", () => {
       userSelectedPanel: () => false,
       notices: { pushNotice: vi.fn(), dismissNotice: vi.fn(), clearNoticeTimer: vi.fn() },
       hotkeys: { registerCurrentHotkey: vi.fn(), captureHotkeyInput: vi.fn() },
-      loadCandidatePack: vi.fn(async () => undefined),
+      loadContextPacks: vi.fn(async () => undefined),
     });
 
     await actions.refreshSetupStatus();

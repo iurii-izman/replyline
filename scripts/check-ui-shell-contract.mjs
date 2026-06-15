@@ -114,7 +114,7 @@ if (appTsx) {
   assertIncludes(appTsx, 'data-testid="app-workarea"', "src/App.tsx");
   assertIncludes(appTsx, 'class="app-view', "src/App.tsx");
   assertIncludes(appTsx, 'data-testid="app-view"', "src/App.tsx");
-  assertIncludes(appTsx, "CandidatePackStudioSurface", "src/App.tsx");
+  assertIncludes(appTsx, "ContextPackPanel", "src/App.tsx");
   assertIncludes(appTsx, 'class="app-sticky-footer"', "src/App.tsx");
 }
 
@@ -125,18 +125,11 @@ if (settingsSurface) {
   assertIncludes(settingsSurface, "setSettingsActiveSection(", "src/app/SettingsSurface.tsx");
 
   const sectionShowCount = (settingsSurface.match(/activeSection\(\) === "/gu) ?? []).length;
-  if (sectionShowCount < 6) {
+  if (sectionShowCount < 5) {
     fail(
       "src/app/SettingsSurface.tsx: expected section-mode rendering guards for settings sections",
     );
   }
-
-  assertIncludes(settingsSurface, "openCandidatePackStudioPanel()", "src/app/SettingsSurface.tsx");
-  assertIncludes(
-    settingsSurface,
-    'data-testid="candidate-pack-summary"',
-    "src/app/SettingsSurface.tsx",
-  );
 
   if (settingsNav) {
     assertIncludes(
@@ -155,54 +148,20 @@ if (settingsSurface) {
   );
 }
 
-const candidatePackStudioSurface = readText("src/app/CandidatePackStudioSurface.tsx");
-if (candidatePackStudioSurface) {
+const contextPackPanel = readText("src/app/ContextPackPanel.tsx");
+if (contextPackPanel) {
   assertIncludes(
-    candidatePackStudioSurface,
-    'data-testid="candidate-pack-studio-surface"',
-    "src/app/CandidatePackStudioSurface.tsx",
+    contextPackPanel,
+    'data-testid="context-pack-panel"',
+    "src/app/ContextPackPanel.tsx",
   );
-  assertIncludes(
-    candidatePackStudioSurface,
-    'controller().panel() === "candidatePackStudio"',
-    "src/app/CandidatePackStudioSurface.tsx",
-  );
-  assertIncludes(
-    candidatePackStudioSurface,
-    "<CandidatePackStudio",
-    "src/app/CandidatePackStudioSurface.tsx",
-  );
-}
-
-const candidatePackStudio = readText("src/app/CandidatePackStudio.tsx");
-if (candidatePackStudio) {
-  assertIncludes(
-    candidatePackStudio,
-    'data-testid="candidate-pack-studio-grid"',
-    "src/app/CandidatePackStudio.tsx",
-  );
+  assertIncludes(contextPackPanel, "st().contextPack.panelTitle", "src/app/ContextPackPanel.tsx");
+  assertIncludes(contextPackPanel, "saveContextPack", "src/app/ContextPackPanel.tsx");
   assertNoRegex(
-    candidatePackStudio,
-    /class="candidate-pack-studio[\s\S]*?(?:w-full|max-w-none)/u,
-    "src/app/CandidatePackStudio.tsx",
-    "candidate studio must keep capped width classes and avoid full-width infinite form patterns",
-  );
-  assertIncludes(
-    candidatePackStudio,
-    'data-testid="candidate-pack-studio-footer"',
-    "src/app/CandidatePackStudio.tsx",
-  );
-  assertIncludes(
-    candidatePackStudio,
-    'data-testid="candidate-pack-stepper"',
-    "src/app/CandidatePackStudio.tsx",
-  );
-  assertIncludes(candidatePackStudio, "candidateStudioSteps", "src/app/CandidatePackStudio.tsx");
-  assertNoRegex(
-    candidatePackStudio,
-    /[⚙⤓✓✗○▾]/u,
-    "src/app/CandidatePackStudio.tsx",
-    "critical studio controls must not rely on Unicode icon glyphs",
+    contextPackPanel,
+    />\s*Cancel\s*</u,
+    "src/app/ContextPackPanel.tsx",
+    "context panel actions must use locale strings",
   );
 }
 
@@ -210,18 +169,16 @@ const appCss = readText("src/App.css");
 if (appCss) {
   assertIncludes(appCss, "--workspace-max", "src/App.css");
   assertIncludes(appCss, "--settings-max", "src/App.css");
-  assertIncludes(appCss, "--studio-max", "src/App.css");
-
   assertIncludes(appCss, ".app-sticky-footer", "src/App.css");
   assertIncludes(appCss, ".settings-sticky-footer", "src/App.css");
   assertIncludes(appCss, ".settings-sticky-footer--section", "src/App.css");
-  assertIncludes(appCss, ".candidate-pack-footer", "src/App.css");
+  assertIncludes(appCss, ".context-pack-panel", "src/App.css");
 
   assertRegex(
     appCss,
-    /\.settings-content\s*,\s*\.candidate-pack-studio\s*\{[^}]*padding-bottom\s*:\s*(?:7\d|8\d)px;/su,
+    /\.settings-content\s*\{[^}]*padding-bottom\s*:\s*calc\(var\(--page-footer-space\)\s*\+\s*20px\)/su,
     "src/App.css",
-    "expected sticky-footer bottom padding compensation for settings and studio content",
+    "expected sticky-footer bottom padding compensation for settings content",
   );
   assertRegex(
     appCss,
@@ -229,13 +186,6 @@ if (appCss) {
     "src/App.css",
     "settings content should keep max-width cap token",
   );
-  assertRegex(
-    appCss,
-    /\.candidate-pack-studio\s*\{[^}]*max-width\s*:\s*var\(--studio-max\)/su,
-    "src/App.css",
-    "candidate studio should keep max-width cap token",
-  );
-
   const requiredSemanticTokens = [
     "--color-bg-app",
     "--color-bg-canvas",
@@ -299,8 +249,7 @@ if (appCss) {
 const userFacingTsxFiles = [
   "src/app/MainSurface.tsx",
   "src/app/SettingsSurface.tsx",
-  "src/app/CandidatePackStudio.tsx",
-  "src/app/CandidatePackStudioSurface.tsx",
+  "src/app/ContextPackPanel.tsx",
   "src/app/ChromeSurface.tsx",
 ];
 
@@ -321,7 +270,7 @@ const criticalIconFiles = [
   "src/app/ChromeSurface.tsx",
   "src/app/MainSurface.tsx",
   "src/app/SettingsSurface.tsx",
-  "src/app/CandidatePackStudio.tsx",
+  "src/app/ContextPackPanel.tsx",
 ];
 
 for (const path of criticalIconFiles) {
@@ -389,12 +338,12 @@ if (settingsSurface) {
   );
 }
 
-if (candidatePackStudio) {
+if (contextPackPanel) {
   assertRegex(
-    candidatePackStudio,
-    /<button[\s\S]*class="btn-primary"[\s\S]*st\(\)\.settings\.prepare/u,
-    "src/app/CandidatePackStudio.tsx",
-    "critical prepare candidate pack action must use Replyline button class",
+    contextPackPanel,
+    /<button[\s\S]*class="btn btn-primary"[\s\S]*\{st\(\)\.contextPack\.newPack\}/u,
+    "src/app/ContextPackPanel.tsx",
+    "critical new context action must use Replyline button class",
   );
 }
 

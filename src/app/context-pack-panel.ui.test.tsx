@@ -17,6 +17,16 @@ function makePack(id: string, overrides: Record<string, unknown> = {}) {
 }
 
 describe("context pack panel", () => {
+  async function openContextPackPanel() {
+    await waitFor(() => expect(screen.getByTestId("context-pack-open-btn")).toBeTruthy(), {
+      timeout: 3000,
+    });
+    fireEvent.click(screen.getByTestId("context-pack-open-btn"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-panel")).toBeTruthy(), {
+      timeout: 3000,
+    });
+  }
+
   it("active context chip visible on main surface", async () => {
     const packs = [makePack("ctx-1", { isActive: true })];
     const mock = createMockPlatform({ contextPacks: packs });
@@ -68,15 +78,8 @@ describe("context pack panel", () => {
     const mock = createMockPlatform({ contextPacks: [] });
     renderApp(mock);
 
-    await waitFor(
-      () => {
-        expect(screen.getByTestId("context-pack-panel")).toBeTruthy();
-      },
-      { timeout: 3000 },
-    );
+    await openContextPackPanel();
 
-    // The context pack panel is always rendered but only shown when panel=contextPack
-    // Verify the panel structure exists
     expect(screen.getByTestId("context-pack-empty")).toBeTruthy();
     expect(screen.getByTestId("context-pack-new-btn")).toBeTruthy();
   });
@@ -86,13 +89,11 @@ describe("context pack panel", () => {
     const mock = createMockPlatform({ contextPacks: packs });
     renderApp(mock);
 
-    await waitFor(
-      () => {
-        expect(screen.getByTestId("context-pack-list")).toBeTruthy();
-      },
-      { timeout: 3000 },
-    );
+    await openContextPackPanel();
 
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
     expect(screen.getByTestId("context-pack-item-ctx-1")).toBeTruthy();
     expect(screen.getByTestId("context-pack-delete-ctx-1")).toBeTruthy();
   });

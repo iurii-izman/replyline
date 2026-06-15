@@ -807,12 +807,6 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
     st().settings.bilingualInterviewEnabledLabel,
     st().settings.liveTranslationEnabledLabel,
     st().settings.bilingualInterviewDisclaimer,
-    st().settings.candidatePackSuggestedAddMetrics,
-    st().settings.candidatePackSuggestedAddConflict,
-    st().settings.candidatePackSuggestedAddLeadership,
-    st().settings.candidatePackSuggestedAddFailure,
-    st().settings.candidatePackSuggestedAddSystemDesign,
-    st().settings.candidatePackDefaultAvoidClaims,
     st().errors.captureStart,
     st().errors.pipelineNothingToRetry,
     st().errors.pipelineNoSpeech,
@@ -879,6 +873,16 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
         <div class="main-card-top app-page-header" data-testid="main-card-top">
           <section class="status-strip status-strip--quiet" data-testid="main-status-strip">
             <span class="status-strip-phase">{controller().phaseLabel()}</span>
+            <Show when={isIdleReady()}>
+              <button
+                type="button"
+                class="btn btn-sm"
+                data-testid="context-pack-open-btn"
+                onClick={() => controller().openContextPackPanel()}
+              >
+                {st().contextPack.manageCtx}
+              </button>
+            </Show>
           </section>
           <Show when={controller().activeContextPack()}>
             {(pack) => (

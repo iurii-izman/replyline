@@ -12,7 +12,6 @@ export function ShellChrome(props: Readonly<{ controller: ReplylineController }>
     if (settingsSection === "llm") return st().settings.navLlm;
     if (settingsSection === "hotkey") return st().settings.navHotkey;
     if (settingsSection === "reports") return st().settings.navReports;
-    if (settingsSection === "candidatePack") return st().settings.navCandidatePack;
     return st().settings.navOverview;
   };
   const activeSection = () => {
@@ -21,7 +20,7 @@ export function ShellChrome(props: Readonly<{ controller: ReplylineController }>
       if (activeSettings === "overview") return st().header.sectionSettings;
       return `${st().header.sectionSettings} ${st().header.breadcrumbDivider} ${settingsSectionLabel()}`;
     }
-    if (controller().panel() === "candidatePackStudio") return st().header.sectionStudio;
+    if (controller().panel() === "contextPack") return st().contextPack.panelTitle;
     return st().header.sectionMain;
   };
   const headerStatus = () => {

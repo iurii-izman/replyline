@@ -58,7 +58,6 @@ export interface SettingsActionDeps {
   userSelectedPanel: Accessor<boolean>;
   notices: NoticeApi;
   hotkeys: HotkeyApi;
-  loadCandidatePack: () => Promise<void>;
   loadContextPacks: () => Promise<void>;
 }
 
@@ -121,8 +120,7 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
         return;
       }
 
-      await deps.loadCandidatePack();
-      // Load context packs after candidate pack (fire-and-forget, non-blocking)
+      // Load context packs during bootstrap
       deps.loadContextPacks().catch(() => {});
       const hotkeyRegistered = await deps.hotkeys.registerCurrentHotkey(boot.settings.hotkey);
       if (!hotkeyRegistered) {

@@ -143,8 +143,6 @@ function settingsController(overrides: Record<string, unknown> = {}) {
     setDebugTraceRetentionDays: vi.fn(),
     openTraceFolder: vi.fn(),
     clearDebugTraces: vi.fn(),
-    candidatePackStatus: () => ({ exists: false, factCount: 0, weakFactCount: 0 }),
-    openCandidatePackStudioPanel: vi.fn(),
     settingsFormHint: () => null,
     saving: () => false,
     persistSettings: vi.fn(),
@@ -284,11 +282,11 @@ describe("frontend critical state coverage", () => {
     expect(document.activeElement).toBe(checkButton);
   });
 
-  it("preserves focus-visible coverage for tabs and candidate pack accordions", () => {
+  it("preserves focus-visible coverage for tabs and context pack controls", () => {
     const css = readFileSync("src/App.css", "utf8");
     expect(css).toContain(".interview-card-tab");
     expect(css).toContain(".settings-sidebar-link");
-    expect(css).toContain(".studio-accordion-trigger");
+    expect(css).toContain(".context-pack-editor .input");
     expect(css).toContain(".settings-collapsible > summary");
     expect(css).toContain(":focus-visible");
   });

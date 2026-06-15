@@ -17,38 +17,6 @@ export type MockPlatformOptions = {
   }>;
   analysisError?: unknown;
   analysisCard?: Record<string, unknown>;
-  candidatePackStatus?: { exists: boolean; factCount: number; weakFactCount: number };
-  candidatePack?: {
-    candidateSummary: string;
-    targetRole: string;
-    resumeFacts: Array<{ id: string; title: string; claim: string; evidence: string }>;
-    jobDescription: {
-      title: string;
-      company: string;
-      requirements: string[];
-      responsibilities: string[];
-      keywords: string[];
-    };
-    companyValues: string[];
-    answerConstraints: {
-      avoidClaims: string[];
-      preferredExamples: string[];
-      language: string;
-    };
-  } | null;
-  candidatePackPreview?: {
-    packQualityScore: number;
-    missingDataWarnings: string[];
-    suggestedMissingInfo: string[];
-    candidateFacts: Array<{
-      fact: string;
-      evidence: string;
-      strength: "strong" | "medium" | "weak";
-      metrics: string[];
-    }>;
-    roleKeywords: string[];
-    companyValues: string[];
-  } | null;
   contextPacks?: Array<{
     id: string;
     title: string;
@@ -154,20 +122,6 @@ function defaultInterviewReport() {
   };
 }
 
-function defaultCandidatePackPreview() {
-  return {
-    packQualityScore: 84,
-    missingDataWarnings: ["add metrics"],
-    suggestedMissingInfo: ["add leadership example"],
-    candidateFacts: [
-      { fact: "Fact", evidence: "Resume line", strength: "strong", metrics: [] },
-      { fact: "Weak fact", evidence: "No metric", strength: "weak", metrics: [] },
-    ],
-    roleKeywords: ["rust", "ownership"],
-    companyValues: ["customer obsession"],
-  };
-}
-
 export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatform {
   const listeners = new Map<string, ((event: ListenerPayload<unknown>) => void)[]>();
   const shortcuts: ((event: ShortcutEvent) => void | Promise<void>)[] = [];
@@ -229,20 +183,7 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     }
     if (command === "clear_context")
       return { contextActive: false, entryCount: 0, canRetryLastTranscript: false };
-    if (command === "prepare_candidate_pack") {
-      return options.candidatePackPreview ?? defaultCandidatePackPreview();
-    }
-    if (command === "load_candidate_pack") return options.candidatePack ?? null;
-    if (command === "get_candidate_pack_status") {
-      return options.candidatePackStatus ?? { exists: false, factCount: 0, weakFactCount: 0 };
-    }
-    if (
-      command === "save_candidate_pack" ||
-      command === "save_prepared_candidate_pack" ||
-      command === "clear_interview_reports" ||
-      command === "clear_candidate_pack" ||
-      command === "log_client_event"
-    ) {
+    if (command === "clear_interview_reports" || command === "log_client_event") {
       return null;
     }
     if (command === "start_interview_session") {
@@ -424,13 +365,6 @@ export const uiStateFixtures = {
         clarifier: { needed: false, text: null },
       },
     },
-  }),
-  candidatePackEmpty: (): MockPlatformOptions => ({
-    candidatePackStatus: { exists: false, factCount: 0, weakFactCount: 0 },
-    candidatePackPreview: null,
-  }),
-  candidatePackPreview: (): MockPlatformOptions => ({
-    candidatePackStatus: { exists: true, factCount: 7, weakFactCount: 1 },
   }),
   errorState: (): MockPlatformOptions => ({
     analysisError: { kind: "Pipeline", message: "LLM timeout" },

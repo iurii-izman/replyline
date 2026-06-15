@@ -7,15 +7,9 @@ export type Phase =
   | "ready"
   | "error";
 
-export type SettingsSectionId =
-  | "overview"
-  | "speech"
-  | "llm"
-  | "hotkey"
-  | "reports"
-  | "candidatePack";
+export type SettingsSectionId = "overview" | "speech" | "llm" | "hotkey" | "reports";
 
-export type Panel = "main" | "settings" | "candidatePackStudio" | "contextPack";
+export type Panel = "main" | "settings" | "contextPack";
 
 export type AppSettings = {
   schemaVersion: 10;

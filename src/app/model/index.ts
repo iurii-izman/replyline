@@ -36,15 +36,6 @@ export type {
   InterviewSessionStateDto,
 } from "./interview";
 
-export type {
-  CandidateFactStrength,
-  CandidateFact,
-  CandidatePackDto,
-  CandidatePackStatusDto,
-  CandidatePackDraftFact,
-  CandidatePackDraft,
-} from "./candidatePack";
-
 export type { ContextPackDto, ContextPackStatusDto, ContextPackListDto } from "./contextPack";
 
 export type {

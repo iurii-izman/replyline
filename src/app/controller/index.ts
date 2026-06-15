@@ -1,9 +1,6 @@
 import { createEffect, createMemo, createSignal, onCleanup, type Accessor } from "solid-js";
 import { createStore } from "solid-js/store";
 import {
-  type CandidatePackDraft,
-  type CandidatePackDto,
-  type CandidatePackStatusDto,
   DEFAULT_SETTINGS,
   type AnalysisCard,
   type AppSettings,
@@ -40,79 +37,6 @@ import { emitUiEvent } from "../observability";
 import { createBilingualInterviewController } from "./bilingualInterviewController";
 
 type InterviewCardKey = "answer" | "question" | "signals" | "risks" | "followUps" | "clarifier";
-function lines(value: string): string[] {
-  return value
-    .split("\n")
-    .map((v) => v.trim())
-    .filter(Boolean);
-}
-function parseFactsText(value: string): CandidatePackDto["resumeFacts"] {
-  return lines(value).map((line, index) => {
-    const [id = `fact-${index + 1}`, title = "", claim = "", evidence = ""] = line
-      .split("|")
-      .map((part) => part.trim());
-    return {
-      id,
-      title,
-      claim,
-      description: "",
-      evidence,
-      skills: [],
-      metrics: [],
-      strength: evidence ? "medium" : "weak",
-      suitableForQuestions: [],
-    };
-  });
-}
-
-function summarizeFromFacts(facts: CandidatePackDraft["candidateFacts"]): string {
-  const topFacts = facts
-    .map((fact) => fact.fact.trim())
-    .filter(Boolean)
-    .slice(0, 2);
-  return topFacts.join(" ");
-}
-
-function asFactTitle(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-  return trimmed.length > 72 ? `${trimmed.slice(0, 72)}...` : trimmed;
-}
-
-function draftFactsToText(facts: CandidatePackDraft["candidateFacts"]): string {
-  return facts
-    .map((fact, index) =>
-      [`fact-${index + 1}`, asFactTitle(fact.fact), fact.fact.trim(), fact.evidence.trim()].join(
-        " | ",
-      ),
-    )
-    .join("\n");
-}
-
-function normalizeOutputLanguage(value: string): "ru" | "en" {
-  return value.trim().toLowerCase() === "en" ? "en" : "ru";
-}
-
-function translateSuggestedLine(value: string, strings: UiStrings): string {
-  const normalized = value.trim().toLowerCase();
-  const map: Record<string, string> = {
-    "add metrics": strings.settings.candidatePackSuggestedAddMetrics,
-    "add conflict example": strings.settings.candidatePackSuggestedAddConflict,
-    "add leadership example": strings.settings.candidatePackSuggestedAddLeadership,
-    "add failure example": strings.settings.candidatePackSuggestedAddFailure,
-    "add system design/product examples, if relevant":
-      strings.settings.candidatePackSuggestedAddSystemDesign,
-  };
-  return map[normalized] ?? value.trim();
-}
-
-function extractResponsibilities(jobDescription: string): string[] {
-  return lines(jobDescription)
-    .filter((line) => line.startsWith("-") || line.startsWith("•"))
-    .slice(0, 8)
-    .map((line) => line.replace(/^[-•]\s*/, "").trim())
-    .filter(Boolean);
-}
 
 export function useReplylineController(platform: AppPlatform) {
   // ── State ──────────────────────────────────────────────────────────────
@@ -154,34 +78,6 @@ export function useReplylineController(platform: AppPlatform) {
   const [persistenceDiagnosticsError, setPersistenceDiagnosticsError] = createSignal<string | null>(
     null,
   );
-  const [candidatePackStatus, setCandidatePackStatus] = createSignal<CandidatePackStatusDto>({
-    exists: false,
-    factCount: 0,
-    weakFactCount: 0,
-  });
-  const [candidatePackDraft, setCandidatePackDraft] = createStore({
-    candidateSummary: "",
-    targetRole: "",
-    factsText: "",
-    jobTitle: "",
-    jobCompany: "",
-    requirementsText: "",
-    responsibilitiesText: "",
-    keywordsText: "",
-    companyValuesText: "",
-    avoidClaimsText: "",
-    preferredExamplesText: "",
-    language: "ru",
-  });
-  const [candidateRawResume, setCandidateRawResume] = createSignal("");
-  const [candidateJobDescription, setCandidateJobDescription] = createSignal("");
-  const [candidateCompanyValues, setCandidateCompanyValues] = createSignal("");
-  const [candidatePackPreview, setCandidatePackPreview] = createSignal<CandidatePackDraft | null>(
-    null,
-  );
-  const [candidatePackPreparing, setCandidatePackPreparing] = createSignal(false);
-  const [candidatePackSaving, setCandidatePackSaving] = createSignal(false);
-  const [candidatePackError, setCandidatePackError] = createSignal<string | null>(null);
   const [activeInterviewCardIndex, setActiveInterviewCardIndex] = createSignal(0);
   const [pinnedInterviewCard, setPinnedInterviewCard] = createSignal<InterviewCardKey | null>(null);
   const [interviewSession, setInterviewSession] = createSignal<InterviewSessionStateDto | null>(
@@ -466,7 +362,6 @@ export function useReplylineController(platform: AppPlatform) {
     setLastCommandErrorKind,
     notices,
     hotkeys,
-    loadCandidatePack,
     loadContextPacks,
   });
 
@@ -550,158 +445,6 @@ export function useReplylineController(platform: AppPlatform) {
   const bilingualDegraded = createMemo(() => bilingualInterviewState().degraded);
 
   // ── Public API ─────────────────────────────────────────────────────────
-  async function loadCandidatePack() {
-    setCandidatePackError(null);
-    const pack = await platform.invoke<CandidatePackDto | null>("load_candidate_pack");
-    const status = await platform.invoke<CandidatePackStatusDto>("get_candidate_pack_status");
-    setCandidatePackStatus(status);
-    if (!pack) return;
-    setCandidatePackDraft({
-      candidateSummary: pack.candidateSummary,
-      targetRole: pack.targetRole,
-      factsText: pack.resumeFacts
-        .map((fact) => [fact.id, fact.title, fact.claim, fact.evidence].join(" | "))
-        .join("\n"),
-      jobTitle: pack.jobDescription.title,
-      jobCompany: pack.jobDescription.company,
-      requirementsText: pack.jobDescription.requirements.join("\n"),
-      responsibilitiesText: pack.jobDescription.responsibilities.join("\n"),
-      keywordsText: pack.jobDescription.keywords.join("\n"),
-      companyValuesText: pack.companyValues.join("\n"),
-      avoidClaimsText: pack.answerConstraints.avoidClaims.join("\n"),
-      preferredExamplesText: pack.answerConstraints.preferredExamples.join("\n"),
-      language: pack.answerConstraints.language || "ru",
-    });
-  }
-  async function saveCandidatePack() {
-    void emitUiEvent(platform, "candidate_profile_save_clicked", { phase: "candidate_pack" });
-    const input: CandidatePackDto = {
-      candidateSummary: candidatePackDraft.candidateSummary,
-      targetRole: candidatePackDraft.targetRole,
-      resumeFacts: parseFactsText(candidatePackDraft.factsText),
-      jobDescription: {
-        title: candidatePackDraft.jobTitle,
-        company: candidatePackDraft.jobCompany,
-        requirements: lines(candidatePackDraft.requirementsText),
-        responsibilities: lines(candidatePackDraft.responsibilitiesText),
-        keywords: lines(candidatePackDraft.keywordsText),
-      },
-      companyValues: lines(candidatePackDraft.companyValuesText),
-      answerConstraints: {
-        avoidClaims: lines(candidatePackDraft.avoidClaimsText),
-        preferredExamples: lines(candidatePackDraft.preferredExamplesText),
-        language: candidatePackDraft.language,
-      },
-    };
-    await platform.invoke("save_candidate_pack", { input });
-    await loadCandidatePack();
-  }
-  async function clearCandidatePack() {
-    void emitUiEvent(platform, "candidate_profile_clear_clicked", { phase: "candidate_pack" });
-    await platform.invoke("clear_candidate_pack");
-    setCandidatePackDraft({
-      candidateSummary: "",
-      targetRole: "",
-      factsText: "",
-      jobTitle: "",
-      jobCompany: "",
-      requirementsText: "",
-      responsibilitiesText: "",
-      keywordsText: "",
-      companyValuesText: "",
-      avoidClaimsText: "",
-      preferredExamplesText: "",
-      language: "ru",
-    });
-    setCandidatePackStatus({ exists: false, factCount: 0, weakFactCount: 0 });
-    setCandidatePackError(null);
-  }
-  async function prepareCandidatePack() {
-    void emitUiEvent(platform, "candidate_profile_prepare_clicked", { phase: "candidate_pack" });
-    setCandidatePackPreparing(true);
-    setCandidatePackError(null);
-    setError(null);
-    try {
-      const draft = await platform.invoke<CandidatePackDraft>("prepare_candidate_pack", {
-        input: {
-          rawResume: candidateRawResume(),
-          jobDescription: candidateJobDescription(),
-          companyValuesText: candidateCompanyValues(),
-          outputLanguage: normalizeOutputLanguage(candidatePackDraft.language),
-        },
-      });
-      const generatedSummary = summarizeFromFacts(draft.candidateFacts);
-      const translatedSuggestions = draft.suggestedMissingInfo.map((item) =>
-        translateSuggestedLine(item, strings()),
-      );
-      const inferredResponsibilities = extractResponsibilities(candidateJobDescription());
-      const inferredRequirements = lines(candidateJobDescription()).slice(0, 8);
-      setCandidatePackPreview(draft);
-      setCandidatePackDraft({
-        candidateSummary: generatedSummary,
-        targetRole: draft.roleKeywords.slice(0, 3).join(", "),
-        factsText: draftFactsToText(draft.candidateFacts),
-        jobTitle: draft.roleKeywords[0] ?? "",
-        jobCompany: "",
-        requirementsText: inferredRequirements.join("\n"),
-        responsibilitiesText: inferredResponsibilities.join("\n"),
-        keywordsText: draft.roleKeywords.join("\n"),
-        companyValuesText: draft.companyValues.length
-          ? draft.companyValues.join("\n")
-          : lines(candidateCompanyValues()).join("\n"),
-        avoidClaimsText: strings().settings.candidatePackDefaultAvoidClaims,
-        preferredExamplesText: translatedSuggestions.join("\n"),
-        language: normalizeOutputLanguage(candidatePackDraft.language),
-      });
-      setCandidatePackError(null);
-      notices.pushNotice({ tone: "info", message: strings().notices.candidatePackPrepared });
-    } catch (err) {
-      const message = invokeErrorMessage(err);
-      setCandidatePackError(message);
-      setError(message);
-    } finally {
-      setCandidatePackPreparing(false);
-    }
-  }
-  async function savePreparedCandidatePack() {
-    const preview = candidatePackPreview();
-    if (!preview) return;
-    void emitUiEvent(platform, "candidate_profile_save_clicked", { phase: "candidate_pack" });
-    setCandidatePackSaving(true);
-    setCandidatePackError(null);
-    setError(null);
-    try {
-      await platform.invoke("save_prepared_candidate_pack", { draft: preview });
-      const resumeFacts = parseFactsText(candidatePackDraft.factsText);
-      const input: CandidatePackDto = {
-        candidateSummary: candidatePackDraft.candidateSummary,
-        targetRole: candidatePackDraft.targetRole,
-        resumeFacts,
-        jobDescription: {
-          title: candidatePackDraft.jobTitle,
-          company: candidatePackDraft.jobCompany,
-          requirements: lines(candidatePackDraft.requirementsText),
-          responsibilities: lines(candidatePackDraft.responsibilitiesText),
-          keywords: lines(candidatePackDraft.keywordsText),
-        },
-        companyValues: lines(candidatePackDraft.companyValuesText),
-        answerConstraints: {
-          avoidClaims: lines(candidatePackDraft.avoidClaimsText),
-          preferredExamples: lines(candidatePackDraft.preferredExamplesText),
-          language: normalizeOutputLanguage(candidatePackDraft.language),
-        },
-      };
-      await platform.invoke("save_candidate_pack", { input });
-      await loadCandidatePack();
-      notices.pushNotice({ tone: "info", message: strings().notices.candidatePackSaved });
-    } catch (err) {
-      const message = invokeErrorMessage(err);
-      setCandidatePackError(message);
-      setError(message);
-    } finally {
-      setCandidatePackSaving(false);
-    }
-  }
   const interviewCardKeys = createMemo(() => interviewCarouselKeys(card()));
   const activeInterviewCardKey = createMemo<InterviewCardKey | null>(() =>
     activeInterviewCardKeyNow(),
@@ -787,15 +530,6 @@ export function useReplylineController(platform: AppPlatform) {
     runtimeCheckRunning,
     persistenceDiagnostics,
     persistenceDiagnosticsError,
-    candidatePackStatus,
-    candidatePackDraft,
-    candidateRawResume,
-    candidateJobDescription,
-    candidateCompanyValues,
-    candidatePackPreview,
-    candidatePackPreparing,
-    candidatePackSaving,
-    candidatePackError,
     activeInterviewCardIndex,
     activeInterviewCardKey,
     interviewCardKeys,
@@ -866,12 +600,6 @@ export function useReplylineController(platform: AppPlatform) {
       }
       if (section) setSettingsActiveSection(section);
       setPanel("settings");
-    },
-    openCandidatePackStudioPanel: () => {
-      setUserSelectedPanel(true);
-      void emitUiEvent(platform, "candidate_studio_opened", { phase: "candidate_pack" });
-      setSettingsActiveSection("candidatePack");
-      setPanel("candidatePackStudio");
     },
     openMainPanel: () => {
       setUserSelectedPanel(true);
@@ -954,16 +682,6 @@ export function useReplylineController(platform: AppPlatform) {
       );
     },
     setActiveAnswerProfile: (value: string) => setSettings("activeAnswerProfile", value),
-    setCandidatePackDraft: (key: keyof typeof candidatePackDraft, value: string) =>
-      setCandidatePackDraft(key, value),
-    loadCandidatePack,
-    saveCandidatePack,
-    clearCandidatePack,
-    setCandidateRawResume: (value: string) => setCandidateRawResume(value),
-    setCandidateJobDescription: (value: string) => setCandidateJobDescription(value),
-    setCandidateCompanyValues: (value: string) => setCandidateCompanyValues(value),
-    prepareCandidatePack,
-    savePreparedCandidatePack,
     // ── ContextPack ──
     contextPacks,
     activeContextPack,
