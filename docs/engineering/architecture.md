@@ -37,7 +37,23 @@ UI surfaces remain view-focused and do not own orchestration:
 
 ## Backend ownership map
 
-- `src-tauri/src/commands/mod.rs` — IPC command boundary (registration surface in `src-tauri/src/lib.rs`)
+### Command layer (domain split in progress)
+
+- `src-tauri/src/commands/mod.rs` — remaining IPC commands (28 of 39) + shared helpers + macro registry
+- `src-tauri/src/commands/registry.rs` — `replyline_commands!` macro (single-source command registration)
+- `src-tauri/src/commands/shared.rs` — `CommandError` impl for `SettingsError`/`CredentialError`
+
+Extracted domains (5 of 11, 11 of 39 commands):
+
+- `src-tauri/src/commands/diagnostics.rs` — `get_trace_status`, `clear_debug_traces`, `open_trace_folder`
+- `src-tauri/src/commands/tray_window.rs` — `sync_tray_ui_phase`, `refresh_tray_menu`, `tray_open_main`
+- `src-tauri/src/commands/context.rs` — `clear_context`, `get_context_status`
+- `src-tauri/src/commands/runtime_checks.rs` — `check_stt_config`, `check_llm_config`, `check_runtime_config`
+- `src-tauri/src/commands/secrets.rs` — `save_secret`, `delete_secret`
+
+Remaining in `mod.rs`: bootstrap (3), settings (3), capture (3), candidate_pack (6), interview (6), bilingual_experimental (4).
+
+### Other backend modules
 - `src-tauri/src/settings.rs` — settings schema, migration chain, validation, corrupt-file quarantine
 - `src-tauri/src/types.rs` — IPC DTOs and `CommandError` envelope
 - `src-tauri/src/services/capture_pipeline.rs` — capture→STT→LLM orchestration
