@@ -62,17 +62,15 @@
 
 ## What is incomplete
 
-1. **No backend command guard.** Bilingual commands (`start_bilingual_session`, etc.) are registered and callable via IPC even when `bilingualInterviewEnabled` is `false`. They rely on the frontend to check the flag before calling.
+1. **No `REPLYLINE_EXPERIMENTAL_BILINGUAL` env/build flag.** All bilingual code is always compiled. Activation is controlled via `bilingualInterviewEnabled` settings flag + `require_experimental_bilingual()` backend guard.
 
-2. **Settings UI always shows bilingual toggles.** The toggles are visible regardless of `bilingualInterviewEnabled`. There is a disclaimer text (`bilingualInterviewDisclaimer`) but no conditional hiding.
+2. **No live-provider QA.** The manual QA checklist (Google Meet testing) has not been completed with real STT/LLM providers. Deepgram API key required and unavailable on current test machine.
 
-3. **No live-provider QA.** The manual QA checklist (Google Meet testing) has not been completed with real STT/LLM providers.
+3. **Translation lane not prod-hardened.** Timeouts, retry budgets, and fallback behavior are implemented but not validated under sustained load or diverse network conditions.
 
-4. **Translation lane not prod-hardened.** Timeouts, retry budgets, and fallback behavior are implemented but not validated under sustained load or diverse network conditions.
+4. **No feature flag mechanism.** There is no env flag (`REPLYLINE_EXPERIMENTAL_BILINGUAL`) to completely compile-out or gate the feature at build time. All code is always compiled and registered.
 
-5. **No feature flag mechanism.** There is no env/build flag (`REPLYLINE_EXPERIMENTAL_BILINGUAL`) to completely compile-out or gate the feature at build time. All code is always compiled and registered.
-
-6. **No activation guard in `MainSurface`.** The `showBilingualSurface` signal checks `bilingualInterviewEnabled`, but there is no second-level check (e.g., `liveTranslationEnabled`).
+**Note:** Backend command guard (`require_experimental_bilingual()`) and Settings UI gating (`<Show when={bilingualInterviewEnabled}>`) are implemented (updated 2026-06-15).
 
 ## Why it is not shipped
 

@@ -1,7 +1,28 @@
 # Bilingual Interview Mode — Experimental Roadmap
 
-> **Last updated:** 2026-06-14
+> **Last updated:** 2026-06-15
+> **Decision:** Frozen experimental (P0). No active work.
+> **Next review:** When live-provider QA becomes feasible (Deepgram key available) OR v0.3 planning.
 > **Companion to:** `bilingual-implementation-status.md` (inventory of what exists)
+
+## Decision record (2026-06-15)
+
+**Decision: Keep frozen experimental — no active work.**
+
+Rationale:
+- Live-provider QA (hard blocker B1) requires Deepgram API key — unavailable
+- P0 blockers (#3 env flag, partial #2 UI gating) need code changes → deferred
+- No user demand signal from current beta testers
+- Current public beta scope explicitly excludes bilingual (README, limitations, user-guide)
+- P1 internal dogfood estimate: 3-5 days (QA + soak + docs) — not justified now
+
+**Review criteria for re-activation:**
+1. Deepgram API key available for live QA
+2. At least 2 beta testers express interest in bilingual
+3. v0.3 planning slot allocated
+4. P0 code blockers resolved (env flag)
+
+---
 
 ## Current readiness score: P0 (hidden experimental)
 
@@ -35,8 +56,8 @@ The implementation compiles, has unit tests, and runs locally with manual activa
 |---|---|---|
 | Code compiles | `cargo build` + `vite build` green | ✅ |
 | Unit tests | All bilingual Rust + TS tests pass | ✅ |
-| Backend command guard | Commands return `EXPERIMENTAL_BILINGUAL_DISABLED` when `bilingual_interview_enabled == false` | ❌ |
-| Settings UI gating | Hide bilingual toggles when `bilingualInterviewEnabled == false` | ❌ |
+| Backend command guard | Commands return `EXPERIMENTAL_BILINGUAL_DISABLED` when `bilingual_interview_enabled == false` | ✅ |
+| Settings UI gating | Hide bilingual toggles when `bilingualInterviewEnabled == false` | ✅ |
 | Feature flag | `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` env var gates activation; defaults to disabled | ❌ |
 | Docs | `bilingual-implementation-status.md` kept current | ✅ |
 
@@ -262,8 +283,8 @@ The implementation compiles, has unit tests, and runs locally with manual activa
 
 ## Blockers (current → P1)
 
-1. **No backend command guard** — commands callable even when disabled (P0)
-2. **Settings UI always shows toggles** — should be hidden when disabled (P0)
+1. ~~No backend command guard~~ — ✅ implemented (`require_experimental_bilingual`)
+2. ~~Settings UI always shows toggles~~ — ✅ implemented (`<Show when={bilingualInterviewEnabled}>`)
 3. **No feature flag** — can't build without bilingual code (P0)
 4. **No live-provider QA** — zero real-call testing (P1)
 5. **No soak test** — unknown stability under sustained load (P1)
