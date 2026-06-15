@@ -106,7 +106,7 @@ These instructions apply to the whole repository.
 ## Next-Cycle Delivery Rules
 
 - Repository: `iurii-izman/replyline`.
-- Product direction is fixed for this cycle: quality, safety, reliability, beta readiness, local UX, and developer confidence.
+- Product direction: universal live assistant for work conversations. Active ContextPack as the central context primitive (see [ADR 0001](docs/adr/0001-context-pack-simplification.md)). Current cycle focus: quality, safety, reliability, beta readiness, local UX, and developer confidence.
 - Do not propose a new product direction unless explicitly requested.
 
 ### Main-Only Execution

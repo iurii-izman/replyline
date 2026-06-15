@@ -55,6 +55,8 @@ Conversation context is RAM-only, bounded, and cleared on restart or after TTL e
 
 ## Candidate Pack boundary
 
+Candidate Pack will be replaced by ContextPack in a future release (see [ADR 0001](../adr/0001-context-pack-simplification.md)). Until replacement ships, the current boundaries apply:
+
 - Raw resume, job description, and company text stay local until the user explicitly runs `prepare_candidate_pack`.
 - During preparation, relevant content can be sent to the configured LLM provider.
 - Saved compact Candidate Pack context stays local.
