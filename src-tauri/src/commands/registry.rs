@@ -7,7 +7,7 @@
 macro_rules! replyline_commands {
     () => {
         tauri::generate_handler![
-            $crate::commands::load_bootstrap,
+            $crate::commands::bootstrap::load_bootstrap,
             $crate::commands::save_settings,
             $crate::commands::load_candidate_pack,
             $crate::commands::save_candidate_pack,
@@ -27,8 +27,8 @@ macro_rules! replyline_commands {
             $crate::commands::stop_bilingual_session,
             $crate::commands::capture_bilingual_answer,
             $crate::commands::export_bilingual_interview_report,
-            $crate::commands::log_client_event,
-            $crate::commands::quit_app,
+            $crate::commands::bootstrap::log_client_event,
+            $crate::commands::bootstrap::quit_app,
             $crate::commands::runtime_checks::check_stt_config,
             $crate::commands::runtime_checks::check_llm_config,
             $crate::commands::runtime_checks::check_runtime_config,

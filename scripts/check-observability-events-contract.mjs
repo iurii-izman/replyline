@@ -6,6 +6,7 @@ const files = [
   "src-tauri/src/lib.rs",
   "src-tauri/src/commands/mod.rs",
   "src-tauri/src/commands/diagnostics.rs",
+  "src-tauri/src/commands/bootstrap.rs",
   "src-tauri/src/commands/tray_window.rs",
   "src-tauri/src/commands/context.rs",
   "src-tauri/src/commands/runtime_checks.rs",

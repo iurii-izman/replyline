@@ -13,6 +13,7 @@ const commandsPath = join(root, "src-tauri", "src", "commands", "mod.rs");
 const registryPath = join(root, "src-tauri", "src", "commands", "registry.rs");
 const diagnosticsCommandsPath = join(root, "src-tauri", "src", "commands", "diagnostics.rs");
 const trayWindowCommandsPath = join(root, "src-tauri", "src", "commands", "tray_window.rs");
+const bootstrapCommandsPath = join(root, "src-tauri", "src", "commands", "bootstrap.rs");
 const secretsCommandsPath = join(root, "src-tauri", "src", "commands", "secrets.rs");
 const contextCommandsPath = join(root, "src-tauri", "src", "commands", "context.rs");
 const runtimeChecksCommandsPath = join(root, "src-tauri", "src", "commands", "runtime_checks.rs");
@@ -80,6 +81,9 @@ const diagnosticsCommandsText = existsSync(diagnosticsCommandsPath)
 const trayWindowCommandsText = existsSync(trayWindowCommandsPath)
   ? readFileSync(trayWindowCommandsPath, "utf8")
   : "";
+const bootstrapCommandsText = existsSync(bootstrapCommandsPath)
+  ? readFileSync(bootstrapCommandsPath, "utf8")
+  : "";
 const secretsCommandsText = existsSync(secretsCommandsPath)
   ? readFileSync(secretsCommandsPath, "utf8")
   : "";
@@ -115,6 +119,7 @@ const declared = new Set(
     commandsText,
     diagnosticsCommandsText,
     trayWindowCommandsText,
+    bootstrapCommandsText,
     secretsCommandsText,
     contextCommandsText,
     runtimeChecksCommandsText,

@@ -43,8 +43,9 @@ UI surfaces remain view-focused and do not own orchestration:
 - `src-tauri/src/commands/registry.rs` — `replyline_commands!` macro (single-source command registration)
 - `src-tauri/src/commands/shared.rs` — `CommandError` impl for `SettingsError`/`CredentialError`
 
-Extracted domains (5 of 11, 11 of 39 commands):
+Extracted domains (6 of 11, 14 of 39 commands):
 
+- `src-tauri/src/commands/bootstrap.rs` — `load_bootstrap`, `log_client_event`, `quit_app`
 - `src-tauri/src/commands/diagnostics.rs` — `get_trace_status`, `clear_debug_traces`, `open_trace_folder`
 - `src-tauri/src/commands/tray_window.rs` — `sync_tray_ui_phase`, `refresh_tray_menu`, `tray_open_main`
 - `src-tauri/src/commands/context.rs` — `clear_context`, `get_context_status`
