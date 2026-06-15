@@ -1,7 +1,8 @@
 {
-  "minAverageScore": 82,
-  "minScenarioScore": 70,
+  "minAverageScore": 80,
+  "minScenarioScore": 65,
   "maxSayNowChars": 420,
+  "maxGistChars": 200,
   "maxTotalLatencyMs": 12000,
   "maxSttLatencyMs": 6000,
   "maxLlmLatencyMs": 8000

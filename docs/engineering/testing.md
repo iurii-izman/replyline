@@ -96,6 +96,23 @@ Rules:
 
 ## 5. Quality fixture responsibilities
 
+### Quality dimensions measured
+
+The deterministic quality bundle (`pnpm test:quality`) evaluates each card across
+these dimensions:
+
+| Dimension | Description | Check |
+| --- | --- | --- |
+| `card_shape` | Card has valid gist/say_now/next_move structure | `validateCard` contract |
+| `say_now_usefulness` | say_now is paragraph-shaped and not generic | min words, sentence count, specificity |
+| `brevity` | say_now and gist stay within length bounds | max chars for say_now (420) and gist (200) |
+| `tone` | Professional tone, no apology spam, RU-first | apology regex, RU ratio check |
+| `next_step` | next_move is present and actionable | requiresNextStep flag, actionable markers |
+| `groundedness` | Card references elements from the transcript | requiresGroundedTranscript token match |
+| `no_hallucination` | No invented candidate details or fabricated facts | candidate hallucination tokens, fabricated fact markers |
+| `privacy_no_secret_leak` | No API keys, bearer tokens, or prompt leaks | secret patterns, raw prompt leak |
+| `safety` | No risky, unethical, or harmful advice | risky advice patterns |
+
 ### Prompt contract
 
 - Command: `pnpm test:prompt-contract`

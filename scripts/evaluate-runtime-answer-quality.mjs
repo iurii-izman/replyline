@@ -9,6 +9,10 @@ import {
   FORBIDDEN_SAY_NOW_MARKDOWN,
   RAW_PROMPT_LEAK,
   SECRET_PATTERNS,
+  RISKY_ADVICE_PATTERNS,
+  FABRICATED_FACT_MARKERS,
+  ACTIONABLE_NEXT_STEP_MARKERS,
+  extractTranscriptTokens,
 } from "./quality-fixture-shared.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -166,6 +170,59 @@ export function evaluateFixture(fixture, thresholds) {
     reasons.push("markdown dump inside sayNow");
   }
 
+  // --- New quality dimensions ---
+  const transcriptTokens = extractTranscriptTokens(transcript);
+
+  // groundedness: at least one meaningful transcript token should appear in card
+  if (expected.requiresGroundedTranscript && transcriptTokens.length >= 3) {
+    const cardText = normalize(fullText);
+    const hasGroundedToken = transcriptTokens.some((token) => cardText.includes(normalize(token)));
+    if (!hasGroundedToken) {
+      score -= 10;
+      reasons.push("not grounded in transcript");
+    }
+  }
+
+  // actionable next_step: next_move should contain concrete channel/artifact/verb
+  if (expected.requiresActionableNextStep && card.next_move) {
+    const nextNorm = normalize(card.next_move);
+    const hasActionableMarker = ACTIONABLE_NEXT_STEP_MARKERS.some((re) => re.test(nextNorm));
+    if (!hasActionableMarker) {
+      score -= 8;
+      reasons.push("next_move not actionable (no channel/artifact/verb)");
+    }
+  }
+
+  // no fabricated facts: card should not invent metrics without transcript evidence
+  if (expected.requiresNoFabricatedFacts) {
+    const transcriptNorm = normalize(transcript);
+    const fabMatch = FABRICATED_FACT_MARKERS.find((re) => re.test(fullText));
+    if (fabMatch) {
+      const fabText = fullText.match(fabMatch)?.[0] ?? "";
+      const fabDigits = fabText.replace(/\D/g, "");
+      if (fabDigits && !transcriptNorm.includes(fabDigits)) {
+        score -= 12;
+        reasons.push(`fabricated fact detected: ${fabText.trim()}`);
+      }
+    }
+  }
+
+  // no risky advice: card should not suggest harmful/unethical actions
+  if (expected.requiresNoRiskyAdvice) {
+    const riskyMatch = RISKY_ADVICE_PATTERNS.find((re) => re.test(fullText));
+    if (riskyMatch) {
+      score -= 15;
+      reasons.push(`risky advice pattern: ${riskyMatch}`);
+    }
+  }
+
+  // concise gist: gist should not be too long
+  const maxGistChars = expected.maxGistChars ?? thresholds.maxGistChars ?? 200;
+  if ((card.gist ?? "").length > maxGistChars) {
+    score -= 5;
+    reasons.push(`gist too long (${card.gist.length} > ${maxGistChars})`);
+  }
+
   if (expected.requiresNoCandidateHallucination && !fixture.candidatePack) {
     const disallowed = ["candidate pack", "resume", "portfolio", "certification"];
     for (const token of disallowed) {
@@ -209,7 +266,7 @@ export function evaluateRuntimeAnswerQuality() {
   const fixtures = readJson(fixturesPath);
   const thresholds = readJson(thresholdsPath);
 
-  assertMinArraySize(fixtures, 10, "runtime-answer fixtures must contain at least 10 scenarios");
+  assertMinArraySize(fixtures, 25, "runtime-answer fixtures must contain at least 25 scenarios");
 
   const results = fixtures.map((fixture) => evaluateFixture(fixture, thresholds));
   const passCount = results.filter((x) => x.pass).length;
