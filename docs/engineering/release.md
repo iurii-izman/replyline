@@ -195,9 +195,11 @@ Recorded 2026-06-15. See `CHANGELOG.md` for [0.2.0-beta.2] entries.
 - [x] No signed installer claim (unsigned source beta only)
 - [x] Release notes ready (`docs/release-notes/v0.2.0-beta.2.md`)
 - [x] Tag created (`v0.2.0-beta.2`)
-- [ ] Live provider evidence: `pending verification` (Deepgram key unavailable)
+- [ ] Live provider evidence: `pending verification` (Deepgram key unavailable — re-checked 2026-06-15, `pnpm probe:runtime` confirms `DEEPGRAM_API_KEY is missing`)
 - [ ] Cross-machine smoke: Windows 10 not tested
 - [ ] Public installer: certificate not acquired
+
+**Live runtime evidence report**: `docs/beta-evidence/2026-06-15-windows-live-runtime.md` (preflight snapshot, not measured live path)
 
 **Decision**: Conditional Go — source/developer beta released.
 
