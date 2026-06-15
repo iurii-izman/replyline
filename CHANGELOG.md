@@ -5,7 +5,7 @@ All notable changes to Replyline are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0-beta.2] - 2026-06-15
 
 ### Added
 
@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release-freeze guard (advisory in CI, strict in `verify:full` and release workflows).
 - Repository scorecard (`docs/repo-scorecard.md`).
 - Bilingual interview mode (experimental, disabled by default — see `docs/archive/experimental/`).
+- Provider setup guide (`docs/product/provider-setup.md`) covering OpenRouter, Groq, and custom OpenAI-compatible endpoints.
+- Windows 11 source-beta smoke evidence (`docs/beta-evidence/2026-06-15-windows-smoke.md`).
 
 ### Changed
 
@@ -32,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bilingual commands gated behind `require_experimental_bilingual()` — not callable when disabled.
 - Experimental bilingual feature gated behind `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` env flag.
 - Release-on-tag workflow permissions moved to job level (least privilege).
+
+### Known limitations
+
+- Live provider evidence remains `pending verification` on the primary Windows 11 test machine (Deepgram API key unavailable at time of release).
+- Cross-machine and cross-call-app runtime behavior remains pending broader verification.
+
+## [Unreleased]
 
 ## [0.2.0-beta.1] - 2026-06-12
 
