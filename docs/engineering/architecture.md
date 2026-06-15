@@ -101,6 +101,12 @@ Command grouping is enforced by `scripts/check-ipc-handler-contract.mjs`:
 
 Features that exist in the codebase but are gated/disabled by default and not shipped in the current public beta.
 
+### ContextPack (planned direction)
+
+- **Status:** Planned, not implemented. No DTO, command, or UI exists.
+- **Scope:** Universal context primitive for WorkConversation. Replaces Candidate Pack. See [ADR 0001](../adr/0001-context-pack-simplification.md).
+- **Impact:** Candidate Pack (`candidatePack.ts`, `CandidatePackStudio.tsx`, candidate pack commands) is marked for replacement after ContextPack ships.
+
 ### Bilingual Interview Mode
 
 - **Status:** Experimental, disabled by default (`bilingualInterviewEnabled: false`, `liveTranslationEnabled: false`).

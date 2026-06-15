@@ -22,6 +22,7 @@ Canonical public-beta limits, packaging truth, and non-shipped tracks.
 - Replyline is not a speaking coach.
 - There is no transcript/history/team workflow UI in the shipped beta.
 - There is no stealth, hidden-overlay, click-through, or cheating flow.
+- Interview Mode is a context usage example, not a separate product centre.
 - Interview Mode is a visible local assistance surface and the user remains responsible for allowed use in their context.
 
 ## Provider/runtime caveats
@@ -50,6 +51,13 @@ Canonical public-beta limits, packaging truth, and non-shipped tracks.
 - Some local reports, exports, and diagnostics can still contain sensitive content when the user explicitly creates them.
 - Interview reports are local-only but can include transcript content.
 - `debugTraceMode=full_local` is high-sensitivity local diagnostics, not a normal everyday mode.
+
+## Planned direction (not yet shipped)
+
+- **ContextPack** is the planned universal context primitive for WorkConversation (see [ADR 0001](../adr/0001-context-pack-simplification.md)). No ContextPack DTO, command, or UI exists in the current beta.
+- Candidate Pack will be replaced by ContextPack in a future release. Candidate Pack remains unchanged until a working replacement ships.
+- No profile system, persona slots, or identity taxonomy is planned.
+- Bilingual experimental track is frozen — no new features, re-evaluated after ContextPack ships.
 
 ## Explicitly non-shipped future tracks
 

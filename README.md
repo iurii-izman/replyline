@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)](docs/product/limitations.md)
 
-Windows-first desktop tray app for difficult live work conversations and interview practice.
+Windows-first desktop tray app — universal live assistant for work conversations.
 
 Core flow: `capture -> stt -> llm -> card`
 
@@ -30,8 +30,8 @@ is verified and published, use the source setup below.
 ## What It Does
 
 - Hotkey-gated capture (`Ctrl+Alt+Space`) of short system-audio snippets.
-- WorkConversation path returns one compact response card: `gist / say_now / next_move` (generated from `CardSchemaV3`).
-- Interview path returns `InterviewCardSchemaV1` during active interview session and can produce a local post-interview report.
+- WorkConversation returns one compact response card: `gist / say_now / next_move` (generated from `CardSchemaV3`). An active ContextPack can be attached to provide background and role context (planned direction, not yet shipped).
+- Interview Mode is a context usage example: WorkConversation + an interview-oriented context + `InterviewCardSchemaV1` + local post-interview report.
 - Scope stays intentionally narrow for stable-beta reliability and trust.
 
 If the LLM returns a vague `next_move`, Rust repairs it with bounded context heuristics before rendering.

@@ -59,8 +59,8 @@ const requiredIncludes = [
     includes: [
       "## 3. Settings reference",
       "`llmBaseUrl`",
-      "## 5. Interview Mode flow",
-      "## 6. Candidate Pack inside Interview Mode",
+      "## 5. Interview Mode (context usage example)",
+      "## 6. Candidate Pack (planned replacement by ContextPack)",
       "## 8. Troubleshooting quick table",
     ],
   },

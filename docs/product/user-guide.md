@@ -4,7 +4,7 @@ Compact guide for the current Windows public beta.
 
 ## 1. What Replyline does
 
-Replyline is a Windows tray app for short, difficult live conversations and interview practice.
+Replyline is a Windows tray app — universal live assistant for work conversations.
 
 - You hold a global hotkey to capture a short system-audio snippet.
 - Replyline sends the released snippet to Deepgram for speech-to-text.
@@ -13,8 +13,8 @@ Replyline is a Windows tray app for short, difficult live conversations and inte
 
 Two user flows ship today:
 
-- `WorkConversation` gives one card with `gist`, `say_now`, and `next_move`.
-- `Interview Mode` gives interview-focused cards during an active interview session and can save a local report.
+- `WorkConversation` gives one card with `gist`, `say_now`, and `next_move`. An active ContextPack (planned direction, not yet shipped) will provide background context for the conversation.
+- `Interview Mode` is a context usage example that gives interview-focused cards during an active session and can save a local report.
 
 Current shipped scope is intentionally narrow:
 
@@ -81,7 +81,9 @@ Diagnostics notes:
 
 WorkConversation is optimized for short, high-pressure moments. It is not a meeting transcript tool and does not keep a long conversation history in the shipped beta.
 
-## 5. Interview Mode flow
+## 5. Interview Mode (context usage example)
+
+Interview Mode is a specialised use of WorkConversation with interview-oriented context.
 
 1. Open `Interview Mode` and start an interview session.
 2. Capture each question with the same hold-and-release hotkey flow.
@@ -95,14 +97,14 @@ Important boundaries:
 - Interview Mode is a visible local assistance surface.
 - Use it only where interview assistance is allowed in your context.
 - Scores and feedback are heuristics, not formal assessments.
+- Interview Mode is an example of context usage, not a separate product centre.
 
-## 6. Candidate Pack inside Interview Mode
+## 6. Candidate Pack (planned replacement by ContextPack)
 
-Candidate Pack is not a separate everyday product surface. It is optional prep context for Interview Mode.
+Candidate Pack is optional prep context for Interview Mode. It will be replaced
+by ContextPack in a future release (see [ADR 0001](../adr/0001-context-pack-simplification.md)).
 
-Use it when you want interview answers anchored to your background and the target role.
-
-Typical flow:
+Until replacement ships, the current Candidate Pack flow remains unchanged:
 
 1. Paste resume text, job description, and optional company/about text.
 2. Run Candidate Pack preparation explicitly.
