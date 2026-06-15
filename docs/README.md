@@ -12,6 +12,7 @@ Use this page as the short role-based map.
 ### Product / beta user
 
 - [product/user-guide.md](product/user-guide.md) - setup, settings, flows, exports, and troubleshooting.
+- [product/provider-setup.md](product/provider-setup.md) - OpenRouter, Groq, and custom OpenAI-compatible provider configuration.
 - [product/privacy.md](product/privacy.md) - capture, storage, providers, and sharing boundaries.
 - [product/limitations.md](product/limitations.md) - current beta scope and non-shipped tracks.
 

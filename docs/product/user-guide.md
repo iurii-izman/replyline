@@ -163,5 +163,6 @@ Current accessibility note:
 ## 10. Where to read more
 
 - [privacy.md](privacy.md) - capture, storage, provider, and export boundaries
+- [provider-setup.md](provider-setup.md) - OpenRouter, Groq, and custom provider configuration
 - [limitations.md](limitations.md) - current beta scope and non-shipped tracks
 - [BETA_TESTING.md](../../BETA_TESTING.md) - short smoke-test path for testers
