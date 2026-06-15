@@ -7,6 +7,7 @@ mod capture_debug;
 mod card_v3;
 mod commands;
 mod context;
+mod context_pack;
 mod credentials;
 mod diag_contract;
 mod fs_atomic;

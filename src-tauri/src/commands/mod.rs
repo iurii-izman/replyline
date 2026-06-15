@@ -27,6 +27,7 @@ use crate::types::{
 
 pub mod bootstrap;
 pub mod context;
+pub mod context_pack;
 pub mod diagnostics;
 pub mod registry;
 pub mod runtime_checks;

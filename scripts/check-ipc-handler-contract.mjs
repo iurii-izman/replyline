@@ -17,6 +17,7 @@ const bootstrapCommandsPath = join(root, "src-tauri", "src", "commands", "bootst
 const secretsCommandsPath = join(root, "src-tauri", "src", "commands", "secrets.rs");
 const contextCommandsPath = join(root, "src-tauri", "src", "commands", "context.rs");
 const runtimeChecksCommandsPath = join(root, "src-tauri", "src", "commands", "runtime_checks.rs");
+const contextPackCommandsPath = join(root, "src-tauri", "src", "commands", "context_pack.rs");
 const modelPath = join(root, "src", "app", "model", "settings.ts");
 const modelCardsPath = join(root, "src", "app", "model", "cards.ts");
 const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
@@ -56,6 +57,15 @@ const COMMAND_CATEGORIES = {
     "prepare_candidate_pack",
     "save_prepared_candidate_pack",
   ],
+  context_pack: [
+    "list_context_packs",
+    "save_context_pack",
+    "delete_context_pack",
+    "set_active_context_pack",
+    "clear_active_context_pack",
+    "get_active_context_pack",
+    "get_context_pack_status",
+  ],
   diagnostics: [
     "get_persistence_diagnostics",
     "get_feedback_payload",
@@ -93,6 +103,9 @@ const contextCommandsText = existsSync(contextCommandsPath)
 const runtimeChecksCommandsText = existsSync(runtimeChecksCommandsPath)
   ? readFileSync(runtimeChecksCommandsPath, "utf8")
   : "";
+const contextPackCommandsText = existsSync(contextPackCommandsPath)
+  ? readFileSync(contextPackCommandsPath, "utf8")
+  : "";
 const modelText = readFileSync(modelPath, "utf8");
 const modelCardsText = readFileSync(modelCardsPath, "utf8");
 const interviewRustText = readFileSync(interviewRustPath, "utf8");
@@ -123,6 +136,7 @@ const declared = new Set(
     secretsCommandsText,
     contextCommandsText,
     runtimeChecksCommandsText,
+    contextPackCommandsText,
   ]
     .filter((t) => t.length > 0)
     .flatMap((text) => [
