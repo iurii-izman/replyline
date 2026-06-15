@@ -21,27 +21,58 @@ git rev-parse HEAD
 
 ## Authority Gates
 
-### Full autonomy — no confirmation needed
+### Safe Autopilot — allowed without confirmation
 
-Все операции разрешены без подтверждения, включая:
-- git commit, push, tag, reset, clean, restore, checkout, merge, rebase
-- package install/add/remove/update (pnpm, npm, yarn)
-- cargo install/update
-- tauri build
-- file deletion (rm, del, Remove-Item)
-- expanded verifications (verify:full, verify:extended)
+Разрешено без подтверждения:
 
-### Never disclose or edit:
+- read / search / grep files
+- normal file edits inside task scope (edit_file, write_file)
+- `git status`, `git diff`, `git log`, `git show`, `git grep`, `git ls-files`, `git rev-parse`
+- `pnpm test:quick`
+- `pnpm test:ui`
+- `pnpm test:doc-links`
+- `pnpm test:contracts`
+- `pnpm test:public-footprint`
+- `pnpm scripts:lifecycle`
+- `pnpm verify`
+- `cargo check`, `cargo test`, `cargo fmt`, `cargo clippy` for `src-tauri/Cargo.toml`
+- `git commit` after validation — when changes are coherent and the user explicitly asked to implement a block
+
+### Requires explicit user approval
+
+Всегда требовать подтверждение перед:
+
+- `git push`
+- `git tag`
+- `git reset`
+- `git clean`
+- `git restore`
+- `git checkout --`
+- `git merge`
+- `git rebase`
+- release workflows
+- `pnpm tauri build`
+- `pnpm verify:full`
+- `pnpm verify:extended`
+- dependency add / remove / update (`pnpm add`, `npm install`, `cargo update`, etc.)
+- `package.json` / `pnpm-lock.yaml` changes
+- `Cargo.toml` / `Cargo.lock` changes
+- `.github/workflows` changes
+- deleting or moving files / directories
+- editing release-freeze baseline
+- changing public-footprint policy
+
+### Always deny
+
+Никогда не раскрывать и не редактировать:
 
 - API keys, bearer tokens, credential values
 - `.env`, `.env.keys`, `.pem`, `.key`, `.pfx`, `.p12`
 - `credentials/`, `secrets/`, `tokens/`
 - `reports/` directory contents
-- Runtime evidence files
-- Raw transcripts, full prompts, raw Candidate Pack values
-- Provider response bodies
-- AI-tooling directories ignored by public-footprint (`.cursor/`, `.claude/`, `.zed/`, `AI/`, etc.)
-- Root-level destructive commands (`rm -rf /`, `rm -rf ~`)
+- runtime evidence files
+- raw transcripts, full prompts, raw Candidate Pack values
+- provider response bodies
 
 ## Required References
 
@@ -71,7 +102,7 @@ Follow these files in order of precedence:
 | `package.json` or lockfile changed | additionally `pnpm audit:npm` |
 | `Cargo.toml` or Rust deps changed | additionally `pnpm rust:deps` |
 | Substantial code change | `pnpm verify` |
-| Pre-release / handoff | `pnpm verify:full` |
+| Pre-release / handoff | `pnpm verify:full` (requires explicit user approval) |
 | Any project file added/removed | `pnpm test:public-footprint` |
 
 ## Delivery Summary
@@ -86,6 +117,7 @@ Follow these files in order of precedence:
 
 ## Commit Policy
 
-- Commit freely when changes are validated and stable.
+- Commit only after validation commands pass and changes are coherent.
+- Commit only when the user explicitly asked to implement a block.
 - Use conventional commits (`feat:`, `fix:`, `docs:`, `chore:`, `test:`, `refactor:`).
 - Keep commits small and understandable.
