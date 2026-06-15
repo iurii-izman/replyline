@@ -796,6 +796,14 @@ pub async fn retry_last_analysis(
         &context_pack_content,
         mode,
     );
+    let _ = app_log::append_event(
+        "context_pack_status",
+        format!(
+            "active={} chars_bucket={}",
+            !context_pack_raw.trim().is_empty(),
+            context_pack::chars_bucket(context_pack_raw.chars().count())
+        ),
+    );
     let card = match llm_provider::analyze_transcript(
         if trace_redacted_enabled {
             Some(&run_id)
@@ -1023,18 +1031,19 @@ mod tests {
     #[test]
     fn oversized_context_pack_is_truncated_in_combined_context() {
         use crate::context_pack;
-        let large = "x".repeat(context_pack::CONTEXT_PACK_MAX_PROMPT_CHARS + 500);
-        let compacted = context_pack::compact_for_prompt(&large);
+        let mut large = Vec::with_capacity(context_pack::CONTEXT_PACK_MAX_PROMPT_CHARS + 500);
+        large.resize(context_pack::CONTEXT_PACK_MAX_PROMPT_CHARS + 500, b'x');
+        let large = std::str::from_utf8(&large).unwrap();
+        let compacted = context_pack::compact_for_prompt(large);
         let combined = build_combined_context(
             "Rolling context",
             "",
             &compacted,
             AnalysisMode::WorkConversation,
         );
-        // Should contain the truncated version, not the full oversized content
         assert!(combined.len() < large.len() + 50);
         assert!(combined.contains("Active context:"));
         assert!(combined.contains("[...truncated]"));
-        assert!(!combined.contains(&large));
+        assert!(!combined.contains(large));
     }
 }

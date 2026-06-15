@@ -30,17 +30,23 @@ pub const CONTEXT_PACK_MAX_PROMPT_CHARS: usize = 4000;
 
 /// Truncates context pack content for safe injection into LLM prompts.
 /// Capped at CONTEXT_PACK_MAX_PROMPT_CHARS with a truncation marker.
+/// Safe for multi-byte UTF-8 characters (uses char-boundary slicing).
 pub fn compact_for_prompt(content: &str) -> String {
     let trimmed = content.trim();
-    if trimmed.len() <= CONTEXT_PACK_MAX_PROMPT_CHARS {
+    if trimmed.chars().count() <= CONTEXT_PACK_MAX_PROMPT_CHARS {
         return trimmed.to_string();
     }
-    // Find a natural break point before the limit
-    let cutoff = CONTEXT_PACK_MAX_PROMPT_CHARS;
+    // Find safe cutoff at char boundary (not byte boundary)
+    let cutoff = trimmed
+        .char_indices()
+        .nth(CONTEXT_PACK_MAX_PROMPT_CHARS)
+        .map(|(idx, _)| idx)
+        .unwrap_or(trimmed.len());
     let truncated = &trimmed[..cutoff];
     // Try to cut at the last newline before the limit for cleaner output
     if let Some(last_nl) = truncated.rfind('\n') {
-        if last_nl > cutoff.saturating_sub(200) {
+        let nl_window_start = cutoff.saturating_sub(200);
+        if last_nl >= nl_window_start {
             return format!("{}\n[...truncated]", &trimmed[..last_nl]);
         }
     }
@@ -668,29 +674,37 @@ mod tests {
 
     #[test]
     fn compact_for_prompt_truncates_oversized_content() {
-        let content = "x".repeat(CONTEXT_PACK_MAX_PROMPT_CHARS + 100);
-        let result = compact_for_prompt(&content);
-        assert!(result.len() <= CONTEXT_PACK_MAX_PROMPT_CHARS + 20); // +20 for marker
+        let mut content = Vec::with_capacity(CONTEXT_PACK_MAX_PROMPT_CHARS + 100);
+        content.resize(CONTEXT_PACK_MAX_PROMPT_CHARS + 100, b'x');
+        let content = std::str::from_utf8(&content).unwrap();
+        let result = compact_for_prompt(content);
+        assert!(result.len() <= CONTEXT_PACK_MAX_PROMPT_CHARS + 20);
         assert!(result.contains("[...truncated]"));
     }
 
     #[test]
     fn compact_for_prompt_breaks_at_newline_near_limit() {
-        // Build content where a newline falls just before the limit
-        let prefix = "Header info\n".repeat(50); // ~600 chars
-        let body = "x".repeat(CONTEXT_PACK_MAX_PROMPT_CHARS - 100);
-        let content = format!("{prefix}{body}\nLast line with extra text beyond limit");
-        let result = compact_for_prompt(&content);
+        let mut all = Vec::with_capacity(CONTEXT_PACK_MAX_PROMPT_CHARS + 200);
+        // Fill with 'x' up to the limit
+        all.resize(CONTEXT_PACK_MAX_PROMPT_CHARS, b'x');
+        // Place a newline inside the truncation window (near the end)
+        let nl_pos = CONTEXT_PACK_MAX_PROMPT_CHARS - 50;
+        all[nl_pos] = b'\n';
+        // Add extra trailing text beyond the limit
+        all.extend_from_slice(b"\nExtra trailing text beyond limit");
+        let content = std::str::from_utf8(&all).unwrap();
+        let result = compact_for_prompt(content);
         assert!(result.len() <= CONTEXT_PACK_MAX_PROMPT_CHARS + 20);
         assert!(result.contains("[...truncated]"));
-        // Should end with a newline before the marker, not mid-word
         assert!(result.ends_with("\n[...truncated]"));
     }
 
     #[test]
     fn compact_for_prompt_handles_exact_limit() {
-        let content = "y".repeat(CONTEXT_PACK_MAX_PROMPT_CHARS);
-        let result = compact_for_prompt(&content);
+        let mut content = Vec::with_capacity(CONTEXT_PACK_MAX_PROMPT_CHARS);
+        content.resize(CONTEXT_PACK_MAX_PROMPT_CHARS, b'y');
+        let content = std::str::from_utf8(&content).unwrap();
+        let result = compact_for_prompt(content);
         assert_eq!(result.len(), CONTEXT_PACK_MAX_PROMPT_CHARS);
         assert!(!result.contains("[...truncated]"));
     }
@@ -699,6 +713,19 @@ mod tests {
     fn compact_for_prompt_empty_input_is_empty() {
         let result = compact_for_prompt("");
         assert_eq!(result, "");
+    }
+
+    #[test]
+    fn compact_for_prompt_handles_multibyte_utf8_safely() {
+        // Build a large Cyrillic string at runtime to avoid const-eval stack overflow.
+        let mut cyrillic = Vec::with_capacity((CONTEXT_PACK_MAX_PROMPT_CHARS + 20) * 2);
+        for _ in 0..(CONTEXT_PACK_MAX_PROMPT_CHARS + 20) {
+            cyrillic.extend_from_slice("я".as_bytes());
+        }
+        let cyrillic = std::str::from_utf8(&cyrillic).unwrap();
+        let result = compact_for_prompt(cyrillic);
+        assert!(result.contains("[...truncated]"));
+        assert!(std::str::from_utf8(result.as_bytes()).is_ok());
     }
 
     #[test]
