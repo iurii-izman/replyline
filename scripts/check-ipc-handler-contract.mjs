@@ -2,7 +2,7 @@
  * Enforces IPC command contract between Rust command declarations and lib.rs invoke_handler registration.
  * Also requires every registered command to be assigned to an explicit category.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -10,6 +10,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 const libPath = join(root, "src-tauri", "src", "lib.rs");
 const commandsPath = join(root, "src-tauri", "src", "commands", "mod.rs");
+const registryPath = join(root, "src-tauri", "src", "commands", "registry.rs");
+const diagnosticsCommandsPath = join(root, "src-tauri", "src", "commands", "diagnostics.rs");
 const modelPath = join(root, "src", "app", "model", "settings.ts");
 const modelCardsPath = join(root, "src", "app", "model", "cards.ts");
 const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
@@ -67,23 +69,37 @@ function flattenCategoryMap(categoryMap) {
 
 const libText = readFileSync(libPath, "utf8");
 const commandsText = readFileSync(commandsPath, "utf8");
+const registryText = existsSync(registryPath) ? readFileSync(registryPath, "utf8") : "";
+const diagnosticsCommandsText = existsSync(diagnosticsCommandsPath)
+  ? readFileSync(diagnosticsCommandsPath, "utf8")
+  : "";
 const modelText = readFileSync(modelPath, "utf8");
 const modelCardsText = readFileSync(modelCardsPath, "utf8");
 const interviewRustText = readFileSync(interviewRustPath, "utf8");
 const settingsRustText = readFileSync(settingsRustPath, "utf8");
 const typesRustText = readFileSync(typesRustPath, "utf8");
 
-// Command registration now lives in the replyline_commands! macro in commands/mod.rs.
-// Scan both files to catch any migration drift.
+// Command registration now lives in the replyline_commands! macro.
+// Scan mod.rs, registry.rs, and lib.rs.
 const registered = new Set(
   [
     ...libText.matchAll(/commands::(\w+)/g),
-    ...commandsText.matchAll(/\$crate::commands::(\w+)/g),
-  ].map((m) => m[1]),
+    ...commandsText.matchAll(/\$crate::commands::(\w+(?:::\w+)?)/g),
+    ...registryText.matchAll(/\$crate::commands::(\w+(?:::\w+)?)/g),
+  ].map((m) => {
+    // Extract the last segment (command name) for flat categories.
+    // For "diagnostics::get_trace_status", the command name is "get_trace_status".
+    const full = m[1];
+    const parts = full.split("::");
+    return parts[parts.length - 1];
+  }),
 );
 const declared = new Set(
   [
     ...commandsText.matchAll(/#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g),
+    ...diagnosticsCommandsText.matchAll(
+      /#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g,
+    ),
   ].map((m) => m[1]),
 );
 
@@ -97,7 +113,9 @@ const missingInRegistration = [...categorized].filter((name) => !registered.has(
 const uncategorizedRegistered = [...registered].filter((name) => !categorized.has(name));
 const unregisteredDeclared = [...declared].filter((name) => !registered.has(name));
 const registeredWithoutDeclaration = [...registered].filter((name) => !declared.has(name));
-const registryMacroPresent = commandsText.includes("macro_rules! replyline_commands");
+const registryMacroPresent =
+  commandsText.includes("macro_rules! replyline_commands") ||
+  registryText.includes("macro_rules! replyline_commands");
 
 if (
   duplicateCategorized.length ||
@@ -130,7 +148,9 @@ if (
     );
   }
   if (!registryMacroPresent) {
-    console.error("Missing replyline_commands! macro in src-tauri/src/commands/mod.rs.");
+    console.error(
+      "Missing replyline_commands! macro in src-tauri/src/commands/mod.rs or registry.rs.",
+    );
   }
   process.exit(1);
 }
