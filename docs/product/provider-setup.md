@@ -91,6 +91,10 @@ Processing Unit) для быстрого инференса.
 | Qwen 2.5 32B | `qwen-2.5-32b` | Платно, хорошее качество на русском |
 | DeepSeek R1 Distill Llama 70B | `deepseek-r1-distill-llama-70b` | Платно, reasoning-модель |
 
+> **Примечание**: модели в таблице — примеры на момент написания. Доступность
+> моделей и их идентификаторы могут меняться. Всегда проверяйте актуальный список
+> на [console.groq.com/docs/models](https://console.groq.com/docs/models).
+
 ### Где получить ключ
 
 1. Зарегистрируйтесь на [console.groq.com](https://console.groq.com).

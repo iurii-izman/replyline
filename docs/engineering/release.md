@@ -95,7 +95,7 @@ Guard categories in baseline:
 | --- | --- | --- |
 | `rootContracts` | Package manifests, lockfiles, governance | 9 |
 | `criticalWorkflows` | CI, release, packaging, dependency workflows | 7 |
-| `criticalRustModules` | Tauri backend: providers, commands, services, settings, core types | 21 |
+| `criticalRustModules` | Tauri backend: providers, commands, services, settings, core types | 28 |
 | `criticalFrontendModules` | Solid.js app shell: model, platform, controller | 3 |
 | `criticalDocs` | Engineering, product, privacy, release, SLO contracts | 15 |
 | `criticalPolicyScripts` | Security, consistency, footprint, lifecycle checks | 7 |
@@ -254,3 +254,5 @@ These checks stay manual even when `pnpm beta:release-check` is green.
 - [engineering/manual-qa.md](manual-qa.md)
 - [beta-smoke-report.md](../beta-smoke-report.md)
 - [release-notes/v0.2.0-beta.1.md](../release-notes/v0.2.0-beta.1.md)
+- [release-notes/v0.2.0-beta.2.md](../release-notes/v0.2.0-beta.2.md)
+- [beta-evidence/2026-06-15-windows-smoke.md](../beta-evidence/2026-06-15-windows-smoke.md) — partial pre-beta.2 smoke (pending verification, not measured live runtime)

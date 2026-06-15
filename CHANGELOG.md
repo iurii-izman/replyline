@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - CI: release-freeze is advisory in normal CI, strict only in release-quality workflows.
-- Release-freeze baseline reduced from 181 to 63 critical paths with categories.
+- Release-freeze baseline reduced to focused critical paths with categories (see `docs/release-freeze-baseline.json`).
 - Frontend model split into 10 domain modules under `src/app/model/`.
 - Tauri command registry centralized in `replyline_commands!` macro.
 - Commands module converted to directory (`src-tauri/src/commands/`).

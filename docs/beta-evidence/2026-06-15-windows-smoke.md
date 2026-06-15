@@ -2,6 +2,9 @@
 
 > **Claim label**: `pending verification` (live provider path blocked by missing API key)
 >
+> **Context**: Collected on commit `2f1009e` (pre-beta.2). This is partial
+> pre-release evidence, not measured beta.2 runtime proof.
+>
 > This report follows the [BETA_TESTING.md](../../BETA_TESTING.md) format and the
 > [runtime evidence guide](../engineering/runtime.md). No secrets, raw transcripts,
 > absolute user paths, or provider response bodies are included.
@@ -102,6 +105,7 @@ Source: `reports/runtime/pipeline-latency-summary.json` (2026-06-13, fixture-bas
 
 1. Obtain a Deepgram API key and configure it in the app.
 2. Obtain an OpenAI-compatible API key for the configured LLM endpoint.
-3. Re-run `pnpm probe:runtime` to confirm provider readiness.
-4. Execute the full 15-minute smoke test from `BETA_TESTING.md`.
-5. Update this report with `measured` claims when live evidence is available.
+3. **Pull latest `main` or checkout tag `v0.2.0-beta.2`** and re-run the smoke path.
+4. Re-run `pnpm probe:runtime` to confirm provider readiness.
+5. Execute the full 15-minute smoke test from `BETA_TESTING.md`.
+6. Update this report with `measured` claims when live evidence is available.
