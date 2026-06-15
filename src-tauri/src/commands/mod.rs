@@ -28,6 +28,19 @@ use crate::types::{
 
 pub mod shared;
 
+// ── Domain map (future split target) ──
+// bootstrap               — load_bootstrap, log_client_event, quit_app
+// diagnostics             — get_trace_status, clear_debug_traces, open_trace_folder
+// tray_window             — sync_tray_ui_phase, refresh_tray_menu, tray_open_main
+// settings                — save_settings, get_setup_status, get_feedback_payload
+// secrets                 — save_secret, delete_secret, get_persistence_diagnostics
+// context                 — clear_context, get_context_status
+// capture                 — capture_start, capture_stop_and_analyze, retry_last_analysis
+// runtime_checks          — check_stt_config, check_llm_config, check_runtime_config
+// candidate_pack          — load/save/clear/get_status/prepare/save_prepared
+// interview               — start/end/get/export/clear interview session/report
+// bilingual_experimental  — start/stop/capture/export_bilingual_interview_report
+
 static RUN_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 fn next_run_id() -> String {
