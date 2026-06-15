@@ -31,6 +31,13 @@
     "src-tauri/tauri.conf.json",
     "src-tauri/src/lib.rs",
     "src-tauri/src/commands/mod.rs",
+    "src-tauri/src/commands/registry.rs",
+    "src-tauri/src/commands/bootstrap.rs",
+    "src-tauri/src/commands/diagnostics.rs",
+    "src-tauri/src/commands/tray_window.rs",
+    "src-tauri/src/commands/context.rs",
+    "src-tauri/src/commands/runtime_checks.rs",
+    "src-tauri/src/commands/secrets.rs",
     "src-tauri/src/settings.rs",
     "src-tauri/src/app_log.rs",
     "src-tauri/src/context.rs",
@@ -75,7 +82,14 @@
     "scripts/check-prompt-contract.mjs"
   ],
   "guardrailPathRegexes": [],
-  "allowlistPrefixes": [".github/", "docs/", "scripts/", "tests/", "src/", "src-tauri/"],
+  "allowlistPrefixes": [
+    ".github/",
+    "docs/",
+    "scripts/",
+    "tests/",
+    "src/",
+    "src-tauri/"
+  ],
   "categories": {
     "_note": "Categories are documentation-only. The checker uses the flat guardrailPaths list.",
     "rootContracts": [
@@ -104,6 +118,13 @@
       "src-tauri/tauri.conf.json",
       "src-tauri/src/lib.rs",
       "src-tauri/src/commands/mod.rs",
+      "src-tauri/src/commands/registry.rs",
+      "src-tauri/src/commands/bootstrap.rs",
+      "src-tauri/src/commands/diagnostics.rs",
+      "src-tauri/src/commands/tray_window.rs",
+      "src-tauri/src/commands/context.rs",
+      "src-tauri/src/commands/runtime_checks.rs",
+      "src-tauri/src/commands/secrets.rs",
       "src-tauri/src/settings.rs",
       "src-tauri/src/app_log.rs",
       "src-tauri/src/context.rs",
