@@ -39,11 +39,11 @@ UI surfaces remain view-focused and do not own orchestration:
 
 ### Command layer (domain split in progress)
 
-- `src-tauri/src/commands/mod.rs` — remaining IPC commands (28 of 39) + shared helpers + macro registry
+- `src-tauri/src/commands/mod.rs` — remaining IPC commands (23 of 39) + shared helpers
 - `src-tauri/src/commands/registry.rs` — `replyline_commands!` macro (single-source command registration)
 - `src-tauri/src/commands/shared.rs` — `CommandError` impl for `SettingsError`/`CredentialError`
 
-Extracted domains (6 of 11, 14 of 39 commands):
+Extracted domains (6 of 11, 16 of 39 commands):
 
 - `src-tauri/src/commands/bootstrap.rs` — `load_bootstrap`, `log_client_event`, `quit_app`
 - `src-tauri/src/commands/diagnostics.rs` — `get_trace_status`, `clear_debug_traces`, `open_trace_folder`
@@ -52,7 +52,7 @@ Extracted domains (6 of 11, 14 of 39 commands):
 - `src-tauri/src/commands/runtime_checks.rs` — `check_stt_config`, `check_llm_config`, `check_runtime_config`
 - `src-tauri/src/commands/secrets.rs` — `save_secret`, `delete_secret`
 
-Remaining in `mod.rs` (5 domains, 25 commands):
+Remaining in `mod.rs` (5 domains, 23 commands):
 - settings (4): `save_settings`, `get_setup_status`, `get_feedback_payload`, `get_persistence_diagnostics`
 - capture (3): `capture_start`, `capture_stop_and_analyze`, `retry_last_analysis`
 - candidate_pack (6): load/save/clear/get_status/prepare/save_prepared + shared helpers + tests

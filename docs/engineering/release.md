@@ -184,6 +184,23 @@ Evidence still required before public installer claims:
 10. Link the active release notes draft plus evidence artifacts, not a historical handoff plan.
 11. Record residual risks explicitly when using `Conditional Go`.
 
+## Beta.2 Release Decision Checklist
+
+Recorded 2026-06-15. See `CHANGELOG.md` for [0.2.0-beta.2] entries.
+
+- [x] `pnpm verify` green
+- [x] `pnpm verify:full` blocker understood (pre-existing `scripts/reports/` untracked, S2)
+- [x] Windows 11 smoke evidence collected (`docs/beta-evidence/2026-06-15-windows-smoke.md`)
+- [x] Provider setup doc added (`docs/product/provider-setup.md` — Groq documented setup)
+- [x] No signed installer claim (unsigned source beta only)
+- [x] Release notes ready (`docs/release-notes/v0.2.0-beta.2.md`)
+- [x] Tag created (`v0.2.0-beta.2`)
+- [ ] Live provider evidence: `pending verification` (Deepgram key unavailable)
+- [ ] Cross-machine smoke: Windows 10 not tested
+- [ ] Public installer: certificate not acquired
+
+**Decision**: Conditional Go — source/developer beta released.
+
 ## Manual Release Checklist
 
 These checks stay manual even when `pnpm beta:release-check` is green.
