@@ -158,6 +158,8 @@ Operational boundaries:
 - Public GitHub Release binary attachment is valid only for signed and verified Windows packages.
 - Do not claim public installer readiness from unsigned artifacts, workflow artifacts, or local builds.
 
+See [signed-installer-readiness.md](signed-installer-readiness.md) for the full signed installer plan, certificate requirements, and step-by-step checklist.
+
 Evidence still required before public installer claims:
 
 - Clean Windows 10 install pass.

@@ -26,6 +26,7 @@ Use this page as the short role-based map.
 ### Release/operator
 
 - [engineering/release.md](engineering/release.md) - release decision, freeze semantics, and packaging truth.
+- [engineering/signed-installer-readiness.md](engineering/signed-installer-readiness.md) - signed Windows installer plan, certificate requirements, checklist.
 - [engineering/runtime.md](engineering/runtime.md) - runtime proof, evidence labels, and live validation boundaries.
 - [engineering/operations.md](engineering/operations.md) - beta intake, diagnostics, sharing, and issue routing.
 - [engineering/manual-qa.md](engineering/manual-qa.md) - operator manual QA checklist for UI, privacy, and Windows UX.
