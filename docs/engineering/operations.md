@@ -58,6 +58,35 @@ Ask testers to use the short beta path in [BETA_TESTING.md](../../BETA_TESTING.m
 4. Attach `artifacts/beta-smoke-report/smoke-report.md` and `smoke-report.json`.
 5. Paste only a short issue summary; do not paste raw logs.
 
+### Quick feedback (redacted)
+
+For a rapid redacted issue body without running the full smoke report:
+
+```powershell
+pnpm beta:feedback           # stdout
+pnpm beta:feedback --clipboard  # copies to clipboard
+pnpm beta:feedback --json       # JSON for tooling
+```
+
+The feedback payload includes:
+
+- App version, commit SHA, OS
+- Settings summary (hotkey, model preset, route kind — no keys or secrets)
+- Last error category and code
+- Deterministic card quality summary (pass/fail, score)
+- Reproduction steps placeholder
+- Safety checklist
+
+Excluded by default:
+
+- Raw transcript
+- Candidate Pack content
+- Full prompts or provider response bodies
+- API keys, bearer tokens, credential values
+- Absolute user paths (redacted to `%USERPROFILE%` or `[PATH_REDACTED]`)
+
+No telemetry. No network requests.
+
 What the smoke report is for:
 
 - workstation readiness snapshot
