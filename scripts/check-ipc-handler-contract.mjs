@@ -12,6 +12,7 @@ const libPath = join(root, "src-tauri", "src", "lib.rs");
 const commandsPath = join(root, "src-tauri", "src", "commands", "mod.rs");
 const registryPath = join(root, "src-tauri", "src", "commands", "registry.rs");
 const diagnosticsCommandsPath = join(root, "src-tauri", "src", "commands", "diagnostics.rs");
+const trayWindowCommandsPath = join(root, "src-tauri", "src", "commands", "tray_window.rs");
 const modelPath = join(root, "src", "app", "model", "settings.ts");
 const modelCardsPath = join(root, "src", "app", "model", "cards.ts");
 const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
@@ -73,6 +74,9 @@ const registryText = existsSync(registryPath) ? readFileSync(registryPath, "utf8
 const diagnosticsCommandsText = existsSync(diagnosticsCommandsPath)
   ? readFileSync(diagnosticsCommandsPath, "utf8")
   : "";
+const trayWindowCommandsText = existsSync(trayWindowCommandsPath)
+  ? readFileSync(trayWindowCommandsPath, "utf8")
+  : "";
 const modelText = readFileSync(modelPath, "utf8");
 const modelCardsText = readFileSync(modelCardsPath, "utf8");
 const interviewRustText = readFileSync(interviewRustPath, "utf8");
@@ -98,6 +102,9 @@ const declared = new Set(
   [
     ...commandsText.matchAll(/#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g),
     ...diagnosticsCommandsText.matchAll(
+      /#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g,
+    ),
+    ...trayWindowCommandsText.matchAll(
       /#\s*\[tauri::command\][\s\S]*?\bpub\s+(?:async\s+)?fn\s+(\w+)\s*\(/g,
     ),
   ].map((m) => m[1]),
