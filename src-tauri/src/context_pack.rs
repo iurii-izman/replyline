@@ -22,6 +22,45 @@ const CONTEXT_PACKS_FILE: &str = "context-packs.json";
 pub const CONTEXT_PACK_MAX_CONTENT_LEN: usize = 100_000;
 pub const CONTEXT_PACK_MAX_TITLE_LEN: usize = 200;
 pub const CONTEXT_PACK_MAX_ID_LEN: usize = 64;
+pub const CONTEXT_PACK_MAX_PROMPT_CHARS: usize = 4000;
+
+// ---------------------------------------------------------------------------
+// Prompt-safe context helpers
+// ---------------------------------------------------------------------------
+
+/// Truncates context pack content for safe injection into LLM prompts.
+/// Capped at CONTEXT_PACK_MAX_PROMPT_CHARS with a truncation marker.
+pub fn compact_for_prompt(content: &str) -> String {
+    let trimmed = content.trim();
+    if trimmed.len() <= CONTEXT_PACK_MAX_PROMPT_CHARS {
+        return trimmed.to_string();
+    }
+    // Find a natural break point before the limit
+    let cutoff = CONTEXT_PACK_MAX_PROMPT_CHARS;
+    let truncated = &trimmed[..cutoff];
+    // Try to cut at the last newline before the limit for cleaner output
+    if let Some(last_nl) = truncated.rfind('\n') {
+        if last_nl > cutoff.saturating_sub(200) {
+            return format!("{}\n[...truncated]", &trimmed[..last_nl]);
+        }
+    }
+    format!("{truncated}\n[...truncated]")
+}
+
+/// Returns a safe chars-bucket label for observability (no raw content).
+pub fn chars_bucket(len: usize) -> &'static str {
+    if len == 0 {
+        "0"
+    } else if len <= 500 {
+        "1-500"
+    } else if len <= 2000 {
+        "501-2000"
+    } else if len <= 4000 {
+        "2001-4000"
+    } else {
+        "4001+"
+    }
+}
 
 // ---------------------------------------------------------------------------
 // DTOs
@@ -613,5 +652,64 @@ mod tests {
     fn title_at_limit_is_accepted() {
         let title = "t".repeat(CONTEXT_PACK_MAX_TITLE_LEN);
         assert!(validate_title(&title).is_ok());
+    }
+
+    // -------------------------------------------------------------------
+    // Prompt compact tests
+    // -------------------------------------------------------------------
+
+    #[test]
+    fn compact_for_prompt_passes_short_content_unchanged() {
+        let content = "My role: senior engineer at Acme Corp.";
+        let result = compact_for_prompt(content);
+        assert_eq!(result, content);
+        assert!(!result.contains("[...truncated]"));
+    }
+
+    #[test]
+    fn compact_for_prompt_truncates_oversized_content() {
+        let content = "x".repeat(CONTEXT_PACK_MAX_PROMPT_CHARS + 100);
+        let result = compact_for_prompt(&content);
+        assert!(result.len() <= CONTEXT_PACK_MAX_PROMPT_CHARS + 20); // +20 for marker
+        assert!(result.contains("[...truncated]"));
+    }
+
+    #[test]
+    fn compact_for_prompt_breaks_at_newline_near_limit() {
+        // Build content where a newline falls just before the limit
+        let prefix = "Header info\n".repeat(50); // ~600 chars
+        let body = "x".repeat(CONTEXT_PACK_MAX_PROMPT_CHARS - 100);
+        let content = format!("{prefix}{body}\nLast line with extra text beyond limit");
+        let result = compact_for_prompt(&content);
+        assert!(result.len() <= CONTEXT_PACK_MAX_PROMPT_CHARS + 20);
+        assert!(result.contains("[...truncated]"));
+        // Should end with a newline before the marker, not mid-word
+        assert!(result.ends_with("\n[...truncated]"));
+    }
+
+    #[test]
+    fn compact_for_prompt_handles_exact_limit() {
+        let content = "y".repeat(CONTEXT_PACK_MAX_PROMPT_CHARS);
+        let result = compact_for_prompt(&content);
+        assert_eq!(result.len(), CONTEXT_PACK_MAX_PROMPT_CHARS);
+        assert!(!result.contains("[...truncated]"));
+    }
+
+    #[test]
+    fn compact_for_prompt_empty_input_is_empty() {
+        let result = compact_for_prompt("");
+        assert_eq!(result, "");
+    }
+
+    #[test]
+    fn chars_bucket_returns_correct_labels() {
+        assert_eq!(chars_bucket(0), "0");
+        assert_eq!(chars_bucket(1), "1-500");
+        assert_eq!(chars_bucket(500), "1-500");
+        assert_eq!(chars_bucket(501), "501-2000");
+        assert_eq!(chars_bucket(2000), "501-2000");
+        assert_eq!(chars_bucket(2001), "2001-4000");
+        assert_eq!(chars_bucket(4000), "2001-4000");
+        assert_eq!(chars_bucket(4001), "4001+");
     }
 }

@@ -467,11 +467,13 @@ pub async fn capture_stop_and_analyze(
         .flatten()
         .map(|pack| candidate_pack::compact_context(&pack))
         .unwrap_or_default();
-    let context_pack_content = context_pack::get_active_context_pack()
+    let context_pack_raw = context_pack::get_active_context_pack()
         .ok()
         .flatten()
         .map(|pack| pack.content)
         .unwrap_or_default();
+    let context_pack_content = context_pack::compact_for_prompt(&context_pack_raw);
+    let context_pack_active = !context_pack_raw.trim().is_empty();
     let combined_context = build_combined_context(
         &context_text,
         &candidate_context,
@@ -481,9 +483,9 @@ pub async fn capture_stop_and_analyze(
     let _ = app_log::append_event(
         "context_pack_status",
         format!(
-            "active={} content_chars={}",
-            !context_pack_content.is_empty(),
-            context_pack_content.chars().count()
+            "active={} chars_bucket={}",
+            context_pack_active,
+            context_pack::chars_bucket(context_pack_raw.chars().count())
         ),
     );
     let _ = app_log::append_event(
@@ -782,11 +784,12 @@ pub async fn retry_last_analysis(
         .flatten()
         .map(|pack| candidate_pack::compact_context(&pack))
         .unwrap_or_default();
-    let context_pack_content = context_pack::get_active_context_pack()
+    let context_pack_raw = context_pack::get_active_context_pack()
         .ok()
         .flatten()
         .map(|pack| pack.content)
         .unwrap_or_default();
+    let context_pack_content = context_pack::compact_for_prompt(&context_pack_raw);
     let combined_context = build_combined_context(
         &context_text,
         &candidate_context,
@@ -1015,5 +1018,23 @@ mod tests {
     fn all_empty_yields_empty_string() {
         let combined = build_combined_context("", "", "", AnalysisMode::WorkConversation);
         assert_eq!(combined, "");
+    }
+
+    #[test]
+    fn oversized_context_pack_is_truncated_in_combined_context() {
+        use crate::context_pack;
+        let large = "x".repeat(context_pack::CONTEXT_PACK_MAX_PROMPT_CHARS + 500);
+        let compacted = context_pack::compact_for_prompt(&large);
+        let combined = build_combined_context(
+            "Rolling context",
+            "",
+            &compacted,
+            AnalysisMode::WorkConversation,
+        );
+        // Should contain the truncated version, not the full oversized content
+        assert!(combined.len() < large.len() + 50);
+        assert!(combined.contains("Active context:"));
+        assert!(combined.contains("[...truncated]"));
+        assert!(!combined.contains(&large));
     }
 }
