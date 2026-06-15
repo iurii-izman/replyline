@@ -52,10 +52,6 @@ export async function installReplylineE2EPlatform(
           if (command === "get_persistence_diagnostics") {
             return mockPersistenceDiagnostics;
           }
-          if (command === "load_candidate_pack") return null;
-          if (command === "get_candidate_pack_status") {
-            return { exists: false, factCount: 0, weakFactCount: 0 };
-          }
           if (command === "capture_start") {
             captureActive = true;
             return null;

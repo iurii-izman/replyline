@@ -1,14 +1,14 @@
 # ADR 0001: Context Pack Simplification
 
-- **Status:** Accepted
+- **Status:** Accepted, implemented
 - **Date:** 2026-06-15
 - **Deciders:** iurii-izman
 
 ## Context / Problem
 
 Replyline currently positions itself around two user flows:
-`WorkConversation` and `Interview Mode`. Interview Mode carries
-a dedicated UX entity — `Candidate Pack` — that provides
+`WorkConversation` and `Interview Mode`. Interview Mode carried
+a dedicated legacy prep entity that provided
 structured prep context (resume facts, job description, role
 keywords, etc.) specifically for interview practice.
 
@@ -17,8 +17,8 @@ This dual-flow positioning creates several tensions:
 1. **Product identity split.** The product reads as "interview
    helper that also does conversations" rather than one coherent
    product.
-2. **Candidate Pack is a narrow entity.** Its elaborate typed
-   schema (CandidateFact, strength levels, metrics, job description
+2. **The legacy prep pack is a narrow entity.** Its elaborate typed
+   schema (fact records, strength levels, metrics, job description
    decomposition) is tied to interview-only prep and doesn't
    generalise to other conversation contexts.
 3. **No universal context primitive.** WorkConversation has no
@@ -26,9 +26,8 @@ This dual-flow positioning creates several tensions:
    grows dramatically when it knows *who you are and what you're
    talking about*.
 
-The codebase already contains the Candidate Pack DTOs, commands,
-and UI surface (`CandidatePackStudio.tsx`). It has no `ContextPack`
-concept anywhere in runtime or docs.
+At the time of this decision, the codebase contained legacy prep-pack
+DTOs, commands, and UI, but no `ContextPack` concept in runtime or docs.
 
 ## Decision
 
@@ -47,11 +46,9 @@ The central entity is an active `ContextPack`. The central scenario is
 3. **ContextPack is the default for WorkConversation.** When a
    pack is active, it is attached to every analysis request
    automatically (unless the user explicitly detaches it).
-4. **Candidate Pack will be replaced by ContextPack.** The
-   Candidate Pack DTOs, commands, UI, and IPC category remain
-   in place until a working ContextPack replacement is shipped.
-   After replacement is verified, old code is removed — not
-   hidden, not gated permanently.
+4. **The legacy prep-pack system is replaced by ContextPack.** The
+   replacement ships first, then old code is removed — not hidden,
+   not gated permanently.
 5. **Interview Mode becomes a context usage example.** It is no
    longer the product centre. Interview session = WorkConversation
    + an interview-oriented ContextPack + the existing interview
@@ -66,7 +63,7 @@ The central entity is an active `ContextPack`. The central scenario is
 ContextPack {
   id: string;
   title: string;
-  content: string;        // free-form markdown; replaces typed CandidateFact[]
+  content: string;        // free-form markdown; replaces typed fact records
   isActive: boolean;
   createdAt: ISO string;
   updatedAt: ISO string;
@@ -96,16 +93,13 @@ Design rationale:
 
 ## Consequences
 
-### What happens to Candidate Pack
+### What happens to the legacy prep pack
 
-- **Immediate:** No runtime changes. Candidate Pack code, UI,
-  commands, and IPC category stay untouched.
-- **Future:** Candidate Pack is replaced by ContextPack. The
-  replacement ships first, then old code is removed. Removal is
-  permanent, not feature-flagged indefinitely.
-- **User migration:** When ContextPack ships, existing Candidate
-  Pack files can be imported as ContextPack content (one-time,
-  lossy conversion — flat content, no fact typing preserved).
+- **Immediate:** No runtime changes while ContextPack is being built.
+- **Future:** The replacement ships first, then old code is removed.
+  Removal is permanent, not feature-flagged indefinitely.
+- **User migration:** Existing prep-pack content can be recreated as
+  ContextPack content (flat content, no fact typing preserved).
 
 ### What happens to Interview Mode
 
@@ -115,21 +109,20 @@ Design rationale:
   WorkConversation + ContextPack. The interview card schema
   (InterviewCardSchemaV1) is preserved. The interview report
   functionality stays. The difference: interview context comes
-  from a ContextPack, not a separate Candidate Pack.
+  from a ContextPack, not a separate prep-pack feature.
 
 ### What we freeze
 
 - **Bilingual experimental track.** Code stays, feature flag stays
   disabled, no expansion. Re-evaluated after ContextPack ships.
-- **Candidate Pack expansion.** No new Candidate Pack features,
+- **Legacy prep-pack expansion.** No new legacy prep-pack features,
   fields, or commands. Bug fixes only.
 - **Profile/persona system.** Explicitly not planned. ContextPack
   is the only context primitive.
 
 ### What we don't overclaim
 
-- ContextPack is a **planned direction**, not shipped runtime.
-  No ContextPack DTO, command, or UI exists today.
+- ContextPack is the shipped runtime direction.
 - No timeline commitment. Replacement happens after working
   implementation, not before.
 - No advanced taxonomy (folders, tags, sharing, templates) is

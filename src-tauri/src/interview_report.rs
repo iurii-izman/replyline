@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::candidate_pack;
+use crate::context_pack;
 use crate::fs_atomic;
 use crate::interview_card_v1::InterviewCardDto;
 use crate::types::{
@@ -76,8 +76,11 @@ fn build_report(
         .map(|q| format!("[{}] {}", q.timestamp, q.raw_transcript))
         .collect::<Vec<_>>()
         .join("\n");
-    let has_pack = candidate_pack::load().ok().flatten().is_some();
-    let scores = score(&state.questions, has_pack);
+    let has_active_context_pack = context_pack::get_active_context_pack()
+        .ok()
+        .flatten()
+        .is_some();
+    let scores = score(&state.questions, has_active_context_pack);
     let feedback = feedback(&state.questions, &scores);
     Ok(InterviewReportDto {
         session_id: state.session_id.clone(),
@@ -91,12 +94,15 @@ fn build_report(
     })
 }
 
-fn score(questions: &[InterviewQuestionReportDto], has_pack: bool) -> InterviewReportScoresDto {
+fn score(
+    questions: &[InterviewQuestionReportDto],
+    has_active_context_pack: bool,
+) -> InterviewReportScoresDto {
     if questions.is_empty() {
         return InterviewReportScoresDto {
             clarity: 0,
             relevance: 0,
-            accuracy: if has_pack { 20 } else { 10 },
+            accuracy: if has_active_context_pack { 20 } else { 10 },
         };
     }
     let mut clarity_sum = 0u32;
@@ -110,7 +116,7 @@ fn score(questions: &[InterviewQuestionReportDto], has_pack: bool) -> InterviewR
         let a_tokens = token_set(&q.answer_main);
         let overlap = q_tokens.iter().filter(|t| a_tokens.contains(*t)).count() as u32;
         let relevance = (35 + overlap * 10).min(100);
-        let mut accuracy: u32 = if has_pack { 75 } else { 60 };
+        let mut accuracy: u32 = if has_active_context_pack { 75 } else { 60 };
         if q.answer_main.chars().any(|c| c.is_ascii_digit())
             && !q.raw_transcript.chars().any(|c| c.is_ascii_digit())
         {

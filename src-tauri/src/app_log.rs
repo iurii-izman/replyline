@@ -72,17 +72,6 @@ pub fn safe_provider_error_preview(err: &str) -> String {
     format!("provider_error_preview={preview}")
 }
 
-pub fn safe_candidate_pack_summary(
-    facts: usize,
-    weak_facts: usize,
-    summary_chars: usize,
-    role_chars: usize,
-) -> String {
-    format!(
-        "facts={facts} weak_facts={weak_facts} summary_chars={summary_chars} role_chars={role_chars}"
-    )
-}
-
 pub fn safe_report_summary(
     policy_label: &str,
     removed_reports: usize,
@@ -198,7 +187,7 @@ fn looks_like_sensitive_content(value: &str) -> bool {
         "raw_transcript",
         "prompt:",
         "raw prompt",
-        "candidate pack",
+        "context pack",
         "resume:",
         "job description",
         "company values",

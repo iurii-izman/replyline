@@ -130,7 +130,7 @@ const hardcodedAllowlist = new Set([
   "Markdown",
   "Deepgram",
   "OpenRouter",
-  "Candidate Pack",
+  "ContextPack",
   "URL",
   "Ctrl+Alt+Space",
   "manual",

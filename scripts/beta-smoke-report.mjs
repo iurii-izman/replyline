@@ -67,7 +67,7 @@ function looksSensitive(value) {
     "raw_transcript",
     "raw prompt",
     "prompt:",
-    "candidate pack",
+    "context pack",
     "resume:",
     "job description",
     "company values",
@@ -499,7 +499,7 @@ export function renderMarkdown(report) {
   lines.push("");
   lines.push("## Notes");
   lines.push("- This report is sanitized by default.");
-  lines.push("- It excludes raw transcript, raw prompt, Candidate Pack values, API keys, Authorization headers, and full home paths.");
+  lines.push("- It excludes raw transcript, raw prompt, ContextPack values, API keys, Authorization headers, and full home paths.");
   return `${lines.join("\n")}\n`;
 }
 

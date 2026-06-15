@@ -60,18 +60,18 @@ For each failing or notable check, record:
 - Redacted markdown export works and preserves the privacy contract.
 - Report retention and clear-reports controls behave as documented.
 
-### Candidate Pack Studio
+### ContextPack panel
 
 - Studio opens as a separate, understandable workflow and Back returns to the expected surface.
-- Empty state is concise and explains paste -> prepare -> preview.
-- Stepper/status states remain clear across empty, processing, draft, prepared, and saved states.
-- Prepared preview shows summary/facts/keywords/warnings without giant blank panels.
-- Save, save draft, prepare, clear, and back actions map to the current state correctly.
+- Empty state is concise and explains create/edit -> activate -> clear-active.
+- Active/inactive states remain clear across empty, saved, edited, and deleted states.
+- Pack list and editor avoid giant blank panels.
+- Save, activate, clear-active, delete, and back actions map to the current state correctly.
 - Compact and wide layouts remain readable.
 
 ### Layout / responsive / scrollbars
 
-- Main, Settings, and Candidate Studio layouts remain usable at compact, normal, and wide/fullscreen sizes.
+- Main, Settings, and ContextPack layouts remain usable at compact, normal, and wide/fullscreen sizes.
 - Sticky footers/action bars do not overlap final fields or content.
 - Scroll ownership is predictable; no broken nested full-height scrollbars.
 - Critical controls do not fall back to raw browser-default styling in primary flows.

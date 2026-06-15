@@ -24,6 +24,7 @@ Canonical public-beta limits, packaging truth, and non-shipped tracks.
 - There is no stealth, hidden-overlay, click-through, or cheating flow.
 - Interview Mode is a context usage example, not a separate product centre.
 - Interview Mode is a visible local assistance surface and the user remains responsible for allowed use in their context.
+- ContextPack is the only shipped conversation context primitive; there is no separate profile, persona, or prep-pack system.
 
 ## Provider/runtime caveats
 
@@ -52,12 +53,10 @@ Canonical public-beta limits, packaging truth, and non-shipped tracks.
 - Interview reports are local-only but can include transcript content.
 - `debugTraceMode=full_local` is high-sensitivity local diagnostics, not a normal everyday mode.
 
-## Planned direction (not yet shipped)
+## Planned direction
 
-- **ContextPack** is the planned universal context primitive for WorkConversation (see [ADR 0001](../adr/0001-context-pack-simplification.md)). No ContextPack DTO, command, or UI exists in the current beta.
-- Candidate Pack will be replaced by ContextPack in a future release. Candidate Pack remains unchanged until a working replacement ships.
 - No profile system, persona slots, or identity taxonomy is planned.
-- Bilingual experimental track is frozen — no new features, re-evaluated after ContextPack ships.
+- Bilingual experimental track is frozen — no new features until it is re-evaluated against the ContextPack-based runtime.
 
 ## Explicitly non-shipped future tracks
 

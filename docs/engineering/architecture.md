@@ -10,7 +10,6 @@ Source-of-truth split (must stay stable):
 - `src/app/model/errors.ts` — CommandError parsing, user-safe error mapping
 - `src/app/model/cards.ts` — Analysis card DTOs, interview card schema V1, asAnalysisCard
 - `src/app/model/interview.ts` — Interview report/session DTOs
-- `src/app/model/candidatePack.ts` — Candidate Pack DTOs and draft types
 - `src/app/model/diagnostics.ts` — Bootstrap, setup status, persistence diagnostics DTOs
 - `src/app/model/hotkeys.ts` — Hotkey normalization and KeyboardEvent parsing
 - `src/app/model/routeMode.ts` — LLM route mode detection (local/cloud)
@@ -32,36 +31,36 @@ UI surfaces remain view-focused and do not own orchestration:
 
 - `src/app/MainSurface.tsx`
 - `src/app/SettingsSurface.tsx`
-- `src/app/CandidatePackStudio.tsx`
 - `src/app/settings/settingsViewModel.ts` — Pure UI helpers (check item labels, status classes, runtime check messages)
 
 ## Backend ownership map
 
 ### Command layer (domain split in progress)
 
-- `src-tauri/src/commands/mod.rs` — remaining IPC commands (23 of 39) + shared helpers
+- `src-tauri/src/commands/mod.rs` — remaining IPC commands (17 of 40) + shared helpers
 - `src-tauri/src/commands/registry.rs` — `replyline_commands!` macro (single-source command registration)
 - `src-tauri/src/commands/shared.rs` — `CommandError` impl for `SettingsError`/`CredentialError`
 
-Extracted domains (6 of 11, 16 of 39 commands):
+Extracted domains (7 of 10, 23 of 40 commands):
 
 - `src-tauri/src/commands/bootstrap.rs` — `load_bootstrap`, `log_client_event`, `quit_app`
 - `src-tauri/src/commands/diagnostics.rs` — `get_trace_status`, `clear_debug_traces`, `open_trace_folder`
 - `src-tauri/src/commands/tray_window.rs` — `sync_tray_ui_phase`, `refresh_tray_menu`, `tray_open_main`
 - `src-tauri/src/commands/context.rs` — `clear_context`, `get_context_status`
+- `src-tauri/src/commands/context_pack.rs` — `list_context_packs`, `save_context_pack`, `delete_context_pack`, `set_active_context_pack`, `clear_active_context_pack`, `get_active_context_pack`, `get_context_pack_status`
 - `src-tauri/src/commands/runtime_checks.rs` — `check_stt_config`, `check_llm_config`, `check_runtime_config`
 - `src-tauri/src/commands/secrets.rs` — `save_secret`, `delete_secret`
 
-Remaining in `mod.rs` (5 domains, 23 commands):
+Remaining in `mod.rs` (4 domains, 17 commands):
 - settings (4): `save_settings`, `get_setup_status`, `get_feedback_payload`, `get_persistence_diagnostics`
 - capture (3): `capture_start`, `capture_stop_and_analyze`, `retry_last_analysis`
-- candidate_pack (6): load/save/clear/get_status/prepare/save_prepared + shared helpers + tests
 - interview (6): start/end/get/export_markdown/export_redacted/clear
 - bilingual_experimental (4): start/stop/capture/export
 
 ### Other backend modules
 - `src-tauri/src/settings.rs` — settings schema, migration chain, validation, corrupt-file quarantine
 - `src-tauri/src/types.rs` — IPC DTOs and `CommandError` envelope
+- `src-tauri/src/context_pack.rs` — active ContextPack storage, validation, and prompt compaction
 - `src-tauri/src/services/capture_pipeline.rs` — capture→STT→LLM orchestration
 - `src-tauri/src/services/pipeline_errors.rs` — sanitized pipeline error logging + `CommandError::Pipeline`
 - `src-tauri/src/card_v3.rs` — CardSchemaV3 parse/repair/mapping to legacy DTO fields
@@ -91,7 +90,7 @@ Command grouping is enforced by `scripts/check-ipc-handler-contract.mjs`:
 - `runtime`: capture + retry flow
 - `settings`: save/settings/runtime preflight checks
 - `secrets`: credential save/delete
-- `candidate`: candidate pack read/write/prepare
+- `context_pack`: ContextPack CRUD, activation, and status commands
 - `report`: interview session/report/export commands
 - `diagnostics`: persistence/trace diagnostics
 - `trayWindow`: tray/menu/window sync commands
@@ -101,11 +100,11 @@ Command grouping is enforced by `scripts/check-ipc-handler-contract.mjs`:
 
 Features that exist in the codebase but are gated/disabled by default and not shipped in the current public beta.
 
-### ContextPack (planned direction)
+### ContextPack
 
-- **Status:** Planned, not implemented. No DTO, command, or UI exists.
-- **Scope:** Universal context primitive for WorkConversation. Replaces Candidate Pack. See [ADR 0001](../adr/0001-context-pack-simplification.md).
-- **Impact:** Candidate Pack (`candidatePack.ts`, `CandidatePackStudio.tsx`, candidate pack commands) is marked for replacement after ContextPack ships.
+- **Status:** Implemented as the single conversation context primitive.
+- **Scope:** Active ContextPack augments WorkConversation and Interview Mode prompts with bounded user-controlled context. See [ADR 0001](../adr/0001-context-pack-simplification.md).
+- **Code:** `src-tauri/src/context_pack.rs`, `src-tauri/src/commands/context_pack.rs`, `src/app/ContextPackPanel.tsx`.
 
 ### Bilingual Interview Mode
 

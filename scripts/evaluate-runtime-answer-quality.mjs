@@ -47,10 +47,10 @@ function ensureReportsDir() {
   mkdirSync(reportsDir, { recursive: true });
 }
 
-function extractCandidatePackTokens(candidatePack) {
-  if (!candidatePack || typeof candidatePack !== "object") return [];
+function extractContextPackTokens(contextPack) {
+  if (!contextPack || typeof contextPack !== "object") return [];
   const tokens = [];
-  for (const value of Object.values(candidatePack)) {
+  for (const value of Object.values(contextPack)) {
     if (Array.isArray(value)) tokens.push(...value.map((x) => String(x)));
     else if (value != null) tokens.push(String(value));
   }
@@ -223,8 +223,8 @@ export function evaluateFixture(fixture, thresholds) {
     reasons.push(`gist too long (${card.gist.length} > ${maxGistChars})`);
   }
 
-  if (expected.requiresNoCandidateHallucination && !fixture.candidatePack) {
-    const disallowed = ["candidate pack", "resume", "portfolio", "certification"];
+  if (expected.requiresNoContextHallucination && !fixture.contextPack) {
+    const disallowed = ["context pack", "resume", "portfolio", "certification"];
     for (const token of disallowed) {
       if (fullNorm.includes(token)) {
         score -= 10;
@@ -233,12 +233,12 @@ export function evaluateFixture(fixture, thresholds) {
     }
   }
 
-  if (fixture.candidatePack) {
-    const evidenceTokens = extractCandidatePackTokens(fixture.candidatePack);
+  if (fixture.contextPack) {
+    const evidenceTokens = extractContextPackTokens(fixture.contextPack);
     const hasEvidenceReference = evidenceTokens.some((token) => fullNorm.includes(token));
     if (!hasEvidenceReference) {
       score -= 12;
-      reasons.push("candidate pack evidence not used");
+      reasons.push("context pack evidence not used");
     }
   }
 

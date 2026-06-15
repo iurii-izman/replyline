@@ -3,7 +3,7 @@
     "id": "iqv1-01-tell-yourself",
     "scenario": "Tell me about yourself",
     "transcript": "Interviewer: Tell me about yourself and your background.",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["5 years in B2B SaaS", "led onboarding redesign"],
       "company": "Replyline"
     },
@@ -58,7 +58,7 @@
     "id": "iqv1-02-why-company",
     "scenario": "Why this company?",
     "transcript": "Interviewer: Why do you want to work at Replyline?",
-    "candidatePack": {
+    "contextPack": {
       "company": "Replyline",
       "companyValues": ["clarity", "craft", "speed"]
     },
@@ -113,7 +113,7 @@
     "id": "iqv1-03-why-role",
     "scenario": "Why this role?",
     "transcript": "Interviewer: Why this role specifically?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["shipped workflow automations", "owns incident retrospectives"]
     },
     "expected": {
@@ -167,7 +167,7 @@
     "id": "iqv1-04-conflict",
     "scenario": "Conflict with colleague",
     "transcript": "Interviewer: Tell me about a conflict with a colleague.",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["partnered with design and engineering"]
     },
     "expected": {
@@ -221,7 +221,7 @@
     "id": "iqv1-05-missed-deadline",
     "scenario": "Missed deadline",
     "transcript": "Interviewer: Describe a time you missed a deadline.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "behavioral",
       "mustMention": ["what I learned"],
@@ -273,7 +273,7 @@
     "id": "iqv1-06-leadership",
     "scenario": "Leadership example",
     "transcript": "Interviewer: Give me an example of leadership.",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["mentored two junior PMs"]
     },
     "expected": {
@@ -327,7 +327,7 @@
     "id": "iqv1-07-failure",
     "scenario": "Failure example",
     "transcript": "Interviewer: Tell me about a failure.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "behavioral",
       "mustMention": ["learned"],
@@ -379,7 +379,7 @@
     "id": "iqv1-08-ambiguous",
     "scenario": "Ambiguous question",
     "transcript": "Interviewer: How would you improve things here?",
-    "candidatePack": {
+    "contextPack": {
       "company": "Replyline"
     },
     "expected": {
@@ -433,7 +433,7 @@
     "id": "iqv1-09-salary",
     "scenario": "Salary expectations",
     "transcript": "Interviewer: What are your salary expectations?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "salary",
       "mustMention": ["range"],
@@ -485,7 +485,7 @@
     "id": "iqv1-10-technical-unknown",
     "scenario": "Technical unknown",
     "transcript": "Interviewer: How would you debug a Rust memory leak?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["strong TypeScript background"]
     },
     "expected": {
@@ -539,7 +539,7 @@
     "id": "iqv1-11-system-design",
     "scenario": "System design high-level",
     "transcript": "Interviewer: Design a high-level system for interview assistant insights.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "technical",
       "mustMention": ["tradeoff"],
@@ -591,7 +591,7 @@
     "id": "iqv1-12-product-tradeoff",
     "scenario": "Product tradeoff",
     "transcript": "Interviewer: Ship faster or improve quality first?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "product",
       "mustMention": ["tradeoff"],
@@ -643,7 +643,7 @@
     "id": "iqv1-13-prioritization",
     "scenario": "Prioritization",
     "transcript": "Interviewer: How do you prioritize when everything is urgent?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "product",
       "mustMention": ["impact"],
@@ -695,7 +695,7 @@
     "id": "iqv1-14-stakeholder",
     "scenario": "Stakeholder management",
     "transcript": "Interviewer: How do you manage difficult stakeholders?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "behavioral",
       "mustMention": ["alignment"],
@@ -747,7 +747,7 @@
     "id": "iqv1-15-escalation",
     "scenario": "Customer escalation",
     "transcript": "Interviewer: A key customer escalates an issue. What do you do?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "behavioral",
       "mustMention": ["owner", "timeline"],
@@ -799,7 +799,7 @@
     "id": "iqv1-16-strengths",
     "scenario": "Strengths",
     "transcript": "Interviewer: What are your strengths?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["operates well in ambiguity"]
     },
     "expected": {
@@ -853,7 +853,7 @@
     "id": "iqv1-17-weaknesses",
     "scenario": "Weaknesses",
     "transcript": "Interviewer: What is your biggest weakness?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "culture_fit",
       "mustMention": ["improving"],
@@ -905,7 +905,7 @@
     "id": "iqv1-18-gap-resume",
     "scenario": "Gap in resume",
     "transcript": "Interviewer: I see a gap in your resume, can you explain?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["2022 caregiving break for family health"]
     },
     "expected": {
@@ -959,7 +959,7 @@
     "id": "iqv1-19-leaving-job",
     "scenario": "Leaving previous job",
     "transcript": "Interviewer: Why are you leaving your previous job?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "culture_fit",
       "mustMention": ["growth"],
@@ -1011,7 +1011,7 @@
     "id": "iqv1-20-remote-work",
     "scenario": "Remote work",
     "transcript": "Interviewer: How do you work remotely?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "culture_fit",
       "mustMention": ["async"],
@@ -1063,7 +1063,7 @@
     "id": "iqv1-21-culture-fit",
     "scenario": "Culture fit",
     "transcript": "Interviewer: What culture do you thrive in?",
-    "candidatePack": {
+    "contextPack": {
       "companyValues": ["clarity", "ownership"]
     },
     "expected": {
@@ -1117,7 +1117,7 @@
     "id": "iqv1-22-pressure",
     "scenario": "Handling pressure",
     "transcript": "Interviewer: How do you handle pressure?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "behavioral",
       "mustMention": ["prioritize"],
@@ -1169,7 +1169,7 @@
     "id": "iqv1-23-metrics",
     "scenario": "Metrics question",
     "transcript": "Interviewer: What metrics did you improve in your last role?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["reduced onboarding drop-off from 32 to 21 percent"]
     },
     "expected": {
@@ -1223,7 +1223,7 @@
     "id": "iqv1-24-no-metrics",
     "scenario": "No metrics available",
     "transcript": "Interviewer: What exact metrics did you improve?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["startup lacked robust analytics"]
     },
     "expected": {
@@ -1277,7 +1277,7 @@
     "id": "iqv1-25-resume-present",
     "scenario": "Resume fact present",
     "transcript": "Interviewer: You mention onboarding redesign; what did you own?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["led onboarding redesign"]
     },
     "expected": {
@@ -1331,7 +1331,7 @@
     "id": "iqv1-26-resume-absent",
     "scenario": "Resume fact absent",
     "transcript": "Interviewer: I heard you built a fraud engine at MegaBank, true?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["B2B SaaS operations"]
     },
     "expected": {
@@ -1385,7 +1385,7 @@
     "id": "iqv1-27-values-match",
     "scenario": "Company values match",
     "transcript": "Interviewer: Which of our values resonates most with you?",
-    "candidatePack": {
+    "contextPack": {
       "company": "Replyline",
       "companyValues": ["clarity", "speed", "ownership"]
     },
@@ -1440,7 +1440,7 @@
     "id": "iqv1-28-noisy-transcript",
     "scenario": "Noisy transcript",
     "transcript": "[noise] umm [crosstalk] tell me like maybe your biggest challenge ???",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "unknown",
       "mustMention": ["challenge"],
@@ -1492,7 +1492,7 @@
     "id": "iqv1-29-very-short",
     "scenario": "Very short question",
     "transcript": "Interviewer: Why?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "questionType": "unknown",
       "mustMention": ["context"],
@@ -1544,7 +1544,7 @@
     "id": "iqv1-30-long-compound",
     "scenario": "Long compound question",
     "transcript": "Interviewer: Can you walk through a leadership failure, what you learned, how you prioritize under pressure, and why we should trust you with this role?",
-    "candidatePack": {
+    "contextPack": {
       "resumeFacts": ["incident retrospectives owner"]
     },
     "expected": {

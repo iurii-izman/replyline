@@ -28,7 +28,7 @@
 - `docs/product/limitations.md` is honest: unsigned artifacts, no bilingual, no stealth
 - `docs/product/privacy.md` covers data flow, storage, exports, provider boundaries
 - `docs/product/user-guide.md` structured by feature area
-- MVP is well-defined: WorkConversation + Interview Mode + Candidate Pack
+- MVP is well-defined: WorkConversation + Interview Mode + ContextPack
 
 **Remaining:**
 - Bilingual experimental track is well-documented but adds complexity to settings schema
@@ -127,8 +127,8 @@
 **Good:**
 - Clean Solid.js + TypeScript stack
 - Controller pattern: `controller/index.ts` composes hotkeys, pipeline, settings, lifecycle, selectors, keyboard shortcuts, notices
-- Model just split into 10 domain modules (settings, errors, cards, interview, candidatePack, diagnostics, hotkeys, routeMode, bilingualExperimental, index)
-- UI surfaces: MainSurface, SettingsSurface, CandidatePackStudio, BilingualInterviewSurface
+- Model just split into 10 domain modules (settings, errors, cards, interview, contextPack, diagnostics, hotkeys, routeMode, bilingualExperimental, index)
+- UI surfaces: MainSurface, SettingsSurface, ContextPackPanel, BilingualInterviewSurface
 - Mock platform for tests with deterministic invoke behavior
 
 **Remaining:**
@@ -155,7 +155,7 @@
 - `commands/mod.rs` partially split (~1020 lines, 6 of 11 domains extracted)
 - `bilingual/` module always compiled (no cfg-gating) — env flag only at runtime
 
-**Next:** Complete remaining domain extraction (settings, capture, candidate_pack, interview, bilingual_experimental).
+**Next:** Complete remaining domain extraction (settings, capture, context_pack, interview, bilingual_experimental).
 
 ---
 

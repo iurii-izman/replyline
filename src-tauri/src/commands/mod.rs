@@ -2,13 +2,10 @@ use tauri::{AppHandle, State};
 
 use crate::app_log;
 use crate::audio::CaptureRun;
-use crate::candidate_pack;
 use crate::commands::shared::require_experimental_bilingual;
 use crate::credentials;
-use crate::fs_atomic;
 use crate::interview_card_v1::BilingualMeta;
 use crate::observability::{self, Fields, PrivacyClass};
-use crate::providers::candidate_pack_provider;
 use crate::providers::llm_provider;
 use crate::providers::llm_provider::AnalysisMode;
 use crate::services::capture_pipeline;
@@ -20,9 +17,9 @@ use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
     AnalysisCardDto, AppSettings, BilingualAnswerChunkDto, BilingualAnswerReadyDto,
-    BilingualExportInputDto, CandidatePackDraftDto, CommandError, ExportSummary, ExportType,
-    FeedbackErrorDto, FeedbackPayloadDto, FeedbackSettingsSummaryDto, InterviewReportDto,
-    PersistenceDiagnosticsDto, PrepareCandidatePackInputDto, SecretSlot, SetupStatusDto,
+    BilingualExportInputDto, CommandError, ExportSummary, ExportType, FeedbackErrorDto,
+    FeedbackPayloadDto, FeedbackSettingsSummaryDto, InterviewReportDto, PersistenceDiagnosticsDto,
+    SecretSlot, SetupStatusDto,
 };
 
 pub mod bootstrap;
@@ -41,20 +38,6 @@ fn next_run_id() -> String {
     let ts = chrono::Utc::now().timestamp_millis() as u64;
     let seq = RUN_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     format!("{}-{}", ts, seq)
-}
-
-fn candidate_pack_save_ok_detail(saved: &candidate_pack::CandidatePackDto) -> String {
-    let weak_count = saved
-        .resume_facts
-        .iter()
-        .filter(|fact| fact.strength == candidate_pack::CandidateFactStrength::Weak)
-        .count();
-    crate::app_log::safe_candidate_pack_summary(
-        saved.resume_facts.len(),
-        weak_count,
-        saved.candidate_summary.chars().count(),
-        saved.target_role.chars().count(),
-    )
 }
 
 fn extract_log_timestamp_from_line(line: &str) -> Option<String> {
@@ -187,121 +170,6 @@ pub fn get_feedback_payload(
         },
         last_error,
     })
-}
-
-#[tauri::command]
-pub fn load_candidate_pack() -> Result<Option<candidate_pack::CandidatePackDto>, CommandError> {
-    candidate_pack::load().map_err(CommandError::Internal)
-}
-
-#[tauri::command]
-pub fn save_candidate_pack(
-    input: candidate_pack::CandidatePackDto,
-) -> Result<candidate_pack::CandidatePackDto, CommandError> {
-    let fact_count = input.resume_facts.len();
-    let _ = app_log::append_event("candidate_pack_save_attempt", format!("facts={fact_count}"));
-    match candidate_pack::save(&input) {
-        Ok(saved) => {
-            let _ = app_log::append_event(
-                "candidate_pack_save_ok",
-                candidate_pack_save_ok_detail(&saved),
-            );
-            Ok(saved)
-        }
-        Err(err) => {
-            let _ = app_log::append_event(
-                "candidate_pack_save_failed",
-                app_log::safe_status_detail("failed"),
-            );
-            Err(CommandError::Internal(err))
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{candidate_pack_save_ok_detail, compact_candidate_pack_context};
-    use crate::candidate_pack::{
-        CandidateAnswerConstraints, CandidateFact, CandidateFactStrength, CandidateJobDescription,
-        CandidatePackDto,
-    };
-
-    #[test]
-    fn candidate_pack_log_detail_does_not_include_raw_profile_text() {
-        let pack = CandidatePackDto {
-            candidate_summary: "Raw summary should not be logged".to_string(),
-            target_role: "Principal Engineer".to_string(),
-            resume_facts: vec![CandidateFact {
-                id: "fact-1".to_string(),
-                title: "Title".to_string(),
-                claim: "Claim".to_string(),
-                description: "Description".to_string(),
-                evidence: String::new(),
-                skills: vec![],
-                metrics: vec!["42%".to_string()],
-                strength: CandidateFactStrength::Weak,
-                suitable_for_questions: vec![],
-            }],
-            job_description: CandidateJobDescription {
-                title: "Role".to_string(),
-                company: "Company".to_string(),
-                requirements: vec![],
-                responsibilities: vec![],
-                keywords: vec![],
-            },
-            company_values: vec!["Trust".to_string()],
-            answer_constraints: CandidateAnswerConstraints {
-                avoid_claims: vec![],
-                preferred_examples: vec![],
-                language: "ru".to_string(),
-            },
-        };
-        let detail = candidate_pack_save_ok_detail(&pack);
-        assert!(detail.contains("facts=1"));
-        assert!(!detail.contains("Raw summary"));
-        assert!(!detail.contains("Principal Engineer"));
-    }
-
-    #[test]
-    fn compact_candidate_pack_context_excludes_full_job_description_fields() {
-        let pack = CandidatePackDto {
-            candidate_summary: "Built systems".to_string(),
-            target_role: "Principal Engineer".to_string(),
-            resume_facts: vec![],
-            job_description: CandidateJobDescription {
-                title: "Staff Engineer".to_string(),
-                company: "Acme".to_string(),
-                requirements: vec!["RAW JD REQUIREMENT SHOULD NOT APPEAR".to_string()],
-                responsibilities: vec!["RAW JD RESPONSIBILITY SHOULD NOT APPEAR".to_string()],
-                keywords: vec!["distributed".to_string()],
-            },
-            company_values: vec![],
-            answer_constraints: CandidateAnswerConstraints {
-                avoid_claims: vec![],
-                preferred_examples: vec![],
-                language: "en".to_string(),
-            },
-        };
-        let compact = compact_candidate_pack_context(&pack);
-        assert!(compact.contains("Role: Principal Engineer"));
-        assert!(!compact.contains("RAW JD REQUIREMENT SHOULD NOT APPEAR"));
-        assert!(!compact.contains("RAW JD RESPONSIBILITY SHOULD NOT APPEAR"));
-    }
-}
-
-#[tauri::command]
-pub fn clear_candidate_pack() -> Result<(), CommandError> {
-    candidate_pack::clear().map_err(CommandError::Internal)?;
-    let _ = app_log::append_event(
-        "candidate_pack_clear_ok",
-        app_log::safe_status_detail("cleared"),
-    );
-    Ok(())
-}
-
-#[tauri::command]
-pub fn get_candidate_pack_status() -> Result<candidate_pack::CandidatePackStatusDto, CommandError> {
-    candidate_pack::status().map_err(CommandError::Internal)
 }
 
 #[tauri::command]
@@ -557,23 +425,24 @@ pub async fn capture_bilingual_answer(
 
     let settings = settings::load()?;
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
-    let candidate_context = candidate_pack::load()
+    let context_pack_raw = crate::context_pack::get_active_context_pack()
         .ok()
         .flatten()
-        .map(|pack| compact_candidate_pack_context(&pack))
+        .map(|pack| pack.content)
         .unwrap_or_default();
+    let context_pack_content = crate::context_pack::compact_for_prompt(&context_pack_raw);
     let bilingual_context = format!(
         "Bilingual interview mode context (use only verified details):\n{}\n\nQuestion source: finalized streaming segments only.",
-        if candidate_context.trim().is_empty() {
+        if context_pack_content.trim().is_empty() {
             "(empty)"
         } else {
-            candidate_context.trim()
+            context_pack_content.trim()
         }
     );
 
     let stream_system_prompt = "You are an interview assistant. Return only a concise English answer with no markdown. No disclaimers, no JSON.";
     let stream_user_prompt = format!(
-        "Candidate context:\n{}\n\nInterview question:\n{}\n\nAnswer in 2-5 sentences (up to 8 for system design). Keep facts grounded and do not invent metrics/projects.",
+        "Conversation context:\n{}\n\nInterview question:\n{}\n\nAnswer in 2-5 sentences (up to 8 for system design). Keep facts grounded and do not invent metrics/projects.",
         bilingual_context,
         question_en
     );
@@ -677,69 +546,6 @@ pub async fn capture_bilingual_answer(
     Ok(payload)
 }
 
-fn compact_candidate_pack_context(pack: &candidate_pack::CandidatePackDto) -> String {
-    fn clip(value: &str, max_chars: usize) -> String {
-        let trimmed = value.trim();
-        if trimmed.chars().count() <= max_chars {
-            return trimmed.to_string();
-        }
-        trimmed.chars().take(max_chars).collect::<String>()
-    }
-    let role = if !pack.target_role.trim().is_empty() {
-        pack.target_role.trim().to_string()
-    } else {
-        pack.job_description.title.trim().to_string()
-    };
-    let skills = pack
-        .resume_facts
-        .iter()
-        .flat_map(|fact| fact.skills.iter())
-        .map(|skill| skill.trim())
-        .filter(|skill| !skill.is_empty())
-        .take(10)
-        .collect::<Vec<_>>();
-    let recent_experience = clip(&pack.candidate_summary, 260);
-    let key_projects = pack
-        .resume_facts
-        .iter()
-        .map(|fact| clip(&fact.claim, 180))
-        .filter(|value| !value.is_empty())
-        .take(3)
-        .collect::<Vec<_>>();
-    let preferred_examples = pack
-        .answer_constraints
-        .preferred_examples
-        .iter()
-        .map(|value| value.trim())
-        .filter(|value| !value.is_empty())
-        .take(5)
-        .collect::<Vec<_>>();
-    let avoid_claims = pack
-        .answer_constraints
-        .avoid_claims
-        .iter()
-        .map(|value| value.trim())
-        .filter(|value| !value.is_empty())
-        .collect::<Vec<_>>();
-    [
-        format!("Role: {}", role),
-        format!("Skills: {}", skills.join(", ")),
-        format!("RecentExperience: {}", recent_experience),
-        format!("KeyProjects: {}", key_projects.join(" | ")),
-        format!(
-            "TargetCompany: {}",
-            clip(pack.job_description.company.trim(), 120)
-        ),
-        format!(
-            "TargetRole: {}",
-            clip(pack.job_description.title.trim(), 120)
-        ),
-        format!("AvoidClaims: {}", avoid_claims.join(" | ")),
-        format!("PreferredExamples: {}", preferred_examples.join(" | ")),
-    ]
-    .join("\n")
-}
-
 #[tauri::command]
 pub fn export_bilingual_interview_report(
     state: State<'_, ReplylineState>,
@@ -807,91 +613,6 @@ pub fn export_bilingual_interview_report(
         ),
     );
     Ok(summary)
-}
-
-// ---------------------------------------------------------------------------
-
-fn prepared_candidate_pack_path() -> Result<std::path::PathBuf, CommandError> {
-    let settings_path = settings::settings_path().map_err(CommandError::from)?;
-    let dir = settings_path
-        .parent()
-        .ok_or_else(|| CommandError::Internal("settings parent directory missing".to_string()))?;
-    Ok(dir.join("candidate-pack-latest.json"))
-}
-
-#[tauri::command]
-pub async fn prepare_candidate_pack(
-    input: PrepareCandidatePackInputDto,
-) -> Result<CandidatePackDraftDto, CommandError> {
-    let raw_resume = input.raw_resume.trim();
-    let job_description = input.job_description.trim();
-    let company_values_text = input.company_values_text.trim();
-    let output_language = match input.output_language.trim().to_ascii_lowercase().as_str() {
-        "en" => "en",
-        _ => "ru",
-    };
-    if raw_resume.is_empty() || job_description.is_empty() {
-        return Err(CommandError::Settings(
-            "raw_resume and job_description are required".to_string(),
-        ));
-    }
-    let detail =
-        candidate_pack::build_prepare_log_detail(raw_resume, job_description, company_values_text);
-    let _ = app_log::append_event("candidate_pack_prepare_attempt", detail);
-
-    let settings = settings::load()?;
-    let api_key = credentials::load(SecretSlot::LlmApiKey)
-        .map_err(CommandError::from)?
-        .unwrap_or_default();
-    let draft_result = candidate_pack_provider::prepare_candidate_pack(
-        &settings,
-        if api_key.trim().is_empty() {
-            None
-        } else {
-            Some(api_key.trim())
-        },
-        raw_resume,
-        job_description,
-        company_values_text,
-        output_language,
-    )
-    .await;
-    let draft = match draft_result {
-        Ok(value) => value,
-        Err(err) => {
-            let safe_err = crate::privacy::safe_preview(&err, 240);
-            let _ =
-                app_log::append_event("candidate_pack_prepare_fail", format!("error={safe_err}"));
-            return Err(CommandError::Pipeline(err));
-        }
-    };
-
-    let _ = app_log::append_event(
-        "candidate_pack_prepare_ok",
-        format!(
-            "facts={} role_keywords={} company_values={}",
-            draft.candidate_facts.len(),
-            draft.role_keywords.len(),
-            draft.company_values.len()
-        ),
-    );
-    Ok(draft)
-}
-
-#[tauri::command]
-pub fn save_prepared_candidate_pack(draft: CandidatePackDraftDto) -> Result<(), CommandError> {
-    let path = prepared_candidate_pack_path()?;
-    fs_atomic::write_json_atomically(&path, &draft)
-        .map_err(|err| CommandError::Internal(err.to_string()))?;
-    let _ = app_log::append_event(
-        "prepared_candidate_pack_save_ok",
-        format!(
-            "facts={} score={}",
-            draft.candidate_facts.len(),
-            draft.pack_quality_score
-        ),
-    );
-    Ok(())
 }
 
 #[tauri::command]

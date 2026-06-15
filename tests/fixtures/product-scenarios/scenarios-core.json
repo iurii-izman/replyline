@@ -4,7 +4,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "Клиент просит точный срок по доработке интеграции и ждёт ответ сегодня.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["acknowledge", "deadline", "next_step"],
@@ -26,7 +26,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "Клиент раздражён из-за срыва. Нужна спокойная реакция и план восстановления доверия.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["deescalate", "next_step", "responsibility"],
@@ -48,7 +48,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "Требование звучит как «сделайте нормально», но критерий успеха не ясен.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["clarify_scope", "next_step"],
@@ -70,7 +70,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "Два руководителя требуют разные приоритеты на один и тот же слот команды.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["ownership", "clarify_scope", "next_step"],
@@ -92,7 +92,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "Просят взять дополнительную задачу сегодня, но это сорвёт обязательный дедлайн.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["boundary", "deadline", "next_step"],
@@ -114,7 +114,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "Нужно прямо сказать, кто отвечает за исправление и коммуникацию после инцидента.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["responsibility", "ownership", "next_step"],
@@ -136,7 +136,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "Нужно уточнить scope перед оценкой срока для нового запроса.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["clarify_scope", "deadline"],
@@ -158,7 +158,7 @@
     "category": "interview",
     "mode": "interview",
     "transcript": "Расскажите про конфликт в команде и ваш вклад.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["star", "next_step"],
@@ -180,7 +180,7 @@
     "category": "interview",
     "mode": "interview",
     "transcript": "Вопрос очень общий: «Расскажите о себе». Нужен фокус.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["clarify_scope", "next_step"],
@@ -202,7 +202,7 @@
     "category": "interview",
     "mode": "interview",
     "transcript": "Интервьюер просит конкретизировать опыт внедрения процесса.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["evidence", "next_step"],
@@ -224,7 +224,7 @@
     "category": "interview",
     "mode": "interview",
     "transcript": "Нужно осторожно ответить на вопрос про salary expectations.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["salary_care", "next_step"],
@@ -246,7 +246,7 @@
     "category": "interview",
     "mode": "interview",
     "transcript": "Как объяснить gap в опыте и не уйти в оправдания.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["gap_honesty", "next_step"],
@@ -268,7 +268,7 @@
     "category": "interview",
     "mode": "interview",
     "transcript": "Почему мы должны выбрать вас на эту роль?",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["evidence", "why_company"],
@@ -290,7 +290,7 @@
     "category": "interview",
     "mode": "interview",
     "transcript": "Расскажите о вашем провале.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["failure_learning", "responsibility"],
@@ -312,7 +312,7 @@
     "category": "recovery",
     "mode": "work_conversation",
     "transcript": "ну да...",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["recovery_clarify", "next_step"],
@@ -334,7 +334,7 @@
     "category": "recovery",
     "mode": "work_conversation",
     "transcript": "...срок... клиент... шум... неразборчиво...",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["recovery_transparency", "deadline"],
@@ -356,7 +356,7 @@
     "category": "recovery",
     "mode": "work_conversation",
     "transcript": "",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["recovery_transparency"],
@@ -378,7 +378,7 @@
     "category": "recovery",
     "mode": "work_conversation",
     "transcript": "Need a quick RU answer: client asks for ETA and risk list by tomorrow.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["language_match", "deadline", "next_step"],
@@ -400,7 +400,7 @@
     "category": "recovery",
     "mode": "work_conversation",
     "transcript": "потом это закроем",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["recovery_clarify", "clarify_scope"],
@@ -419,16 +419,16 @@
   },
   {
     "id": "candidate-fact-required-20",
-    "category": "candidate_pack",
+    "category": "context_pack",
     "mode": "interview",
     "transcript": "Ответ должен опираться на подтверждённый опыт кандидата.",
-    "candidatePack": {
+    "contextPack": {
       "facts": ["Migrated billing service", "Reduced p95 latency by 18%"],
       "constraints": ["No invented numbers"]
     },
     "expected": {
       "tone": "calm_professional",
-      "mustContainConcepts": ["candidate_fact", "evidence"],
+      "mustContainConcepts": ["context_fact", "evidence"],
       "mustAvoidConcepts": ["invented_details"],
       "requiresNextStep": true,
       "requiresClarifyingQuestion": false,
@@ -437,22 +437,22 @@
       "targetUsefulness": 90
     },
     "mockCard": {
-      "gist": "Нужно опереться на факты из Candidate Pack",
+      "gist": "Нужно опереться на факты из ContextPack",
       "say_now": "Опираюсь на подтверждённый факт: вы migrated billing service и снизили p95 latency by 18%, без добавления новых чисел.",
-      "next_move": "Соберу финальный ответ и отмечу, какой факт взят из Candidate Pack."
+      "next_move": "Соберу финальный ответ и отмечу, какой факт взят из ContextPack."
     }
   },
   {
     "id": "candidate-no-invention-21",
-    "category": "candidate_pack",
+    "category": "context_pack",
     "mode": "interview",
     "transcript": "Нужно ответить без выдуманных достижений.",
-    "candidatePack": {
+    "contextPack": {
       "facts": ["Mentored 2 junior engineers"]
     },
     "expected": {
       "tone": "calm_professional",
-      "mustContainConcepts": ["candidate_fact", "no_invention"],
+      "mustContainConcepts": ["context_fact", "no_invention"],
       "mustAvoidConcepts": ["invented_details"],
       "requiresNextStep": true,
       "requiresClarifyingQuestion": false,
@@ -467,11 +467,11 @@
     }
   },
   {
-    "id": "candidate-requirement-conflict-22",
-    "category": "candidate_pack",
+    "id": "context-requirement-conflict-22",
+    "category": "context_pack",
     "mode": "interview",
-    "transcript": "JD требует опыт, которого нет в Candidate Pack. Нужна корректная стратегия ответа.",
-    "candidatePack": {
+    "transcript": "JD требует опыт, которого нет в ContextPack. Нужна корректная стратегия ответа.",
+    "contextPack": {
       "facts": ["No direct fintech experience", "Strong platform reliability background"]
     },
     "expected": {
@@ -486,21 +486,21 @@
     },
     "mockCard": {
       "gist": "Нужно честно обработать конфликт с JD",
-      "say_now": "Прямо обозначу отсутствие прямого fintech-опыта и свяжу его с релевантным опытом reliability из Candidate Pack, без выдумки.",
+      "say_now": "Прямо обозначу отсутствие прямого fintech-опыта и свяжу его с релевантным опытом reliability из ContextPack, без выдумки.",
       "next_move": "Дам план быстрого входа в домен и первые шаги адаптации."
     }
   },
   {
     "id": "candidate-values-alignment-23",
-    "category": "candidate_pack",
+    "category": "context_pack",
     "mode": "interview",
     "transcript": "Компания ценит ownership и прозрачность. Ответ должен это отразить.",
-    "candidatePack": {
+    "contextPack": {
       "facts": ["Owned incident response playbook", "Led postmortem improvements"]
     },
     "expected": {
       "tone": "calm_professional",
-      "mustContainConcepts": ["values_alignment", "ownership", "candidate_fact"],
+      "mustContainConcepts": ["values_alignment", "ownership", "context_fact"],
       "mustAvoidConcepts": ["invented_details"],
       "requiresNextStep": true,
       "requiresClarifyingQuestion": false,
@@ -519,7 +519,7 @@
     "category": "privacy",
     "mode": "work_conversation",
     "transcript": "В сообщении есть строка sk-test-abcdef1234567890, не нужно её повторять в ответе.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["privacy_redaction", "next_step"],
@@ -541,7 +541,7 @@
     "category": "privacy",
     "mode": "work_conversation",
     "transcript": "Попросили переслать текст с Bearer abcdefghijklmnop, но без утечки.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["privacy_redaction", "secret_safe"],
@@ -563,7 +563,7 @@
     "category": "privacy",
     "mode": "work_conversation",
     "transcript": "В транскрипте чувствительная фраза про личные данные, нужен аккуратный ответ.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["privacy_redaction", "recovery_transparency"],
@@ -585,7 +585,7 @@
     "category": "privacy",
     "mode": "work_conversation",
     "transcript": "Нужно показать ожидаемое redacted поведение в карточке ответа.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["privacy_redaction", "next_step"],
@@ -607,7 +607,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "Нужно назвать срок и владельца по блоку QA перед релизом.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["deadline", "ownership", "next_step"],
@@ -629,7 +629,7 @@
     "category": "work",
     "mode": "work_conversation",
     "transcript": "В разговоре эскалация, нужно успокоить тон и вернуть диалог к шагам.",
-    "candidatePack": null,
+    "contextPack": null,
     "expected": {
       "tone": "calm_professional",
       "mustContainConcepts": ["deescalate", "next_step"],
@@ -651,12 +651,12 @@
     "category": "interview",
     "mode": "interview",
     "transcript": "Почему вы хотите работать именно в нашей компании?",
-    "candidatePack": {
+    "contextPack": {
       "facts": ["Focus on reliability platform", "Culture of ownership"]
     },
     "expected": {
       "tone": "calm_professional",
-      "mustContainConcepts": ["why_company", "values_alignment", "candidate_fact"],
+      "mustContainConcepts": ["why_company", "values_alignment", "context_fact"],
       "mustAvoidConcepts": ["invented_details"],
       "requiresNextStep": true,
       "requiresClarifyingQuestion": false,
@@ -666,7 +666,7 @@
     },
     "mockCard": {
       "gist": "Связать мотивацию с направлением компании",
-      "say_now": "Мне близок ваш фокус на reliability platform и culture of ownership: в моём опыте это подтверждается задачами из Candidate Pack по этому направлению.",
+      "say_now": "Мне близок ваш фокус на reliability platform и culture of ownership: в моём опыте это подтверждается задачами из ContextPack по этому направлению.",
       "next_move": "Коротко покажу, какой вклад могу дать в первые 90 дней."
     }
   }

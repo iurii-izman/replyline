@@ -255,7 +255,7 @@ function buildIssueBody(userDescription) {
   lines.push("");
   lines.push("- [ ] No API keys, bearer tokens, or credential values included.");
   lines.push(
-    "- [ ] No raw transcripts, prompts, Candidate Pack values, or provider response bodies.",
+    "- [ ] No raw transcripts, prompts, ContextPack values, or provider response bodies.",
   );
   lines.push("- [ ] Screenshots contain synthetic content only.");
   lines.push("");
@@ -289,7 +289,7 @@ function buildJsonPayload(userDescription) {
     userDescription: safeSlice(userDescription, 2000),
     excludes: [
       "raw_transcript",
-      "candidate_pack",
+      "context_pack",
       "full_prompts",
       "provider_response_bodies",
       "api_keys",

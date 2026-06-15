@@ -49,14 +49,6 @@ const COMMAND_CATEGORIES = {
     "export_interview_report_redacted_markdown",
     "clear_interview_reports",
   ],
-  candidate: [
-    "load_candidate_pack",
-    "save_candidate_pack",
-    "clear_candidate_pack",
-    "get_candidate_pack_status",
-    "prepare_candidate_pack",
-    "save_prepared_candidate_pack",
-  ],
   context_pack: [
     "list_context_packs",
     "save_context_pack",

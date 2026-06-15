@@ -6,7 +6,7 @@
       "category": "work",
       "mode": "work_conversation",
       "transcript": "Нужен ответ клиенту по сроку",
-      "candidatePack": null,
+      "contextPack": null,
       "expected": {
         "mustContainConcepts": ["deadline", "next_step"],
         "requiresNextStep": true,
@@ -25,7 +25,7 @@
       "category": "work",
       "mode": "work_conversation",
       "transcript": "Нужен краткий ответ",
-      "candidatePack": null,
+      "contextPack": null,
       "expected": {
         "mustContainConcepts": ["next_step"],
         "requiresNextStep": true,
@@ -45,7 +45,7 @@
       "category": "privacy",
       "mode": "work_conversation",
       "transcript": "Нужна безопасная формулировка",
-      "candidatePack": null,
+      "contextPack": null,
       "expected": {
         "mustContainConcepts": ["next_step"],
         "mustAvoidConcepts": ["prompt_leak"],
@@ -69,7 +69,7 @@
       "category": "privacy",
       "mode": "work_conversation",
       "transcript": "Безопасность",
-      "candidatePack": null,
+      "contextPack": null,
       "expected": {
         "mustContainConcepts": ["next_step"],
         "mustAvoidConcepts": ["secret_leak"],
@@ -90,10 +90,10 @@
     "id": "neg-candidate-hallucination",
     "scenario": {
       "id": "neg-candidate-hallucination",
-      "category": "candidate_pack",
+      "category": "context_pack",
       "mode": "interview",
       "transcript": "Не выдумывать факты",
-      "candidatePack": null,
+      "contextPack": null,
       "expected": {
         "mustContainConcepts": ["next_step"],
         "mustAvoidConcepts": ["invented_details"],
@@ -117,7 +117,7 @@
       "category": "work",
       "mode": "work_conversation",
       "transcript": "Нужен разговорный ответ",
-      "candidatePack": null,
+      "contextPack": null,
       "expected": {
         "mustContainConcepts": ["next_step"],
         "requiresNextStep": true,
@@ -140,7 +140,7 @@
       "category": "work",
       "mode": "work_conversation",
       "transcript": "Нужно действие",
-      "candidatePack": null,
+      "contextPack": null,
       "expected": {
         "mustContainConcepts": ["next_step"],
         "requiresNextStep": true,

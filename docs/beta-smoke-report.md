@@ -40,7 +40,7 @@ The report is sanitized by default and excludes:
 - `Authorization` and `Bearer` headers
 - raw transcript text
 - raw prompt text
-- raw Candidate Pack, resume, JD, and company values
+- raw ContextPack, resume, JD, and company values
 - full home paths, usernames, and machine-specific path segments
 - raw `app.log` lines
 

@@ -721,7 +721,7 @@ fn build_interview_repair_user_prompt(
         .unwrap_or_else(|| "first_output=unparseable".to_string());
     let base = build_interview_user_prompt(transcript, context, language);
     format!(
-        "{base}\n\nREPAIR PASS (max 1): Fix only failed fields. Keep question classification stable unless clearly wrong.\nFailed checks: {failed}\nFirst output summary: {first_summary}\nDo not invent facts or metrics. Keep same transcript/context/candidate pack scope."
+        "{base}\n\nREPAIR PASS (max 1): Fix only failed fields. Keep question classification stable unless clearly wrong.\nFailed checks: {failed}\nFirst output summary: {first_summary}\nDo not invent facts or metrics. Keep same transcript/context scope."
     )
 }
 

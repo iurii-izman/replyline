@@ -84,7 +84,7 @@ function Add-ManualChecklist {
     @{ name = "Deepgram setup path"; action = "Verify key entry, error handling, and recovery steps." },
     @{ name = "OpenRouter setup path"; action = "Verify provider base URL, key, and model selection." },
     @{ name = "custom OpenAI-compatible path"; action = "Verify custom endpoint and model configuration." },
-    @{ name = "Candidate Pack preparation"; action = "Verify prepare/save/clear and preview flow in Interview Mode." },
+    @{ name = "ContextPack management"; action = "Verify prepare/save/clear and preview flow in Interview Mode." },
     @{ name = "Interview report export"; action = "Verify full and redacted export paths before sharing." },
     @{ name = "uninstall/clear local data note"; action = "Verify the uninstall and local data guidance in docs/engineering/release.md." }
   )

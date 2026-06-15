@@ -12,7 +12,7 @@ $labels = @(
   @{ Name = "area:stt"; Color = "0052cc"; Description = "Deepgram or STT-stage issues" },
   @{ Name = "area:llm"; Color = "0e8a16"; Description = "Provider route, model, or LLM request issues" },
   @{ Name = "area:interview"; Color = "fbca04"; Description = "Interview Mode issues and feedback" },
-  @{ Name = "area:candidate-pack"; Color = "c2e0c6"; Description = "Candidate Pack import or UX issues" },
+  @{ Name = "area:context-pack"; Color = "c2e0c6"; Description = "ContextPack import or UX issues" },
   @{ Name = "area:report"; Color = "bfdadc"; Description = "Report generation or export issues" },
   @{ Name = "area:privacy-trust"; Color = "b60205"; Description = "Privacy, trust, redaction, or wording issues" },
   @{ Name = "area:docs"; Color = "0075ca"; Description = "Docs clarity, setup guidance, support text" },

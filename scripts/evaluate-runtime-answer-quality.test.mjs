@@ -14,7 +14,7 @@ function baseFixture() {
     id: "base",
     mode: "work_conversation",
     transcript: "Нужно закрыть задачу и назвать срок до завтра.",
-    candidatePack: null,
+    contextPack: null,
     expected: {
       mustContain: ["завтра"],
       mustNotContain: ["выдуманный факт"],
@@ -22,7 +22,7 @@ function baseFixture() {
       requiresNextStep: true,
       requiresNoApologySpam: true,
       requiresRuTone: true,
-      requiresNoCandidateHallucination: true,
+      requiresNoContextHallucination: true,
     },
   };
 }

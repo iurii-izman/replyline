@@ -17,7 +17,7 @@ Non-negotiable guardrails:
 
 - do not auto-close beta issues
 - do not post recurring stale-bot comments
-- do not ask for raw transcripts, raw prompts, raw Candidate Pack values, provider bodies, or secrets
+- do not ask for raw transcripts, raw prompts, raw ContextPack values, provider bodies, or secrets
 - do not commit local smoke reports, runtime bundles, or private evidence into the repo
 - do not claim public installer readiness from unsigned artifacts
 
@@ -80,7 +80,7 @@ The feedback payload includes:
 Excluded by default:
 
 - Raw transcript
-- Candidate Pack content
+- ContextPack content
 - Full prompts or provider response bodies
 - API keys, bearer tokens, credential values
 - Absolute user paths (redacted to `%USERPROFILE%` or `[PATH_REDACTED]`)
@@ -106,7 +106,7 @@ pwsh -File scripts/github-beta-ops.ps1 -ApplyLabels -ApplyMilestones
 
 Label families:
 
-- area: `area:setup`, `area:runtime`, `area:stt`, `area:llm`, `area:interview`, `area:candidate-pack`, `area:report`, `area:privacy-trust`, `area:docs`, `area:release`
+- area: `area:setup`, `area:runtime`, `area:stt`, `area:llm`, `area:interview`, `area:context-pack`, `area:report`, `area:privacy-trust`, `area:docs`, `area:release`
 - type: `type:bug`, `type:feedback`, `type:question`, `type:compatibility`
 - priority: `priority:p0`, `priority:p1`, `priority:p2`
 - status: `status:needs-info`, `status:confirmed`, `status:blocked`, `status:stale-candidate`
@@ -210,7 +210,7 @@ Local-only by default:
 - `reports/beta-handoff-*`
 - `reports/manual/live-evidence/`
 - `exports/`, `interview-exports/`
-- full interview exports, full transcripts, raw Candidate Pack inputs
+- full interview exports, full transcripts, raw ContextPack inputs
 - packet captures, traces, and any file with secrets or personal data
 
 Sharing rules:
@@ -247,7 +247,7 @@ Use [manual-qa.md](manual-qa.md) for the canonical operator checklist covering:
 - launch, tray, window, and layout sanity
 - settings and setup flows
 - capture, card, retry, and export behavior
-- Candidate Pack Studio and privacy-sensitive surfaces
+- ContextPack panel and privacy-sensitive surfaces
 
 For beta testers, keep the quick smoke flow in [BETA_TESTING.md](../../BETA_TESTING.md) and the compact tester matrix in [../smoke-checks.md](../smoke-checks.md).
 

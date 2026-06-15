@@ -13,7 +13,7 @@ Replyline is a Windows tray app — universal live assistant for work conversati
 
 Two user flows ship today:
 
-- `WorkConversation` gives one card with `gist`, `say_now`, and `next_move`. An active ContextPack (planned direction, not yet shipped) will provide background context for the conversation.
+- `WorkConversation` gives one card with `gist`, `say_now`, and `next_move`. An active ContextPack can provide user-controlled background context for the conversation.
 - `Interview Mode` is a context usage example that gives interview-focused cards during an active session and can save a local report.
 
 Current shipped scope is intentionally narrow:
@@ -99,25 +99,24 @@ Important boundaries:
 - Scores and feedback are heuristics, not formal assessments.
 - Interview Mode is an example of context usage, not a separate product centre.
 
-## 6. Candidate Pack (planned replacement by ContextPack)
+## 6. ContextPack
 
-Candidate Pack is optional prep context for Interview Mode. It will be replaced
-by ContextPack in a future release (see [ADR 0001](../adr/0001-context-pack-simplification.md)).
+ContextPack is the only shipped conversation context system. It is optional,
+local, and user-controlled.
 
-Until replacement ships, the current Candidate Pack flow remains unchanged:
+Typical flow:
 
-1. Paste resume text, job description, and optional company/about text.
-2. Run Candidate Pack preparation explicitly.
-3. Review the prepared result and save it locally.
-4. Start Interview Mode; the saved compact pack can be used as interview context by default.
+1. Open the ContextPack panel.
+2. Create or edit a pack with the background context you want Replyline to use.
+3. Set exactly one pack active when you want it included in prompts.
+4. Clear the active pack when the conversation no longer needs it.
 
 Boundaries:
 
-- Raw source text stays local until you explicitly run preparation.
-- Preparation can send that content to your configured LLM provider.
-- Saved Candidate Pack files stay local.
-- Candidate Pack context is used for Interview Mode, not for WorkConversation by default.
-- Do not fabricate metrics or achievements when preparing the pack.
+- Saved ContextPack files stay local.
+- Active ContextPack content can be sent to your configured LLM provider as part of card generation.
+- ContextPack is used by WorkConversation and Interview Mode when active.
+- Do not add fabricated metrics, achievements, or claims to a pack.
 
 ## 7. Reports and exports
 
@@ -128,7 +127,7 @@ Interview reports are local-only artifacts saved on your machine.
 - `Export redacted markdown` excludes raw/full transcript and is the safer sharing path.
 - `Clear reports` removes saved interview reports and resets local interview-report state.
 
-Candidate Pack files, interview reports, and debug traces can contain sensitive content. Read the storage and provider details in [privacy.md](privacy.md) before sharing anything externally.
+ContextPack files, interview reports, and debug traces can contain sensitive content. Read the storage and provider details in [privacy.md](privacy.md) before sharing anything externally.
 
 ## 8. Troubleshooting quick table
 

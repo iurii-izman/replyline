@@ -45,10 +45,10 @@
   {
     "id": "candidate-fact-required-20",
     "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
-    "expectedConcepts": { "sayNow": ["candidate_fact", "evidence"], "nextMove": ["next_step"] }
+    "expectedConcepts": { "sayNow": ["context_fact", "evidence"], "nextMove": ["next_step"] }
   },
   {
-    "id": "candidate-requirement-conflict-22",
+    "id": "context-requirement-conflict-22",
     "expectedShape": { "gistRequired": true, "sayNowRequired": true, "nextMoveRequired": true },
     "expectedConcepts": {
       "sayNow": ["requirement_tradeoff", "gap_honesty"],

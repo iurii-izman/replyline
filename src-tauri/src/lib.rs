@@ -2,7 +2,6 @@ mod app_log;
 mod audio;
 mod audio_streaming;
 mod bilingual;
-mod candidate_pack;
 mod capture_debug;
 mod card_v3;
 mod commands;

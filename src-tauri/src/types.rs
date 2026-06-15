@@ -448,43 +448,6 @@ pub struct ExportSummary {
     pub transcript_segments_count: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct CandidateFactDto {
-    pub fact: String,
-    pub evidence: String,
-    pub strength: String,
-    #[serde(default)]
-    pub metrics: Vec<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct CandidatePackDraftDto {
-    pub pack_quality_score: u8,
-    #[serde(default)]
-    pub missing_data_warnings: Vec<String>,
-    #[serde(default)]
-    pub suggested_missing_info: Vec<String>,
-    #[serde(default)]
-    pub candidate_facts: Vec<CandidateFactDto>,
-    #[serde(default)]
-    pub role_keywords: Vec<String>,
-    #[serde(default)]
-    pub company_values: Vec<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PrepareCandidatePackInputDto {
-    pub raw_resume: String,
-    pub job_description: String,
-    #[serde(default)]
-    pub company_values_text: String,
-    #[serde(default)]
-    pub output_language: String,
-}
-
 #[derive(Debug, Clone, Copy)]
 pub enum SecretSlot {
     DeepgramApiKey,

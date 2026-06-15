@@ -167,7 +167,7 @@ A compact, shareable evidence pack that proves the core pipeline works without e
 - `reports/runtime/` — raw timing records, pipeline events with stage-level detail
 - `reports/runtime-evidence-*/` — evidence bundles may contain app log excerpts
 - `reports/beta-handoff-*/` — operator handoff bundles with diagnostic paths
-- `exports/`, `interview-exports/` — full interview reports, Candidate Pack values
+- `exports/`, `interview-exports/` — full interview reports, ContextPack values
 - `reports/manual/live-evidence-*.json` — raw evidence rows with machine paths
 - Any file containing absolute paths (`C:\Users\...`), API keys, bearer tokens, raw transcripts, full prompt bodies, or provider response bodies
 
@@ -203,7 +203,7 @@ pnpm test:report-secret-leaks
 - [ ] No absolute machine paths in shared artifacts
 - [ ] No API keys, bearer tokens, or credential values
 - [ ] No raw transcripts, prompt bodies, or provider response bodies
-- [ ] No Candidate Pack content, interview exports, or full report text
+- [ ] No ContextPack content, interview exports, or full report text
 - [ ] Latency claims scoped to the specific machine and provider path
 - [ ] Claims use correct labels: `measured` / `target` / `pending verification`
 

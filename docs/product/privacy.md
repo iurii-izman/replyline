@@ -29,7 +29,7 @@ Default runtime does not write raw audio or transcripts to disk automatically.
 | API keys | Windows Credential Manager | OS-managed secret storage. |
 | App log | `%APPDATA%\com.replyline.app\logs\app.log` | Sanitized operational log with size rotation. |
 | Interview reports | `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json` | Local-only report store with user-controlled retention. |
-| Candidate Pack files | `%APPDATA%\com.replyline.app\candidate-pack.v1.json`, `%APPDATA%\com.replyline.app\candidate-pack-latest.json` | Local preparation artifacts for Interview Mode. |
+| ContextPack files | `%APPDATA%\com.replyline.app\context-packs.json` | Local user-controlled conversation context packs. |
 | Debug traces | Local trace directory controlled by Settings | Optional diagnostics artifacts; sensitivity depends on trace mode. |
 
 ## What is not stored by default
@@ -49,18 +49,18 @@ Conversation context is RAM-only, bounded, and cleared on restart or after TTL e
 - `Export redacted markdown` excludes raw/full transcript and is the safer sharing path.
 - Bilingual interview export is also explicit only:
   - `full` can include finalized transcript-derived content.
-  - `redacted` includes metadata only and excludes raw transcript text, translated text, full prompts, and raw Candidate Pack values.
+  - `redacted` includes metadata only and excludes raw transcript text, translated text, full prompts, and raw ContextPack values.
 - `debugTraceMode=redacted` keeps diagnostics sanitized for routine triage.
 - `debugTraceMode=full_local` can retain transcript, prompt, response, and captured WAV content locally and should be treated as high-sensitivity diagnostics.
 
-## Candidate Pack boundary
+## ContextPack boundary
 
-Candidate Pack will be replaced by ContextPack in a future release (see [ADR 0001](../adr/0001-context-pack-simplification.md)). Until replacement ships, the current boundaries apply:
+ContextPack is the only shipped conversation context system.
 
-- Raw resume, job description, and company text stay local until the user explicitly runs `prepare_candidate_pack`.
-- During preparation, relevant content can be sent to the configured LLM provider.
-- Saved compact Candidate Pack context stays local.
-- Candidate Pack context is used by default for Interview Mode only, not WorkConversation.
+- Saved ContextPack content stays local until it is active and used for generation.
+- Active ContextPack content can be sent to the configured LLM provider with transcript text.
+- Exactly one ContextPack can be active at a time.
+- Clearing the active pack removes it from future prompts without deleting the saved pack.
 
 ## External STT and LLM providers
 

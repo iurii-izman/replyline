@@ -6,7 +6,7 @@ This document defines the baseline desktop layout contract for Replyline after n
 
 - Full-window desktop canvas without floating outer shell.
 - One primary scroll container.
-- Shared primitives for Main, Settings, and Candidate Pack surfaces.
+- Shared primitives for Main, Settings, and ContextPack surfaces.
 - Responsive behavior with width caps on wide and ultra-wide screens.
 
 ## Required Primitives
@@ -37,7 +37,7 @@ This document defines the baseline desktop layout contract for Replyline after n
 
 - Workspace (`.app-view--main`): `1360px–1480px` (current target: `1440px`).
 - Settings (`.app-view--settings`): `1160px–1280px` (current target: `1240px`).
-- Candidate Studio sections: `1480px–1600px` (current target: `1580px`).
+- ContextPack sections: `1480px–1600px` (current target: `1580px`).
 - Ultra-wide screens (`1680px+`) must preserve capped readable layouts and avoid endlessly stretched forms.
 
 ## Warm Precision Tokens
@@ -111,7 +111,7 @@ A page can use both classes on the same element when both semantics apply.
 - `.app-sticky-footer` is for page actions that must stay reachable while scrolling long content.
 - Sticky footer should be tied to page context, not to an outer shell overlay.
 - Keep action bars compact and avoid covering interactive content.
-- Settings and Candidate Studio content must reserve bottom spacing for sticky actions (`padding-bottom` compensation), so footer never overlaps last interactive fields.
+- Settings and ContextPack content must reserve bottom spacing for sticky actions (`padding-bottom` compensation), so footer never overlaps last interactive fields.
 - For short sections, footer follows content naturally inside the active section width.
 - For long sections, sticky footer uses soft/transparent background and compact width; never stretches as a detached full-screen stripe.
 
@@ -175,7 +175,7 @@ The `test:contracts:ui` gate is required to catch shell/layout regressions early
 - custom close action in `ChromeSurface` that competes with native close semantics
 - missing app layout landmarks (`app-root`, `app-workarea`, `app-view`, sticky footer host)
 - missing Settings section navigation mode (all sections rendered as one always-visible giant form)
-- Candidate Pack Studio no longer being a separate panel/surface from Settings summary
+- ContextPack panel no longer being a separate panel/surface from Settings summary
 - missing width-cap tokens/classes and sticky-footer bottom padding compensation
 - any reintroduction of mixed RU/EN raw setup labels in user-facing TSX
 - main bottom action bar containing session/report/export actions that belong to side panel
@@ -186,23 +186,14 @@ The `test:contracts:ui` gate is required to catch shell/layout regressions early
 - Status badges and setup labels must be localized RU-first in default run; EN labels are allowed only in EN locale branch/tests.
 - Avoid raw EN user labels in RU UI (`missing`, `ready`, `optional`, `Input`, `Preview and quality`, `Saved profile`).
 
-## Candidate Studio Contract
+## ContextPack Panel Contract
 
-- Candidate Pack Studio must remain a separate app view (`candidatePackStudio` panel), not an inline mega-section inside Settings.
-- Studio must present a clear workflow contract, not three unrelated forms:
-  - `1. Исходные данные`
-  - `2. Подготовка`
-  - `3. Профиль`
-- Stepper is mandatory and must expose current/completed/future states.
-- Empty preview state must be concise and guided (max 3 bullets), with no oversized blank panel.
-- Prepared preview state must show quality summary, facts/weak facts, keywords, and warnings (when present).
-- Saved profile editor must use a styled accordion (no default browser disclosure marker).
-- Sticky action dock must stay contextual:
-  - primary action switches by state (`Подготовить профиль` -> `Сохранить профиль`)
-  - secondary action supports draft/profile save when available
-  - danger action clears profile
-  - back action returns to settings
-- Privacy note must remain visible in Step 1 and must not be removed.
+- ContextPack panel must remain a separate app view (`contextPackStudio` panel), not an inline mega-section inside Settings.
+- Panel must expose saved packs, active-pack state, and edit/create actions without implying automatic memory.
+- Empty state must be concise and guided, with no oversized blank panel.
+- Save, activate, clear-active, delete, and back actions must map to the current state correctly.
+- Sticky action dock must stay contextual and must not overlap the final editable field.
+- Privacy note must remain visible near editable context content and must not be removed.
 
 ## Stop Criteria for This Visual Cycle
 

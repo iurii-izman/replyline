@@ -7,7 +7,7 @@ Dataset path: `tests/fixtures/interview-quality/golden-dataset-v1.json`
 Fixture fields:
 
 - `transcript`
-- optional `candidatePack`
+- optional `contextPack`
 - `expected.questionType`
 - `expected.mustMention`
 - `expected.mustNotMention`

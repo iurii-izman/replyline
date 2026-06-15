@@ -74,7 +74,7 @@ const CONCEPT_MAP = {
     "без персональных деталей",
   ],
   language_match: ["на русском", "ru", "русском"],
-  candidate_fact: ["candidate pack", "подтвержд", "факт", "p95", "migrated", "mentoring"],
+  context_fact: ["contextpack", "context pack", "подтвержд", "факт", "p95", "migrated", "mentoring"],
   no_invention: ["без выдум", "без добавления", "проверяем"],
   requirement_tradeoff: ["нет прямого", "конфликт", "tradeoff", "адаптац"],
   values_alignment: ["ценност", "ownership", "прозрач"],
@@ -231,10 +231,10 @@ function evaluateScenario(scenario, thresholds, goldenById = new Map()) {
   }
 
   const hallBase = !hasConcept(combined, "invented_details");
-  const hallPackCheck = !scenario.candidatePack || hasConcept(combined, "candidate_fact");
+  const hallPackCheck = !scenario.contextPack || hasConcept(combined, "context_fact");
   const noHallucinationOk = hallBase && hallPackCheck;
   if (!hallBase) reasons.push("no_hallucination: invented detail marker");
-  if (!hallPackCheck) reasons.push("no_hallucination: candidate pack fact missing");
+  if (!hallPackCheck) reasons.push("no_hallucination: context pack fact missing");
   dimensionPass.no_hallucination = noHallucinationOk;
 
   const privacyOk = !RAW_PROMPT_LEAK.test(combined) && !matchesAnyPattern(combined, SECRET_PATTERNS);

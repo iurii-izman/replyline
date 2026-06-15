@@ -3,7 +3,6 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use tauri::AppHandle;
 
 use crate::app_log;
-use crate::candidate_pack;
 use crate::context_pack;
 use crate::credentials;
 use crate::diag_contract::{
@@ -92,12 +91,7 @@ fn mode_from_last_card(last_card: Option<&AnalysisCardDto>) -> Option<AnalysisMo
     })
 }
 
-fn build_combined_context(
-    context_text: &str,
-    candidate_context: &str,
-    context_pack_content: &str,
-    mode: AnalysisMode,
-) -> String {
+fn build_combined_context(context_text: &str, context_pack_content: &str) -> String {
     let mut parts: Vec<String> = Vec::new();
 
     let base = context_text.trim();
@@ -108,13 +102,6 @@ fn build_combined_context(
     let pack = context_pack_content.trim();
     if !pack.is_empty() {
         parts.push(format!("Active context:\n{pack}"));
-    }
-
-    if mode == AnalysisMode::Interview {
-        let cand = candidate_context.trim();
-        if !cand.is_empty() {
-            parts.push(format!("Candidate context:\n{cand}"));
-        }
     }
 
     parts.join("\n\n")
@@ -462,11 +449,6 @@ pub async fn capture_stop_and_analyze(
     } else {
         AnalysisMode::WorkConversation
     };
-    let candidate_context = candidate_pack::load()
-        .ok()
-        .flatten()
-        .map(|pack| candidate_pack::compact_context(&pack))
-        .unwrap_or_default();
     let context_pack_raw = context_pack::get_active_context_pack()
         .ok()
         .flatten()
@@ -474,30 +456,13 @@ pub async fn capture_stop_and_analyze(
         .unwrap_or_default();
     let context_pack_content = context_pack::compact_for_prompt(&context_pack_raw);
     let context_pack_active = !context_pack_raw.trim().is_empty();
-    let combined_context = build_combined_context(
-        &context_text,
-        &candidate_context,
-        &context_pack_content,
-        mode,
-    );
+    let combined_context = build_combined_context(&context_text, &context_pack_content);
     let _ = app_log::append_event(
         "context_pack_status",
         format!(
             "active={} chars_bucket={}",
             context_pack_active,
             context_pack::chars_bucket(context_pack_raw.chars().count())
-        ),
-    );
-    let _ = app_log::append_event(
-        "candidate_pack_context_status",
-        format!(
-            "pack_active={} mode={} candidate_context_chars={}",
-            mode == AnalysisMode::Interview && !candidate_context.trim().is_empty(),
-            match mode {
-                AnalysisMode::Interview => "interview",
-                AnalysisMode::WorkConversation => "work",
-            },
-            candidate_context.chars().count()
         ),
     );
     if let Some(ref rid) = run_id {
@@ -779,23 +744,13 @@ pub async fn retry_last_analysis(
         &crate::tray_status::tooltip_for_phase(lang, "analyzing", Some(retry_detail)),
     );
 
-    let candidate_context = candidate_pack::load()
-        .ok()
-        .flatten()
-        .map(|pack| candidate_pack::compact_context(&pack))
-        .unwrap_or_default();
     let context_pack_raw = context_pack::get_active_context_pack()
         .ok()
         .flatten()
         .map(|pack| pack.content)
         .unwrap_or_default();
     let context_pack_content = context_pack::compact_for_prompt(&context_pack_raw);
-    let combined_context = build_combined_context(
-        &context_text,
-        &candidate_context,
-        &context_pack_content,
-        mode,
-    );
+    let combined_context = build_combined_context(&context_text, &context_pack_content);
     let _ = app_log::append_event(
         "context_pack_status",
         format!(
@@ -963,68 +918,43 @@ mod tests {
     }
 
     #[test]
-    fn work_mode_excludes_candidate_context_by_default() {
-        let combined = build_combined_context(
-            "Recent conversation context",
-            "Candidate summary: Senior Rust engineer",
-            "",
-            AnalysisMode::WorkConversation,
-        );
+    fn empty_active_context_adds_nothing() {
+        let combined = build_combined_context("Recent conversation context", "");
         assert_eq!(combined, "Recent conversation context");
-        assert!(!combined.contains("Candidate context:"));
-    }
-
-    #[test]
-    fn interview_mode_can_include_candidate_context() {
-        let combined = build_combined_context(
-            "Recent conversation context",
-            "Candidate summary: Senior Rust engineer",
-            "",
-            AnalysisMode::Interview,
-        );
-        assert!(combined.contains("Candidate context:"));
-        assert!(combined.contains("Candidate summary: Senior Rust engineer"));
+        assert!(!combined.contains("Active context:"));
     }
 
     #[test]
     fn active_context_pack_appended_for_work_mode() {
         let combined = build_combined_context(
             "Recent conversation context",
-            "",
             "I am a senior engineer discussing Q3 roadmap.",
-            AnalysisMode::WorkConversation,
         );
         assert!(combined.contains("Recent conversation context"));
         assert!(combined.contains("Active context:"));
         assert!(combined.contains("I am a senior engineer"));
-        assert!(!combined.contains("Candidate context:"));
     }
 
     #[test]
-    fn context_pack_and_candidate_pack_both_appended_for_interview_mode() {
+    fn active_context_pack_appended_for_interview_mode_context() {
         let combined = build_combined_context(
             "Rolling context",
-            "Candidate summary: Rust dev",
             "Active pack: Interview prep for Acme Corp",
-            AnalysisMode::Interview,
         );
         assert!(combined.contains("Rolling context"));
         assert!(combined.contains("Active context:"));
         assert!(combined.contains("Interview prep for Acme Corp"));
-        assert!(combined.contains("Candidate context:"));
-        assert!(combined.contains("Rust dev"));
     }
 
     #[test]
     fn empty_context_pack_adds_nothing() {
-        let combined =
-            build_combined_context("Base context", "", "", AnalysisMode::WorkConversation);
+        let combined = build_combined_context("Base context", "");
         assert_eq!(combined, "Base context");
     }
 
     #[test]
     fn all_empty_yields_empty_string() {
-        let combined = build_combined_context("", "", "", AnalysisMode::WorkConversation);
+        let combined = build_combined_context("", "");
         assert_eq!(combined, "");
     }
 
@@ -1035,12 +965,7 @@ mod tests {
         large.resize(context_pack::CONTEXT_PACK_MAX_PROMPT_CHARS + 500, b'x');
         let large = std::str::from_utf8(&large).unwrap();
         let compacted = context_pack::compact_for_prompt(large);
-        let combined = build_combined_context(
-            "Rolling context",
-            "",
-            &compacted,
-            AnalysisMode::WorkConversation,
-        );
+        let combined = build_combined_context("Rolling context", &compacted);
         assert!(combined.len() < large.len() + 50);
         assert!(combined.contains("Active context:"));
         assert!(combined.contains("[...truncated]"));

@@ -38,10 +38,10 @@ function countDigits(text) {
   return matches ? matches.length : 0;
 }
 
-function gatherEvidenceTokens(candidatePack) {
-  if (!candidatePack || typeof candidatePack !== "object") return [];
+function gatherEvidenceTokens(contextPack) {
+  if (!contextPack || typeof contextPack !== "object") return [];
   const values = [];
-  for (const value of Object.values(candidatePack)) {
+  for (const value of Object.values(contextPack)) {
     if (Array.isArray(value)) values.push(...value.map(String));
     else if (value != null) values.push(String(value));
   }
@@ -246,7 +246,7 @@ function applyProfileLimits(schema, limits, failures) {
 function applyNoFabricationChecks(fixture, expected, output, fullText, failures) {
   if (!expected.requiresNoFabrication) return;
   const transcriptAndEvidence = normalize(
-    `${fixture.transcript} ${gatherEvidenceTokens(fixture.candidatePack).join(" ")}`,
+    `${fixture.transcript} ${gatherEvidenceTokens(fixture.contextPack).join(" ")}`,
   );
   if (countDigits(transcriptAndEvidence) === 0 && countDigits(fullText) > 0) {
     failures.push("gate: fabricated metrics detected");

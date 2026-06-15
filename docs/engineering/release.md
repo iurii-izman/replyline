@@ -230,7 +230,7 @@ These checks stay manual even when `pnpm beta:release-check` is green.
 
 ### Interview and export paths
 
-- Candidate Pack prepare/save/clear and preview flow still work in Interview Mode.
+- ContextPack create/save/activate/clear flow still work in Interview Mode.
 - Full markdown export remains explicitly sensitive.
 - Redacted markdown export remains the preferred sharing path.
 
@@ -240,12 +240,12 @@ These checks stay manual even when `pnpm beta:release-check` is green.
 - The docs distinguish uninstall from local data cleanup.
 - No claim is made that uninstall removes every local artifact automatically.
 - Release screenshots stay under `docs/releases/v0.2.0-beta.2/screenshots/`.
-- Capture first-run, Settings, Interview Mode, Candidate Pack, and export states.
+- Capture first-run, Settings, Interview Mode, ContextPack, and export states.
 
 ## Reporting Rule
 
 - Use the sanitized smoke report for issue filing.
-- Do not paste raw transcripts, prompts, Candidate Pack values, or provider bodies into public issue text.
+- Do not paste raw transcripts, prompts, ContextPack values, or provider bodies into public issue text.
 - Link the report instead of paraphrasing raw diagnostic output.
 
 ## Related Docs
