@@ -46,6 +46,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ContextPack as the shipped conversation context primitive: backend storage, IPC commands (7 commands: list/save/delete/set active/clear active/get active/get status), UI panel, active chip indicator, and prompt injection into WorkConversation and Interview Mode.
 - ContextPack ADR 0001 documenting the simplification from Candidate Pack to single ContextPack primitive.
+- ContextPack answer-quality fixtures: 47 scenarios with deterministic evaluation (avg score 100).
+- Live evidence template for ContextPack manual QA (`tests/fixtures/runtime-live-evidence/context-pack-live-qa.template.md`).
+
+### Changed
+
+- Prompt contract strengthened: LLM receives distinct «rolling conversation context» and «active conversation context» headings with guardrails (do not treat as transcript, do not fabricate facts, prioritize transcript on conflict).
+- Interview Mode repositioned to secondary — idle state primary CTA is now ContextPack management.
+- Bilingual experimental track frozen behind explicit `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` env flag — UI toggles and event listeners hidden by default.
+- Mock platform ContextPack store made mutable for realistic UI test flows (CRUD operations).
+- ContextPack panel UI tests expanded from 5 to 18 scenarios covering create/edit/delete/activate/deactivate/navigation.
+- Back-navigation added to ContextPack panel (← Back button).
+- All «Candidate Pack» references replaced with «ContextPack» in operational docs and templates.
+- Repository scorecard refreshed: 88/100, 384 tracked files, 313 tests (161 Rust + 152 TS).
 
 ## [0.2.0-beta.1] - 2026-06-12
 

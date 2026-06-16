@@ -203,6 +203,28 @@ Recorded 2026-06-15. See `CHANGELOG.md` for [0.2.0-beta.2] entries.
 
 **Decision**: Conditional Go — source/developer beta released.
 
+## Beta.3 Release Decision Checklist
+
+Recorded 2026-06-16. See `CHANGELOG.md` Unreleased section for accumulated changes.
+
+- [x] `pnpm verify` green
+- [x] `pnpm verify:full` — 1 pre-existing blocker (unsigned artifacts, S2)
+- [x] ContextPack shipped as core primitive (prompt contract, UI, 47 QA fixtures)
+- [x] Interview Mode repositioned to secondary — idle state context-first
+- [x] Bilingual experimental track frozen behind env flag (invisible by default)
+- [x] Prompt contract strengthened: distinct rolling/active context, guardrails
+- [x] Docs truth aligned: scorecard 88/100, CHANGELOG current, architecture updated
+- [ ] Live provider evidence: `pending verification` (same as beta.2 — Deepgram key unavailable)
+- [ ] Cross-machine smoke: Windows 10 not tested
+- [ ] Public installer: certificate not acquired, no signed binary
+- [ ] Tag not yet created — pending explicit decision
+
+**Blockers**: none blocking source beta (S0/S1). Unsigned artifacts remain S2.
+
+**Decision**: **Conditional Go** — source/developer beta, no signed installer.
+ContextPack is the defining feature of this cycle. Beta.3 tag can be applied
+after explicit confirmation.
+
 ## Manual Release Checklist
 
 These checks stay manual even when `pnpm beta:release-check` is green.
