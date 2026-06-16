@@ -200,9 +200,7 @@ describe("interview mode integration", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Завершить сессию" }));
     await waitFor(() =>
-      expect(mock.invoke.mock.calls.some((call) => call[0] === "end_interview_session")).toBe(
-        true,
-      ),
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "end_interview_session")).toBe(true),
     );
 
     fireEvent.click(
@@ -221,8 +219,6 @@ describe("interview mode integration", () => {
     expect(
       mock.invoke.mock.calls.some((call) => call[0] === "export_interview_report_markdown"),
     ).toBe(true);
-    expect(mock.invoke.mock.calls.some((call) => call[0] === "clear_interview_reports")).toBe(
-      true,
-    );
+    expect(mock.invoke.mock.calls.some((call) => call[0] === "clear_interview_reports")).toBe(true);
   });
 });

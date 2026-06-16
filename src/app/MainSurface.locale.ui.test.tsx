@@ -145,9 +145,10 @@ describe("MainSurface state-driven view", () => {
   it("idle state renders readiness without side panel", () => {
     render(() => <MainSurface controller={createController(ui_ru) as never} />);
     expect(screen.getByTestId("main-state-idle")).toBeTruthy();
-    expect(screen.getByTestId("interview-trust-note-idle").textContent).toContain(
-      "видимый локальный ассистент",
-    );
+    // Primary CTA is context management, not interview.
+    expect(screen.getByTestId("idle-open-context-btn").textContent).toBe("Добавить контекст");
+    // Interview is secondary.
+    expect(screen.getByTestId("idle-interview-secondary-btn").textContent).toBe("Режим интервью");
     expect(screen.queryByTestId("main-side-panel")).toBeNull();
     expect(screen.queryByTestId("action-row")).toBeNull();
   });

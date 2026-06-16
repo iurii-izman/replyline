@@ -62,7 +62,8 @@ export const ui_ru = {
     retryCard: "Пересобрать",
     clearContext: "Очистить",
     readinessLabel: "Готовность",
-    idleReadyInstruction: "Ctrl+Alt+Space — удержать и отпустить",
+    idleReadyInstruction: "Удерживайте Ctrl+Alt+Space, чтобы получить ответ",
+    idleAddContext: "Добавить контекст",
     readinessSpeech: "Речь",
     readinessReply: "Ответ / LLM",
     readinessHotkey: "Клавиша",
@@ -155,6 +156,8 @@ export const ui_ru = {
       sessionChipPrefix: "Сессия активна · Вопросов:",
       allowedUseBoundary:
         "Используйте только там, где это разрешено. Replyline работает как видимый локальный ассистент (без hidden overlay/click-through); transcript и контекст могут обрабатываться cloud STT/LLM провайдерами.",
+      secondaryOpen: "Режим интервью",
+      secondaryHint: "(пример использования контекста)",
     },
     bilingual: {
       headerTitle: "Replyline Interview Assist",
@@ -492,7 +495,8 @@ export const ui_en: UiStrings = {
     retryCard: "Rebuild",
     clearContext: "Clear",
     readinessLabel: "Readiness",
-    idleReadyInstruction: "Ctrl+Alt+Space — hold and release",
+    idleReadyInstruction: "Hold Ctrl+Alt+Space to get a response",
+    idleAddContext: "Add context",
     readinessSpeech: "Speech",
     readinessReply: "Reply / LLM",
     readinessHotkey: "Hotkey",
@@ -585,6 +589,8 @@ export const ui_en: UiStrings = {
       sessionChipPrefix: "Session active · Questions:",
       allowedUseBoundary:
         "Use only where allowed. Replyline is a visible local assistant (no hidden overlay/click-through); transcript and context may be processed by cloud STT/LLM providers.",
+      secondaryOpen: "Interview mode",
+      secondaryHint: "(context usage example)",
     },
     bilingual: {
       headerTitle: "Replyline Interview Assist",

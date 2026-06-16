@@ -116,6 +116,7 @@ function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
   const activeSessionQuestions = createMemo(
     () => controller().interviewSession()?.questions.length ?? 0,
   );
+  const activePack = () => controller().activeContextPack();
 
   return (
     <section class="readiness-state readiness-state--centered" data-testid="main-state-idle">
@@ -135,21 +136,42 @@ function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
           {st().card.readinessHotkey}
         </span>
       </div>
-      <Show when={controller().interviewSession()}>
-        <p class="empty-flow-hint" data-testid="idle-session-chip">
-          {st().card.interview.sessionChipPrefix} {activeSessionQuestions()}
-        </p>
+      <Show when={activePack()}>
+        {(pack) => (
+          <div class="context-active-chip" data-testid="idle-active-chip">
+            <span class="context-chip-label">{st().contextPack.activeLabel}:</span>
+            <span class="context-chip-title" data-testid="idle-chip-title">
+              {pack().title}
+            </span>
+            <div class="context-chip-actions">
+              <button
+                type="button"
+                class="btn btn-sm"
+                data-testid="idle-chip-change-btn"
+                onClick={() => controller().openContextPackPanel()}
+              >
+                {st().contextPack.changeCtx}
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-danger"
+                data-testid="idle-chip-disable-btn"
+                onClick={() => controller().clearActiveContextPackAction()}
+              >
+                {st().contextPack.disableCtx}
+              </button>
+            </div>
+          </div>
+        )}
       </Show>
-      <p class="empty-flow-hint" data-testid="interview-trust-note-idle">
-        {st().card.interview.allowedUseBoundary}
-      </p>
       <div class="action-group">
         <button
           class="btn-primary"
           type="button"
-          onClick={() => void controller().startInterviewSession()}
+          data-testid="idle-open-context-btn"
+          onClick={() => controller().openContextPackPanel()}
         >
-          {st().card.interview.sessionActions.start}
+          {activePack() ? st().contextPack.manageCtx : st().card.idleAddContext}
         </button>
         <button
           class="btn-secondary"
@@ -158,6 +180,24 @@ function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
         >
           {st().card.errorFixAction}
         </button>
+      </div>
+      <div class="idle-secondary-area" data-testid="idle-secondary-area">
+        <Show when={controller().interviewSession()}>
+          <p class="empty-flow-hint" data-testid="idle-session-chip">
+            {st().card.interview.sessionChipPrefix} {activeSessionQuestions()}
+          </p>
+        </Show>
+        <button
+          class="btn-ghost btn-sm"
+          type="button"
+          data-testid="idle-interview-secondary-btn"
+          onClick={() => void controller().startInterviewSession()}
+        >
+          {st().card.interview.secondaryOpen}
+        </button>
+        <span class="secondary-hint" data-testid="idle-interview-secondary-hint">
+          {st().card.interview.secondaryHint}
+        </span>
       </div>
     </section>
   );
