@@ -2,7 +2,7 @@
 
 > **Status:** Experimental / not shipped in current public beta.
 > **Default:** Disabled (`bilingualInterviewEnabled: false`, `liveTranslationEnabled: false`).
-> **Last updated:** 2026-06-14.
+> **Last updated:** 2026-06-16.
 
 ## What exists now
 
@@ -60,17 +60,23 @@
 - `src-tauri/src/bilingual/translation.rs` — batch contract, timeout, short-input skip
 - `src-tauri/src/settings.rs` — migration tests include bilingual fields
 
+## Gating mechanism
+
+Bilingual is gated by a **two-factor** check (`experimental_bilingual_allowed()`):
+
+1. **Env flag** `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` — primary kill-switch. Absent or any other value → feature completely off.
+2. **Setting** `bilingual_interview_enabled: true` — user-facing opt-in.
+
+Both must be true. This gate is enforced:
+- In `bootstrap` (`experimental_bilingual_allowed` field exposed to frontend).
+- In all 4 bilingual commands via `require_experimental_bilingual()`.
+- Tested with 6 Rust unit tests (`commands::shared::tests`).
+
 ## What is incomplete
 
-1. **No `REPLYLINE_EXPERIMENTAL_BILINGUAL` env/build flag.** All bilingual code is always compiled. Activation is controlled via `bilingualInterviewEnabled` settings flag + `require_experimental_bilingual()` backend guard.
+1. **No live-provider QA.** The manual QA checklist (Google Meet testing) has not been completed with real STT/LLM providers. Deepgram API key required and unavailable on current test machine.
 
-2. **No live-provider QA.** The manual QA checklist (Google Meet testing) has not been completed with real STT/LLM providers. Deepgram API key required and unavailable on current test machine.
-
-3. **Translation lane not prod-hardened.** Timeouts, retry budgets, and fallback behavior are implemented but not validated under sustained load or diverse network conditions.
-
-4. **No feature flag mechanism.** There is no env flag (`REPLYLINE_EXPERIMENTAL_BILINGUAL`) to completely compile-out or gate the feature at build time. All code is always compiled and registered.
-
-**Note:** Backend command guard (`require_experimental_bilingual()`) and Settings UI gating (`<Show when={bilingualInterviewEnabled}>`) are implemented (updated 2026-06-15).
+2. **Translation lane not prod-hardened.** Timeouts, retry budgets, and fallback behavior are implemented but not validated under sustained load or diverse network conditions.
 
 ## Why it is not shipped
 
@@ -94,9 +100,9 @@
 
 Before enabling bilingual in a public beta or release:
 
-1. [ ] Add backend guard to `start_bilingual_session` / `stop_bilingual_session` / `capture_bilingual_answer` / `export_bilingual_interview_report` — return `EXPERIMENTAL_BILINGUAL_DISABLED` error when `bilingual_interview_enabled` is `false`.
-2. [ ] Hide bilingual settings UI when `bilingualInterviewEnabled` is `false` (or gate behind explicit experimental opt-in).
-3. [ ] Add env/build feature flag: `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` to optionally compile-out the module.
+1. [x] Add backend guard to `start_bilingual_session` / `stop_bilingual_session` / `capture_bilingual_answer` / `export_bilingual_interview_report` — return `EXPERIMENTAL_BILINGUAL_DISABLED` error when `bilingual_interview_enabled` is `false` or env flag is absent.
+2. [x] Hide bilingual settings UI when `bilingualInterviewEnabled` is `false` (or gate behind explicit experimental opt-in).
+3. [x] Add env gate: `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` enforced in backend guard and bootstrap. Both env AND setting must pass.
 4. [ ] Complete manual QA on at least 2 distinct Windows machines with different audio setups.
 5. [ ] Run sustained soak test (≥30 min streaming) with network disruption simulation.
 6. [ ] Validate translation quality across ≥3 call apps (Zoom, Teams, Meet).

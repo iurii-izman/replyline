@@ -46,8 +46,7 @@ pub fn load_bootstrap(state: State<'_, ReplylineState>) -> Result<BootstrapDto, 
 
     let runtime_ready = settings.runtime_path_configured(deepgram_key_present);
     let log_status = app_log::status().map_err(CommandError::Internal)?;
-    let experimental_bilingual_allowed =
-        std::env::var("REPLYLINE_EXPERIMENTAL_BILINGUAL").as_deref() == Ok("1");
+    let experimental_bilingual_allowed = crate::commands::shared::experimental_bilingual_allowed();
     let _ = app_log::append_event(
         "bootstrap_loaded",
         format!(

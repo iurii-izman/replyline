@@ -113,9 +113,12 @@ Features that exist in the codebase but are gated/disabled by default and not sh
 
 ### Bilingual Interview Mode
 
-- **Status:** Experimental, disabled by default (`bilingualInterviewEnabled: false`, `liveTranslationEnabled: false`).
+- **Status:** Experimental, disabled by default. Gated by **two-factor** check:
+  1. Env flag `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` (primary kill-switch).
+  2. Setting `bilingualInterviewEnabled: true` (user-facing opt-in).
+  Both must pass. Enforced in `bootstrap` and all 4 bilingual commands via `require_experimental_bilingual()`.
 - **Scope:** Split pipeline for interview help — passive EN transcript streaming + RU translation + hotkey-triggered answer card generation.
 - **Code:** `src-tauri/src/bilingual/` (Rust backend), `src/app/BilingualInterviewSurface.tsx` (frontend).
-- **Commands:** `start_bilingual_session`, `stop_bilingual_session`, `capture_bilingual_answer`, `export_bilingual_interview_report` — registered but callable only when feature flag is enabled.
+- **Commands:** `start_bilingual_session`, `stop_bilingual_session`, `capture_bilingual_answer`, `export_bilingual_interview_report` — registered but callable only when both gates pass.
 - **Docs:** `docs/archive/experimental/bilingual-implementation-status.md`.
 - **Activation:** See activation checklist in the archive doc. Do not enable without completing manual QA on ≥2 Windows machines, sustained soak testing, and backend command guard.

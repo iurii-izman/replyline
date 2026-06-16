@@ -1,14 +1,14 @@
 # Bilingual Beta Readiness Assessment
 
-> **Date:** 2026-06-15
+> **Date:** 2026-06-16
 > **Decision:** ❌ Remain experimental — NOT ready for beta opt-in (P2)
 > **Current level:** P0 (frozen experimental, no active work)
 > **Next review:** When live-provider QA feasible OR v0.3 planning
 >
-> **Update (2026-06-15):** Backend guard (`require_experimental_bilingual`) and
-> Settings UI gating (`<Show when={bilingualInterviewEnabled}>`) confirmed
-> implemented. P0 blockers reduced from 5 to 1 (env flag). Decision to freeze
-> upheld — live-provider QA impossible without Deepgram API key.
+> **Update (2026-06-16):** Env flag gate (`REPLYLINE_EXPERIMENTAL_BILINGUAL=1`) now
+> enforced in backend (`require_experimental_bilingual()` checks both env AND setting).
+> All bilingual commands and bootstrap require both factors. P0 blockers: 0 gating gaps.
+> Decision to freeze upheld — live-provider QA impossible without Deepgram API key.
 
 ## Readiness checklist
 
