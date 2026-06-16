@@ -25,7 +25,7 @@ Do not include:
 
 - API keys, bearer tokens, or credential values
 - raw/full transcripts or full interview reports
-- raw Candidate Pack values (resume/JD/company)
+- raw ContextPack values (resume/JD/company notes)
 - provider response bodies containing sensitive data
 
 If possible, attach redacted/sanitized artifacts and minimal reproduction steps.

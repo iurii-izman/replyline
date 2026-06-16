@@ -24,7 +24,7 @@ assignees: []
 - [ ] No secrets in logs/screenshots/attachments
 - [ ] No accidental sharing of raw sensitive runtime artifacts
 - [ ] Privacy wording aligns with `docs/product/privacy.md`
-- [ ] No raw/full transcript, full report, or raw Candidate Pack values attached
+- [ ] No raw/full transcript, full report, or raw ContextPack values attached
 - [ ] Shared interview artifacts use redacted markdown when external sharing is needed
 
 ## Validation profile

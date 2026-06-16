@@ -12,7 +12,7 @@
 
 ## Privacy And Trust
 
-- [ ] No credentials, raw transcripts, provider responses, or Candidate Pack values are included
+- [ ] No credentials, raw transcripts, provider responses, or ContextPack values are included
 - [ ] User-facing wording follows `docs/copy-rules.md`
 - [ ] Runtime claims use `measured`, `target`, or `pending verification` accurately
 

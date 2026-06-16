@@ -1,23 +1,23 @@
 # Repository Scorecard
 
-> **Date:** 2026-06-14  
-> **Scope:** Full repo audit after cleanup cycle (CI, baseline, model split, command registry, bilingual quarantine, workflows)  
-> **Files tracked:** 364  
+> **Date:** 2026-06-16  
+> **Scope:** Full repo audit after ContextPack shipment, command domain split, and beta.2 release  
+> **Files tracked:** 383  
 
-## Overall: 82/100 — Solid beta, some intentional gaps
+## Overall: 85/100 — ContextPack shipped, intentional gaps remain
 
 | Direction | Score | Status |
 |---|---|---|
-| Product clarity / scope | 88 | Clear, honest, well-bounded |
-| Documentation | 85 | Comprehensive, some archive debt |
-| Tests / verification | 84 | Strong unit/contract coverage, limited E2E |
+| Product clarity / scope | 90 | Clear, honest, well-bounded |
+| Documentation | 86 | Comprehensive, some archive debt |
+| Tests / verification | 85 | Strong unit/contract coverage, limited E2E |
 | CI/CD / release | 90 | Well-structured, advisory freeze, pinning consistent |
 | Security / public footprint | 88 | Good gates, experimental tracks gated |
-| Frontend architecture | 82 | Just split into domains, solid controller pattern |
-| Rust/Tauri architecture | 85 | Clean module map, just centralized command registry |
+| Frontend architecture | 84 | Domain split done, ContextPack panel added |
+| Rust/Tauri architecture | 87 | Clean module map, ContextPack commands extracted |
 | Scripts / operator tooling | 80 | Good coverage, some script-only noise |
-| GitHub / public polish | 83 | Good README, landing, issue templates |
-| Minimalism / maintainability | 78 | Recent cleanup helped, still ~364 files |
+| GitHub / public polish | 84 | Good README, landing, issue templates, ContextPack truth aligned |
+| Minimalism / maintainability | 79 | ContextPack added, still ~383 files |
 
 ---
 
@@ -28,7 +28,8 @@
 - `docs/product/limitations.md` is honest: unsigned artifacts, no bilingual, no stealth
 - `docs/product/privacy.md` covers data flow, storage, exports, provider boundaries
 - `docs/product/user-guide.md` structured by feature area
-- MVP is well-defined: WorkConversation + ContextPack (Interview Mode as example usage)
+- MVP is well-defined: WorkConversation + ContextPack (Interview Mode as context usage example)
+- ContextPack is shipped as the single conversation context primitive (7 IPC commands, UI panel, prompt injection)
 
 **Remaining:**
 - Bilingual experimental track is well-documented but adds complexity to settings schema
@@ -57,13 +58,13 @@
 
 ---
 
-## Tests / verification — 84/100
+## Tests / verification — 85/100
 
 **Good:**
-- 146 Rust tests (unit + integration), 137 TypeScript tests (21 test files)
+- 146 Rust tests (unit + integration), 139 TypeScript tests (21 test files)
 - Contract tests: IPC handler, docs consistency, locale keys, prompt contract, UI shell, model presets, observability events, runtime preflight
 - Release-freeze guard with advisory/strict modes, baseline with 62 critical paths + categories
-- Public footprint guard (364 tracked files, no secrets in reports)
+- Public footprint guard (383 tracked files, no secrets in reports)
 - E2E web smoke test (blocking in CI)
 
 **Remaining:**
@@ -122,7 +123,7 @@
 
 ---
 
-## Frontend architecture — 82/100
+## Frontend architecture — 84/100
 
 **Good:**
 - Clean Solid.js + TypeScript stack
@@ -141,7 +142,7 @@
 
 ---
 
-## Rust/Tauri architecture — 85/100
+## Rust/Tauri architecture — 87/100
 
 **Good:**
 - Clean module map: commands (mod.rs + 6 extracted domain modules: bootstrap, diagnostics, tray_window, context, runtime_checks, secrets), settings, types, state, services, providers, bilingual
@@ -177,7 +178,7 @@
 
 ---
 
-## GitHub / public polish — 83/100
+## GitHub / public polish — 84/100
 
 **Good:**
 - README with clear scope, stack, quick-start, beta testing flow
@@ -197,7 +198,7 @@
 
 ---
 
-## Minimalism / maintainability — 78/100
+## Minimalism / maintainability — 79/100
 
 **Good:**
 - Single developer mode (no PR requirement for routine work — documented in AGENTS.md)
@@ -220,7 +221,8 @@
 
 | When | What | Impact |
 |---|---|---|
-| This cycle | 14 commits: CI fix, baseline redesign, model split, command registry, bilingual quarantine, workflow hardening, scorecard, **command domain split (6/11 domains)** | +42 score points from baseline ~40 |
+| This cycle | ContextPack shipped as core primitive, docs truth aligned, scorecard refreshed | P1 context primitive complete |
+| This cycle | 15 commits: CI fix, baseline redesign, model split, command registry, bilingual quarantine, workflow hardening, scorecard, command domain split (6/11 domains), **ContextPack implementation** | +45 score points from baseline ~40 |
 | Next cycle | Bilingual live-provider QA + soak test | Unblocks P2 beta opt-in |
 | Next cycle | Signed installer setup | Unblocks public binary release |
 | Later | ~~Split commands.rs~~, locale.ts, large surfaces | Maintainability polish |
@@ -231,14 +233,14 @@
 
 | Check | Result |
 |---|---|
-| Tracked files | 364 |
-| TS/TSX files | 67 |
-| Rust files | 49 |
+| Tracked files | 383 |
+| TS/TSX files | 68 |
+| Rust files | 57 |
 | Markdown docs | 51 |
 | Workflows | 8 |
 | Scripts | 71 |
-| Test files | 22 |
+| Test files | 21+ TS, inline Rust |
 | Rust tests | 146 passed |
-| TS tests | 137 passed (21 files) |
+| TS tests | 139 passed (21 files) |
 | `pnpm verify` | ✅ |
 | `pnpm verify:full` | ⚠️ 1 pre-existing blocker (unsigned artifacts) |

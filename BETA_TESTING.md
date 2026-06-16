@@ -17,7 +17,7 @@ Replyline отправляет короткий audio snippet в Deepgram для
 ```powershell
 git clone https://github.com/iurii-izman/replyline.git
 cd replyline
-git checkout v0.2.0-beta.1
+git checkout v0.2.0-beta.2
 pnpm install --frozen-lockfile
 pnpm beta:doctor
 pnpm beta:start
@@ -73,7 +73,7 @@ issues, screenshots или logs.
 
 - API keys, bearer tokens и account identifiers;
 - raw transcripts, prompts или provider response bodies;
-- resume, job description или Candidate Pack values;
+- resume, job description или ContextPack values;
 - screenshots с персональными данными;
 - абсолютные local paths с именем пользователя.
 

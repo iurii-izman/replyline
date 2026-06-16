@@ -76,7 +76,7 @@ git rev-parse HEAD
 - `credentials/`, `secrets/`, `tokens/`
 - `reports/` directory contents
 - runtime evidence files
-- raw transcripts, full prompts, raw Candidate Pack values
+- raw transcripts, full prompts, raw ContextPack values
 - provider response bodies
 
 ## Required References

@@ -21,7 +21,7 @@ The current public entry is a Windows **source/developer beta** for testers and 
 - [Read the user guide](docs/product/user-guide.md)
 - [Read privacy and data-flow boundaries](docs/product/privacy.md)
 - [Read current beta limitations](docs/product/limitations.md)
-- [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.1)
+- [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.2)
 - [Ask a question or share feedback](https://github.com/iurii-izman/replyline/discussions)
 
 No unsigned artifact is presented as a public installer. Until an Authenticode-signed build
@@ -30,7 +30,7 @@ is verified and published, use the source setup below.
 ## What It Does
 
 - Hotkey-gated capture (`Ctrl+Alt+Space`) of short system-audio snippets.
-- WorkConversation returns one compact response card: `gist / say_now / next_move` (generated from `CardSchemaV3`). An active ContextPack can be attached to provide background and role context (planned direction, not yet shipped).
+- WorkConversation returns one compact response card: `gist / say_now / next_move` (generated from `CardSchemaV3`). An active ContextPack can be attached to provide background and role context.
 - Interview Mode is a context usage example: WorkConversation + an interview-oriented context + `InterviewCardSchemaV1` + local post-interview report.
 - Scope stays intentionally narrow for stable-beta reliability and trust.
 
@@ -53,11 +53,11 @@ Not in the current beta:
 
 Built for correctness and trust, not hype:
 
-- **Tauri v2 + Rust backend** — WASAPI loopback capture, typed IPC contract (38 commands, 9 categories), settings migration chain v1→v10, corrupt-file quarantine.
-- **Solid.js + TypeScript frontend** — Controller pattern with 10 domain modules, deterministic error mapping, mock platform for UI tests (137 tests).
+- **Tauri v2 + Rust backend** — WASAPI loopback capture, typed IPC contract (40 commands, 9 categories), settings migration chain v1→v10, corrupt-file quarantine.
+- **Solid.js + TypeScript frontend** — Controller pattern with 10 domain modules, deterministic error mapping, mock platform for UI tests (139 tests).
 - **Deepgram STT + OpenAI-compatible LLM route** — User-configured providers, RAM-only transcripts, redacted export as default sharing path.
 - **Privacy-first local storage** — API keys in Windows Credential Manager, settings in local JSON, no background recording, no transcript history DB.
-- **Quality gates** — `pnpm verify` (blocking CI), `pnpm verify:full` (release), advisory release-freeze guard, 283 automated tests (146 Rust + 137 TS), security lane checks, public footprint guard, secret leak scanner.
+- **Quality gates** — `pnpm verify` (blocking CI), `pnpm verify:full` (release), advisory release-freeze guard, 285 automated tests (146 Rust + 139 TS), security lane checks, public footprint guard, secret leak scanner.
 - **Release discipline** — Honest beta posture (unsigned artifacts stay internal), Authenticode-gated public binary, changelog, release notes, operator evidence bundle.
 
 ## Supported Runtime Path
@@ -73,7 +73,7 @@ Built for correctness and trust, not hype:
 ```bash
 git clone https://github.com/iurii-izman/replyline.git
 cd replyline
-git checkout v0.2.0-beta.1
+git checkout v0.2.0-beta.2
 pnpm install --frozen-lockfile
 pnpm beta:doctor
 pnpm beta:start

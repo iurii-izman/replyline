@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- ContextPack as the shipped conversation context primitive: backend storage, IPC commands (7 commands: list/save/delete/set active/clear active/get active/get status), UI panel, active chip indicator, and prompt injection into WorkConversation and Interview Mode.
+- ContextPack ADR 0001 documenting the simplification from Candidate Pack to single ContextPack primitive.
+
 ## [0.2.0-beta.1] - 2026-06-12
 
 Public source/developer beta. No signed public Windows installer is included.

@@ -132,10 +132,10 @@ These instructions apply to the whole repository.
 
 ### Privacy and Data Handling
 
-- Never log API keys, bearer tokens, credential values, raw transcripts, full prompts, raw Candidate Pack values, raw resume/JD/company values, or provider response bodies.
+- Never log API keys, bearer tokens, credential values, raw transcripts, full prompts, raw ContextPack values, raw resume/JD/company values, or provider response bodies.
 - Sensitive local transcript data may appear only where explicitly required by local feature design.
 - Any export of sensitive information must be explicit user action.
-- Redacted export must never include full transcript or raw Candidate Pack content.
+- Redacted export must never include full transcript or raw ContextPack content.
 
 ### Quality and Behavior Constraints
 

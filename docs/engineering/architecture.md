@@ -82,6 +82,17 @@ flowchart LR
 - Quality flags (logs only): `repair_used`, `fallback_used`, `chars_band`.
 - Migration notes: see git history for schema v3 migration context.
 
+## ContextPack system
+
+ContextPack is the shipped conversation context primitive — the single mechanism for providing
+background and role context to WorkConversation and Interview Mode prompts.
+
+- **Status:** Shipped in the current public beta.
+- **Scope:** One active ContextPack at a time, user-controlled, local storage, injected into LLM prompts.
+- **IPC:** 7 commands — list, save, delete, set active, clear active, get active, get status (`context_pack` category).
+- **Code:** `src-tauri/src/context_pack.rs` (storage, validation, prompt compaction), `src-tauri/src/commands/context_pack.rs` (command handlers), `src/app/ContextPackPanel.tsx` (UI panel), `src/app/model/contextPack.ts` (frontend DTOs).
+- **Docs:** [ADR 0001](../adr/0001-context-pack-simplification.md), [User Guide — ContextPack](../product/user-guide.md#6-contextpack).
+
 ## IPC contract categories
 
 Command grouping is enforced by `scripts/check-ipc-handler-contract.mjs`:
@@ -99,12 +110,6 @@ Command grouping is enforced by `scripts/check-ipc-handler-contract.mjs`:
 ## Experimental tracks
 
 Features that exist in the codebase but are gated/disabled by default and not shipped in the current public beta.
-
-### ContextPack
-
-- **Status:** Implemented as the single conversation context primitive.
-- **Scope:** Active ContextPack augments WorkConversation and Interview Mode prompts with bounded user-controlled context. See [ADR 0001](../adr/0001-context-pack-simplification.md).
-- **Code:** `src-tauri/src/context_pack.rs`, `src-tauri/src/commands/context_pack.rs`, `src/app/ContextPackPanel.tsx`.
 
 ### Bilingual Interview Mode
 

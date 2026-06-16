@@ -32,7 +32,7 @@ Do not attach or paste:
 - API keys, bearer tokens, or credential values
 - raw/full transcripts
 - full interview reports
-- raw Candidate Pack inputs (resume/JD/company notes)
+- raw ContextPack inputs (resume/JD/company notes)
 - provider response bodies
 - screenshots containing secrets or personal data
 - logs that still contain secrets
