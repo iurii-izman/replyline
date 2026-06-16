@@ -706,6 +706,9 @@ export function useReplylineController(platform: AppPlatform) {
       setUserSelectedPanel(true);
       setPanel("contextPack");
     },
+    goToMainPanel: () => {
+      setPanel("main");
+    },
     setError,
     dismissNotice: notices.dismissNotice,
   };

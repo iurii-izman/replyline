@@ -410,4 +410,105 @@ describe("context pack panel", () => {
     expect(screen.getByTestId("context-pack-edit-ctx-1").textContent).toBeTruthy();
     expect(screen.getByTestId("context-pack-delete-ctx-1").textContent).toBeTruthy();
   });
+
+  // ── Navigation ───────────────────────────────────────────────────
+
+  it("back button returns to main surface", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    expect(screen.getByTestId("context-pack-panel")).toBeTruthy();
+
+    // Click back.
+    fireEvent.click(screen.getByTestId("context-pack-back-btn"));
+
+    // Panel is gone, main surface is visible.
+    await waitFor(() => {
+      expect(screen.queryByTestId("context-pack-panel")).toBeNull();
+    });
+    expect(screen.getByTestId("main-surface")).toBeTruthy();
+  });
+
+  it("created pack does not auto-activate — no chip on main surface", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+
+    // Create a pack.
+    fireEvent.click(screen.getByTestId("context-pack-new-btn"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+    fireEvent.input(screen.getByTestId("context-pack-title-input"), {
+      target: { value: "Non-active pack" },
+    });
+    fireEvent.input(screen.getByTestId("context-pack-content-input"), {
+      target: { value: "Some content" },
+    });
+    fireEvent.click(screen.getByTestId("context-pack-save-btn"));
+
+    // Wait for list to appear (save completed).
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    // Navigate back to main surface.
+    fireEvent.click(screen.getByTestId("context-pack-back-btn"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("context-pack-panel")).toBeNull();
+    });
+
+    // No active chip — pack was not auto-activated.
+    expect(screen.queryByTestId("context-active-chip")).toBeNull();
+  });
+
+  it("active chip visible on main surface after activating and navigating back", async () => {
+    const packs = [makePack("ctx-1")];
+    const mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    // Activate the pack.
+    fireEvent.click(screen.getByTestId("context-pack-activate-ctx-1"));
+    await waitFor(() => {
+      expect(mock.invoke).toHaveBeenCalledWith("set_active_context_pack", { id: "ctx-1" });
+    });
+
+    // Active banner visible inside panel.
+    await waitFor(() => expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy());
+
+    // Navigate back to main surface.
+    fireEvent.click(screen.getByTestId("context-pack-back-btn"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("context-pack-panel")).toBeNull();
+    });
+
+    // Main surface shows the active chip.
+    await waitFor(() => {
+      expect(screen.getByTestId("context-active-chip")).toBeTruthy();
+    });
+    expect(screen.getByTestId("context-chip-title").textContent).toContain("Test Context ctx-1");
+  });
+
+  it("new pack button is disabled while editor is open", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+
+    const newBtn = screen.getByTestId("context-pack-new-btn") as HTMLButtonElement;
+    // Button is enabled when no editor.
+    expect(newBtn.disabled).toBe(false);
+
+    // Open editor.
+    fireEvent.click(newBtn);
+    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+
+    // Button is now disabled while editor is open.
+    expect(newBtn.disabled).toBe(true);
+  });
 });
