@@ -231,12 +231,12 @@ const staticContractChecks = [
   },
   {
     ok:
-      modelText.includes('activeAnswerProfile: "interview_default"') &&
+      modelText.includes('activeAnswerProfile: "work_default"') &&
       typesRustText.includes(
         "active_answer_profile: crate::prompt_registry::DEFAULT_ANSWER_PROFILE_ID.to_string()",
       ),
     message:
-      "Settings default drift: activeAnswerProfile must be interview_default / DEFAULT_ANSWER_PROFILE_ID",
+      "Settings default drift: activeAnswerProfile must be work_default / DEFAULT_ANSWER_PROFILE_ID",
   },
   {
     ok: modelText.includes("windowOpacity: 100") && typesRustText.includes("window_opacity: 100"),

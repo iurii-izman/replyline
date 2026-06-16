@@ -42,7 +42,7 @@ export const defaultMockSettings = {
   llmModel: "gpt-4o-mini",
   selectedModelPreset: "custom_openai_compatible",
   captureMaxSeconds: 45,
-  activeAnswerProfile: "interview_default",
+  activeAnswerProfile: "work_default",
   windowOpacity: 100,
   hideToTrayOnClose: true,
   keepOnTopDuringCapture: false,

@@ -2,12 +2,23 @@ use serde::{Deserialize, Serialize};
 
 pub const INTERVIEW_PROMPT_VERSION: &str = "interview-v1";
 pub const INTERVIEW_SCHEMA_VERSION: &str = "InterviewCardSchemaV1";
-pub const DEFAULT_ANSWER_PROFILE_ID: &str = "interview_default";
+pub const DEFAULT_ANSWER_PROFILE_ID: &str = "work_default";
+
+/// Backward-compatible alias mapping: old interview_* ids → current work_* ids.
+const PROFILE_ALIASES: &[(&str, &str)] = &[
+    ("interview_default", "work_default"),
+    ("interview_concise", "work_concise"),
+    ("interview_star", "work_star"),
+    ("interview_executive", "work_executive"),
+    ("interview_technical", "work_technical"),
+    ("interview_product", "work_product"),
+    ("interview_hr", "work_hr"),
+];
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum AnswerProfileMode {
-    Interview,
+    WorkConversation,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -57,10 +68,10 @@ pub struct AnswerProfileConfig {
 
 const PROFILES: [AnswerProfileConfig; 7] = [
     AnswerProfileConfig {
-        id: "interview_default",
-        title: "Interview Default",
-        description: "Balanced interview answer with clear action and concrete next step.",
-        mode: AnswerProfileMode::Interview,
+        id: "work_default",
+        title: "Work Default",
+        description: "Balanced work answer with clear action and concrete next step.",
+        mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
         schema_version: INTERVIEW_SCHEMA_VERSION,
         answer_word_min: 14,
@@ -73,10 +84,10 @@ const PROFILES: [AnswerProfileConfig; 7] = [
         anti_hallucination_level: AntiHallucinationLevel::High,
     },
     AnswerProfileConfig {
-        id: "interview_concise",
-        title: "Interview Concise",
+        id: "work_concise",
+        title: "Work Concise",
         description: "Short answer first, then one concrete action.",
-        mode: AnswerProfileMode::Interview,
+        mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
         schema_version: INTERVIEW_SCHEMA_VERSION,
         answer_word_min: 10,
@@ -89,10 +100,10 @@ const PROFILES: [AnswerProfileConfig; 7] = [
         anti_hallucination_level: AntiHallucinationLevel::Strict,
     },
     AnswerProfileConfig {
-        id: "interview_star",
-        title: "Interview STAR",
+        id: "work_star",
+        title: "Work STAR",
         description: "Bias to STAR framing with explicit situation-task-action-result logic.",
-        mode: AnswerProfileMode::Interview,
+        mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
         schema_version: INTERVIEW_SCHEMA_VERSION,
         answer_word_min: 16,
@@ -105,10 +116,10 @@ const PROFILES: [AnswerProfileConfig; 7] = [
         anti_hallucination_level: AntiHallucinationLevel::High,
     },
     AnswerProfileConfig {
-        id: "interview_executive",
-        title: "Interview Executive",
+        id: "work_executive",
+        title: "Work Executive",
         description: "Executive tone: crisp recommendation, risk framing, accountable next step.",
-        mode: AnswerProfileMode::Interview,
+        mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
         schema_version: INTERVIEW_SCHEMA_VERSION,
         answer_word_min: 14,
@@ -121,10 +132,10 @@ const PROFILES: [AnswerProfileConfig; 7] = [
         anti_hallucination_level: AntiHallucinationLevel::Strict,
     },
     AnswerProfileConfig {
-        id: "interview_technical",
-        title: "Interview Technical",
+        id: "work_technical",
+        title: "Work Technical",
         description: "Technical explanation with assumptions, mechanism, and tradeoffs.",
-        mode: AnswerProfileMode::Interview,
+        mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
         schema_version: INTERVIEW_SCHEMA_VERSION,
         answer_word_min: 16,
@@ -137,10 +148,10 @@ const PROFILES: [AnswerProfileConfig; 7] = [
         anti_hallucination_level: AntiHallucinationLevel::Strict,
     },
     AnswerProfileConfig {
-        id: "interview_product",
-        title: "Interview Product",
+        id: "work_product",
+        title: "Work Product",
         description: "Product framing with user impact, tradeoff, and decision path.",
-        mode: AnswerProfileMode::Interview,
+        mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
         schema_version: INTERVIEW_SCHEMA_VERSION,
         answer_word_min: 14,
@@ -153,10 +164,10 @@ const PROFILES: [AnswerProfileConfig; 7] = [
         anti_hallucination_level: AntiHallucinationLevel::High,
     },
     AnswerProfileConfig {
-        id: "interview_hr",
-        title: "Interview HR",
+        id: "work_hr",
+        title: "Work HR",
         description: "Professional people-oriented framing with policy-safe wording.",
-        mode: AnswerProfileMode::Interview,
+        mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
         schema_version: INTERVIEW_SCHEMA_VERSION,
         answer_word_min: 12,
@@ -175,10 +186,13 @@ pub fn all_profiles() -> &'static [AnswerProfileConfig] {
     &PROFILES
 }
 
+/// Resolves a profile id to its config, accepting both current `work_*` ids
+/// and legacy `interview_*` aliases for backward compatibility.
 pub fn resolve_answer_profile(profile_id: &str) -> &'static AnswerProfileConfig {
+    let resolved_id = resolve_alias(profile_id);
     PROFILES
         .iter()
-        .find(|profile| profile.id == profile_id)
+        .find(|profile| profile.id == resolved_id)
         .unwrap_or_else(|| default_answer_profile())
 }
 
@@ -186,7 +200,16 @@ pub fn default_answer_profile() -> &'static AnswerProfileConfig {
     PROFILES
         .iter()
         .find(|profile| profile.id == DEFAULT_ANSWER_PROFILE_ID)
-        .expect("default interview profile must exist")
+        .expect("default answer profile must exist")
+}
+
+fn resolve_alias(id: &str) -> &str {
+    for (alias, target) in PROFILE_ALIASES {
+        if *alias == id {
+            return target;
+        }
+    }
+    id
 }
 
 #[cfg(test)]
@@ -198,26 +221,26 @@ mod tests {
 
     #[test]
     fn default_profile_is_selected() {
-        assert_eq!(default_answer_profile().id, "interview_default");
+        assert_eq!(default_answer_profile().id, "work_default");
     }
 
     #[test]
     fn concise_profile_has_shorter_limits() {
-        let concise = resolve_answer_profile("interview_concise");
-        let default = resolve_answer_profile("interview_default");
+        let concise = resolve_answer_profile("work_concise");
+        let default = resolve_answer_profile("work_default");
         assert!(concise.answer_word_max < default.answer_word_max);
         assert!(concise.strong_word_max < default.strong_word_max);
     }
 
     #[test]
     fn star_profile_prefers_star_structure() {
-        let profile = resolve_answer_profile("interview_star");
+        let profile = resolve_answer_profile("work_star");
         assert_eq!(profile.structure_preference, StructurePreference::Star);
     }
 
     #[test]
     fn technical_profile_prefers_technical_structure() {
-        let profile = resolve_answer_profile("interview_technical");
+        let profile = resolve_answer_profile("work_technical");
         assert_eq!(profile.structure_preference, StructurePreference::Technical);
     }
 
@@ -225,5 +248,49 @@ mod tests {
     fn unknown_profile_falls_back_to_default() {
         let fallback = resolve_answer_profile("unknown_profile");
         assert_eq!(fallback.id, DEFAULT_ANSWER_PROFILE_ID);
+    }
+
+    // ── Backward compatibility aliases ──
+
+    #[test]
+    fn alias_interview_default_resolves_to_work_default() {
+        let profile = resolve_answer_profile("interview_default");
+        assert_eq!(profile.id, "work_default");
+    }
+
+    #[test]
+    fn alias_interview_concise_resolves_to_work_concise() {
+        let profile = resolve_answer_profile("interview_concise");
+        assert_eq!(profile.id, "work_concise");
+    }
+
+    #[test]
+    fn alias_interview_star_resolves_to_work_star() {
+        let profile = resolve_answer_profile("interview_star");
+        assert_eq!(profile.id, "work_star");
+    }
+
+    #[test]
+    fn alias_interview_executive_resolves_to_work_executive() {
+        let profile = resolve_answer_profile("interview_executive");
+        assert_eq!(profile.id, "work_executive");
+    }
+
+    #[test]
+    fn alias_interview_technical_resolves_to_work_technical() {
+        let profile = resolve_answer_profile("interview_technical");
+        assert_eq!(profile.id, "work_technical");
+    }
+
+    #[test]
+    fn alias_interview_product_resolves_to_work_product() {
+        let profile = resolve_answer_profile("interview_product");
+        assert_eq!(profile.id, "work_product");
+    }
+
+    #[test]
+    fn alias_interview_hr_resolves_to_work_hr() {
+        let profile = resolve_answer_profile("interview_hr");
+        assert_eq!(profile.id, "work_hr");
     }
 }

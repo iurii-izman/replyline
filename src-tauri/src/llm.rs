@@ -143,7 +143,7 @@ fn build_profile_prompt_suffix(profile: &AnswerProfileConfig, language: &str) ->
     };
     if language == "en" {
         format!(
-            "Active answer profile: {id}\nTone: {tone}\nStructure preference: {structure}\nClarifier policy: {clarifier}\nAnswer now target words: {min}-{max}\nDo not fabricate facts. If detail is unknown, state uncertainty and keep claims anchored to transcript/context only.",
+            "Answer style: {id}\nTone: {tone}\nStructure preference: {structure}\nClarifier policy: {clarifier}\nAnswer now target words: {min}-{max}\nDo not fabricate facts. If detail is unknown, state uncertainty and keep claims anchored to transcript/context only.",
             id = profile.id,
             tone = profile.tone,
             min = profile.answer_word_min,
@@ -151,7 +151,7 @@ fn build_profile_prompt_suffix(profile: &AnswerProfileConfig, language: &str) ->
         )
     } else {
         format!(
-            "Активный профиль ответа: {id}\nТон: {tone}\nСтруктура ответа: {structure}\nПравило уточнений: {clarifier}\nЦелевой размер answer_now: {min}-{max} слов\nНе выдумывай факты. Если данных не хватает, явно укажи неопределенность и опирайся только на фрагмент/контекст.",
+            "Стиль ответа: {id}\nТон: {tone}\nСтруктура ответа: {structure}\nПравило уточнений: {clarifier}\nЦелевой размер answer_now: {min}-{max} слов\nНе выдумывай факты. Если данных не хватает, явно укажи неопределенность и опирайся только на фрагмент/контекст.",
             id = profile.id,
             tone = profile.tone,
             min = profile.answer_word_min,

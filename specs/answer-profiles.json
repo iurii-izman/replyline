@@ -1,10 +1,10 @@
 {
-  "defaultProfileId": "interview_default",
+  "defaultProfileId": "work_default",
   "profiles": [
     {
-      "id": "interview_default",
-      "title": "Interview Default",
-      "description": "Balanced interview answer with clear action and concrete next step.",
+      "id": "work_default",
+      "title": "Work Default",
+      "description": "Balanced work answer with clear action and concrete next step.",
       "answerWordMin": 14,
       "answerWordMax": 90,
       "shortMax": 56,
@@ -16,8 +16,8 @@
       "riskPolicy": "high"
     },
     {
-      "id": "interview_concise",
-      "title": "Interview Concise",
+      "id": "work_concise",
+      "title": "Work Concise",
       "description": "Short answer first, then one concrete action.",
       "answerWordMin": 10,
       "answerWordMax": 56,
@@ -30,8 +30,8 @@
       "riskPolicy": "strict"
     },
     {
-      "id": "interview_star",
-      "title": "Interview STAR",
+      "id": "work_star",
+      "title": "Work STAR",
       "description": "Bias to STAR framing with explicit situation-task-action-result logic.",
       "answerWordMin": 16,
       "answerWordMax": 100,
@@ -44,8 +44,8 @@
       "riskPolicy": "high"
     },
     {
-      "id": "interview_executive",
-      "title": "Interview Executive",
+      "id": "work_executive",
+      "title": "Work Executive",
       "description": "Executive tone: crisp recommendation, risk framing, accountable next step.",
       "answerWordMin": 14,
       "answerWordMax": 84,
@@ -58,8 +58,8 @@
       "riskPolicy": "strict"
     },
     {
-      "id": "interview_technical",
-      "title": "Interview Technical",
+      "id": "work_technical",
+      "title": "Work Technical",
       "description": "Technical explanation with assumptions, mechanism, and tradeoffs.",
       "answerWordMin": 16,
       "answerWordMax": 100,
@@ -72,8 +72,8 @@
       "riskPolicy": "strict"
     },
     {
-      "id": "interview_product",
-      "title": "Interview Product",
+      "id": "work_product",
+      "title": "Work Product",
       "description": "Product framing with user impact, tradeoff, and decision path.",
       "answerWordMin": 14,
       "answerWordMax": 92,
@@ -86,8 +86,8 @@
       "riskPolicy": "high"
     },
     {
-      "id": "interview_hr",
-      "title": "Interview HR",
+      "id": "work_hr",
+      "title": "Work HR",
       "description": "Professional people-oriented framing with policy-safe wording.",
       "answerWordMin": 12,
       "answerWordMax": 82,

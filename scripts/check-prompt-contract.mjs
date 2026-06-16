@@ -51,7 +51,11 @@ const [
 const answerProfilesSpec = JSON.parse(answerProfilesSpecRaw);
 
 const fixtures = JSON.parse(fixtureRaw);
-assertMinArraySize(fixtures, 20, "Fixture corpus is too small for prompt-contract checks (need >= 20).");
+assertMinArraySize(
+  fixtures,
+  20,
+  "Fixture corpus is too small for prompt-contract checks (need >= 20).",
+);
 
 assertIncludes(llmRaw, "CardSchemaV3", "llm.rs must document CardSchemaV3 in system prompt.");
 assertIncludes(
@@ -126,9 +130,9 @@ assertIncludes(
 assertIncludes(
   promptRegistryRaw,
   "unwrap_or_else(|| default_answer_profile())",
-  "Unknown profile must safely fallback to interview_default.",
+  "Unknown profile must safely fallback to work_default.",
 );
-assertIncludes(llmRaw, "Active answer profile:", "Prompt suffix must include active profile id.");
+assertIncludes(llmRaw, "Answer style:", "Prompt suffix must include answer style id.");
 assertIncludes(
   llmRaw,
   "Structure preference:",
