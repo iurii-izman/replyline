@@ -40,25 +40,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Live provider evidence remains `pending verification` on the primary Windows 11 test machine (Deepgram API key unavailable at time of release).
 - Cross-machine and cross-call-app runtime behavior remains pending broader verification.
 
-## [Unreleased]
+## [0.2.0-beta.3] - 2026-06-16
+
+ContextPack pivot release. The defining change is shipping ContextPack as the new
+conversation context primitive, repositioning Interview Mode to secondary, and
+freezing the bilingual experimental track.
 
 ### Added
 
-- ContextPack as the shipped conversation context primitive: backend storage, IPC commands (7 commands: list/save/delete/set active/clear active/get active/get status), UI panel, active chip indicator, and prompt injection into WorkConversation and Interview Mode.
-- ContextPack ADR 0001 documenting the simplification from Candidate Pack to single ContextPack primitive.
-- ContextPack answer-quality fixtures: 47 scenarios with deterministic evaluation (avg score 100).
-- Live evidence template for ContextPack manual QA (`tests/fixtures/runtime-live-evidence/context-pack-live-qa.template.md`).
+- ContextPack as shipped conversation context primitive: backend storage, IPC commands
+  (7 commands), UI panel, active chip indicator, and prompt injection into WorkConversation
+  and Interview Mode.
+- ContextPack ADR 0001 documenting the simplification from Candidate Pack to single
+  ContextPack primitive.
+- ContextPack answer-quality fixtures: 47 scenarios with deterministic evaluation.
+- ContextPack storage hardening: corrupt JSON quarantined to `.corrupt.<timestamp>`,
+  safe recovery to empty store, diagnostics (file exists, pack count, active present,
+  corrupt backups).
+- Live evidence template for ContextPack manual QA.
+- Backend bilingual env gate: `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` enforced in both
+  bootstrap and all 4 bilingual commands (two-factor: env + setting).
+- Repository scorecard (`docs/repo-scorecard.md`).
 
 ### Changed
 
-- Prompt contract strengthened: LLM receives distinct «rolling conversation context» and «active conversation context» headings with guardrails (do not treat as transcript, do not fabricate facts, prioritize transcript on conflict).
-- Interview Mode repositioned to secondary — idle state primary CTA is now ContextPack management.
-- Bilingual experimental track frozen behind explicit `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` env flag — UI toggles and event listeners hidden by default.
-- Mock platform ContextPack store made mutable for realistic UI test flows (CRUD operations).
-- ContextPack panel UI tests expanded from 5 to 18 scenarios covering create/edit/delete/activate/deactivate/navigation.
+- Prompt contract strengthened: LLM receives distinct «rolling conversation context»
+  and «active conversation context» headings with guardrails (do not treat as transcript,
+  do not fabricate facts, prioritize transcript on conflict).
+- Interview Mode repositioned to secondary — idle state primary CTA is now ContextPack
+  management.
+- Bilingual experimental track frozen behind explicit `REPLYLINE_EXPERIMENTAL_BILINGUAL=1`
+  env flag — UI toggles and event listeners hidden by default.
+- Answer profiles renamed to universal answer styles: `interview_*` → `work_*`
+  (work_default, work_concise, work_star, etc.) with backward-compatible aliases.
+- Prompt wording: «Answer style» / «Стиль ответа» replaces «Answer profile» / «Профиль ответа».
+- ContextPack panel UI tests expanded to 18 scenarios (CRUD + navigation).
+- All «Candidate Pack» references replaced with «ContextPack» in operational docs and
+  templates.
+- Repository scorecard refreshed: 88/100, 385 tracked files, 173+ tests.
+- Mock platform ContextPack store made mutable for realistic UI test flows.
 - Back-navigation added to ContextPack panel (← Back button).
-- All «Candidate Pack» references replaced with «ContextPack» in operational docs and templates.
-- Repository scorecard refreshed: 88/100, 384 tracked files, 313 tests (161 Rust + 152 TS).
+
+### Fixed
+
+- E2E smoke spec updated to match post-pivot window defaults (hideToTrayOnClose).
+- ContextPack storage now recovers from corrupt JSON instead of hard-crashing.
+- Interview quality fixtures updated to canonical `work_default` profile id.
+
+### Known limitations
+
+- Live provider evidence: automated probes measured, manual ContextPack scenarios pending.
+- Cross-machine smoke: Windows 10 not tested.
+- Unsigned artifacts remain S2 (no code-signing certificate).
+- Users must configure their own Deepgram and OpenAI-compatible provider access.
+- This prerelease is intended for developers and testers who build from source.
 
 ## [0.2.0-beta.1] - 2026-06-12
 

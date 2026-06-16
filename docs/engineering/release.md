@@ -205,16 +205,18 @@ Recorded 2026-06-15. See `CHANGELOG.md` for [0.2.0-beta.2] entries.
 
 ## Beta.3 Release Decision Checklist
 
-Recorded 2026-06-16. See `CHANGELOG.md` Unreleased section for accumulated changes.
+Recorded 2026-06-16. Decision: **Conditional Go**. See `CHANGELOG.md` and `docs/release-notes/v0.2.0-beta.3.md`.
 
 - [x] `pnpm verify` green
 - [x] `pnpm verify:full` — 1 pre-existing blocker (unsigned artifacts, S2)
-- [x] ContextPack shipped as core primitive (prompt contract, UI, 47 QA fixtures)
+- [x] ContextPack shipped as core primitive (prompt contract, UI, 47 QA fixtures, storage hardening)
 - [x] Interview Mode repositioned to secondary — idle state context-first
-- [x] Bilingual experimental track frozen behind env flag (invisible by default)
+- [x] Bilingual experimental track frozen behind two-factor env gate (REPLYLINE_EXPERIMENTAL_BILINGUAL + setting)
 - [x] Prompt contract strengthened: distinct rolling/active context, guardrails
+- [x] Answer profiles renamed to universal answer styles (work_* with backward-compatible aliases)
 - [x] Docs truth aligned: scorecard 88/100, CHANGELOG current, architecture updated
-- [ ] Live provider evidence: automated probes measured, manual ContextPack scenarios pending (see `tests/fixtures/runtime-live-evidence/context-pack-live-qa.2026-06-16.md`)
+- [x] ContextPack storage hardened: corrupt JSON quarantine + safe recovery
+- [ ] Live provider evidence: automated probes measured, manual ContextPack scenarios pending
 - [ ] Cross-machine smoke: Windows 10 not tested
 - [ ] Public installer: certificate not acquired, no signed binary
 - [ ] Tag not yet created — pending explicit decision
@@ -222,8 +224,8 @@ Recorded 2026-06-16. See `CHANGELOG.md` Unreleased section for accumulated chang
 **Blockers**: none blocking source beta (S0/S1). Unsigned artifacts remain S2.
 
 **Decision**: **Conditional Go** — source/developer beta, no signed installer.
-ContextPack is the defining feature of this cycle. Beta.3 tag can be applied
-after explicit confirmation.
+ContextPack pivot is the defining feature of this cycle. All automated gates green.
+Tag can be applied after explicit confirmation.
 
 ## Manual Release Checklist
 
