@@ -87,3 +87,75 @@ function baseFixture() {
 }
 
 console.log("All evaluate-runtime-answer-quality tests passed.");
+
+// ContextPack-specific tests
+
+{
+  // Russian context pack evidence extraction — mustContain/mustNotContain guards
+  const fixture = baseFixture();
+  fixture.id = "ctx-ru-guard";
+  fixture.transcript = "Расскажи про статус проекта.";
+  fixture.contextPack = {
+    claims: "Я тимлид платформенной команды. Проект: миграция на Kubernetes, срок — Q4.",
+    constraints: "Не упоминай бюджет. Не называй конкретных имён.",
+    metrics: null,
+  };
+  fixture.expected = {
+    mustContain: ["kubernetes", "q4"],
+    mustNotContain: ["бюджет", "имён"],
+    maxSayNowChars: 420,
+    requiresNextStep: true,
+    requiresNoApologySpam: true,
+    requiresRuTone: true,
+    requiresNoContextHallucination: false,
+    requiresGroundedTranscript: true,
+    requiresNoFabricatedFacts: true,
+  };
+  fixture.mockCardOverrides = {
+    gist: "Миграция на Kubernetes — Q4.",
+    say_now: "Миграция на Kubernetes идёт по плану, срок Q4. Детали уточню и напишу в чат.",
+    next_move: "Подготовлю статус-документ по миграции и отправлю команде в чат.",
+  };
+  const row = evaluateFixture(fixture, thresholds);
+  assert.equal(
+    row.pass,
+    true,
+    `ctx-ru-guard should pass, got score=${row.score} reasons=${row.reasons.join("; ")}`,
+  );
+}
+
+{
+  // Russian context pack constraint violation — mustNotContain catch
+  const fixture = baseFixture();
+  fixture.id = "ctx-ru-constraint-violation";
+  fixture.transcript = "Какой бюджет проекта?";
+  fixture.contextPack = {
+    claims: "Проект: миграция на Kubernetes.",
+    constraints: "Не упоминай бюджет.",
+    metrics: null,
+  };
+  fixture.expected = {
+    mustContain: ["kubernetes"],
+    mustNotContain: ["бюджет"],
+    maxSayNowChars: 420,
+    requiresNextStep: true,
+    requiresNoApologySpam: true,
+    requiresRuTone: true,
+    requiresNoContextHallucination: false,
+    requiresGroundedTranscript: true,
+    requiresNoFabricatedFacts: true,
+  };
+  fixture.mockCardOverrides = {
+    say_now: "Бюджет проекта — 5 миллионов. Миграция на Kubernetes продолжается.",
+    next_move: "Подготовлю бюджетную таблицу и отправлю в чат.",
+  };
+  const row = evaluateFixture(fixture, thresholds);
+  assert.equal(
+    row.pass,
+    false,
+    `ctx-ru-constraint-violation should fail (бюджет violated), got score=${row.score}`,
+  );
+  assert.match(row.reasons.join(" "), /mustNotContain violated/i);
+}
+
+console.log("All ContextPack-specific tests passed.");

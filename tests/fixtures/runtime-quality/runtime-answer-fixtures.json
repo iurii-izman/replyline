@@ -913,6 +913,60 @@
     }
   },
   {
+    "id": "ctx-ru-basic-context",
+    "mode": "work_conversation",
+    "transcript": "Расскажи про статус проекта.",
+    "contextPack": {
+      "claims": "Я тимлид платформенной команды. Проект: миграция на Kubernetes, срок — Q4.",
+      "constraints": "Не упоминай бюджет. Не называй конкретных имён.",
+      "metrics": null
+    },
+    "expected": {
+      "mustContain": ["kubernetes", "q4"],
+      "mustNotContain": ["бюджет", "имён"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "gist": "Статус миграции на Kubernetes — срок Q4.",
+      "say_now": "Миграция на Kubernetes идёт по плану, срок Q4. Детали уточню и напишу в чат.",
+      "next_move": "Подготовлю статус-документ по миграции и отправлю команде."
+    }
+  },
+  {
+    "id": "ctx-ru-conflict-resolution",
+    "mode": "work_conversation",
+    "transcript": "Срок сдачи — понедельник, точно не пятница.",
+    "contextPack": {
+      "claims": "Дедлайн проекта — пятница. Команда подтвердила.",
+      "constraints": null,
+      "metrics": null
+    },
+    "expected": {
+      "mustContain": ["понедельник"],
+      "mustNotContain": ["пятниц"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "gist": "Срок сдачи — понедельник по транскрипту, уточнение дедлайна.",
+      "say_now": "Исхожу из понедельника по вашему фрагменту. Если пятница — уточните, тогда скорректирую план.",
+      "next_move": "Уточню дедлайн в чате: пятница или понедельник? После ответа обновлю план."
+    }
+  },
+  {
     "id": "ctx-oversized-context-truncated-safe",
     "mode": "work_conversation",
     "transcript": "Что по срокам?",
