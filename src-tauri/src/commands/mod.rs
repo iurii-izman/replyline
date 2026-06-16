@@ -1,325 +1,47 @@
 use tauri::{AppHandle, State};
 
 use crate::app_log;
-use crate::audio::CaptureRun;
 use crate::commands::shared::require_experimental_bilingual;
 use crate::credentials;
 use crate::interview_card_v1::BilingualMeta;
 use crate::observability::{self, Fields, PrivacyClass};
 use crate::providers::llm_provider;
 use crate::providers::llm_provider::AnalysisMode;
-use crate::services::capture_pipeline;
 use crate::services::pipeline_events::emit_bilingual_answer_chunk;
 use crate::services::pipeline_events::emit_bilingual_answer_latency;
 use crate::services::pipeline_events::emit_bilingual_answer_ready;
-use crate::services::pipeline_events::{emit_status, update_tray_title};
-use crate::settings;
 use crate::state::ReplylineState;
 use crate::types::{
-    AnalysisCardDto, AppSettings, BilingualAnswerChunkDto, BilingualAnswerReadyDto,
-    BilingualExportInputDto, CommandError, ExportSummary, ExportType, FeedbackErrorDto,
-    FeedbackPayloadDto, FeedbackSettingsSummaryDto, InterviewReportDto, PersistenceDiagnosticsDto,
-    SecretSlot, SetupStatusDto,
+    BilingualAnswerChunkDto, BilingualAnswerReadyDto, BilingualExportInputDto, CommandError,
+    ExportSummary, ExportType, InterviewReportDto, SecretSlot,
 };
 
 pub mod bootstrap;
+pub mod capture;
 pub mod context;
 pub mod context_pack;
 pub mod diagnostics;
 pub mod registry;
 pub mod runtime_checks;
 pub mod secrets;
+pub mod settings;
 pub mod shared;
 pub mod tray_window;
 
 static RUN_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
-fn next_run_id() -> String {
+pub(crate) fn next_run_id() -> String {
     let ts = chrono::Utc::now().timestamp_millis() as u64;
     let seq = RUN_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     format!("{}-{}", ts, seq)
 }
 
-fn extract_log_timestamp_from_line(line: &str) -> Option<String> {
-    let ts = line.split_whitespace().next()?.trim();
-    if ts.is_empty() {
-        None
-    } else {
-        Some(ts.to_string())
-    }
-}
-
-fn hash_path_for_log(path: &std::path::Path) -> String {
+pub(crate) fn hash_path_for_log(path: &std::path::Path) -> String {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
     let mut hasher = DefaultHasher::new();
     path.to_string_lossy().hash(&mut hasher);
     format!("{:x}", hasher.finish())
-}
-
-#[tauri::command]
-pub fn save_settings(input: AppSettings) -> Result<AppSettings, CommandError> {
-    let _ = observability::log_audit(
-        "settings_save_attempt",
-        Fields::new()
-            .with("source", "settings")
-            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
-            .with("phase", "settings"),
-    );
-    let _ = app_log::append_event("settings_save_attempt", format!("hotkey={}", input.hotkey));
-    match settings::save(&input) {
-        Ok(saved) => {
-            let _ = app_log::append_event("settings_save_ok", format!("hotkey={}", saved.hotkey));
-            Ok(saved)
-        }
-        Err(err) => {
-            let _ = app_log::append_event(
-                "settings_save_failed",
-                app_log::safe_provider_error_preview(&err.to_string()),
-            );
-            Err(CommandError::from(err))
-        }
-    }
-}
-
-#[tauri::command]
-pub fn get_setup_status() -> Result<SetupStatusDto, CommandError> {
-    let settings = settings::load()?;
-    let deepgram_key_present = credentials::present(SecretSlot::DeepgramApiKey)?;
-    let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
-    let llm_route_configured =
-        !settings.llm_base_url.trim().is_empty() && !settings.llm_model.trim().is_empty();
-    let runtime_path_ready = settings.runtime_path_configured(deepgram_key_present);
-    let _ = app_log::append_event(
-        "setup_status_checked",
-        format!(
-            "deepgram_key_present={deepgram_key_present} llm_key_present={llm_key_present} llm_route_configured={llm_route_configured} runtime_path_ready={runtime_path_ready}"
-        ),
-    );
-    let _ = observability::log_audit(
-        "credential_presence_checked",
-        Fields::new()
-            .with("source", "settings")
-            .with("phase", "settings")
-            .with("privacy_class", PrivacyClass::SafeMetadata.as_str())
-            .with("deepgram_key_present", deepgram_key_present)
-            .with("llm_key_present", llm_key_present),
-    );
-    Ok(SetupStatusDto {
-        deepgram_key_present,
-        llm_key_present,
-        llm_route_configured,
-        runtime_path_ready,
-    })
-}
-
-#[tauri::command]
-pub fn get_feedback_payload(
-    mode: Option<String>,
-    error_category: Option<String>,
-    error_code: Option<String>,
-    error_summary: Option<String>,
-) -> Result<FeedbackPayloadDto, CommandError> {
-    let settings = settings::load()?;
-    let pkg_version = env!("CARGO_PKG_VERSION").to_string();
-    let commit_sha = option_env!("REPLYLINE_GIT_SHA")
-        .unwrap_or("unknown")
-        .to_string();
-
-    let llm_route_kind = if settings.llm_base_url.trim().is_empty() {
-        "not_configured"
-    } else {
-        let url = settings.llm_base_url.to_lowercase();
-        if url.contains("openrouter.ai") {
-            "openrouter"
-        } else if url.contains("api.openai.com") {
-            "openai"
-        } else if url.contains("api.groq.com") {
-            "groq"
-        } else if url.contains("localhost") || url.contains("127.0.0.1") {
-            "local"
-        } else if url.starts_with("https://") {
-            "remote_https"
-        } else {
-            "custom"
-        }
-    };
-
-    let last_error = match (error_category, error_code, error_summary) {
-        (Some(cat), Some(code), Some(summary)) => Some(FeedbackErrorDto {
-            category: cat,
-            code,
-            summary,
-        }),
-        _ => None,
-    };
-
-    Ok(FeedbackPayloadDto {
-        app_version: pkg_version,
-        commit_sha,
-        mode: mode.unwrap_or_else(|| "unknown".to_string()),
-        settings_summary: FeedbackSettingsSummaryDto {
-            schema_version: settings.schema_version,
-            hotkey: settings.hotkey,
-            capture_max_seconds: settings.capture_max_seconds,
-            model_preset: settings.selected_model_preset.clone(),
-            llm_route_kind: llm_route_kind.to_string(),
-            active_profile: settings.active_answer_profile.clone(),
-            bilingual_enabled: settings.bilingual_interview_enabled,
-            trace_mode: format!("{:?}", settings.debug_trace_mode).to_lowercase(),
-        },
-        last_error,
-    })
-}
-
-#[tauri::command]
-pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, CommandError> {
-    let settings_path = settings::settings_path()?;
-    let (exists, size, modified_at) = settings::settings_file_metadata(&settings_path);
-    let raw = if exists {
-        std::fs::read(&settings_path).ok()
-    } else {
-        None
-    };
-    let parsed = raw
-        .as_ref()
-        .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(bytes).ok());
-    let settings_parse_ok = parsed.is_some();
-    let settings = settings::load()?;
-    let settings_validation_ok = settings::validate(&settings).is_ok();
-    let llm_base_url_host = url::Url::parse(settings.llm_base_url.trim())
-        .ok()
-        .and_then(|url| url.host_str().map(|h| h.to_string()));
-    let deepgram_key_present = credentials::present(SecretSlot::DeepgramApiKey)?;
-    let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
-    let runtime_path_ready = settings.runtime_path_configured(deepgram_key_present);
-    let corrupt_backups = settings::list_corrupt_backups(&settings_path);
-    let ctx_pack_diag = crate::context_pack::persistence_diagnostics();
-    let log_status = app_log::status().ok();
-    let (app_log_path, app_log_exists, last_log_event_time) = match log_status {
-        Some(status) => {
-            let exists = std::path::Path::new(&status.log_path).is_file();
-            let ts = status
-                .last_line
-                .as_deref()
-                .and_then(extract_log_timestamp_from_line);
-            (Some(status.log_path), exists, ts)
-        }
-        None => (None, false, None),
-    };
-    Ok(PersistenceDiagnosticsDto {
-        settings_path: settings_path.display().to_string(),
-        settings_path_hash: hash_path_for_log(&settings_path),
-        settings_file_exists: exists,
-        settings_file_size: size,
-        settings_file_modified_at: modified_at,
-        settings_parse_ok,
-        settings_validation_ok,
-        settings_schema_version: settings.schema_version,
-        llm_base_url_present: !settings.llm_base_url.trim().is_empty(),
-        llm_base_url_host,
-        llm_model_present: !settings.llm_model.trim().is_empty(),
-        selected_model_preset: settings.selected_model_preset,
-        active_answer_profile: settings.active_answer_profile,
-        hotkey: settings.hotkey,
-        capture_max_seconds: settings.capture_max_seconds,
-        corrupt_backups_count: corrupt_backups.len(),
-        corrupt_backups,
-        context_packs_file_exists: ctx_pack_diag.context_packs_file_exists,
-        context_packs_count: ctx_pack_diag.context_packs_count,
-        context_packs_active_present: ctx_pack_diag.context_packs_active_present,
-        context_packs_corrupt_backups: ctx_pack_diag.context_packs_corrupt_backups,
-        context_packs_corrupt_backups_count: ctx_pack_diag.context_packs_corrupt_backups_count,
-        keyring_service_name: credentials::SERVICE.to_string(),
-        deepgram_key_present,
-        llm_key_present,
-        runtime_path_ready,
-        app_log_path,
-        app_log_exists,
-        last_log_event_time,
-    })
-}
-
-#[tauri::command]
-pub fn capture_start(
-    state: State<'_, ReplylineState>,
-    app: AppHandle,
-) -> Result<String, CommandError> {
-    let _ = observability::log_audit(
-        "capture_start_attempt",
-        Fields::new()
-            .with("source", "backend")
-            .with("phase", "capture")
-            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
-    );
-    let _ = app_log::append_event("capture_start_attempt", "-");
-    let settings = settings::load()?;
-    let mut capture = state
-        .capture
-        .lock()
-        .map_err(|_| CommandError::Internal("Capture lock poisoned".to_string()))?;
-    if capture.active.is_some() {
-        // Return current run_id if already capturing (idempotent guard).
-        if let Some(ref existing_id) = capture.active_run_id {
-            return Ok(existing_id.clone());
-        }
-        return Ok(String::new());
-    }
-    let run = CaptureRun::start(settings.capture_max_seconds).map_err(CommandError::Capture)?;
-    let run_id = next_run_id();
-    if settings.debug_trace_redacted_enabled() {
-        let started_at = chrono::Utc::now().to_rfc3339();
-        let _ = crate::trace_manifest::ensure_run_started(
-            &run_id,
-            &started_at,
-            &settings,
-            "work_conversation",
-        );
-        let _ = crate::trace_manifest::append_timeline_event(
-            &run_id,
-            "capture_start_ok",
-            "capturing",
-            std::collections::BTreeMap::new(),
-        );
-    }
-    capture.active = Some(run);
-    capture.active_run_id = Some(run_id.clone());
-    emit_status(&app, Some(&run_id), "capturing", None);
-    update_tray_title(
-        &app,
-        &crate::tray_status::tooltip_for_phase(
-            crate::language_profile::default_language(),
-            "capturing",
-            None,
-        ),
-    );
-    let _ = app_log::append_event("capture_start_ok", format!("run_id={run_id}"));
-    let _ = observability::log_audit(
-        "capture_start_ok",
-        Fields::new()
-            .with("source", "backend")
-            .with("phase", "capture")
-            .with("run_id", run_id.clone())
-            .with("privacy_class", PrivacyClass::SafeMetadata.as_str()),
-    );
-    Ok(run_id)
-}
-
-#[tauri::command]
-pub async fn capture_stop_and_analyze(
-    state: State<'_, ReplylineState>,
-    app: AppHandle,
-) -> Result<AnalysisCardDto, CommandError> {
-    capture_pipeline::capture_stop_and_analyze(&state, &app).await
-}
-
-#[tauri::command]
-pub async fn retry_last_analysis(
-    state: State<'_, ReplylineState>,
-    app: AppHandle,
-    run_id: Option<String>,
-) -> Result<AnalysisCardDto, CommandError> {
-    capture_pipeline::retry_last_analysis(&state, &app, run_id).await
 }
 
 #[tauri::command]
@@ -429,7 +151,7 @@ pub async fn capture_bilingual_answer(
         Some(question_ru)
     };
 
-    let settings = settings::load()?;
+    let settings = crate::settings::load()?;
     let llm_key = credentials::load(SecretSlot::LlmApiKey)?;
     let context_pack_raw = crate::context_pack::get_active_context_pack()
         .ok()
@@ -625,7 +347,7 @@ pub fn export_bilingual_interview_report(
 pub fn start_interview_session(
     state: State<'_, ReplylineState>,
 ) -> Result<crate::interview_report::InterviewSessionState, CommandError> {
-    let settings = settings::load()?;
+    let settings = crate::settings::load()?;
     let retention_policy = crate::interview_report::retention_policy_from_days(
         settings.interview_report_retention_days,
     );
@@ -650,7 +372,7 @@ pub fn start_interview_session(
 pub fn end_interview_session(
     state: State<'_, ReplylineState>,
 ) -> Result<Option<InterviewReportDto>, CommandError> {
-    let settings = settings::load()?;
+    let settings = crate::settings::load()?;
     let retention_policy = crate::interview_report::retention_policy_from_days(
         settings.interview_report_retention_days,
     );
@@ -672,7 +394,7 @@ pub fn end_interview_session(
 
 #[tauri::command]
 pub fn get_interview_report() -> Result<Option<InterviewReportDto>, CommandError> {
-    let settings = settings::load()?;
+    let settings = crate::settings::load()?;
     let retention_policy = crate::interview_report::retention_policy_from_days(
         settings.interview_report_retention_days,
     );

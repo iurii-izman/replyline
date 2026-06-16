@@ -18,6 +18,8 @@ const secretsCommandsPath = join(root, "src-tauri", "src", "commands", "secrets.
 const contextCommandsPath = join(root, "src-tauri", "src", "commands", "context.rs");
 const runtimeChecksCommandsPath = join(root, "src-tauri", "src", "commands", "runtime_checks.rs");
 const contextPackCommandsPath = join(root, "src-tauri", "src", "commands", "context_pack.rs");
+const settingsCommandsPath = join(root, "src-tauri", "src", "commands", "settings.rs");
+const captureCommandsPath = join(root, "src-tauri", "src", "commands", "capture.rs");
 const modelPath = join(root, "src", "app", "model", "settings.ts");
 const modelCardsPath = join(root, "src", "app", "model", "cards.ts");
 const interviewRustPath = join(root, "src-tauri", "src", "interview_card_v1.rs");
@@ -98,6 +100,12 @@ const runtimeChecksCommandsText = existsSync(runtimeChecksCommandsPath)
 const contextPackCommandsText = existsSync(contextPackCommandsPath)
   ? readFileSync(contextPackCommandsPath, "utf8")
   : "";
+const settingsCommandsText = existsSync(settingsCommandsPath)
+  ? readFileSync(settingsCommandsPath, "utf8")
+  : "";
+const captureCommandsText = existsSync(captureCommandsPath)
+  ? readFileSync(captureCommandsPath, "utf8")
+  : "";
 const modelText = readFileSync(modelPath, "utf8");
 const modelCardsText = readFileSync(modelCardsPath, "utf8");
 const interviewRustText = readFileSync(interviewRustPath, "utf8");
@@ -129,6 +137,8 @@ const declared = new Set(
     contextCommandsText,
     runtimeChecksCommandsText,
     contextPackCommandsText,
+    settingsCommandsText,
+    captureCommandsText,
   ]
     .filter((t) => t.length > 0)
     .flatMap((text) => [

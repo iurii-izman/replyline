@@ -11,6 +11,8 @@ const files = [
   "src-tauri/src/commands/context.rs",
   "src-tauri/src/commands/runtime_checks.rs",
   "src-tauri/src/commands/secrets.rs",
+  "src-tauri/src/commands/settings.rs",
+  "src-tauri/src/commands/capture.rs",
   "src-tauri/src/services/capture_pipeline.rs",
   "src/app/controller/hotkeys.ts",
   "src/app/controller/index.ts",
