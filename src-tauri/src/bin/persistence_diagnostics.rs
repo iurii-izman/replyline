@@ -6,6 +6,8 @@ use serde::Serialize;
 mod app_log;
 #[path = "../capture_debug.rs"]
 mod capture_debug;
+#[path = "../context_pack.rs"]
+mod context_pack;
 #[path = "../credentials.rs"]
 mod credentials;
 #[path = "../fs_atomic.rs"]
@@ -41,6 +43,10 @@ struct PersistenceDiagnosticsSnapshot {
     llm_key_present: bool,
     runtime_path_ready: bool,
     corrupt_backups_count: usize,
+    context_packs_file_exists: bool,
+    context_packs_count: usize,
+    context_packs_active_present: bool,
+    context_packs_corrupt_backups_count: usize,
     last_log_event_time: Option<String>,
 }
 
@@ -64,6 +70,7 @@ fn main() -> Result<(), String> {
         credentials::present(SecretSlot::LlmApiKey).map_err(|err| err.to_string())?;
     let runtime_path_ready = settings.runtime_path_configured(deepgram_key_present);
     let corrupt_backups_count = settings::list_corrupt_backups(&settings_path).len();
+    let ctx_pack_diag = context_pack::persistence_diagnostics();
     let last_log_event_time = app_log::status()
         .ok()
         .and_then(|status| status.last_line)
@@ -92,6 +99,10 @@ fn main() -> Result<(), String> {
         llm_key_present,
         runtime_path_ready,
         corrupt_backups_count,
+        context_packs_file_exists: ctx_pack_diag.context_packs_file_exists,
+        context_packs_count: ctx_pack_diag.context_packs_count,
+        context_packs_active_present: ctx_pack_diag.context_packs_active_present,
+        context_packs_corrupt_backups_count: ctx_pack_diag.context_packs_corrupt_backups_count,
         last_log_event_time,
     };
 

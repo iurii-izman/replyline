@@ -76,6 +76,12 @@ export type PersistenceDiagnosticsDto = {
   captureMaxSeconds: number;
   corruptBackups: string[];
   corruptBackupsCount: number;
+  /** ContextPack store diagnostics (safe — never contains raw pack content). */
+  contextPacksFileExists: boolean;
+  contextPacksCount: number;
+  contextPacksActivePresent: boolean;
+  contextPacksCorruptBackups: string[];
+  contextPacksCorruptBackupsCount: number;
   keyringServiceName: string;
   deepgramKeyPresent: boolean;
   llmKeyPresent: boolean;

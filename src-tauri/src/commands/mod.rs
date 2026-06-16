@@ -194,6 +194,7 @@ pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, Comman
     let llm_key_present = credentials::present(SecretSlot::LlmApiKey)?;
     let runtime_path_ready = settings.runtime_path_configured(deepgram_key_present);
     let corrupt_backups = settings::list_corrupt_backups(&settings_path);
+    let ctx_pack_diag = crate::context_pack::persistence_diagnostics();
     let log_status = app_log::status().ok();
     let (app_log_path, app_log_exists, last_log_event_time) = match log_status {
         Some(status) => {
@@ -224,6 +225,11 @@ pub fn get_persistence_diagnostics() -> Result<PersistenceDiagnosticsDto, Comman
         capture_max_seconds: settings.capture_max_seconds,
         corrupt_backups_count: corrupt_backups.len(),
         corrupt_backups,
+        context_packs_file_exists: ctx_pack_diag.context_packs_file_exists,
+        context_packs_count: ctx_pack_diag.context_packs_count,
+        context_packs_active_present: ctx_pack_diag.context_packs_active_present,
+        context_packs_corrupt_backups: ctx_pack_diag.context_packs_corrupt_backups,
+        context_packs_corrupt_backups_count: ctx_pack_diag.context_packs_corrupt_backups_count,
         keyring_service_name: credentials::SERVICE.to_string(),
         deepgram_key_present,
         llm_key_present,

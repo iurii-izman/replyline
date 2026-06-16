@@ -351,6 +351,12 @@ pub struct PersistenceDiagnosticsDto {
     pub capture_max_seconds: u16,
     pub corrupt_backups: Vec<String>,
     pub corrupt_backups_count: usize,
+    /// ContextPack store diagnostics (safe — never contains raw pack content).
+    pub context_packs_file_exists: bool,
+    pub context_packs_count: usize,
+    pub context_packs_active_present: bool,
+    pub context_packs_corrupt_backups: Vec<String>,
+    pub context_packs_corrupt_backups_count: usize,
     pub keyring_service_name: String,
     pub deepgram_key_present: bool,
     pub llm_key_present: bool,
