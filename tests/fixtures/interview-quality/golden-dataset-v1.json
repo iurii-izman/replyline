@@ -14,7 +14,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -69,7 +69,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -123,7 +123,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -177,7 +177,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -229,7 +229,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -283,7 +283,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -335,7 +335,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -389,7 +389,7 @@
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -441,7 +441,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -495,7 +495,7 @@
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -547,7 +547,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -599,7 +599,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -651,7 +651,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -703,7 +703,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -755,7 +755,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -809,7 +809,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -861,7 +861,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -915,7 +915,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -967,7 +967,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1019,7 +1019,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1073,7 +1073,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1125,7 +1125,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1179,7 +1179,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1233,7 +1233,7 @@
       "allowClarifier": true,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1287,7 +1287,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": true,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1341,7 +1341,7 @@
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1396,7 +1396,7 @@
       "allowClarifier": false,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1448,7 +1448,7 @@
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1500,7 +1500,7 @@
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
@@ -1554,7 +1554,7 @@
       "allowClarifier": true,
       "requiresResumeAnchor": false,
       "requiresNoFabrication": true,
-      "profileId": "interview_default"
+      "profileId": "work_default"
     },
     "deterministicOutput": {
       "mode": "interview",
