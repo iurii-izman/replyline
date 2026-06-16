@@ -679,5 +679,264 @@
       "say_now": "Понимаю скепсис. Предлагаю восстановить доверие через данные: введу buffer 25% в оценку, weekly progress с фактом против плана, и early warning при отклонении >10%. Первый отчёт — в пятницу с historical accuracy за последние 3 спринта.",
       "next_move": "Подготовлю прозрачный трекинг-документ с фактом/планом и отправлю в пятницу."
     }
+  },
+  {
+    "id": "ctx-same-transcript-with-context",
+    "mode": "work_conversation",
+    "transcript": "Нужно согласовать план Q3 с командой. Дедлайн — пятница, но коллеги не ответили.",
+    "contextPack": {
+      "claims": "I lead the platform team. Our Q3 focus is reliability and observability.",
+      "constraints": "Keep replies concise. Do not suggest escalation before direct communication.",
+      "metrics": null
+    },
+    "expected": {
+      "mustContain": ["reliability", "observability", "команд"],
+      "mustNotContain": ["эскалир", "выдуман"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Предлагаю сегодня зафиксировать ключевые цели Q3 — reliability и observability. Коллегам отправлю короткий follow-up в чат с конкретным вопросом и дедлайном.",
+      "next_move": "Напишу в чат команды с черновиком плана Q3 и попрошу подтвердить до четверга."
+    }
+  },
+  {
+    "id": "ctx-context-with-constraints",
+    "mode": "work_conversation",
+    "transcript": "Клиент просит скидку 30%. Что скажешь?",
+    "contextPack": {
+      "claims": "I handle enterprise accounts. Standard discount cap is 15% without VP approval.",
+      "constraints": "Do not promise discounts beyond 15%. Do not share internal margin data.",
+      "metrics": null
+    },
+    "expected": {
+      "mustContain": ["15%", "стандарт"],
+      "mustNotContain": ["30%", "марж", "себестоимост"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "gist": "Ответ про скидку с учётом standard discount cap 15%.",
+      "say_now": "Стандартный лимит скидки — 15% без участия VP. Могу предложить 15% сегодня или запросить исключение выше.",
+      "next_move": "Уточню у клиента приоритет в чате: скидка или срок, и подготовлю VP-запрос если нужно."
+    }
+  },
+  {
+    "id": "ctx-forbidden-claim-not-fabricated",
+    "mode": "work_conversation",
+    "transcript": "Расскажи про результаты Q2 клиенту.",
+    "contextPack": {
+      "claims": "Q2 results: churn down from 4.1% to 3.2%.",
+      "constraints": null,
+      "metrics": "churn 4.1% to 3.2%"
+    },
+    "expected": {
+      "mustContain": ["churn", "3.2%"],
+      "mustNotContain": ["рост", "увелич", "выручка"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Ключевой результат Q2: churn снизился с 4.1% до 3.2%. Это результат работы над retention-механиками.",
+      "next_move": "Подготовлю слайд с графиком churn за Q1-Q2 и отправлю клиенту."
+    }
+  },
+  {
+    "id": "ctx-conflict-transcript-priority",
+    "mode": "work_conversation",
+    "transcript": "Бюджет на проект — 500 тысяч. Нужно уложиться.",
+    "contextPack": {
+      "claims": "Project budget is 2 million rubles. Already approved.",
+      "constraints": null,
+      "metrics": "budget 2 000 000"
+    },
+    "expected": {
+      "mustContain": ["500", "тысяч"],
+      "mustNotContain": ["2 миллион", "2 млн"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "gist": "Уточнение бюджета: транскрипт говорит 500 тысяч, контекст — другой budget.",
+      "say_now": "Исхожу из 500 тысяч по текущему фрагменту. Если реальный бюджет другой — уточните, тогда план поменяется.",
+      "next_move": "Уточню бюджет в чате: 500 тысяч или другой? После ответа пересчитаю план в таблице."
+    }
+  },
+  {
+    "id": "ctx-context-helps-disambiguate",
+    "mode": "work_conversation",
+    "transcript": "Деплой задерживается.",
+    "contextPack": {
+      "claims": "We deploy to AWS ECS with canary releases. Recent incident: DB migration took 40 min instead of 5.",
+      "constraints": null,
+      "metrics": null
+    },
+    "expected": {
+      "mustContain": ["migration", "канарее", "провер"],
+      "mustNotContain": ["не знаю", "гадать"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Судя по прошлому инциденту с DB migration, проверю длительность миграции. Обычно деплой через канареечный релиз — возможно миграция снова растянулась.",
+      "next_move": "Проверю логи DB migration и длительность канареечного деплоя, напишу в чат."
+    }
+  },
+  {
+    "id": "ctx-empty-context-no-effect",
+    "mode": "work_conversation",
+    "transcript": "Нужен статус по проекту. Что готово?",
+    "contextPack": null,
+    "expected": {
+      "mustContain": ["уточн", "проект"],
+      "mustNotContain": ["context pack", "resume", "certification"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": true,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Уточню: вы про backend, frontend или общий статус проекта? Тогда сразу дам конкретику.",
+      "next_move": "Запрошу уточнение по проекту в чате и подготовлю статус."
+    }
+  },
+  {
+    "id": "ctx-metrics-from-context-used",
+    "mode": "work_conversation",
+    "transcript": "Как у нас с retention в этом квартале?",
+    "contextPack": {
+      "claims": "Retention metrics: MAU 120k, churn 2.8%, NPS 42. Target: churn < 3%.",
+      "constraints": "Only share aggregate metrics. No individual user data.",
+      "metrics": "MAU 120k, churn 2.8%, NPS 42"
+    },
+    "expected": {
+      "mustContain": ["2.8%", "120k", "NPS"],
+      "mustNotContain": ["пользовател", "email", "конкретный"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Метрики retention: MAU 120k, churn 2.8% (цель < 3%), NPS 42. Все показатели в рамках таргетов.",
+      "next_move": "Подготовлю квартальный дашборд retention и разошлю команде."
+    }
+  },
+  {
+    "id": "ctx-no-fabrication-without-evidence",
+    "mode": "work_conversation",
+    "transcript": "Расскажи про наш growth.",
+    "contextPack": {
+      "claims": "We focus on enterprise B2B SaaS. No specific growth numbers available yet.",
+      "constraints": "Do not fabricate metrics. State uncertainty when data is missing.",
+      "metrics": null
+    },
+    "expected": {
+      "mustContain": ["B2B", "SaaS"],
+      "mustNotContain": ["рост на", "увелич", "%"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "say_now": "Мы — enterprise B2B SaaS. Конкретных цифр growth пока нет, поэтому говорю о позиционировании без придуманных метрик.",
+      "next_move": "Запрошу данные growth у аналитики и вернусь с цифрами, напишу в чат."
+    }
+  },
+  {
+    "id": "ctx-interview-mode-context-usage",
+    "mode": "work_conversation",
+    "transcript": "Расскажите о вашем опыте с микросервисами.",
+    "contextPack": {
+      "claims": "Candidate: 5 years with microservices, led migration from monolith at Acme Corp. Tech: Kubernetes, gRPC, Kafka.",
+      "constraints": "Answer in interview style. Do not fabricate projects. Keep answers structured (STAR).",
+      "metrics": null
+    },
+    "expected": {
+      "mustContain": ["микросервис", "Kubernetes", "миграц"],
+      "mustNotContain": ["выдум", "фейк", "не было"],
+      "maxSayNowChars": 560,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "say_now": "За 5 лет работы с микросервисами провёл миграцию с монолита в Acme Corp: перевели 12 сервисов на Kubernetes с gRPC, внедрили Kafka для асинхронной коммуникации. Результат: деплой с 2 часов до 15 минут.",
+      "next_move": "Приведу конкретный пример с цифрами в таблице: как миграция ускорила деплой в 8 раз."
+    }
+  },
+  {
+    "id": "ctx-oversized-context-truncated-safe",
+    "mode": "work_conversation",
+    "transcript": "Что по срокам?",
+    "contextPack": {
+      "claims": "Very long claim that would exceed context limits and be truncated safely without breaking the prompt injection flow or leaking partial data that could confuse the language model about what is real and what is fabricated context information that should not be treated as transcript data from the actual conversation which is the primary source of truth for the assistant when generating response cards for the user who is waiting for a concise and actionable answer based on the short audio fragment they just captured using the hotkey mechanism built into the Replyline desktop application running on Windows 10 or 11 with Tauri v2 and Solid.js frontend framework for rendering the user interface components including the context pack panel where users can manage their conversation context packs which are stored locally and injected into prompts when active as documented in ADR 0001 which describes the simplification from Candidate Pack to single ContextPack primitive for the Replyline product direction as a universal live assistant for work conversations with the core flow of capture to STT to LLM to card generation using CardSchemaV3 with repair heuristics for vague next steps and bounded context awareness through the active ContextPack mechanism that is now shipped in the current public beta as the single conversation context primitive replacing the earlier Candidate Pack concept that was more complex and interview-focused rather than general-purpose work conversation assistance tool.",
+      "constraints": null,
+      "metrics": null
+    },
+    "expected": {
+      "mustContain": ["срок"],
+      "mustNotContain": ["Tauri", "Solid.js", "ADR 0001"],
+      "maxSayNowChars": 420,
+      "requiresNextStep": true,
+      "requiresNoApologySpam": true,
+      "requiresRuTone": true,
+      "requiresNoContextHallucination": false,
+      "requiresGroundedTranscript": true,
+      "requiresActionableNextStep": true,
+      "requiresNoFabricatedFacts": true
+    },
+    "mockCardOverrides": {
+      "gist": "Сроки не указаны — контекст слишком большой (truncated), ответ по фрагменту.",
+      "say_now": "Конкретные сроки не указаны. Уточните крайний дедлайн — тогда смогу дать точный ответ.",
+      "next_move": "Запрошу сроки у команды в чате и подготовлю статус."
+    }
   }
 ]

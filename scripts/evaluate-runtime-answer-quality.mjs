@@ -49,12 +49,22 @@ function ensureReportsDir() {
 
 function extractContextPackTokens(contextPack) {
   if (!contextPack || typeof contextPack !== "object") return [];
-  const tokens = [];
+  const raw = [];
   for (const value of Object.values(contextPack)) {
-    if (Array.isArray(value)) tokens.push(...value.map((x) => String(x)));
-    else if (value != null) tokens.push(String(value));
+    if (Array.isArray(value)) raw.push(...value.map((x) => String(x)));
+    else if (typeof value === "string" && value.trim()) raw.push(value);
   }
-  return tokens.map((x) => normalize(x)).filter(Boolean);
+  // Split each raw string into individual word tokens (min 3 chars, alphanumeric).
+  const tokens = [];
+  for (const chunk of raw) {
+    const words = chunk
+      .toLowerCase()
+      .replace(/[^a-zа-яё0-9\s]/gi, " ")
+      .split(/\s+/)
+      .filter((w) => w.length >= 3);
+    tokens.push(...words);
+  }
+  return [...new Set(tokens)];
 }
 
 function buildMockCard(fixture) {
