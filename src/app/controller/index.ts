@@ -412,7 +412,7 @@ export function useReplylineController(platform: AppPlatform) {
     hasError: () => Boolean(error()),
   });
 
-  // Bilingual controller — created lazily, wired only when env flag allows.
+  // Bilingual controller — wired reactively only when env flag allows.
   const bilingualController = createBilingualInterviewController({
     platform,
     bilingualState: bilingualInterviewState,
@@ -421,22 +421,24 @@ export function useReplylineController(platform: AppPlatform) {
     setError,
   });
   triggerBilingualHotkeyAnswerImpl = bilingualController.triggerHotkeyAnswer;
-  if (experimentalBilingualAllowed()) {
-    void bilingualController.wireListeners().catch((err) => {
-      setBilingualInterviewState((prev) => ({
-        ...prev,
-        status: "reconnecting",
-        transcriptLane: "reconnecting",
-        translationLane: "reconnecting",
-        lastError: {
-          code: "BILINGUAL_LISTENER_WIRE_FAILED",
-          message: invokeErrorMessage(err),
-          recoverable: true,
-        },
-      }));
-    });
-    onCleanup(() => bilingualController.unwireListeners());
-  }
+  createEffect(() => {
+    if (experimentalBilingualAllowed()) {
+      void bilingualController.wireListeners().catch((err) => {
+        setBilingualInterviewState((prev) => ({
+          ...prev,
+          status: "reconnecting",
+          transcriptLane: "reconnecting",
+          translationLane: "reconnecting",
+          lastError: {
+            code: "BILINGUAL_LISTENER_WIRE_FAILED",
+            message: invokeErrorMessage(err),
+            recoverable: true,
+          },
+        }));
+      });
+      onCleanup(() => bilingualController.unwireListeners());
+    }
+  });
 
   const bilingualActive = createMemo(
     () => bilingualInterviewState().active || bilingualInterviewState().status === "active",
