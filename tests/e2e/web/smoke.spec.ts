@@ -14,13 +14,19 @@ test("credential-free happy path renders shell, settings, and fixture card", asy
 
   await page.locator("#settings-sidebar-tab-llm").click();
   await expect(page.getByTestId("settings-section-llm")).toBeVisible();
-  await expect(page.locator("#settings-panel-llm select").first()).toHaveValue("openrouter_free_dev");
+  await expect(page.locator("#settings-panel-llm select").first()).toHaveValue(
+    "openrouter_free_dev",
+  );
 
   await page.locator("#settings-sidebar-tab-hotkey").click();
   await expect(page.getByTestId("settings-section-hotkey")).toBeVisible();
-  await expect(page.locator("#settings-panel-hotkey input[type='checkbox']").nth(0)).not.toBeChecked();
-  await expect(page.locator("#settings-panel-hotkey input[type='checkbox']").nth(1)).not.toBeChecked();
-  await expect(page.locator("#settings-panel-hotkey input[type='checkbox']").nth(2)).toBeChecked();
+  await expect(
+    page.locator("#settings-panel-hotkey input[type='checkbox']").nth(0),
+  ).not.toBeChecked();
+  await expect(page.locator("#settings-panel-hotkey input[type='checkbox']").nth(1)).toBeChecked();
+  await expect(
+    page.locator("#settings-panel-hotkey input[type='checkbox']").nth(2),
+  ).not.toBeChecked();
 
   await page.locator("#settings-sidebar-tab-reports").click();
   await expect(page.getByTestId("settings-section-reports")).toBeVisible();
