@@ -91,17 +91,33 @@ fn mode_from_last_card(last_card: Option<&AnalysisCardDto>) -> Option<AnalysisMo
     })
 }
 
-fn build_combined_context(context_text: &str, context_pack_content: &str) -> String {
+fn build_combined_context(
+    context_text: &str,
+    context_pack_content: &str,
+    language: &str,
+) -> String {
     let mut parts: Vec<String> = Vec::new();
 
-    let base = context_text.trim();
-    if !base.is_empty() {
-        parts.push(base.to_string());
+    let (rolling_heading, active_heading) = if language == "en" {
+        (
+            "Recent conversation context:",
+            "Active conversation context:",
+        )
+    } else {
+        (
+            "Контекст последних фрагментов разговора:",
+            "Активный контекст разговора:",
+        )
+    };
+
+    let rolling = context_text.trim();
+    if !rolling.is_empty() {
+        parts.push(format!("{rolling_heading}\n{rolling}"));
     }
 
     let pack = context_pack_content.trim();
     if !pack.is_empty() {
-        parts.push(format!("Active context:\n{pack}"));
+        parts.push(format!("{active_heading}\n{pack}"));
     }
 
     parts.join("\n\n")
@@ -456,7 +472,7 @@ pub async fn capture_stop_and_analyze(
         .unwrap_or_default();
     let context_pack_content = context_pack::compact_for_prompt(&context_pack_raw);
     let context_pack_active = !context_pack_raw.trim().is_empty();
-    let combined_context = build_combined_context(&context_text, &context_pack_content);
+    let combined_context = build_combined_context(&context_text, &context_pack_content, lang);
     let _ = app_log::append_event(
         "context_pack_status",
         format!(
@@ -750,7 +766,7 @@ pub async fn retry_last_analysis(
         .map(|pack| pack.content)
         .unwrap_or_default();
     let context_pack_content = context_pack::compact_for_prompt(&context_pack_raw);
-    let combined_context = build_combined_context(&context_text, &context_pack_content);
+    let combined_context = build_combined_context(&context_text, &context_pack_content, lang);
     let _ = app_log::append_event(
         "context_pack_status",
         format!(
@@ -917,44 +933,62 @@ mod tests {
         );
     }
 
+    // --- build_combined_context tests ---
+
+    #[test]
+    fn rolling_context_uses_english_heading() {
+        let combined = build_combined_context("some rolling text", "", "en");
+        assert!(combined.starts_with("Recent conversation context:"));
+        assert!(combined.contains("some rolling text"));
+    }
+
+    #[test]
+    fn rolling_context_uses_russian_heading() {
+        let combined = build_combined_context("фрагмент разговора", "", "ru");
+        assert!(combined.starts_with("Контекст последних фрагментов разговора:"));
+        assert!(combined.contains("фрагмент разговора"));
+    }
+
+    #[test]
+    fn active_context_uses_english_heading() {
+        let combined = build_combined_context(
+            "rolling",
+            "I am a senior engineer discussing Q3 roadmap.",
+            "en",
+        );
+        assert!(combined.contains("Active conversation context:"));
+        assert!(combined.contains("I am a senior engineer"));
+        assert!(combined.contains("Recent conversation context:"));
+        assert!(combined.contains("rolling"));
+    }
+
+    #[test]
+    fn active_context_uses_russian_heading() {
+        let combined =
+            build_combined_context("контекст", "Готовлюсь к собеседованию в Acme Corp", "ru");
+        assert!(combined.contains("Активный контекст разговора:"));
+        assert!(combined.contains("Готовлюсь к собеседованию"));
+        assert!(combined.contains("Контекст последних фрагментов разговора:"));
+        assert!(combined.contains("контекст"));
+    }
+
     #[test]
     fn empty_active_context_adds_nothing() {
-        let combined = build_combined_context("Recent conversation context", "");
-        assert_eq!(combined, "Recent conversation context");
-        assert!(!combined.contains("Active context:"));
+        let combined = build_combined_context("some rolling text", "", "en");
+        assert!(!combined.contains("Active conversation context:"));
+        assert!(combined.contains("Recent conversation context:"));
     }
 
     #[test]
-    fn active_context_pack_appended_for_work_mode() {
-        let combined = build_combined_context(
-            "Recent conversation context",
-            "I am a senior engineer discussing Q3 roadmap.",
-        );
-        assert!(combined.contains("Recent conversation context"));
-        assert!(combined.contains("Active context:"));
-        assert!(combined.contains("I am a senior engineer"));
-    }
-
-    #[test]
-    fn active_context_pack_appended_for_interview_mode_context() {
-        let combined = build_combined_context(
-            "Rolling context",
-            "Active pack: Interview prep for Acme Corp",
-        );
-        assert!(combined.contains("Rolling context"));
-        assert!(combined.contains("Active context:"));
-        assert!(combined.contains("Interview prep for Acme Corp"));
-    }
-
-    #[test]
-    fn empty_context_pack_adds_nothing() {
-        let combined = build_combined_context("Base context", "");
-        assert_eq!(combined, "Base context");
+    fn empty_rolling_context_adds_nothing() {
+        let combined = build_combined_context("", "Active pack content", "en");
+        assert!(combined.contains("Active conversation context:"));
+        assert!(!combined.contains("Recent conversation context:"));
     }
 
     #[test]
     fn all_empty_yields_empty_string() {
-        let combined = build_combined_context("", "");
+        let combined = build_combined_context("", "", "en");
         assert_eq!(combined, "");
     }
 
@@ -965,10 +999,17 @@ mod tests {
         large.resize(context_pack::CONTEXT_PACK_MAX_PROMPT_CHARS + 500, b'x');
         let large = std::str::from_utf8(&large).unwrap();
         let compacted = context_pack::compact_for_prompt(large);
-        let combined = build_combined_context("Rolling context", &compacted);
-        assert!(combined.len() < large.len() + 50);
-        assert!(combined.contains("Active context:"));
+        let combined = build_combined_context("Rolling context", &compacted, "en");
+        assert!(combined.len() < large.len() + 100);
+        assert!(combined.contains("Active conversation context:"));
         assert!(combined.contains("[...truncated]"));
         assert!(!combined.contains(large));
+    }
+
+    #[test]
+    fn combined_context_uses_default_russian_for_non_en_language() {
+        let combined = build_combined_context("rolling", "pack", "fr");
+        assert!(combined.starts_with("Контекст последних фрагментов разговора:"));
+        assert!(combined.contains("Активный контекст разговора:"));
     }
 }

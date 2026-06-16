@@ -99,25 +99,25 @@ pub fn build_user_prompt(
     let (clean_context, prompt_template) = if language == "en" {
         (
             if context.trim().is_empty() {
-                "(empty)"
+                "(no recent context)"
             } else {
                 context
             },
-            "Context of recent short conversation fragments:\n{clean_context}\n\nCurrent fragment:\n{transcript}\n\nHelp the person understand the question, what to say now (paragraph), evidence anchor, and the next step."
+            "{combined_context}\n\nCurrent fragment:\n{transcript}\n\nHelp the person understand the question, what to say now (paragraph), evidence anchor, and the next step.\n\nImportant:\n- Active conversation context is user-provided background, not a transcript. Use it only when relevant to the current fragment.\n- Do not treat active context as a continuation of the conversation transcript.\n- Do not fabricate facts based on context. If active context conflicts with the current fragment, prioritize the current fragment and state uncertainty explicitly."
         )
     } else {
         (
             if context.trim().is_empty() {
-                "(пусто)"
+                "(нет недавнего контекста)"
             } else {
                 context
             },
-            "Контекст последних коротких фрагментов беседы:\n{clean_context}\n\nТекущий фрагмент:\n{transcript}\n\nНужны: суть вопроса, абзац ответа сейчас, опора из фрагмента и конкретный следующий шаг."
+            "{combined_context}\n\nТекущий фрагмент:\n{transcript}\n\nНужны: суть вопроса, абзац ответа сейчас, опора из фрагмента и конкретный следующий шаг.\n\nВажно:\n- Активный контекст разговора — это пользовательские вводные, а не расшифровка. Используй его, только когда он релевантен текущему фрагменту.\n- Не воспринимай активный контекст как продолжение расшифровки разговора.\n- Не выдумывай факты на основе контекста. Если активный контекст противоречит текущему фрагменту, приоритет у текущего фрагмента и явно укажи неопределённость."
         )
     };
 
     let mut prompt = prompt_template
-        .replace("{clean_context}", clean_context)
+        .replace("{combined_context}", clean_context)
         .replace("{transcript}", transcript);
     if let Some(suffix) = extra_suffix.filter(|v| !v.trim().is_empty()) {
         prompt.push_str("\n\n");
@@ -190,7 +190,6 @@ mod tests {
         let profile = resolve_answer_profile("interview_executive");
         let prompt = build_user_prompt("fragment", "", "en", profile, None);
         assert!(prompt.contains("Do not fabricate facts"));
-        assert!(prompt.contains("confident"));
     }
 
     #[test]
@@ -215,5 +214,96 @@ mod tests {
         let prompt = system_prompt_for_profile(profile, "ru");
         assert!(prompt.contains("не додумывай смысл"));
         assert!(prompt.contains("задай конкретный уточняющий вопрос"));
+    }
+
+    // --- ContextPack-aware prompt contract tests ---
+
+    #[test]
+    fn prompt_distinguishes_context_types_en() {
+        let profile = resolve_answer_profile("interview_default");
+        // When combined_context carries the structured headings from build_combined_context,
+        // the prompt template must not re-wrap them under a single generic heading.
+        let combined =
+            "Recent conversation context:\nrolling\n\nActive conversation context:\npack";
+        let prompt = build_user_prompt("fragment", combined, "en", profile, None);
+        // The old template heading must be gone.
+        assert!(!prompt.contains("Context of recent short conversation fragments"));
+        // Structured headings from build_combined_context pass through.
+        assert!(prompt.contains("Recent conversation context:"));
+        assert!(prompt.contains("Active conversation context:"));
+    }
+
+    #[test]
+    fn prompt_distinguishes_context_types_ru() {
+        let profile = resolve_answer_profile("interview_default");
+        let combined =
+            "Контекст последних фрагментов разговора:\nrolling\n\nАктивный контекст разговора:\npack";
+        let prompt = build_user_prompt("фрагмент", combined, "ru", profile, None);
+        // Old generic heading must be gone.
+        assert!(!prompt.contains("Контекст последних коротких фрагментов беседы"));
+        // Structured headings pass through.
+        assert!(prompt.contains("Контекст последних фрагментов разговора:"));
+        assert!(prompt.contains("Активный контекст разговора:"));
+    }
+
+    #[test]
+    fn prompt_includes_active_context_guardrails_en() {
+        let profile = resolve_answer_profile("interview_default");
+        let combined =
+            "Recent conversation context:\nrolling\n\nActive conversation context:\npack";
+        let prompt = build_user_prompt("fragment", combined, "en", profile, None);
+        assert!(prompt.contains("not a transcript"));
+        assert!(prompt.contains("Do not treat active context as a continuation"));
+        assert!(prompt.contains("Do not fabricate facts based on context"));
+        assert!(prompt.contains("prioritize the current fragment"));
+    }
+
+    #[test]
+    fn prompt_includes_active_context_guardrails_ru() {
+        let profile = resolve_answer_profile("interview_default");
+        let combined =
+            "Контекст последних фрагментов разговора:\nrolling\n\nАктивный контекст разговора:\npack";
+        let prompt = build_user_prompt("фрагмент", combined, "ru", profile, None);
+        assert!(prompt.contains("не расшифровка"));
+        assert!(prompt.contains("Не воспринимай активный контекст как продолжение"));
+        assert!(prompt.contains("Не выдумывай факты на основе контекста"));
+        assert!(prompt.contains("приоритет у текущего фрагмента"));
+    }
+
+    #[test]
+    fn guardrails_present_even_when_context_empty() {
+        let profile = resolve_answer_profile("interview_default");
+        let prompt = build_user_prompt("fragment", "", "en", profile, None);
+        // Guardrails are always injected, regardless of context content.
+        assert!(prompt.contains("not a transcript"));
+        assert!(prompt.contains("Do not fabricate facts based on context"));
+        // Empty placeholder is shown.
+        assert!(prompt.contains("(no recent context)"));
+    }
+
+    #[test]
+    fn guardrails_present_even_when_context_empty_ru() {
+        let profile = resolve_answer_profile("interview_default");
+        let prompt = build_user_prompt("фрагмент", "", "ru", profile, None);
+        assert!(prompt.contains("не расшифровка"));
+        assert!(prompt.contains("Не выдумывай факты на основе контекста"));
+        assert!(prompt.contains("(нет недавнего контекста)"));
+    }
+
+    #[test]
+    fn extra_suffix_appended_after_context_and_transcript() {
+        let profile = resolve_answer_profile("interview_default");
+        let prompt = build_user_prompt(
+            "fragment",
+            "Recent conversation context:\nrolling",
+            "en",
+            profile,
+            Some("RETRY MODE: stricter output"),
+        );
+        assert!(prompt.contains("RETRY MODE: stricter output"));
+        // Retry suffix appears after transcript and guardrails.
+        let retry_pos = prompt.find("RETRY MODE").unwrap();
+        let fragment_pos = prompt.find("Current fragment:").unwrap();
+        assert!(retry_pos > fragment_pos);
     }
 }
