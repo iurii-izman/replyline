@@ -606,34 +606,38 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
                   <span class="field-label">{st().settings.compactModeLabel}</span>
                 </label>
 
-                <Show when={controller().settings.bilingualInterviewEnabled}>
-                  <label class="field field-checkbox-row settings-checkbox-row">
-                    <input
-                      type="checkbox"
-                      aria-label={st().settings.bilingualInterviewEnabledLabel}
-                      checked={controller().settings.bilingualInterviewEnabled}
-                      onInput={(event) =>
-                        controller().setBilingualInterviewEnabled(event.currentTarget.checked)
-                      }
-                    />
-                    <span class="field-label">{st().settings.bilingualInterviewEnabledLabel}</span>
-                  </label>
+                <Show when={controller().experimentalBilingualAllowed()}>
+                  <Show when={controller().settings.bilingualInterviewEnabled}>
+                    <label class="field field-checkbox-row settings-checkbox-row">
+                      <input
+                        type="checkbox"
+                        aria-label={st().settings.bilingualInterviewEnabledLabel}
+                        checked={controller().settings.bilingualInterviewEnabled}
+                        onInput={(event) =>
+                          controller().setBilingualInterviewEnabled(event.currentTarget.checked)
+                        }
+                      />
+                      <span class="field-label">
+                        {st().settings.bilingualInterviewEnabledLabel}
+                      </span>
+                    </label>
 
-                  <label class="field field-checkbox-row settings-checkbox-row">
-                    <input
-                      type="checkbox"
-                      aria-label={st().settings.liveTranslationEnabledLabel}
-                      checked={controller().settings.liveTranslationEnabled}
-                      onInput={(event) =>
-                        controller().setLiveTranslationEnabled(event.currentTarget.checked)
-                      }
-                    />
-                    <span class="field-label">{st().settings.liveTranslationEnabledLabel}</span>
-                  </label>
+                    <label class="field field-checkbox-row settings-checkbox-row">
+                      <input
+                        type="checkbox"
+                        aria-label={st().settings.liveTranslationEnabledLabel}
+                        checked={controller().settings.liveTranslationEnabled}
+                        onInput={(event) =>
+                          controller().setLiveTranslationEnabled(event.currentTarget.checked)
+                        }
+                      />
+                      <span class="field-label">{st().settings.liveTranslationEnabledLabel}</span>
+                    </label>
 
-                  <p class="settings-note settings-note-warning">
-                    {st().settings.bilingualInterviewDisclaimer}
-                  </p>
+                    <p class="settings-note settings-note-warning">
+                      {st().settings.bilingualInterviewDisclaimer}
+                    </p>
+                  </Show>
                 </Show>
 
                 <label class="field">

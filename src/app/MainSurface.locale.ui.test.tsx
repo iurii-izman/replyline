@@ -77,6 +77,7 @@ function createController(strings: UiStrings, overrides: Record<string, unknown>
     activeContextPack: () => null,
     clearActiveContextPackAction: vi.fn(),
     openContextPackPanel: vi.fn(),
+    experimentalBilingualAllowed: () => false,
   };
   return { ...base, ...overrides };
 }

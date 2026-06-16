@@ -91,6 +91,7 @@ export function useReplylineController(platform: AppPlatform) {
     createSignal<string | null>(null);
   const [bilingualInterviewState, setBilingualInterviewState] =
     createSignal<BilingualInterviewState>(initialBilingualInterviewState);
+  const [experimentalBilingualAllowed, setExperimentalBilingualAllowed] = createSignal(false);
 
   const [settings, setSettings] = createStore<AppSettings>({
     ...DEFAULT_SETTINGS,
@@ -363,6 +364,7 @@ export function useReplylineController(platform: AppPlatform) {
     notices,
     hotkeys,
     loadContextPacks,
+    setExperimentalBilingualAllowed,
   });
 
   // ── Lifecycle effects ──────────────────────────────────────────────────
@@ -410,6 +412,7 @@ export function useReplylineController(platform: AppPlatform) {
     hasError: () => Boolean(error()),
   });
 
+  // Bilingual controller — created lazily, wired only when env flag allows.
   const bilingualController = createBilingualInterviewController({
     platform,
     bilingualState: bilingualInterviewState,
@@ -418,20 +421,22 @@ export function useReplylineController(platform: AppPlatform) {
     setError,
   });
   triggerBilingualHotkeyAnswerImpl = bilingualController.triggerHotkeyAnswer;
-  void bilingualController.wireListeners().catch((err) => {
-    setBilingualInterviewState((prev) => ({
-      ...prev,
-      status: "reconnecting",
-      transcriptLane: "reconnecting",
-      translationLane: "reconnecting",
-      lastError: {
-        code: "BILINGUAL_LISTENER_WIRE_FAILED",
-        message: invokeErrorMessage(err),
-        recoverable: true,
-      },
-    }));
-  });
-  onCleanup(() => bilingualController.unwireListeners());
+  if (experimentalBilingualAllowed()) {
+    void bilingualController.wireListeners().catch((err) => {
+      setBilingualInterviewState((prev) => ({
+        ...prev,
+        status: "reconnecting",
+        transcriptLane: "reconnecting",
+        translationLane: "reconnecting",
+        lastError: {
+          code: "BILINGUAL_LISTENER_WIRE_FAILED",
+          message: invokeErrorMessage(err),
+          recoverable: true,
+        },
+      }));
+    });
+    onCleanup(() => bilingualController.unwireListeners());
+  }
 
   const bilingualActive = createMemo(
     () => bilingualInterviewState().active || bilingualInterviewState().status === "active",
@@ -542,6 +547,7 @@ export function useReplylineController(platform: AppPlatform) {
     bilingualActive,
     bilingualCanAnswer,
     bilingualDegraded,
+    experimentalBilingualAllowed,
     compactMode,
     checkRuntimeConfig: async () => {
       void emitUiEvent(platform, "check_settings_clicked", { phase: "settings" });

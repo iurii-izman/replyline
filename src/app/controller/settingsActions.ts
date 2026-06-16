@@ -59,6 +59,7 @@ export interface SettingsActionDeps {
   notices: NoticeApi;
   hotkeys: HotkeyApi;
   loadContextPacks: () => Promise<void>;
+  setExperimentalBilingualAllowed: Setter<boolean>;
 }
 
 export interface SettingsActions {
@@ -89,6 +90,7 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
       deps.setContextEntryCount(boot.contextEntryCount);
       deps.setLastTranscriptPreview(boot.lastTranscriptPreview ?? null);
       deps.setCanRetryLastTranscript(boot.canRetryLastTranscript);
+      deps.setExperimentalBilingualAllowed(boot.experimentalBilingualAllowed);
       deps.setPersistenceDiagnosticsError(null);
       try {
         const diagnostics = await deps.platform.invoke<PersistenceDiagnosticsDto>(
@@ -189,6 +191,7 @@ export function createSettingsActions(deps: SettingsActionDeps): SettingsActions
       deps.setContextActive(boot.contextActive);
       deps.setContextEntryCount(boot.contextEntryCount);
       deps.setLastTranscriptPreview(boot.lastTranscriptPreview ?? null);
+      deps.setExperimentalBilingualAllowed(boot.experimentalBilingualAllowed);
       deps.setPersistenceDiagnosticsError(null);
       try {
         const diagnostics = await deps.platform.invoke<PersistenceDiagnosticsDto>(

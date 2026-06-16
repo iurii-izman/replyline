@@ -149,6 +149,7 @@ function settingsController(overrides: Record<string, unknown> = {}) {
     openMainPanel: vi.fn(),
     copySetupIssueHint: vi.fn(),
     clearInterviewReports: vi.fn(),
+    experimentalBilingualAllowed: () => false,
     ...overrides,
   };
 }
@@ -202,6 +203,7 @@ describe("frontend critical state coverage", () => {
                 settingsActiveSection: () => "hotkey",
                 setBilingualInterviewEnabled,
                 setLiveTranslationEnabled,
+                experimentalBilingualAllowed: () => true,
                 settings: {
                   selectedModelPreset: "custom_openai_compatible",
                   llmBaseUrl: "https://api.example/v1",
