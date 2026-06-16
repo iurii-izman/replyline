@@ -133,6 +133,15 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     keepOnTopDuringCapture: options.settingsOverrides?.keepOnTopDuringCapture ?? false,
     interviewCompactMode: options.settingsOverrides?.interviewCompactMode ?? false,
   };
+  // Mutable context pack store — starts from options, mutates on CRUD commands.
+  let contextPacks: Array<{
+    id: string;
+    title: string;
+    content: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }> = (options.contextPacks ?? []).map((p) => ({ ...p }));
   let deepgramPresent = true;
   let llmPresent = true;
   const runtimeReady = () =>
@@ -204,26 +213,64 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     if (command === "export_interview_report_redacted_markdown") {
       return String.raw`C:\reports\interview-report-redacted-is-1.md`;
     }
-    // Context pack commands
+    // Context pack commands — mutable store with real CRUD behavior
     if (command === "list_context_packs") {
-      return { packs: options.contextPacks ?? [] };
+      return { packs: contextPacks.map((p) => ({ ...p })) };
     }
     if (command === "get_active_context_pack") {
-      return (options.contextPacks ?? []).find((p) => p.isActive) ?? null;
+      return contextPacks.find((p) => p.isActive) ?? null;
     }
     if (command === "get_context_pack_status") {
-      const packs = options.contextPacks ?? [];
       return {
-        totalCount: packs.length,
-        activeId: packs.find((p) => p.isActive)?.id ?? null,
+        totalCount: contextPacks.length,
+        activeId: contextPacks.find((p) => p.isActive)?.id ?? null,
       };
     }
-    if (
-      command === "save_context_pack" ||
-      command === "delete_context_pack" ||
-      command === "set_active_context_pack" ||
-      command === "clear_active_context_pack"
-    ) {
+    if (command === "save_context_pack") {
+      const input = (args?.input ?? args ?? {}) as {
+        id: string;
+        title: string;
+        content: string;
+        isActive: boolean;
+      };
+      const now = new Date().toISOString();
+      const existing = contextPacks.findIndex((p) => p.id === input.id);
+      if (existing >= 0) {
+        // Preserve active status of existing pack (backend decides, but mock mirrors backend truth)
+        contextPacks[existing] = {
+          ...contextPacks[existing],
+          title: input.title,
+          content: input.content,
+          updatedAt: now,
+        };
+      } else {
+        contextPacks.push({
+          id: input.id,
+          title: input.title,
+          content: input.content,
+          isActive: false,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+      return null;
+    }
+    if (command === "delete_context_pack") {
+      const id = (args?.id ?? args?.contextPackId ?? "") as string;
+      contextPacks = contextPacks.filter((p) => p.id !== id);
+      return null;
+    }
+    if (command === "set_active_context_pack") {
+      const id = (args?.id ?? args?.contextPackId ?? "") as string;
+      for (const p of contextPacks) {
+        p.isActive = p.id === id;
+      }
+      return null;
+    }
+    if (command === "clear_active_context_pack") {
+      for (const p of contextPacks) {
+        p.isActive = false;
+      }
       return null;
     }
     return null;
