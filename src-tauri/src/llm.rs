@@ -187,14 +187,14 @@ mod tests {
 
     #[test]
     fn executive_profile_includes_no_fabrication_rule() {
-        let profile = resolve_answer_profile("interview_executive");
+        let profile = resolve_answer_profile("work_executive");
         let prompt = build_user_prompt("fragment", "", "en", profile, None);
         assert!(prompt.contains("Do not fabricate facts"));
     }
 
     #[test]
     fn technical_profile_requests_technical_structure() {
-        let profile = resolve_answer_profile("interview_technical");
+        let profile = resolve_answer_profile("work_technical");
         let prompt = build_user_prompt("fragment", "", "en", profile, None);
         assert!(prompt.contains("Structure preference: TECHNICAL"));
         assert!(prompt.contains("technical"));
@@ -202,7 +202,7 @@ mod tests {
 
     #[test]
     fn work_prompt_forbids_invented_coordination_details() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         let prompt = system_prompt_for_profile(profile, "ru");
         assert!(prompt.contains("не превращай его в рабочий проект"));
         assert!(prompt.contains("не выдумывай имена, владельцев, даты и дедлайны"));
@@ -210,7 +210,7 @@ mod tests {
 
     #[test]
     fn work_prompt_requires_clarification_for_ambiguous_short_fragment() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         let prompt = system_prompt_for_profile(profile, "ru");
         assert!(prompt.contains("не додумывай смысл"));
         assert!(prompt.contains("задай конкретный уточняющий вопрос"));
@@ -220,7 +220,7 @@ mod tests {
 
     #[test]
     fn prompt_distinguishes_context_types_en() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         // When combined_context carries the structured headings from build_combined_context,
         // the prompt template must not re-wrap them under a single generic heading.
         let combined =
@@ -235,7 +235,7 @@ mod tests {
 
     #[test]
     fn prompt_distinguishes_context_types_ru() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         let combined =
             "Контекст последних фрагментов разговора:\nrolling\n\nАктивный контекст разговора:\npack";
         let prompt = build_user_prompt("фрагмент", combined, "ru", profile, None);
@@ -248,7 +248,7 @@ mod tests {
 
     #[test]
     fn prompt_includes_active_context_guardrails_en() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         let combined =
             "Recent conversation context:\nrolling\n\nActive conversation context:\npack";
         let prompt = build_user_prompt("fragment", combined, "en", profile, None);
@@ -260,7 +260,7 @@ mod tests {
 
     #[test]
     fn prompt_includes_active_context_guardrails_ru() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         let combined =
             "Контекст последних фрагментов разговора:\nrolling\n\nАктивный контекст разговора:\npack";
         let prompt = build_user_prompt("фрагмент", combined, "ru", profile, None);
@@ -272,7 +272,7 @@ mod tests {
 
     #[test]
     fn guardrails_present_even_when_context_empty() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         let prompt = build_user_prompt("fragment", "", "en", profile, None);
         // Guardrails are always injected, regardless of context content.
         assert!(prompt.contains("not a transcript"));
@@ -283,7 +283,7 @@ mod tests {
 
     #[test]
     fn guardrails_present_even_when_context_empty_ru() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         let prompt = build_user_prompt("фрагмент", "", "ru", profile, None);
         assert!(prompt.contains("не расшифровка"));
         assert!(prompt.contains("Не выдумывай факты на основе контекста"));
@@ -292,7 +292,7 @@ mod tests {
 
     #[test]
     fn extra_suffix_appended_after_context_and_transcript() {
-        let profile = resolve_answer_profile("interview_default");
+        let profile = resolve_answer_profile("work_default");
         let prompt = build_user_prompt(
             "fragment",
             "Recent conversation context:\nrolling",

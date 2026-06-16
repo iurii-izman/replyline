@@ -159,7 +159,7 @@ function validateGates(fixture, profileLimitsById) {
   const schema = validateInterviewCardSchemaV1(output);
   failures.push(...schema.errors.map((e) => `schema: ${e}`));
 
-  const profileId = expected.profileId ?? "interview_default";
+  const profileId = expected.profileId ?? "work_default";
   const limits = profileLimitsById.get(profileId);
   if (!limits) failures.push(`gate: unknown profile limits (${profileId})`);
 
