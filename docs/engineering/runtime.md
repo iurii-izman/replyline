@@ -123,6 +123,8 @@ It validates:
 
 - answer-card contract and policy checks
 - synthetic runtime-answer, product-scenario, `say_now`, and SLO checks
+- ContextPack answer-quality fixtures (45 scenarios): evidence usage, fabrication guard,
+  constraint respect, transcript-vs-context conflict resolution, oversized truncation safety
 - regression drift across runtime/interview/say-now fixture lanes
 
 It does not validate:
@@ -130,6 +132,30 @@ It does not validate:
 - live providers
 - real machine latency
 - manual desktop/call UX
+
+### ContextPack answer quality fixtures
+
+Located at `tests/fixtures/runtime-quality/runtime-answer-fixtures.json`.
+Evaluated by `scripts/evaluate-runtime-answer-quality.mjs`.
+
+Fixture categories (10 ContextPack-specific scenarios out of 45 total):
+
+| Category | Fixture count | What it checks |
+| --- | --- | --- |
+| Same transcript + context | 1 | Context evidence appears in answer |
+| Context constraints | 1 | Answer respects explicit constraints |
+| Forbidden claim guard | 1 | No fabrication beyond context data |
+| Transcript/context conflict | 1 | Transcript priority, uncertainty stated |
+| Context disambiguation | 1 | Context helps interpret short fragments |
+| Empty context safety | 1 | No context-pack hallucination tokens |
+| Metrics from context | 1 | Context metrics used, no sensitive leak |
+| No-fabrication guard | 1 | No invented metrics when data missing |
+| Interview-style context | 1 | Context used in structured answer format |
+| Oversized truncation safety | 1 | No leaked implementation details |
+
+Each fixture uses `mockCardOverrides` for deterministic evaluation without
+live LLM. For live-provider verification, use the template at
+`tests/fixtures/runtime-live-evidence/context-pack-live-qa.template.md`.
 
 ## Appendix: minimal live-runtime matrix template
 
