@@ -146,7 +146,7 @@ describe("MainSurface state-driven view", () => {
     render(() => <MainSurface controller={createController(ui_ru) as never} />);
     expect(screen.getByTestId("main-state-idle")).toBeTruthy();
     // Primary CTA is context management, not interview.
-    expect(screen.getByTestId("idle-open-context-btn").textContent).toBe("Добавить контекст");
+    expect(screen.getByTestId("idle-open-context-btn").textContent).toBe("Контекст");
     // Interview is secondary.
     expect(screen.getByTestId("idle-interview-secondary-btn").textContent).toBe("Режим интервью");
     expect(screen.queryByTestId("main-side-panel")).toBeNull();

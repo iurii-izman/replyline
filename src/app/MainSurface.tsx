@@ -116,7 +116,6 @@ function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
   const activeSessionQuestions = createMemo(
     () => controller().interviewSession()?.questions.length ?? 0,
   );
-  const activePack = () => controller().activeContextPack();
 
   return (
     <section class="readiness-state readiness-state--centered" data-testid="main-state-idle">
@@ -136,34 +135,6 @@ function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
           {st().card.readinessHotkey}
         </span>
       </div>
-      <Show when={activePack()}>
-        {(pack) => (
-          <div class="context-active-chip" data-testid="idle-active-chip">
-            <span class="context-chip-label">{st().contextPack.activeLabel}:</span>
-            <span class="context-chip-title" data-testid="idle-chip-title">
-              {pack().title}
-            </span>
-            <div class="context-chip-actions">
-              <button
-                type="button"
-                class="btn btn-sm"
-                data-testid="idle-chip-change-btn"
-                onClick={() => controller().openContextPackPanel()}
-              >
-                {st().contextPack.changeCtx}
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-danger"
-                data-testid="idle-chip-disable-btn"
-                onClick={() => controller().clearActiveContextPackAction()}
-              >
-                {st().contextPack.disableCtx}
-              </button>
-            </div>
-          </div>
-        )}
-      </Show>
       <div class="action-group">
         <button
           class="btn-primary"
@@ -171,7 +142,7 @@ function IdleReadyState(props: Readonly<{ controller: ReplylineController }>) {
           data-testid="idle-open-context-btn"
           onClick={() => controller().openContextPackPanel()}
         >
-          {activePack() ? st().contextPack.manageCtx : st().card.idleAddContext}
+          {st().contextPack.manageCtx}
         </button>
         <button
           class="btn-secondary"
