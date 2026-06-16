@@ -214,7 +214,7 @@ Recorded 2026-06-16. See `CHANGELOG.md` Unreleased section for accumulated chang
 - [x] Bilingual experimental track frozen behind env flag (invisible by default)
 - [x] Prompt contract strengthened: distinct rolling/active context, guardrails
 - [x] Docs truth aligned: scorecard 88/100, CHANGELOG current, architecture updated
-- [ ] Live provider evidence: `pending verification` (same as beta.2 — Deepgram key unavailable)
+- [ ] Live provider evidence: automated probes measured, manual ContextPack scenarios pending (see `tests/fixtures/runtime-live-evidence/context-pack-live-qa.2026-06-16.md`)
 - [ ] Cross-machine smoke: Windows 10 not tested
 - [ ] Public installer: certificate not acquired, no signed binary
 - [ ] Tag not yet created — pending explicit decision

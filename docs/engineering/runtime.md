@@ -157,6 +157,11 @@ Each fixture uses `mockCardOverrides` for deterministic evaluation without
 live LLM. For live-provider verification, use the template at
 `tests/fixtures/runtime-live-evidence/context-pack-live-qa.template.md`.
 
+**Current status (2026-06-16):** Automated ContextPack tests pass (168 Rust tests,
+47 QA fixtures). Automated evidence pack generated (`pnpm report:live-evidence-pack`).
+Manual provider scenarios pending — see
+`tests/fixtures/runtime-live-evidence/context-pack-live-qa.2026-06-16.md`.
+
 ## Appendix: minimal live-runtime matrix template
 
 Use this compact template when collecting operator evidence:
