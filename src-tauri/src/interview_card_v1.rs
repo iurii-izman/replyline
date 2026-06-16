@@ -355,32 +355,32 @@ pub fn normalize_and_validate(
 
 pub fn build_interview_system_prompt(language: &str) -> &'static str {
     if language == "en" {
-        "You generate InterviewCardSchemaV1 JSON only. No markdown. Keep facts anchored to transcript/context and never fabricate metrics or resume facts."
+        "You generate InterviewCardSchemaV1 JSON only. No markdown. Keep facts anchored to transcript/context and never fabricate metrics or resume facts. Active conversation context is user-provided background — not a transcript — use it only when relevant. If active context conflicts with the current transcript, prioritize the transcript and state uncertainty."
     } else {
-        "Сгенерируй только JSON InterviewCardSchemaV1 без markdown. Факты опирай на transcript/context, не выдумывай метрики и резюме-факты."
+        "Сгенерируй только JSON InterviewCardSchemaV1 без markdown. Факты опирай на transcript/context, не выдумывай метрики и резюме-факты. Активный контекст разговора — это пользовательские вводные, а не расшифровка, используй только когда релевантен. Если активный контекст противоречит текущему фрагменту, приоритет у фрагмента и явно укажи неопределённость."
     }
 }
 
 pub fn build_interview_user_prompt(transcript: &str, context: &str, language: &str) -> String {
     if language == "en" {
         format!(
-            "Context:\n{}\n\nInterview transcript:\n{}\n\nOutput contract:\n- English answer only (B2/C1 conversational).\n- No fillers like \"Great question\", \"Certainly\", \"As an AI\".\n- 2-5 sentences for normal questions, up to 8 for system design.\n- Do not fabricate metrics/projects/employers.\n- If context is missing, answer conceptually and honestly.\n\nReturn InterviewCardSchemaV1 JSON.",
-            if context.trim().is_empty() {
-                "(empty)"
+            "{clean_context}\n\nInterview transcript:\n{transcript}\n\nOutput contract:\n- English answer only (B2/C1 conversational).\n- No fillers like \"Great question\", \"Certainly\", \"As an AI\".\n- 2-5 sentences for normal questions, up to 8 for system design.\n- Do not fabricate metrics/projects/employers.\n- If context is missing, answer conceptually and honestly.\n- Active conversation context is user-provided background, not a transcript. Use it only when relevant.\n- Do not treat active context as a continuation of the conversation transcript.\n- If active context conflicts with the current transcript, prioritize the transcript and state uncertainty.\n\nReturn InterviewCardSchemaV1 JSON.",
+            clean_context = if context.trim().is_empty() {
+                "(no recent context)"
             } else {
                 context
             },
-            transcript
+            transcript = transcript
         )
     } else {
         format!(
-            "Контекст:\n{}\n\nТранскрипт интервью:\n{}\n\nВерни JSON InterviewCardSchemaV1.",
-            if context.trim().is_empty() {
-                "(пусто)"
+            "{clean_context}\n\nТранскрипт интервью:\n{transcript}\n\nКонтракт вывода:\n- Ответ на русском (разговорный C1).\n- Без filler-фраз.\n- 2-5 предложений для обычных вопросов, до 8 для system design.\n- Не выдумывай метрики/проекты/работодателей.\n- Если контекст отсутствует, отвечай концептуально и честно.\n- Активный контекст разговора — пользовательские вводные, а не расшифровка. Используй, только когда релевантен.\n- Не воспринимай активный контекст как продолжение расшифровки.\n- Если активный контекст противоречит текущему фрагменту, приоритет у фрагмента, явно укажи неопределённость.\n\nВерни JSON InterviewCardSchemaV1.",
+            clean_context = if context.trim().is_empty() {
+                "(нет недавнего контекста)"
             } else {
                 context
             },
-            transcript
+            transcript = transcript
         )
     }
 }
@@ -1115,5 +1115,86 @@ mod tests {
         assert_eq!(value["risks"]["safeReframe"], "reframe");
         assert_eq!(value["clarifier"]["text"], "Need scope?");
         assert!(value["followUps"].is_array());
+    }
+
+    // --- ContextPack-aware interview prompt contract tests ---
+
+    #[test]
+    fn interview_system_prompt_includes_active_context_guardrails_en() {
+        let prompt = build_interview_system_prompt("en");
+        assert!(prompt.contains("not a transcript"));
+        assert!(prompt.contains("user-provided background"));
+        assert!(prompt.contains("prioritize the transcript"));
+    }
+
+    #[test]
+    fn interview_system_prompt_includes_active_context_guardrails_ru() {
+        let prompt = build_interview_system_prompt("ru");
+        assert!(prompt.contains("не расшифровка"));
+        assert!(prompt.contains("пользовательские вводные"));
+        assert!(prompt.contains("приоритет у фрагмента"));
+    }
+
+    #[test]
+    fn interview_user_prompt_keeps_structured_context_headings_en() {
+        let combined =
+            "Recent conversation context:\nrolling\n\nActive conversation context:\npack";
+        let prompt = build_interview_user_prompt("transcript", combined, "en");
+        // Old flat "Context:" heading must be gone.
+        assert!(!prompt.starts_with("Context:"));
+        // Structured headings from build_combined_context pass through.
+        assert!(prompt.contains("Recent conversation context:"));
+        assert!(prompt.contains("Active conversation context:"));
+    }
+
+    #[test]
+    fn interview_user_prompt_keeps_structured_context_headings_ru() {
+        let combined =
+            "Контекст последних фрагментов разговора:\nrolling\n\nАктивный контекст разговора:\npack";
+        let prompt = build_interview_user_prompt("транскрипт", combined, "ru");
+        // Old flat "Контекст:" heading must be gone.
+        assert!(!prompt.starts_with("Контекст:"));
+        // Structured headings pass through.
+        assert!(prompt.contains("Контекст последних фрагментов разговора:"));
+        assert!(prompt.contains("Активный контекст разговора:"));
+    }
+
+    #[test]
+    fn interview_user_prompt_includes_guardrails_en() {
+        let prompt =
+            build_interview_user_prompt("transcript", "Active conversation context:\npack", "en");
+        assert!(prompt.contains("not a transcript"));
+        assert!(prompt.contains("Do not treat active context as a continuation"));
+        assert!(prompt.contains("prioritize the transcript"));
+    }
+
+    #[test]
+    fn interview_user_prompt_includes_guardrails_ru() {
+        let prompt =
+            build_interview_user_prompt("транскрипт", "Активный контекст разговора:\npack", "ru");
+        assert!(prompt.contains("не расшифровка"));
+        assert!(prompt.contains("Не воспринимай активный контекст как продолжение"));
+        assert!(prompt.contains("приоритет у фрагмента"));
+    }
+
+    #[test]
+    fn interview_user_prompt_shows_placeholder_when_context_empty() {
+        let prompt = build_interview_user_prompt("transcript", "", "en");
+        assert!(prompt.contains("(no recent context)"));
+        // Guardrails still present even with empty context.
+        assert!(prompt.contains("not a transcript"));
+        assert!(prompt.contains("Do not treat active context as a continuation"));
+    }
+
+    #[test]
+    fn interview_repair_prompt_includes_fix_constraint_on_facts() {
+        let gate = InterviewQualityGate {
+            passed: false,
+            score: 0,
+            failed_reasons: vec![InterviewQualityFailureReason::HallucinatedMetricDetected],
+            repairable: true,
+        };
+        let repair = build_interview_repair_user_prompt("transcript", "context", "en", &gate, None);
+        assert!(repair.contains("Do not invent facts or metrics"));
     }
 }
