@@ -117,8 +117,11 @@ Features that exist in the codebase but are gated/disabled by default and not sh
   1. Env flag `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` (primary kill-switch).
   2. Setting `bilingualInterviewEnabled: true` (user-facing opt-in).
   Both must pass. Enforced in `bootstrap` and all 4 bilingual commands via `require_experimental_bilingual()`.
+- **Future:** Frozen for v0.2.x per ADR 0002. Re-evaluate at v0.3 planning. If no demand,
+  scheduled for removal with settings migration v10→v11.
 - **Scope:** Split pipeline for interview help — passive EN transcript streaming + RU translation + hotkey-triggered answer card generation.
-- **Code:** `src-tauri/src/bilingual/` (Rust backend), `src/app/BilingualInterviewSurface.tsx` (frontend).
+- **Code:** `src-tauri/src/bilingual/` (Rust backend, 5 modules), `src/app/BilingualInterviewSurface.tsx` (frontend).
 - **Commands:** `start_bilingual_session`, `stop_bilingual_session`, `capture_bilingual_answer`, `export_bilingual_interview_report` — registered but callable only when both gates pass.
-- **Docs:** `docs/archive/experimental/bilingual-implementation-status.md`.
+- **Footprint:** ~2500 LOC (Rust + TS), 8 settings fields, 4 doc files.
+- **Docs:** `docs/adr/0002-bilingual-frozen-track.md`, `docs/archive/experimental/bilingual-implementation-status.md`.
 - **Activation:** See activation checklist in the archive doc. Do not enable without completing manual QA on ≥2 Windows machines, sustained soak testing, and backend command guard.
