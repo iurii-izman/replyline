@@ -1,7 +1,10 @@
-# Interview Mode
+# Interview Mode (context usage example)
 
-This compatibility page moved to [docs/product/user-guide.md](product/user-guide.md#5-interview-mode-flow).
+Interview Mode is a specialised use of WorkConversation with interview-oriented
+ContextPack. It is not a separate product centre.
 
-Use the same guide for Interview Mode flow, ContextPack usage inside Interview Mode, and report/export boundaries.
+See [user guide](product/user-guide.md#5-interview-mode-context-usage-example)
+for the full flow: start session, capture questions, review cards, export reports.
 
-Legacy compatibility markers: `start_interview_session`, `end_interview_session`, `export_interview_report_markdown`, `InterviewCardSchemaV1`, `CardSchemaV3`.
+Legacy compatibility markers: `start_interview_session`, `end_interview_session`,
+`export_interview_report_markdown`, `InterviewCardSchemaV1`, `CardSchemaV3`.

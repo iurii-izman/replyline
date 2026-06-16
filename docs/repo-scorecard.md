@@ -28,7 +28,7 @@
 - `docs/product/limitations.md` is honest: unsigned artifacts, no bilingual, no stealth
 - `docs/product/privacy.md` covers data flow, storage, exports, provider boundaries
 - `docs/product/user-guide.md` structured by feature area
-- MVP is well-defined: WorkConversation + Interview Mode + ContextPack
+- MVP is well-defined: WorkConversation + ContextPack (Interview Mode as example usage)
 
 **Remaining:**
 - Bilingual experimental track is well-documented but adds complexity to settings schema
