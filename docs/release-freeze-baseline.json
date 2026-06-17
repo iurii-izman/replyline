@@ -83,14 +83,7 @@
     "scripts/check-prompt-contract.mjs"
   ],
   "guardrailPathRegexes": [],
-  "allowlistPrefixes": [
-    ".github/",
-    "docs/",
-    "scripts/",
-    "tests/",
-    "src/",
-    "src-tauri/"
-  ],
+  "allowlistPrefixes": [".github/", "docs/", "scripts/", "tests/", "src/", "src-tauri/"],
   "categories": {
     "_note": "Categories are documentation-only. The checker uses the flat guardrailPaths list.",
     "rootContracts": [
@@ -121,6 +114,8 @@
       "src-tauri/src/commands/mod.rs",
       "src-tauri/src/commands/registry.rs",
       "src-tauri/src/commands/bootstrap.rs",
+      "src-tauri/src/commands/bilingual_experimental.rs",
+      "src-tauri/src/commands/interview.rs",
       "src-tauri/src/commands/diagnostics.rs",
       "src-tauri/src/commands/tray_window.rs",
       "src-tauri/src/commands/context.rs",

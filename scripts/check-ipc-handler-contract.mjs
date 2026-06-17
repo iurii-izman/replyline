@@ -12,6 +12,14 @@ const libPath = join(root, "src-tauri", "src", "lib.rs");
 const commandsPath = join(root, "src-tauri", "src", "commands", "mod.rs");
 const registryPath = join(root, "src-tauri", "src", "commands", "registry.rs");
 const ipcDocsPath = join(root, "docs", "reference", "ipc.md");
+const bilingualCommandsPath = join(
+  root,
+  "src-tauri",
+  "src",
+  "commands",
+  "bilingual_experimental.rs",
+);
+const interviewCommandsPath = join(root, "src-tauri", "src", "commands", "interview.rs");
 const diagnosticsCommandsPath = join(root, "src-tauri", "src", "commands", "diagnostics.rs");
 const trayWindowCommandsPath = join(root, "src-tauri", "src", "commands", "tray_window.rs");
 const bootstrapCommandsPath = join(root, "src-tauri", "src", "commands", "bootstrap.rs");
@@ -80,6 +88,12 @@ function flattenCategoryMap(categoryMap) {
 const libText = readFileSync(libPath, "utf8");
 const commandsText = readFileSync(commandsPath, "utf8");
 const registryText = existsSync(registryPath) ? readFileSync(registryPath, "utf8") : "";
+const bilingualCommandsText = existsSync(bilingualCommandsPath)
+  ? readFileSync(bilingualCommandsPath, "utf8")
+  : "";
+const interviewCommandsText = existsSync(interviewCommandsPath)
+  ? readFileSync(interviewCommandsPath, "utf8")
+  : "";
 const diagnosticsCommandsText = existsSync(diagnosticsCommandsPath)
   ? readFileSync(diagnosticsCommandsPath, "utf8")
   : "";
@@ -131,6 +145,8 @@ const registered = new Set(
 const declared = new Set(
   [
     commandsText,
+    bilingualCommandsText,
+    interviewCommandsText,
     diagnosticsCommandsText,
     trayWindowCommandsText,
     bootstrapCommandsText,
