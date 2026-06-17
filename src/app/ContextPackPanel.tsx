@@ -2,6 +2,12 @@ import { createSignal, For, Show } from "solid-js";
 import type { ReplylineController } from "./controller";
 import type { ContextPackDto } from "./model";
 
+function compactPreview(content: string, maxLen: number): string {
+  const single = content.replace(/\s+/g, " ").trim();
+  if (single.length <= maxLen) return single;
+  return single.slice(0, maxLen).trimEnd() + "\u2026";
+}
+
 export function ContextPackPanel(props: Readonly<{ controller: ReplylineController }>) {
   const ctrl = () => props.controller;
   const st = () => ctrl().strings();
@@ -14,6 +20,8 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
 
   const activePack = () => ctrl().activeContextPack();
   const packs = () => ctrl().contextPacks();
+
+  let newPackBtnRef: HTMLButtonElement | undefined;
 
   function resetDraft() {
     setDraftId("");
@@ -50,6 +58,8 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
         updatedAt: "",
       });
       resetDraft();
+      // Focus the New button after save so keyboard flow stays on the primary action.
+      newPackBtnRef?.focus();
     } finally {
       setSaving(false);
     }
@@ -67,6 +77,17 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
     await ctrl().clearActiveContextPackAction();
   }
 
+  async function handleDuplicate(pack: ContextPackDto) {
+    await ctrl().saveContextPack({
+      id: "ctx-" + String(Date.now()),
+      title: pack.title + " (Copy)",
+      content: pack.content,
+      isActive: false,
+      createdAt: "",
+      updatedAt: "",
+    });
+  }
+
   return (
     <Show when={ctrl().panel() === "contextPack"}>
       <div class="context-pack-panel" data-testid="context-pack-panel">
@@ -82,6 +103,9 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
           </button>
           <h2>{st().contextPack.panelTitle}</h2>
           <button
+            ref={(el) => {
+              newPackBtnRef = el;
+            }}
             type="button"
             class="btn btn-primary"
             data-testid="context-pack-new-btn"
@@ -98,6 +122,18 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
               <span class="context-pack-active-label">{st().contextPack.activeLabel}:</span>
               <span class="context-pack-active-title" data-testid="context-pack-active-title">
                 {pack().title}
+              </span>
+              <span class="context-pack-active-preview" data-testid="context-pack-active-preview">
+                {compactPreview(pack().content, 80)}
+              </span>
+              <span
+                class="context-pack-active-charcount"
+                data-testid="context-pack-active-charcount"
+              >
+                {(() => {
+                  const tpl = st().contextPack.charCount;
+                  return tpl.replace("{{count}}", String(pack().content.length));
+                })()}
               </span>
               <div class="context-pack-active-actions">
                 <button
@@ -143,7 +179,7 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                 value={draftContent()}
                 onInput={(e) => setDraftContent(e.currentTarget.value)}
                 rows={10}
-                placeholder={st().contextPack.contentLabel}
+                placeholder={st().contextPack.emptyExample}
               />
             </label>
             <div class="context-pack-editor-actions">
@@ -172,7 +208,13 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
           when={packs().length > 0}
           fallback={
             <div class="context-pack-empty" data-testid="context-pack-empty">
-              <p>{st().contextPack.emptyHint}</p>
+              <p class="context-pack-empty-hint">{st().contextPack.emptyHint}</p>
+              <p class="context-pack-empty-why" data-testid="context-pack-empty-why">
+                {st().contextPack.emptyWhy}
+              </p>
+              <p class="context-pack-empty-example" data-testid="context-pack-empty-example">
+                {st().contextPack.emptyExample}
+              </p>
             </div>
           }
         >
@@ -214,6 +256,14 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                         onClick={() => startEdit(pack)}
                       >
                         {st().contextPack.editPack}
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        data-testid={"context-pack-duplicate-" + pack.id}
+                        onClick={() => handleDuplicate(pack)}
+                      >
+                        {st().contextPack.duplicatePack}
                       </button>
                       <button
                         type="button"

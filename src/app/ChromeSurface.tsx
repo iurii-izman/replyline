@@ -105,10 +105,11 @@ export function MessagesAndFooter(props: Readonly<{ controller: ReplylineControl
   return (
     <Show when={controller().notice()}>
       {(notice) => (
-        <div class="notice-center">
+        <div class="notice-center" data-testid="notice-center">
           <div class={`notice-item ${notice().tone === "error" ? "is-error" : "is-info"}`}>
             <output
               class="notice-item-text"
+              data-testid="notice-message"
               aria-live={notice().tone === "error" ? "assertive" : "polite"}
               aria-atomic="true"
               role={notice().tone === "error" ? "alert" : "status"}

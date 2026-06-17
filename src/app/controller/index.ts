@@ -697,6 +697,7 @@ export function useReplylineController(platform: AppPlatform) {
     saveContextPack: async (input: ContextPackDto) => {
       await platform.invoke("save_context_pack", { input });
       await loadContextPacks();
+      notices.pushNotice({ tone: "info", message: strings().contextPack.savedNotice });
     },
     deleteContextPack: async (id: string) => {
       await platform.invoke("delete_context_pack", { id });

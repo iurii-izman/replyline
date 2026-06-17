@@ -511,4 +511,149 @@ describe("context pack panel", () => {
     // Button is now disabled while editor is open.
     expect(newBtn.disabled).toBe(true);
   });
+
+  // ── Empty state ───────────────────────────────────────────────────
+
+  it("empty state explains context with why and example", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+
+    expect(screen.getByTestId("context-pack-empty")).toBeTruthy();
+    expect(screen.getByTestId("context-pack-empty-why").textContent).toBeTruthy();
+    expect(screen.getByTestId("context-pack-empty-why").textContent!.length).toBeGreaterThan(30);
+    expect(screen.getByTestId("context-pack-empty-example").textContent).toBeTruthy();
+    expect(screen.getByTestId("context-pack-empty-example").textContent!.length).toBeGreaterThan(
+      20,
+    );
+  });
+
+  // ── Save notice ───────────────────────────────────────────────────
+
+  it("shows a notice after saving a context pack", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    fireEvent.click(screen.getByTestId("context-pack-new-btn"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+
+    fireEvent.input(screen.getByTestId("context-pack-title-input"), {
+      target: { value: "Notice Test" },
+    });
+    fireEvent.input(screen.getByTestId("context-pack-content-input"), {
+      target: { value: "Content for notice test." },
+    });
+    fireEvent.click(screen.getByTestId("context-pack-save-btn"));
+
+    // After save, the list should appear and a notice should be visible.
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+    // The notice appears briefly — check it exists.
+    await waitFor(() => expect(screen.getByTestId("notice-message")).toBeTruthy(), {
+      timeout: 3000,
+    });
+    expect(screen.getByTestId("notice-message").textContent).toBeTruthy();
+  });
+
+  // ── Active preview ────────────────────────────────────────────────
+
+  it("active banner shows compact preview and character count", async () => {
+    const content =
+      "I am a senior developer working on the authentication module. " +
+      "The current sprint focuses on OAuth2 migration and security review.";
+    const packs = [makePack("ctx-1", { isActive: true, content })];
+    const mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    // Preview is visible.
+    const preview = screen.getByTestId("context-pack-active-preview");
+    expect(preview.textContent).toBeTruthy();
+    // Preview is truncated to ≤80 chars (+ ellipsis).
+    expect(preview.textContent!.length).toBeLessThanOrEqual(84);
+
+    // Character count is visible.
+    const charCount = screen.getByTestId("context-pack-active-charcount");
+    expect(charCount.textContent).toBeTruthy();
+    // Character count contains the actual character count.
+    expect(charCount.textContent).toContain(String(content.length));
+  });
+
+  it("active preview truncates very long content safely", async () => {
+    const content = "A".repeat(200);
+    const packs = [makePack("ctx-1", { isActive: true, content })];
+    const mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    const preview = screen.getByTestId("context-pack-active-preview");
+    // Preview is truncated with ellipsis.
+    expect(preview.textContent).toContain("\u2026");
+    expect(preview.textContent!.length).toBeLessThanOrEqual(84);
+  });
+
+  // ── Duplicate flow ────────────────────────────────────────────────
+
+  it("duplicate creates a copy with (Copy) in the title", async () => {
+    const packs = [makePack("ctx-1", { title: "Original" })];
+    const mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    // Click Duplicate on the pack.
+    fireEvent.click(screen.getByTestId("context-pack-duplicate-ctx-1"));
+
+    // Verify save_context_pack was called with a title containing "(Copy)".
+    await waitFor(() => {
+      const saveCalls = mock.invoke.mock.calls.filter(
+        (c: [string, unknown?]) => c[0] === "save_context_pack",
+      );
+      expect(saveCalls.length).toBeGreaterThanOrEqual(1);
+      const lastCall = saveCalls[saveCalls.length - 1];
+      const input = (lastCall[1] as Record<string, unknown>).input as Record<string, unknown>;
+      expect(input.title).toContain("(Copy)");
+      expect(input.isActive).toBe(false);
+    });
+  });
+
+  it("duplicate does not auto-activate the copy", async () => {
+    const packs = [makePack("ctx-1", { title: "Original" })];
+    const mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    // Click Duplicate.
+    fireEvent.click(screen.getByTestId("context-pack-duplicate-ctx-1"));
+
+    // No activate call should be made for the duplicate.
+    await waitFor(() => {
+      const activateCalls = mock.invoke.mock.calls.filter(
+        (c: [string, unknown?]) => c[0] === "set_active_context_pack",
+      );
+      // Only bootstrap-initiated calls may exist; no new activate.
+      const nonBootstrapActivates = activateCalls.filter(
+        (_c: [string, unknown?], i: number) => i > 0,
+      );
+      expect(nonBootstrapActivates.length).toBe(0);
+    });
+  });
 });
