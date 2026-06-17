@@ -17,7 +17,7 @@ Replyline отправляет короткий audio snippet в Deepgram для
 ```powershell
 git clone https://github.com/iurii-izman/replyline.git
 cd replyline
-git checkout v0.2.0-beta.2
+git checkout v0.2.0-beta.3
 pnpm install --frozen-lockfile
 pnpm beta:doctor
 pnpm beta:start

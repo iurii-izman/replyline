@@ -222,7 +222,7 @@ Recorded 2026-06-17. Decision: **Conditional Go**. See `CHANGELOG.md` and `docs/
 - [ ] Live provider manual scenarios: ctx-live-01/02/03 pending (desktop app + synthetic audio required)
 - [ ] Cross-machine smoke: Windows 10 not tested
 - [ ] Public installer: certificate not acquired, no signed binary
-- [ ] Tag not yet created — pending explicit decision
+- [x] Tag created (`v0.2.0-beta.3`)
 
 **Blockers**: none blocking source beta (S0/S1). Unsigned artifacts remain S2.
 
@@ -266,7 +266,7 @@ These checks stay manual even when `pnpm beta:release-check` is green.
 - Release notes explain how to clear local reports and app data.
 - The docs distinguish uninstall from local data cleanup.
 - No claim is made that uninstall removes every local artifact automatically.
-- Release screenshots stay under `docs/releases/v0.2.0-beta.2/screenshots/`.
+- Release screenshots stay under `docs/releases/v0.2.0-beta.3/screenshots/`.
 - Capture first-run, Settings, Interview Mode, ContextPack, and export states.
 
 ## Reporting Rule

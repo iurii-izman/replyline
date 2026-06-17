@@ -21,7 +21,7 @@ The current public entry is a Windows **source/developer beta** for testers and 
 - [Read the user guide](docs/product/user-guide.md)
 - [Read privacy and data-flow boundaries](docs/product/privacy.md)
 - [Read current beta limitations](docs/product/limitations.md)
-- [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.2)
+- [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.3)
 - [Ask a question or share feedback](https://github.com/iurii-izman/replyline/discussions)
 
 No unsigned artifact is presented as a public installer. Until an Authenticode-signed build
@@ -73,7 +73,7 @@ Built for correctness and trust, not hype:
 ```bash
 git clone https://github.com/iurii-izman/replyline.git
 cd replyline
-git checkout v0.2.0-beta.2
+git checkout v0.2.0-beta.3
 pnpm install --frozen-lockfile
 pnpm beta:doctor
 pnpm beta:start
