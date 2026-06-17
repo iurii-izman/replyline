@@ -72,7 +72,8 @@ freezing the bilingual experimental track.
 - Bilingual experimental track frozen behind explicit `REPLYLINE_EXPERIMENTAL_BILINGUAL=1`
   env flag — UI toggles and event listeners hidden by default.
 - Answer profiles renamed to universal answer styles: `interview_*` → `work_*`
-  (work_default, work_concise, work_star, etc.) with backward-compatible aliases.
+  (work_default, work_concise, work_structured, work_executive, work_technical,
+  work_product, work_people) with backward-compatible aliases.
 - Prompt wording: «Answer style» / «Стиль ответа» replaces «Answer profile» / «Профиль ответа».
 - ContextPack panel UI tests expanded to 18 scenarios (CRUD + navigation).
 - All «Candidate Pack» references replaced with «ContextPack» in operational docs and

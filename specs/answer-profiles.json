@@ -30,9 +30,9 @@
       "riskPolicy": "strict"
     },
     {
-      "id": "work_star",
-      "title": "Work STAR",
-      "description": "Bias to STAR framing with explicit situation-task-action-result logic.",
+      "id": "work_structured",
+      "title": "Work Structured",
+      "description": "Structured answer with explicit situation-task-action-result logic.",
       "answerWordMin": 16,
       "answerWordMax": 100,
       "shortMax": 60,
@@ -86,8 +86,8 @@
       "riskPolicy": "high"
     },
     {
-      "id": "work_hr",
-      "title": "Work HR",
+      "id": "work_people",
+      "title": "Work People",
       "description": "Professional people-oriented framing with policy-safe wording.",
       "answerWordMin": 12,
       "answerWordMax": 82,

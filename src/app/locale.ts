@@ -693,7 +693,7 @@ export const ui_en: UiStrings = {
     statusNeedsCheck: "Needs check",
     statusCheckFailed: "Check failed",
     speechHint: "Deepgram key is used only for speech recognition.",
-    llmSectionHint: "Configure provider, model, and answer profile in one section.",
+    llmSectionHint: "Configure provider, model, and answer style in one section.",
     hotkeySectionHint: "Set your hotkey and window behavior controls.",
     reportsSectionHint: "Manage retention window and manual clearing of interview reports.",
     reportsEverydayTitle: "Everyday reports and privacy",

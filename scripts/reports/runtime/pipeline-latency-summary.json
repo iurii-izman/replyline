@@ -1,0 +1,87 @@
+{
+  "generatedAt": "2026-06-14T18:54:58.534Z",
+  "sourceLogPath": "C:\\Users\\iurii\\AppData\\Local\\com.replyline.app\\logs\\app.log",
+  "totalTimingRecords": 32,
+  "stages": {
+    "capture_stop": {
+      "p50Ms": 459,
+      "p95Ms": 463,
+      "minMs": 450,
+      "maxMs": 463,
+      "meanMs": 458.2,
+      "count": 9,
+      "failCount": 0,
+      "failPercent": 0
+    },
+    "wav_encoding": {
+      "p50Ms": 8,
+      "p95Ms": 49,
+      "minMs": 4,
+      "maxMs": 49,
+      "meanMs": 14.4,
+      "count": 8,
+      "failCount": 0,
+      "failPercent": 0
+    },
+    "stt_request": {
+      "p50Ms": 1792,
+      "p95Ms": 3319,
+      "minMs": 1505,
+      "maxMs": 3319,
+      "meanMs": 2126.9,
+      "count": 8,
+      "failCount": 0,
+      "failPercent": 0
+    },
+    "llm_request": {
+      "p50Ms": 2635,
+      "p95Ms": 2974,
+      "minMs": 2635,
+      "maxMs": 2974,
+      "meanMs": 2804.5,
+      "count": 2,
+      "failCount": 0,
+      "failPercent": 0
+    },
+    "llm_request_retry": {
+      "p50Ms": 3278,
+      "p95Ms": 3278,
+      "minMs": 3278,
+      "maxMs": 3278,
+      "meanMs": 3278,
+      "count": 1,
+      "failCount": 0,
+      "failPercent": 0
+    },
+    "card_normalization_retry": {
+      "p50Ms": 0,
+      "p95Ms": 0,
+      "minMs": 0,
+      "maxMs": 0,
+      "meanMs": 0,
+      "count": 1,
+      "failCount": 0,
+      "failPercent": 0
+    },
+    "release_to_card": {
+      "p50Ms": 5513,
+      "p95Ms": 7910,
+      "minMs": 5513,
+      "maxMs": 7910,
+      "meanMs": 6711.5,
+      "count": 2,
+      "failCount": 0,
+      "failPercent": 0
+    },
+    "card_normalization": {
+      "p50Ms": 3,
+      "p95Ms": 3,
+      "minMs": 3,
+      "maxMs": 3,
+      "meanMs": 3,
+      "count": 1,
+      "failCount": 0,
+      "failPercent": 0
+    }
+  }
+}

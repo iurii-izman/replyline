@@ -8,11 +8,11 @@ pub const DEFAULT_ANSWER_PROFILE_ID: &str = "work_default";
 const PROFILE_ALIASES: &[(&str, &str)] = &[
     ("interview_default", "work_default"),
     ("interview_concise", "work_concise"),
-    ("interview_star", "work_star"),
+    ("interview_star", "work_structured"),
     ("interview_executive", "work_executive"),
     ("interview_technical", "work_technical"),
     ("interview_product", "work_product"),
-    ("interview_hr", "work_hr"),
+    ("interview_hr", "work_people"),
 ];
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -100,9 +100,9 @@ const PROFILES: [AnswerProfileConfig; 7] = [
         anti_hallucination_level: AntiHallucinationLevel::Strict,
     },
     AnswerProfileConfig {
-        id: "work_star",
-        title: "Work STAR",
-        description: "Bias to STAR framing with explicit situation-task-action-result logic.",
+        id: "work_structured",
+        title: "Work Structured",
+        description: "Structured answer with explicit situation-task-action-result logic.",
         mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
         schema_version: INTERVIEW_SCHEMA_VERSION,
@@ -164,8 +164,8 @@ const PROFILES: [AnswerProfileConfig; 7] = [
         anti_hallucination_level: AntiHallucinationLevel::High,
     },
     AnswerProfileConfig {
-        id: "work_hr",
-        title: "Work HR",
+        id: "work_people",
+        title: "Work People",
         description: "Professional people-oriented framing with policy-safe wording.",
         mode: AnswerProfileMode::WorkConversation,
         prompt_version: INTERVIEW_PROMPT_VERSION,
@@ -233,8 +233,8 @@ mod tests {
     }
 
     #[test]
-    fn star_profile_prefers_star_structure() {
-        let profile = resolve_answer_profile("work_star");
+    fn structured_profile_prefers_star_structure() {
+        let profile = resolve_answer_profile("work_structured");
         assert_eq!(profile.structure_preference, StructurePreference::Star);
     }
 
@@ -265,9 +265,9 @@ mod tests {
     }
 
     #[test]
-    fn alias_interview_star_resolves_to_work_star() {
+    fn alias_interview_star_resolves_to_work_structured() {
         let profile = resolve_answer_profile("interview_star");
-        assert_eq!(profile.id, "work_star");
+        assert_eq!(profile.id, "work_structured");
     }
 
     #[test]
@@ -289,8 +289,8 @@ mod tests {
     }
 
     #[test]
-    fn alias_interview_hr_resolves_to_work_hr() {
+    fn alias_interview_hr_resolves_to_work_people() {
         let profile = resolve_answer_profile("interview_hr");
-        assert_eq!(profile.id, "work_hr");
+        assert_eq!(profile.id, "work_people");
     }
 }
