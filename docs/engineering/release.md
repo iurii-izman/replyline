@@ -230,6 +230,10 @@ Recorded 2026-06-17. Decision: **Conditional Go**. See `CHANGELOG.md` and `docs/
 ContextPack pivot is the defining feature of this cycle. All automated gates green.
 Tag can be applied after explicit confirmation.
 
+## Beta.4 Quality Plan
+
+See [docs/release-notes/v0.2.0-beta.4-draft.md](../release-notes/v0.2.0-beta.4-draft.md) for the beta.4 quality/stability release plan (draft).
+
 ## Manual Release Checklist
 
 These checks stay manual even when `pnpm beta:release-check` is green.
