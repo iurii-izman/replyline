@@ -46,7 +46,6 @@ docs/archive/*
 !docs/archive/handoff/
 docs/archive/handoff/*
 !docs/archive/handoff/beta-readiness.md
-!docs/archive/handoff/doc-inventory.md
 !docs/archive/handoff/test-inventory.md
 !docs/archive/experimental/
 docs/archive/experimental/*
