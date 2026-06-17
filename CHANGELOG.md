@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Live provider evidence remains `pending verification` on the primary Windows 11 test machine (Deepgram API key unavailable at time of release).
 - Cross-machine and cross-call-app runtime behavior remains pending broader verification.
 
-## [0.2.0-beta.3] - 2026-06-16
+## [0.2.0-beta.3] - 2026-06-17
 
 ContextPack pivot release. The defining change is shipping ContextPack as the new
 conversation context primitive, repositioning Interview Mode to secondary, and
@@ -59,7 +59,9 @@ freezing the bilingual experimental track.
   corrupt backups).
 - Live evidence template for ContextPack manual QA.
 - Backend bilingual env gate: `REPLYLINE_EXPERIMENTAL_BILINGUAL=1` enforced in both
-  bootstrap and all 4 bilingual commands (two-factor: env + setting).
+  bootstrap and all 4 bilingual commands (two-factor: env + setting). Error codes
+  now differentiate env gate failure (`EXPERIMENTAL_BILINGUAL_ENV_DISABLED`) from
+  setting gate failure (`EXPERIMENTAL_BILINGUAL_DISABLED`).
 - Repository scorecard (`docs/repo-scorecard.md`).
 
 ### Changed
@@ -74,11 +76,12 @@ freezing the bilingual experimental track.
 - Answer profiles renamed to universal answer styles: `interview_*` → `work_*`
   (work_default, work_concise, work_structured, work_executive, work_technical,
   work_product, work_people) with backward-compatible aliases.
-- Prompt wording: «Answer style» / «Стиль ответа» replaces «Answer profile» / «Профиль ответа».
+- Prompt wording: «Answer style» / «Стиль ответа» replaces «Answer profile» / «Профиль ответа»
+  in UI labels, hints, and LLM prompts.
 - ContextPack panel UI tests expanded to 18 scenarios (CRUD + navigation).
 - All «Candidate Pack» references replaced with «ContextPack» in operational docs and
   templates.
-- Repository scorecard refreshed: 88/100, 385 tracked files, 173+ tests.
+- Repository scorecard refreshed: 88/100, 390 tracked files, 265+ tests.
 - Mock platform ContextPack store made mutable for realistic UI test flows.
 - Back-navigation added to ContextPack panel (← Back button).
 
@@ -87,6 +90,8 @@ freezing the bilingual experimental track.
 - E2E smoke spec updated to match post-pivot window defaults (hideToTrayOnClose).
 - ContextPack storage now recovers from corrupt JSON instead of hard-crashing.
 - Interview quality fixtures updated to canonical `work_default` profile id.
+- Bilingual env gate returns differentiated error codes (`ENV_DISABLED` vs `DISABLED`).
+- ContextPack storage file cleaned of stray text artifact.
 
 ### Known limitations
 

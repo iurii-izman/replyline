@@ -205,18 +205,21 @@ Recorded 2026-06-15. See `CHANGELOG.md` for [0.2.0-beta.2] entries.
 
 ## Beta.3 Release Decision Checklist
 
-Recorded 2026-06-16. Decision: **Conditional Go**. See `CHANGELOG.md` and `docs/release-notes/v0.2.0-beta.3.md`.
+Recorded 2026-06-17. Decision: **Conditional Go**. See `CHANGELOG.md` and `docs/release-notes/v0.2.0-beta.3.md`.
 
 - [x] `pnpm verify` green
 - [x] `pnpm verify:full` — 1 pre-existing blocker (unsigned artifacts, S2)
 - [x] ContextPack shipped as core primitive (prompt contract, UI, 47 QA fixtures, storage hardening)
 - [x] Interview Mode repositioned to secondary — idle state context-first
 - [x] Bilingual experimental track frozen behind two-factor env gate (REPLYLINE_EXPERIMENTAL_BILINGUAL + setting)
+  with differentiated error codes (ENV_DISABLED vs DISABLED)
 - [x] Prompt contract strengthened: distinct rolling/active context, guardrails
-- [x] Answer profiles renamed to universal answer styles (work_* with backward-compatible aliases)
+- [x] Answer profiles renamed to universal answer styles (work_* with backward-compatible aliases):
+  work_default, work_concise, work_structured, work_executive, work_technical, work_product, work_people
 - [x] Docs truth aligned: scorecard 88/100, CHANGELOG current, architecture updated
-- [x] ContextPack storage hardened: corrupt JSON quarantine + safe recovery
-- [ ] Live provider evidence: automated probes measured, manual ContextPack scenarios pending
+- [x] ContextPack storage hardened: corrupt JSON quarantine + safe recovery (35 tests)
+- [x] Live provider evidence: updated for 2026-06-17 (265 tests, 390 tracked files)
+- [ ] Live provider manual scenarios: ctx-live-01/02/03 pending (desktop app + synthetic audio required)
 - [ ] Cross-machine smoke: Windows 10 not tested
 - [ ] Public installer: certificate not acquired, no signed binary
 - [ ] Tag not yet created — pending explicit decision
