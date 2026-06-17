@@ -23,28 +23,86 @@ function collectKeys(value, prefix = "") {
 
 const localeSource = readFileSync(localePath, "utf8");
 
-function extractUiRu(source) {
+function resolveSpreadObject(source, baseDir) {
+  // Find imports: import { X } from "./Y"
+  const importRe = /import\s*\{\s*(\w+)\s*,\s*(\w+)\s*\}\s*from\s*["'](.\/[^"']+)["']/g;
+  const imports = new Map();
+  for (const m of source.matchAll(importRe)) {
+    const key1 = m[1];
+    const key2 = m[2];
+    const path = join(baseDir, m[3] + ".ts");
+    if (!imports.has(path)) imports.set(path, []);
+    imports.get(path).push(key1, key2);
+  }
+
+  // For each imported file, extract the named exports
+  const exports = new Map();
+  for (const [filePath, names] of imports) {
+    const fileSource = readFileSync(filePath, "utf8");
+    for (const name of names) {
+      const exportObj = extractObjectFromSource(fileSource, `export const ${name} = `);
+      if (exportObj) exports.set(name, exportObj);
+    }
+  }
+
+  // Find ui_ru assembly: { ...shell, card: card_ru, settings: settings_ru }
   const startMarker = "export const ui_ru = ";
   const startIdx = source.indexOf(startMarker);
   if (startIdx < 0) throw new Error("Cannot find ui_ru in locale.ts");
+
+  // Find the spread references
+  const spreadRe = /\.\.\.(\w+)/g;
+  const afterStart = source.slice(startIdx);
+  const spreads = [];
+  for (const m of afterStart.matchAll(spreadRe)) {
+    if (m[1] !== "ui_shell_ru") continue;
+    const spreadObj = exports.get("ui_shell_ru");
+    if (spreadObj) spreads.push(spreadObj);
+    break;
+  }
+
+  // Find card: card_ru and settings: settings_ru
+  const cardMatch = afterStart.match(/card:\s*(\w+)/);
+  const settingsMatch = afterStart.match(/settings:\s*(\w+)/);
+
+  const result = { ...(spreads[0] || {}) };
+  if (cardMatch && exports.has(cardMatch[1])) {
+    result.card = exports.get(cardMatch[1]);
+  }
+  if (settingsMatch && exports.has(settingsMatch[1])) {
+    result.settings = exports.get(settingsMatch[1]);
+  }
+  return result;
+}
+
+function extractObjectFromSource(source, startMarker) {
+  const startIdx = source.indexOf(startMarker);
+  if (startIdx < 0) return null;
   let idx = startIdx + startMarker.length;
   let state = { depth: 0, inString: false, stringChar: "", escaped: false, objectClosed: false };
 
-  const finishObject = (endIdx) => {
-    const raw = source.slice(startIdx + startMarker.length, endIdx + 1);
-    const jsonLike = raw
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/,(\s*[}\]])/g, "$1")
-      .replace(/(^|\n|{|,)\s*([a-zA-Z_$][\w$]*)\s*:/g, '$1"$2":')
-      .trim();
-    return JSON.parse(jsonLike);
-  };
-
   for (; idx < source.length; idx++) {
     state = consumeUiChar(source[idx], state);
-    if (state.objectClosed) return finishObject(idx);
+    if (state.objectClosed) {
+      const raw = source.slice(startIdx + startMarker.length, idx + 1);
+      // Use eval instead of JSON.parse to handle template literals, etc.
+      const jsLike = raw
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/as const;?/g, "")
+        .replace(/:\s*typeof\s+\w+/g, "")
+        .trim();
+      try {
+        return eval("(" + jsLike + ")");
+      } catch {
+        return null;
+      }
+    }
   }
-  throw new Error("Could not find closing brace for ui_ru");
+  return null;
+}
+
+function extractUiRu(source, baseDir) {
+  return resolveSpreadObject(source, baseDir);
 }
 
 function consumeUiChar(ch, state) {
@@ -69,7 +127,7 @@ function consumeStringChar(ch, state) {
 
 let uiRu;
 try {
-  uiRu = extractUiRu(localeSource);
+  uiRu = extractUiRu(localeSource, join(root, "src", "app"));
 } catch (err) {
   console.error("Failed to parse ui_ru from locale.ts:", err.message);
   process.exit(1);
@@ -244,7 +302,9 @@ if (missingKeys.length > 0) {
   failures.push(`Source files reference non-existent locale keys: ${missingKeys.join(", ")}`);
 }
 if (hardcodedViolations.length > 0) {
-  failures.push(`Hardcoded user-visible strings (TSX/controller): ${hardcodedViolations.join(", ")}`);
+  failures.push(
+    `Hardcoded user-visible strings (TSX/controller): ${hardcodedViolations.join(", ")}`,
+  );
 }
 
 if (failures.length > 0) {
