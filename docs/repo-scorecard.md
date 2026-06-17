@@ -1,8 +1,8 @@
 # Repository Scorecard
 
-> **Date:** 2026-06-16  
-> **Scope:** Post-ContextPack pivot audit: prompt contract, bilingual freeze, interview reposition, QA fixtures  
-> **Files tracked:** 384  
+> **Date:** 2026-06-17  
+> **Scope:** Post-ContextPack pivot audit: prompt contract, bilingual freeze, interview reposition, QA fixtures, universal answer styles, storage hardening  
+> **Files tracked:** 391  
 
 ## Overall: 88/100 — ContextPack shipped, Interview repositioned, quality harness hardened
 
@@ -10,7 +10,7 @@
 |---|---|---|
 | Product clarity / scope | 92 | Clear product direction: WorkConversation + ContextPack |
 | Documentation | 87 | Comprehensive, runtime guide updated with ContextPack QA |
-| Tests / verification | 88 | 313 tests (161 Rust + 152 TS), 47 answer-quality fixtures |
+| Tests / verification | 88 | 417 tests (265 Rust + 152 TS), 35 ContextPack tests, 47 answer-quality fixtures |
 | CI/CD / release | 90 | Well-structured, advisory freeze, pinning consistent |
 | Security / public footprint | 90 | Bilingual fully gated behind env flag, experimental tracks invisible |
 | Frontend architecture | 85 | ContextPack panel with back-navigation, idle state context-first |
@@ -62,11 +62,12 @@
 ## Tests / verification — 88/100
 
 **Good:**
-- 161 Rust tests (unit + integration), 152 TypeScript tests (21 test files) = 313 total
+- 265 Rust tests (unit + integration), 152 TypeScript tests (21 test files) = 417 total
 - Contract tests: IPC handler, docs consistency, locale keys, prompt contract, UI shell, model presets, observability events, runtime preflight
 - ContextPack answer-quality fixtures: 47 scenarios with deterministic evaluation (avg score 100)
+- ContextPack storage tests: 35 tests (validation, CRUD, compact, corrupt recovery, multi-backup ordering)
 - Release-freeze guard with advisory/strict modes, baseline with 62 critical paths + categories
-- Public footprint guard (384 tracked files, no secrets in reports)
+- Public footprint guard (391 tracked files, no secrets in reports)
 - E2E web smoke test (blocking in CI)
 
 **Remaining:**
@@ -155,7 +156,7 @@
 - `diag_contract.rs` with stable `RL_*` error codes
 
 **Remaining:**
-- `commands/mod.rs` partially split (~1020 lines, 7 of 11 domains extracted)
+- `commands/mod.rs` partially split (457 lines, 9 of 11 domains extracted)
 - `bilingual/` module always compiled (no cfg-gating) — env flag only at runtime
 
 **Next:** Complete remaining domain extraction.
@@ -212,7 +213,7 @@
 - Model split from 655-line monolith into 10 domain modules
 
 **Remaining:**
-- 384 tracked files is above average for a single-developer beta
+- 391 tracked files is above average for a single-developer beta
 - Some scripts exist only for historical/archival reasons
 - `docs/archive/` has handoff artifacts that could be pruned
 - Bilingual adds ~15% to codebase size for an experimental feature
@@ -225,7 +226,7 @@
 
 | When | What | Impact |
 |---|---|---|
-| This cycle | ContextPack shipped, prompt contract strengthened, interview repositioned, bilingual frozen, idle state context-first, 47 QA fixtures, docs truth aligned | P1 context primitive complete, beta.3 ready |
+| This cycle | ContextPack shipped, prompt contract strengthened, interview repositioned, bilingual frozen, idle state context-first, 47 QA fixtures, universal answer styles, storage hardening (35 tests), bilingual error differentiation, docs truth aligned | P1 context primitive complete, beta.3 ready |
 | This cycle | ~25 commits: ContextPack implementation, prompt contract guardrails, mock platform CRUD, UI tests (5→18), idle state refactor, bilingual freeze, answer-quality fixtures, scorecard refresh | +48 score points from baseline ~40 |
 | Next cycle | Bilingual live-provider QA + soak test | Unblocks P2 beta opt-in |
 | Next cycle | Signed installer setup | Unblocks public binary release |
@@ -237,15 +238,16 @@
 
 | Check | Result |
 |---|---|
-| Tracked files | 384 |
+| Tracked files | 391 |
 | TS/TSX files | 68 |
-| Rust files | 57 |
-| Markdown docs | 60 |
+| Rust files | 59 |
+| Markdown docs | 64 |
 | Workflows | 8 |
-| Scripts | 71 |
+| Scripts | 74 |
 | Test files | 21 TS + inline Rust |
-| Rust tests | 161 passed |
+| Rust tests | 265 passed |
 | TS tests | 152 passed (21 files) |
 | Answer-quality fixtures | 47 passed (avg 100) |
+| ContextPack storage tests | 35 passed |
 | `pnpm verify` | ✅ |
 | `pnpm verify:full` | ⚠️ 1 pre-existing blocker (unsigned artifacts) |
