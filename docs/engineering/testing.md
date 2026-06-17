@@ -51,6 +51,8 @@ Use these when the task or failure mode is narrower than a full profile.
 
 E2E proves launch and UI flow, not real provider latency, STT accuracy, or live LLM behavior.
 
+See [desktop-e2e.md](desktop-e2e.md) for the full desktop smoke guide: prerequisites, automated checks, manual checks, troubleshooting, and CI integration status.
+
 ### Runtime probes
 
 - `pnpm probe:runtime`
