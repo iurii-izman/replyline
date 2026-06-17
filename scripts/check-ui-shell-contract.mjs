@@ -284,7 +284,7 @@ for (const path of criticalIconFiles) {
   );
 }
 
-const localeSource = readText("src/app/locale.ts");
+const localeSource = readText("src/app/locale/index.ts");
 if (localeSource) {
   const ruSectionEnd = localeSource.indexOf("export const ui_en");
   const ruLocale = ruSectionEnd > -1 ? localeSource.slice(0, ruSectionEnd) : localeSource;

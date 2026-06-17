@@ -4,12 +4,12 @@
  * - No source file references a key that does not exist in ui_ru.
  * - TSX should not include hardcoded user-visible strings outside allowed technical labels.
  */
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import process from "node:process";
 
 const root = process.cwd();
-const localePath = join(root, "src", "app", "locale.ts");
+const localePath = join(root, "src", "app", "locale", "index.ts");
 const srcDir = join(root, "src");
 
 function collectKeys(value, prefix = "") {
@@ -24,58 +24,109 @@ function collectKeys(value, prefix = "") {
 const localeSource = readFileSync(localePath, "utf8");
 
 function resolveSpreadObject(source, baseDir) {
-  // Find imports: import { X } from "./Y"
-  const importRe = /import\s*\{\s*(\w+)\s*,\s*(\w+)\s*\}\s*from\s*["'](.\/[^"']+)["']/g;
+  // Find ALL imports from the source file (handles multi-import and single-import)
+  const importRe = /import\s*\{\s*([^}]+)\s*\}\s*from\s*["'](.\/[^"']+)["']/g;
   const imports = new Map();
   for (const m of source.matchAll(importRe)) {
-    const key1 = m[1];
-    const key2 = m[2];
-    const path = join(baseDir, m[3] + ".ts");
+    const namesStr = m[1];
+    const path = join(baseDir, m[2] + ".ts");
+    const names = namesStr
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (!imports.has(path)) imports.set(path, []);
-    imports.get(path).push(key1, key2);
+    for (const name of names) imports.get(path).push(name);
   }
 
-  // For each imported file, extract the named exports
-  const exports = new Map();
-  for (const [filePath, names] of imports) {
+  // Recursively extract exports from imported files
+  const resolvedExports = new Map();
+
+  function resolveFile(filePath, wantedNames) {
+    if (!existsSync(filePath)) return;
     const fileSource = readFileSync(filePath, "utf8");
-    for (const name of names) {
-      const exportObj = extractObjectFromSource(fileSource, `export const ${name} = `);
-      if (exportObj) exports.set(name, exportObj);
+
+    // First, resolve any imports in this file
+    const fileImports = new Map();
+    for (const m of fileSource.matchAll(importRe)) {
+      const namesStr = m[1];
+      const depPath = join(baseDir, m[2] + ".ts");
+      const names = namesStr
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (!fileImports.has(depPath)) fileImports.set(depPath, []);
+      for (const name of names) fileImports.get(depPath).push(name);
+    }
+
+    // Build an eval context with already-resolved dependencies
+    const evalContext = {};
+    for (const [depPath, depNames] of fileImports) {
+      for (const name of depNames) {
+        if (resolvedExports.has(name)) {
+          evalContext[name] = resolvedExports.get(name);
+        } else {
+          // Try to extract from the dependency
+          const depSource = existsSync(depPath) ? readFileSync(depPath, "utf8") : "";
+          const depObj = extractRawObject(depSource, `export const ${name} = `);
+          if (depObj) {
+            resolvedExports.set(name, depObj);
+            evalContext[name] = depObj;
+          }
+        }
+      }
+    }
+
+    // Extract each wanted name using eval with the context
+    for (const name of wantedNames) {
+      if (resolvedExports.has(name)) continue;
+      const obj = extractRawObjectWithContext(fileSource, `export const ${name} = `, evalContext);
+      if (obj) resolvedExports.set(name, obj);
     }
   }
 
-  // Find ui_ru assembly: { ...shell, card: card_ru, settings: settings_ru }
+  // Resolve all direct imports
+  for (const [filePath, names] of imports) {
+    resolveFile(filePath, names);
+  }
+
+  // Find ui_ru assembly
   const startMarker = "export const ui_ru = ";
   const startIdx = source.indexOf(startMarker);
-  if (startIdx < 0) throw new Error("Cannot find ui_ru in locale.ts");
+  if (startIdx < 0) throw new Error("Cannot find ui_ru in locale/index.ts");
 
-  // Find the spread references
-  const spreadRe = /\.\.\.(\w+)/g;
   const afterStart = source.slice(startIdx);
+
+  // Collect spread objects
+  const spreadRe = /\.\.\.(\w+)/g;
   const spreads = [];
   for (const m of afterStart.matchAll(spreadRe)) {
-    if (m[1] !== "ui_shell_ru") continue;
-    const spreadObj = exports.get("ui_shell_ru");
+    const spreadObj = resolvedExports.get(m[1]);
     if (spreadObj) spreads.push(spreadObj);
-    break;
   }
 
-  // Find card: card_ru and settings: settings_ru
+  // Find assignments
   const cardMatch = afterStart.match(/card:\s*(\w+)/);
   const settingsMatch = afterStart.match(/settings:\s*(\w+)/);
+  const contextPackMatch = afterStart.match(/contextPack:\s*(\w+)/);
 
   const result = { ...(spreads[0] || {}) };
-  if (cardMatch && exports.has(cardMatch[1])) {
-    result.card = exports.get(cardMatch[1]);
+  if (cardMatch && resolvedExports.has(cardMatch[1])) {
+    result.card = resolvedExports.get(cardMatch[1]);
   }
-  if (settingsMatch && exports.has(settingsMatch[1])) {
-    result.settings = exports.get(settingsMatch[1]);
+  if (settingsMatch && resolvedExports.has(settingsMatch[1])) {
+    result.settings = resolvedExports.get(settingsMatch[1]);
+  }
+  if (contextPackMatch && resolvedExports.has(contextPackMatch[1])) {
+    result.contextPack = resolvedExports.get(contextPackMatch[1]);
   }
   return result;
 }
 
-function extractObjectFromSource(source, startMarker) {
+function extractRawObject(source, startMarker) {
+  return extractRawObjectWithContext(source, startMarker, {});
+}
+
+function extractRawObjectWithContext(source, startMarker, context) {
   const startIdx = source.indexOf(startMarker);
   if (startIdx < 0) return null;
   let idx = startIdx + startMarker.length;
@@ -85,14 +136,17 @@ function extractObjectFromSource(source, startMarker) {
     state = consumeUiChar(source[idx], state);
     if (state.objectClosed) {
       const raw = source.slice(startIdx + startMarker.length, idx + 1);
-      // Use eval instead of JSON.parse to handle template literals, etc.
       const jsLike = raw
         .replace(/\/\*[\s\S]*?\*\//g, "")
         .replace(/as const;?/g, "")
         .replace(/:\s*typeof\s+\w+/g, "")
         .trim();
       try {
-        return eval("(" + jsLike + ")");
+        // Build function with context variables as parameters
+        const contextKeys = Object.keys(context);
+        const contextValues = Object.values(context);
+        const fn = new Function(...contextKeys, "return (" + jsLike + ")");
+        return fn(...contextValues);
       } catch {
         return null;
       }
@@ -127,9 +181,9 @@ function consumeStringChar(ch, state) {
 
 let uiRu;
 try {
-  uiRu = extractUiRu(localeSource, join(root, "src", "app"));
+  uiRu = extractUiRu(localeSource, join(root, "src", "app", "locale"));
 } catch (err) {
-  console.error("Failed to parse ui_ru from locale.ts:", err.message);
+  console.error("Failed to parse ui_ru from locale/index.ts:", err.message);
   process.exit(1);
 }
 
