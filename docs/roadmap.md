@@ -1,7 +1,64 @@
 # Replyline Development Roadmap
 
 > **Date:** 2026-06-17
-> **Phase:** Post-ContextPack pivot — parallel strengthening across all directions
+> **Phase:** Post-ContextPack pivot
+
+## Public Roadmap
+
+This section is public-safe: no scores, no internal estimates, no provider keys.
+For the full internal development plan with parallel lanes and scorecard targets,
+see [Internal Development Plan](#internal-development-plan) below.
+
+### Now — Shipped in beta.3
+
+| What | Status |
+|---|---|
+| **ContextPack** — single conversation context primitive | ✅ Shipped |
+| **WorkConversation** — `gist / say_now / next_move` card | ✅ Shipped |
+| **Interview Mode** — context usage example with session/report flow | ✅ Shipped |
+| **Privacy-first local storage** — keys in credential manager, settings local | ✅ Shipped |
+| **Source/developer beta** — `git clone` + `pnpm beta:start` | ✅ Shipped |
+| **Bilingual experimental** — frozen, invisible in default UX | ✅ Shipped (gated) |
+
+### Next — In Development
+
+| What | Status |
+|---|---|
+| **Signed Windows installer** — Authenticode-verified `.msi`/`.exe` | ⚠️ Blocked by certificate acquisition |
+| **Live provider evidence** — measured STT + LLM paths | ⚠️ Blocked by API key availability |
+| **Frontend maintainability** — split large surfaces, locale by domain | 🏗️ In progress |
+| **IPC command reference** — human-readable API docs for all 40 commands | ✅ Shipped |
+| **Desktop E2E smoke** — reproducible artifact bring-up test | ✅ Shipped |
+| **Public onboarding** — first-10-minutes guide, screenshot checklist | ✅ Shipped |
+
+### Later — Planned
+
+| What | Notes |
+|---|---|
+| **Live answer quality evaluation** — synthetic fixtures against real LLM | Requires provider keys |
+| **Multi-provider evidence matrix** — measured status per route | Requires provider keys |
+| **Screenshots from signed build** — user guide illustrations | After signed installer |
+| **Expanded ContextPack QA** — adversarial prompt testing | Design complete |
+| **Cross-machine smoke** — Windows 10 + 11 clean install | After signed installer |
+| **SmartScreen reputation monitoring** — gradual trust building | After signed installer |
+
+### Not Planned
+
+Replyline stays intentionally narrow. These are **not** in the roadmap:
+
+- ❌ Stealth / cheating / anti-proctoring workflows
+- ❌ Meeting assistant or transcript tool
+- ❌ Cloud accounts, authentication, billing
+- ❌ External database or vector DB dependencies
+- ❌ Bilingual live translation (frozen experimental, no active work)
+- ❌ Mobile or web versions
+- ❌ Speaking coach or emotion analysis
+- ❌ Memory / history / team workspace UI
+
+---
+
+## Internal Development Plan
+
 > **Companion to:** [repo-scorecard.md](repo-scorecard.md) (current scores), [engineering/release.md](engineering/release.md) (release decision model)
 
 ## Current State

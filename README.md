@@ -23,6 +23,7 @@ The current public entry is a Windows **source/developer beta** for testers and 
 - [Read current beta limitations](docs/product/limitations.md)
 - [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.3)
 - [Ask a question or share feedback](https://github.com/iurii-izman/replyline/discussions)
+- [See the public roadmap](docs/roadmap.md#public-roadmap)
 
 No unsigned artifact is presented as a public installer. Until an Authenticode-signed build
 is verified and published, use the source setup below.
@@ -99,6 +100,7 @@ Then configure runtime settings in app UI:
 - [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and required validation.
 - [docs/engineering/testing.md](docs/engineering/testing.md) - canonical testing guide: public profiles, internal building blocks, targeted lanes, fixture boundaries, CI alignment, and lifecycle policy.
 - [docs/README.md](docs/README.md) - short role-based map for product, contributor, and operator paths.
+- [docs/roadmap.md](docs/roadmap.md#public-roadmap) - public roadmap: now, next, later, not planned.
 
 ## Security and Support
 

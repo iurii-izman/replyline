@@ -11,6 +11,7 @@ Use this page as the short role-based map.
 
 ### Product / beta user
 
+- [roadmap.md](roadmap.md#public-roadmap) - public roadmap: what's now, next, later, and not planned.
 - [product/user-guide.md](product/user-guide.md) - setup, settings, flows, exports, and troubleshooting.
 - [product/provider-setup.md](product/provider-setup.md) - OpenRouter, Groq, and custom OpenAI-compatible provider configuration.
 - [product/privacy.md](product/privacy.md) - capture, storage, providers, and sharing boundaries.
