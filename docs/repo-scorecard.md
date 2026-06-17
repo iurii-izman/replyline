@@ -222,6 +222,10 @@
 
 ---
 
+## Development Roadmap
+
+See [roadmap.md](roadmap.md) for the full post-ContextPack development plan with parallel lanes, target scores, and execution order.
+
 ## Summary timeline
 
 | When | What | Impact |
