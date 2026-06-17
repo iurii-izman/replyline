@@ -87,22 +87,45 @@ if (chromeSurface) {
 }
 
 const mainSurface = readText("src/app/MainSurface.tsx");
+// Also read extracted sub-components for shell contract checks
+const mainLiveAssistShell = readText("src/app/main/LiveAssistShell.tsx") || "";
+const mainActionDock = readText("src/app/main/ActionDock.tsx") || "";
+const mainWorkspaceSidePanel = readText("src/app/main/WorkspaceSidePanel.tsx") || "";
 if (mainSurface) {
-  assertIncludes(mainSurface, 'data-testid="workspace-layout"', "src/app/MainSurface.tsx");
-  assertIncludes(mainSurface, "main-cockpit-layout", "src/app/MainSurface.tsx");
-  assertIncludes(mainSurface, "app-page-main", "src/app/MainSurface.tsx");
-  assertIncludes(mainSurface, "app-page-aside app-sidebar", "src/app/MainSurface.tsx");
-  assertIncludes(mainSurface, 'data-testid="action-row"', "src/app/MainSurface.tsx");
+  assertIncludes(
+    mainLiveAssistShell || mainSurface,
+    'data-testid="workspace-layout"',
+    "src/app/main/LiveAssistShell.tsx",
+  );
+  assertIncludes(
+    mainLiveAssistShell || mainSurface,
+    "main-cockpit-layout",
+    "src/app/main/LiveAssistShell.tsx",
+  );
+  assertIncludes(
+    mainLiveAssistShell || mainSurface,
+    "app-page-main",
+    "src/app/main/LiveAssistShell.tsx",
+  );
+  assertIncludes(
+    mainWorkspaceSidePanel || mainSurface,
+    "app-page-aside app-sidebar",
+    "src/app/main/WorkspaceSidePanel.tsx",
+  );
+  assertIncludes(
+    mainActionDock || mainSurface,
+    'data-testid="action-row"',
+    "src/app/main/ActionDock.tsx",
+  );
   assertIncludes(mainSurface, 'data-testid="main-status-strip"', "src/app/MainSurface.tsx");
-  const actionRowMatch = mainSurface.match(
+  const actionRowSource = mainActionDock || mainSurface;
+  const actionRowMatch = actionRowSource.match(
     /<div class="action-bar sticky-action-footer app-sticky-footer" data-testid="action-row">([\s\S]*?)<\/div>/u,
   );
   if (!actionRowMatch) {
-    fail("src/app/MainSurface.tsx: action row block missing");
+    fail("src/app/main/ActionDock.tsx: action row block missing");
   } else if (/sessionActions\./u.test(actionRowMatch[1] ?? "")) {
-    fail(
-      "src/app/MainSurface.tsx: main bottom action bar must not include session/report/export actions",
-    );
+    fail("main bottom action bar must not include session/report/export actions");
   }
 }
 
@@ -315,16 +338,18 @@ if (localeSource) {
 }
 
 if (mainSurface) {
+  const mainLiveAnswerCard = readText("src/app/main/LiveAnswerCard.tsx") || "";
+  const mainMergedForCopyCheck = mainSurface + (mainLiveAnswerCard || "");
   assertRegex(
-    mainSurface,
-    /<button[\s\S]*class="btn-primary"[\s\S]*\{st\(\)\.card\.copySayNow\}/u,
-    "src/app/MainSurface.tsx",
+    mainMergedForCopyCheck,
+    /<button[\s\S]*btn-primary[\s\S]*\{st\(\)\.card\.copySayNow\}/u,
+    "src/app/main/LiveAnswerCard.tsx or MainSurface.tsx",
     "critical copy action must use Replyline button class",
   );
   assertRegex(
-    mainSurface,
-    /<button[\s\S]*class="btn-secondary"[\s\S]*\{st\(\)\.card\.retryCard\}/u,
-    "src/app/MainSurface.tsx",
+    mainActionDock || mainSurface,
+    /<button[\s\S]*btn-secondary[\s\S]*\{st\(\)\.card\.retryCard\}/u,
+    "src/app/main/ActionDock.tsx",
     "critical retry action must use Replyline button class",
   );
 }
