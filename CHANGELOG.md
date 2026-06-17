@@ -40,6 +40,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Live provider evidence remains `pending verification` on the primary Windows 11 test machine (Deepgram API key unavailable at time of release).
 - Cross-machine and cross-call-app runtime behavior remains pending broader verification.
 
+## [Unreleased] — beta.4 quality cycle
+
+Quality and stability release. No new features — focus on UX polish, maintainability
+splits, public documentation, and signing readiness.
+
+### Added
+
+- Public roadmap with Now/Next/Later/Not Planned sections (`docs/roadmap.md`).
+- IPC command reference (`docs/reference/ipc.md`): all 40 commands documented with
+  purpose, input/output, privacy notes, and stability classification.
+- Provider runtime evidence matrix (`docs/beta-evidence/provider-runtime-matrix.md`).
+- Windows signing readiness plan (`docs/engineering/windows-signing-readiness.md`).
+- Desktop E2E smoke guide (`docs/engineering/desktop-e2e.md`).
+- Live answer quality evaluation design (`docs/engineering/live-answer-quality.md`).
+- Beta.4 quality plan with Go/No-Go criteria (`docs/release-notes/v0.2.0-beta.4-draft.md`).
+- Screenshot checklist with redaction rules (`docs/product/screenshots.md`).
+- ContextPack duplicate button, save notice, active preview with character count.
+- ContextPack empty state explains why and shows example content.
+- "First 10 minutes" onboarding section in user guide.
+- ContextPack smoke path in BETA_TESTING.md.
+
+### Changed
+
+- `src/app/locale.ts` split into 7 domain modules under `src/app/locale/`.
+- `MainSurface.tsx` split: 1039 → 290 lines, 8 components in `src/app/main/`.
+- `SettingsSurface.tsx` split: 994 → 243 lines, 5 sections in `src/app/settings/`.
+- `src-tauri/src/commands/mod.rs` reduced from 457 to 28 lines — all 12 domains in
+  separate modules (new: `interview.rs`, `bilingual_experimental.rs`).
+- Desktop E2E smoke test expanded from 2 to 5 checks (app root, header, Tab navigation).
+- Locale key checker updated for recursive import resolution (supports directory structure).
+- IPC contract checker now validates docs coverage (all 40 commands in `ipc.md`).
+- UI shell contract checker updated for extracted component files.
+- Repository scorecard refreshed: 88 → 93/100, 416 tracked files.
+
+### Removed
+
+- `docs/archive/handoff/doc-inventory.md` — outdated inventory.
+- Bilingual archive consolidated from 4 to 2 files (merged into roadmap + implementation status).
+
+### Known limitations
+
+- Live provider evidence remains `pending verification` (Deepgram API key unavailable).
+- Cross-machine smoke (Windows 10) not tested.
+- Unsigned artifacts remain S2 (no code-signing certificate).
+- User guide screenshots are placeholders — need real build captures.
+
 ## [0.2.0-beta.3] - 2026-06-17
 
 ContextPack pivot release. The defining change is shipping ContextPack as the new
