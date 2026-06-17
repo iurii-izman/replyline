@@ -78,6 +78,56 @@ Both must be true. This gate is enforced:
 
 2. **Translation lane not prod-hardened.** Timeouts, retry budgets, and fallback behavior are implemented but not validated under sustained load or diverse network conditions.
 
+## Runtime behaviour
+
+### Session states
+
+- `active` — streaming live, transcripts and translations flowing.
+- `reconnecting` — streaming disconnect detected, retry in progress.
+- `degraded` — retries exhausted, hotkey still works via batch route.
+- `idle` — session not started or stopped.
+
+### Reconnect policy
+
+- Recoverable streaming disconnect switches to `reconnecting`.
+- Retry budget: 3 retries.
+- Backoff: 2000ms, 4000ms, 8000ms.
+- If reconnect succeeds, status returns to `active`.
+- If retries are exhausted, status becomes `degraded`.
+
+### Degraded fallback
+
+- UI message: "Streaming unavailable. Hotkey works in batch mode."
+- Hotkey continues via existing batch route (`capture_start` / `capture_stop_and_analyze`).
+
+### Translation lane hardening
+
+- Per translation attempt timeout: 2000ms.
+- Safe retry budget: 1 retry.
+- On repeated timeout/failure, emit fallback translation segment with `isFallback=true`.
+- Translation errors do not expose raw transcript/provider bodies in logs.
+
+### Memory caps
+
+- Frontend display cap: last 30 segments.
+- Backend question context cap: 60 seconds or 20 finalized segments.
+- Translation maps pruned when old finalized segments are pruned.
+
+### Latency instrumentation (safe metadata only)
+
+- `partialEnMs`, `translationMs`, `answerTtftMs`, `answerTotalMs`
+- Plus existing stream metadata: `latencyMs`, `sampleRate`, `durationMs`
+- Only safe metadata emitted/logged (counts, durations, status, rates).
+
+### Manual QA checklist (Google Meet)
+
+1. Start Bilingual Interview Mode in a local test call.
+2. Confirm live EN partial/final transcript appears.
+3. Confirm RU translations appear and fallback warning appears on forced translation failure.
+4. Force streaming disconnect and verify: `reconnecting` → backoff → `active` or `degraded`.
+5. In `degraded`, verify hotkey batch card generation still works.
+6. Verify no raw transcript/key material in logs/diagnostics.
+
 ## Why it is not shipped
 
 - Streaming quality depends on system loopback device and call app routing — not validated across diverse Windows audio setups.

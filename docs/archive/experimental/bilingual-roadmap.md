@@ -285,9 +285,58 @@ The implementation compiles, has unit tests, and runs locally with manual activa
 
 1. ~~No backend command guard~~ — ✅ implemented (`require_experimental_bilingual`)
 2. ~~Settings UI always shows toggles~~ — ✅ implemented (`<Show when={bilingualInterviewEnabled}>`)
-3. **No feature flag** — can't build without bilingual code (P0)
+3. ~~No feature flag~~ — ✅ implemented (`REPLYLINE_EXPERIMENTAL_BILINGUAL=1` env var + setting gate)
 4. **No live-provider QA** — zero real-call testing (P1)
 5. **No soak test** — unknown stability under sustained load (P1)
+
+---
+
+## Readiness assessment (2026-06-16)
+
+Decision: ❌ Remain experimental — NOT ready for beta opt-in (P2).
+
+| # | Criterion | Status |
+|---|----------|--------|
+| 1 | UX clear and visible when enabled | ✅ |
+| 2 | No stealth (status always visible) | ✅ |
+| 3 | Privacy boundaries clear | ✅ |
+| 4 | Local artifacts explicit | ✅ |
+| 5 | Provider data flow documented | ✅ |
+| 6 | Backend command guard | ✅ |
+| 7 | Settings UI gated | ✅ |
+| 8 | Feature flag mechanism | ✅ |
+| 9 | Opt-in flag tested | ✅ |
+| 10 | Fallback/degraded states implemented | ✅ |
+| 11 | Unit tests (Rust) | ✅ |
+| 12 | Unit tests (TS) | ✅ |
+| 13 | Settings migration safe | ✅ |
+| 14 | Latency measured (automated) | ⚠️ |
+| 15 | **Live-provider QA** | ❌ |
+| 16 | **Sustained soak test (≥30min)** | ❌ |
+| 17 | **Multi-machine validation (≥2)** | ❌ |
+| 18 | **Multi-app validation (≥3 call apps)** | ❌ |
+| 19 | **Network disruption recovery validated** | ❌ |
+| 20 | **Translation quality evaluated** | ❌ |
+| 21 | Cross-tester feedback collected | ❌ |
+| 22 | User-facing docs written | ❌ |
+
+### Hard blockers (no beta opt-in without these)
+
+| # | Blocker | Priority |
+|---|---------|----------|
+| B1 | No live-provider QA on real calls | P1 |
+| B2 | No sustained soak test (≥30min streaming) | P1 |
+| B3 | No multi-machine Windows validation | P2 |
+| B4 | No network disruption recovery test | P2 |
+
+### Soft blockers
+
+| # | Blocker |
+|---|---------|
+| B5 | No cross-app validation (Zoom/Teams/Meet) |
+| B6 | No translation quality baseline |
+| B7 | No multi-tester feedback |
+| B8 | No user-facing documentation |
 
 ---
 
@@ -302,7 +351,7 @@ The implementation compiles, has unit tests, and runs locally with manual activa
 
 ## Related docs
 
-- `docs/archive/experimental/bilingual-implementation-status.md` — code inventory
+- `docs/archive/experimental/bilingual-implementation-status.md` — code inventory and runtime behaviour
 - `docs/engineering/architecture.md` — Experimental tracks section
 - `docs/product/limitations.md` — Current limitations
 - `docs/product/privacy.md` — Data flow and export boundaries
