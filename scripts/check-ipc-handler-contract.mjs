@@ -11,6 +11,7 @@ const root = join(__dirname, "..");
 const libPath = join(root, "src-tauri", "src", "lib.rs");
 const commandsPath = join(root, "src-tauri", "src", "commands", "mod.rs");
 const registryPath = join(root, "src-tauri", "src", "commands", "registry.rs");
+const ipcDocsPath = join(root, "docs", "reference", "ipc.md");
 const diagnosticsCommandsPath = join(root, "src-tauri", "src", "commands", "diagnostics.rs");
 const trayWindowCommandsPath = join(root, "src-tauri", "src", "commands", "tray_window.rs");
 const bootstrapCommandsPath = join(root, "src-tauri", "src", "commands", "bootstrap.rs");
@@ -351,6 +352,22 @@ if (failedStatic.length) {
   console.error("DTO/static contract mismatch.");
   for (const item of failedStatic) console.error(item.message);
   process.exit(1);
+}
+
+// ── IPC docs coverage check ─────────────────────────────────────────
+
+if (existsSync(ipcDocsPath)) {
+  const ipcDocsText = readFileSync(ipcDocsPath, "utf8");
+  const categorizedNames = categorizedEntries.map((item) => item.name);
+  const missingInDocs = categorizedNames.filter((name) => !ipcDocsText.includes(`\`${name}\``));
+  if (missingInDocs.length > 0) {
+    console.error("IPC doc coverage mismatch:");
+    console.error(`Commands not documented in docs/reference/ipc.md: ${missingInDocs.join(", ")}`);
+    console.error(
+      `Add a section for each missing command: \`### \`command_name\`\` with purpose, input, output, and privacy notes.`,
+    );
+    process.exit(1);
+  }
 }
 
 console.log(
