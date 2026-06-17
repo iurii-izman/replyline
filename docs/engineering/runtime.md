@@ -162,6 +162,9 @@ live LLM. For live-provider verification, use the template at
 Manual provider scenarios pending — see
 `tests/fixtures/runtime-live-evidence/context-pack-live-qa.2026-06-17.md`.
 
+For live LLM answer quality evaluation design (synthetic prompts, privacy boundaries,
+aggregate-only output), see [live-answer-quality.md](live-answer-quality.md).
+
 ## Appendix: minimal live-runtime matrix template
 
 Use this compact template when collecting operator evidence:
