@@ -22,7 +22,15 @@ pub(crate) fn experimental_bilingual_allowed() -> bool {
 }
 
 pub(crate) fn require_experimental_bilingual() -> Result<(), CommandError> {
-    if !experimental_bilingual_allowed() {
+    // Check env flag first — primary kill-switch.
+    if std::env::var("REPLYLINE_EXPERIMENTAL_BILINGUAL").as_deref() != Ok("1") {
+        return Err(CommandError::Internal(
+            "EXPERIMENTAL_BILINGUAL_ENV_DISABLED".to_string(),
+        ));
+    }
+    // Env flag is on; check the user-facing setting.
+    let settings = crate::settings::load().unwrap_or_default();
+    if !settings.bilingual_interview_enabled {
         return Err(CommandError::Internal(
             "EXPERIMENTAL_BILINGUAL_DISABLED".to_string(),
         ));
@@ -37,56 +45,79 @@ mod tests {
 
     static ENV_MUTEX: Mutex<()> = Mutex::new(());
 
-    fn with_env(key: &str, value: Option<&str>) {
-        let _guard = ENV_MUTEX.lock().unwrap();
+    /// Acquire the env mutex once per test and hold it for the full duration
+    /// to prevent parallel tests from overwriting each other's env vars.
+    fn lock_env() -> std::sync::MutexGuard<'static, ()> {
+        ENV_MUTEX.lock().unwrap()
+    }
+
+    fn with_env(_guard: &std::sync::MutexGuard<'static, ()>, key: &str, value: Option<&str>) {
         match value {
             Some(v) => std::env::set_var(key, v),
             None => std::env::remove_var(key),
         }
     }
 
-    fn clean_env() {
-        let _guard = ENV_MUTEX.lock().unwrap();
+    fn clean_env(_guard: &std::sync::MutexGuard<'static, ()>) {
         std::env::remove_var("REPLYLINE_EXPERIMENTAL_BILINGUAL");
         std::env::remove_var("REPLYLINE_SETTINGS_DIR_OVERRIDE");
     }
 
+    fn err_code(err: Result<(), CommandError>) -> String {
+        match err {
+            Err(CommandError::Internal(msg)) => msg,
+            _ => "no internal error".to_string(),
+        }
+    }
+
     #[test]
     fn env_missing_setting_false_is_disabled() {
-        clean_env();
+        let _guard = lock_env();
+        clean_env(&_guard);
         with_env(
+            &_guard,
             "REPLYLINE_SETTINGS_DIR_OVERRIDE",
             Some("/nonexistent/replyline-bilingual-test"),
         );
         assert!(!experimental_bilingual_allowed());
-        assert!(require_experimental_bilingual().is_err());
+        let err = require_experimental_bilingual();
+        assert!(err.is_err());
+        assert_eq!(err_code(err), "EXPERIMENTAL_BILINGUAL_ENV_DISABLED");
     }
 
     #[test]
     fn env_missing_setting_true_still_disabled() {
-        clean_env();
+        let _guard = lock_env();
+        clean_env(&_guard);
         // Even if a settings file exists with bilingual_interview_enabled=true,
         // without the env flag the feature is gated.
         assert!(!experimental_bilingual_allowed());
-        assert!(require_experimental_bilingual().is_err());
+        let err = require_experimental_bilingual();
+        assert!(err.is_err());
+        assert_eq!(err_code(err), "EXPERIMENTAL_BILINGUAL_ENV_DISABLED");
     }
 
     #[test]
     fn env_one_setting_false_is_disabled() {
-        clean_env();
-        with_env("REPLYLINE_EXPERIMENTAL_BILINGUAL", Some("1"));
+        let _guard = lock_env();
+        clean_env(&_guard);
+        with_env(&_guard, "REPLYLINE_EXPERIMENTAL_BILINGUAL", Some("1"));
         with_env(
+            &_guard,
             "REPLYLINE_SETTINGS_DIR_OVERRIDE",
             Some("/nonexistent/replyline-bilingual-test"),
         );
         assert!(!experimental_bilingual_allowed());
-        assert!(require_experimental_bilingual().is_err());
+        let err = require_experimental_bilingual();
+        assert!(err.is_err());
+        assert_eq!(err_code(err), "EXPERIMENTAL_BILINGUAL_DISABLED");
     }
 
     #[test]
     fn env_one_setting_true_is_allowed() {
-        clean_env();
-        with_env("REPLYLINE_EXPERIMENTAL_BILINGUAL", Some("1"));
+        let _guard = lock_env();
+        clean_env(&_guard);
+        with_env(&_guard, "REPLYLINE_EXPERIMENTAL_BILINGUAL", Some("1"));
         // When both env flag is set and settings allow it, the feature is permitted.
         // This test verifies the gating logic shape; a full integration test
         // would require a real settings file with bilingual_interview_enabled=true.
@@ -100,23 +131,31 @@ mod tests {
         if allowed {
             assert!(require_experimental_bilingual().is_ok());
         } else {
-            assert!(require_experimental_bilingual().is_err());
+            let err = require_experimental_bilingual();
+            assert!(err.is_err());
+            assert_eq!(err_code(err), "EXPERIMENTAL_BILINGUAL_DISABLED");
         }
     }
 
     #[test]
     fn env_other_value_is_disabled() {
-        clean_env();
-        with_env("REPLYLINE_EXPERIMENTAL_BILINGUAL", Some("0"));
+        let _guard = lock_env();
+        clean_env(&_guard);
+        with_env(&_guard, "REPLYLINE_EXPERIMENTAL_BILINGUAL", Some("0"));
         assert!(!experimental_bilingual_allowed());
-        assert!(require_experimental_bilingual().is_err());
+        let err = require_experimental_bilingual();
+        assert!(err.is_err());
+        assert_eq!(err_code(err), "EXPERIMENTAL_BILINGUAL_ENV_DISABLED");
     }
 
     #[test]
     fn env_empty_string_is_disabled() {
-        clean_env();
-        with_env("REPLYLINE_EXPERIMENTAL_BILINGUAL", Some(""));
+        let _guard = lock_env();
+        clean_env(&_guard);
+        with_env(&_guard, "REPLYLINE_EXPERIMENTAL_BILINGUAL", Some(""));
         assert!(!experimental_bilingual_allowed());
-        assert!(require_experimental_bilingual().is_err());
+        let err = require_experimental_bilingual();
+        assert!(err.is_err());
+        assert_eq!(err_code(err), "EXPERIMENTAL_BILINGUAL_ENV_DISABLED");
     }
 }
