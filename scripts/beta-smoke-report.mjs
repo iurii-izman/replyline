@@ -145,7 +145,10 @@ function runCommand(command, args = []) {
 function summarizeOutput(text, maxLines = 4, maxChars = 260) {
   const cleaned = sanitizeText(String(text ?? ""), { maxChars: 1000 });
   if (!cleaned.trim()) return "";
-  const lines = cleaned.split(/\r?\n/u).map((line) => line.trim()).filter(Boolean);
+  const lines = cleaned
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter(Boolean);
   return clampText(lines.slice(-maxLines).join(" | "), maxChars);
 }
 
@@ -184,14 +187,17 @@ function loadToolchain() {
     pnpm: pnpm.ok ? sanitizeText(pnpm.stdout, { maxChars: 48 }) : null,
     rustc: rustc.ok ? sanitizeText(rustc.stdout, { maxChars: 48 }) : null,
     cargo: cargo.ok ? sanitizeText(cargo.stdout, { maxChars: 48 }) : null,
-    rustup: rustup.ok ? sanitizeText(rustup.stdout.split(/\r?\n/u)[0] ?? "", { maxChars: 64 }) : null,
+    rustup: rustup.ok
+      ? sanitizeText(rustup.stdout.split(/\r?\n/u)[0] ?? "", { maxChars: 64 })
+      : null,
     raw: { pnpm, rustc, cargo, rustup },
   };
 }
 
 function loadPersistenceDiagnostics() {
   const run = runCommand("cargo", persistenceDiagnosticsArgs);
-  const command = "cargo run --quiet --manifest-path src-tauri/Cargo.toml --bin persistence_diagnostics";
+  const command =
+    "cargo run --quiet --manifest-path src-tauri/Cargo.toml --bin persistence_diagnostics";
   if (!run.ok) {
     return { available: false, command, status: run.status, summary: run.summary, data: null };
   }
@@ -219,11 +225,25 @@ function loadBetaDoctor() {
   const scripts = loadPackageInfo().scripts;
   const command = "pnpm beta:doctor -- --json";
   if (!scripts["beta:doctor"]) {
-    return { available: false, command, status: "missing", verdict: "unavailable", summary: "package script missing", data: null };
+    return {
+      available: false,
+      command,
+      status: "missing",
+      verdict: "unavailable",
+      summary: "package script missing",
+      data: null,
+    };
   }
   const run = runCommand("pnpm", ["beta:doctor", "--", "--json"]);
   if (!run.ok) {
-    return { available: true, command, status: run.status, verdict: "blocked", summary: run.summary, data: null };
+    return {
+      available: true,
+      command,
+      status: run.status,
+      verdict: "blocked",
+      summary: run.summary,
+      data: null,
+    };
   }
   try {
     const jsonStart = run.stdout.indexOf("{");
@@ -251,18 +271,35 @@ function loadBetaDoctor() {
 }
 
 function scriptAvailabilityMatrix(scripts) {
-  const names = ["beta:smoke-report", "beta:doctor", "smoke", "verify", "typecheck", "lint", "test:ui", "test:rust"];
+  const names = [
+    "beta:smoke-report",
+    "beta:doctor",
+    "smoke",
+    "verify",
+    "typecheck",
+    "lint",
+    "test:ui",
+    "test:rust",
+  ];
   return names.map((name) => ({ name, available: Boolean(scripts[name]) }));
 }
 
 function classifyErrorCategory(text, code, reason) {
   const haystack = `${text ?? ""} ${code ?? ""} ${reason ?? ""}`.toLowerCase();
   if (haystack.includes("card_invalid") || haystack.includes("analysis")) return "card_validation";
-  if (haystack.includes("stt_key_missing") || haystack.includes("missing_key")) return "setup_missing_secret";
-  if (haystack.includes("settings_load_default") || haystack.includes("settings_quarantine")) return "setup_config";
+  if (haystack.includes("stt_key_missing") || haystack.includes("missing_key"))
+    return "setup_missing_secret";
+  if (haystack.includes("settings_load_default") || haystack.includes("settings_quarantine"))
+    return "setup_config";
   if (haystack.includes("capture")) return "capture";
   if (haystack.includes("stt")) return "stt";
-  if (haystack.includes("llm") || haystack.includes("gateway") || haystack.includes("401") || haystack.includes("403")) return "llm";
+  if (
+    haystack.includes("llm") ||
+    haystack.includes("gateway") ||
+    haystack.includes("401") ||
+    haystack.includes("403")
+  )
+    return "llm";
   if (haystack.includes("retry")) return "retry";
   return "runtime_unknown";
 }
@@ -275,7 +312,8 @@ function loadLastError(appLogPath) {
   const lines = readFileSync(appLogPath, "utf8").split(/\r?\n/u).filter(Boolean);
   for (let index = lines.length - 1; index >= 0; index -= 1) {
     const line = lines[index];
-    if (!/(\boutcome=fail\b|\bsettings_load_default\b|\bsettings_quarantine\b)/i.test(line)) continue;
+    if (!/(\boutcome=fail\b|\bsettings_load_default\b|\bsettings_quarantine\b)/i.test(line))
+      continue;
     const code = line.match(/\bcode=([A-Z0-9_]+)/u)?.[1] ?? null;
     const reason = line.match(/\breason=([A-Za-z0-9_-]+)/u)?.[1] ?? null;
     return {
@@ -285,7 +323,12 @@ function loadLastError(appLogPath) {
       summary: sanitizeText(line, { maxChars: 220 }),
     };
   }
-  return { category: "none_found", code: null, source: "app.log", summary: "no failure entry found" };
+  return {
+    category: "none_found",
+    code: null,
+    source: "app.log",
+    summary: "no failure entry found",
+  };
 }
 
 function buildChecks({ betaDoctor, persistenceDiagnostics, toolchain }) {
@@ -301,7 +344,9 @@ function buildChecks({ betaDoctor, persistenceDiagnostics, toolchain }) {
       command: betaDoctor.command,
       available: betaDoctor.available,
       status: betaDoctor.status,
-      summary: sanitizeText(betaDoctor.summary || JSON.stringify(betaDoctor.data?.summary ?? {}), { maxChars: 200 }),
+      summary: sanitizeText(betaDoctor.summary || JSON.stringify(betaDoctor.data?.summary ?? {}), {
+        maxChars: 200,
+      }),
     },
     {
       name: "persistence_diagnostics",
@@ -362,8 +407,10 @@ function buildChecks({ betaDoctor, persistenceDiagnostics, toolchain }) {
 }
 
 function computeOverallStatus(checks, betaDoctor) {
-  if (checks.some((check) => check.status === "fail" || check.status === "missing")) return "blocked";
-  if (betaDoctor.verdict === "ready_with_warnings" || betaDoctor.verdict === "blocked") return "ready_with_warnings";
+  if (checks.some((check) => check.status === "fail" || check.status === "missing"))
+    return "blocked";
+  if (betaDoctor.verdict === "ready_with_warnings" || betaDoctor.verdict === "blocked")
+    return "ready_with_warnings";
   return "ready";
 }
 
@@ -375,15 +422,20 @@ function buildReport() {
   const betaDoctor = loadBetaDoctor();
   const scriptAvailabilityMatrixValue = scriptAvailabilityMatrix(packageInfo.scripts);
   const appLogPath =
-    persistenceDiagnostics.data?.appLogPath ?? join(os.homedir(), "AppData", "Local", "com.replyline.app", "logs", "app.log");
+    persistenceDiagnostics.data?.appLogPath ??
+    join(os.homedir(), "AppData", "Local", "com.replyline.app", "logs", "app.log");
   const lastError = loadLastError(appLogPath);
   const runtimeConfig = {
     deepgramKeyPresent: Boolean(persistenceDiagnostics.data?.deepgramKeyPresent ?? false),
     llmKeyPresent: Boolean(persistenceDiagnostics.data?.llmKeyPresent ?? false),
     llmRouteConfigured: Boolean(
-      persistenceDiagnostics.data?.llmBaseUrlPresent && persistenceDiagnostics.data?.llmModelPresent,
+      persistenceDiagnostics.data?.llmBaseUrlPresent &&
+      persistenceDiagnostics.data?.llmModelPresent,
     ),
-    selectedModelPresetId: sanitizeText(persistenceDiagnostics.data?.selectedModelPreset ?? "unknown", { maxChars: 80 }),
+    selectedModelPresetId: sanitizeText(
+      persistenceDiagnostics.data?.selectedModelPreset ?? "unknown",
+      { maxChars: 80 },
+    ),
     settingsFileExists: Boolean(persistenceDiagnostics.data?.settingsFileExists ?? false),
     settingsValidationOk: Boolean(persistenceDiagnostics.data?.settingsValidationOk ?? false),
     runtimePathReady: Boolean(persistenceDiagnostics.data?.runtimePathReady ?? false),
@@ -417,7 +469,10 @@ function buildReport() {
       { label: "Engineering release guide", path: "docs/engineering/release.md" },
       { label: "Operations guide", path: "docs/engineering/operations.md" },
       { label: "Beta doctor", path: "docs/beta-doctor.md" },
-      { label: "Troubleshooting", path: "docs/product/user-guide.md#8-troubleshooting-quick-table" },
+      {
+        label: "Troubleshooting",
+        path: "docs/product/user-guide.md#9-troubleshooting-quick-table",
+      },
       { label: "Privacy and trust", path: "docs/product/privacy.md" },
     ],
   };
@@ -489,8 +544,12 @@ export function renderMarkdown(report) {
   lines.push(`- summary: ${report.lastError.summary}`);
   lines.push("");
   lines.push("## Attach To GitHub");
-  lines.push("- Attach `smoke-report.md` and `smoke-report.json` from `artifacts/beta-smoke-report/`.");
-  lines.push("- Keep the report as the source of truth and avoid retyping raw logs into the issue body.");
+  lines.push(
+    "- Attach `smoke-report.md` and `smoke-report.json` from `artifacts/beta-smoke-report/`.",
+  );
+  lines.push(
+    "- Keep the report as the source of truth and avoid retyping raw logs into the issue body.",
+  );
   lines.push("");
   lines.push("## Docs");
   for (const doc of report.references) {
@@ -499,7 +558,9 @@ export function renderMarkdown(report) {
   lines.push("");
   lines.push("## Notes");
   lines.push("- This report is sanitized by default.");
-  lines.push("- It excludes raw transcript, raw prompt, ContextPack values, API keys, Authorization headers, and full home paths.");
+  lines.push(
+    "- It excludes raw transcript, raw prompt, ContextPack values, API keys, Authorization headers, and full home paths.",
+  );
   return `${lines.join("\n")}\n`;
 }
 

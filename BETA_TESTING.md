@@ -67,6 +67,27 @@ issues, screenshots или logs.
 Если есть runtime-артефакт, сначала выполните `pnpm beta:smoke-report` и приложите
 только `smoke-report.md` / `smoke-report.json` в sanitized виде.
 
+## ContextPack Smoke Path
+
+После базового smoke test проверьте ContextPack flow:
+
+1. Откройте ContextPack panel из главного UI.
+2. Создайте новый pack: название + фоновый контекст (synthetic).
+3. Активируйте pack — проверьте, что badge виден в MainSurface.
+4. Сделайте capture с активным ContextPack — проверьте, что карточка учитывает контекст.
+5. Деактивируйте pack — badge исчезает.
+6. Снова capture — контекст не должен влиять на карточку.
+7. Отредактируйте pack, сохраните, активируйте — контекст обновляется.
+8. Удалите pack — он исчезает из списка.
+
+Пример synthetic context для тестового pack:
+
+> Project status meeting. My role: tech lead. Current sprint: week 3 of 4.
+> Key risk: dependency upgrade blocked by security review.
+
+Не используйте реальные имена, названия компаний, проектов или конфиденциальную
+информацию в тестовых ContextPack.
+
 ## Privacy Rules
 
 Не прикладывайте:
@@ -83,4 +104,4 @@ issues, screenshots или logs.
 Подробные границы продукта описаны в
 [docs/product/limitations.md](docs/product/limitations.md). Если что-то не
 завелось, начните с
-[docs/product/user-guide.md#8-troubleshooting-quick-table](docs/product/user-guide.md#8-troubleshooting-quick-table).
+[docs/product/user-guide.md#9-troubleshooting-quick-table](docs/product/user-guide.md#9-troubleshooting-quick-table)

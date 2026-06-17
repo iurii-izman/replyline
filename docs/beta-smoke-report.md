@@ -62,4 +62,4 @@ See also:
 - [docs/beta-doctor.md](beta-doctor.md)
 - [docs/engineering/release.md](engineering/release.md)
 - [docs/product/privacy.md](product/privacy.md)
-- [docs/product/user-guide.md#8-troubleshooting-quick-table](product/user-guide.md#8-troubleshooting-quick-table)
+- [docs/product/user-guide.md#9-troubleshooting-quick-table](product/user-guide.md#9-troubleshooting-quick-table)

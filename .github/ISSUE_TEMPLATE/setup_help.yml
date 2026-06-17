@@ -76,7 +76,7 @@ body:
     attributes:
       label: Sanitized context
       description: Reference docs used, redacted screenshots, or sanitized report files.
-      placeholder: docs/product/user-guide.md#8-troubleshooting-quick-table, sanitized screenshot, smoke-report.md
+      placeholder: docs/product/user-guide.md#9-troubleshooting-quick-table, sanitized screenshot, smoke-report.md
     validations:
       required: true
   - type: checkboxes

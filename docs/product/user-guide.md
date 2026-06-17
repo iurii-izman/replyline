@@ -26,7 +26,85 @@ Current shipped scope is intentionally narrow:
 
 See [limitations.md](limitations.md) for the full current beta boundary.
 
-## 2. Setup checklist
+## 2. First 10 minutes
+
+This is the fastest path from zero to a working capture with ContextPack.
+
+### Prerequisites (one-time)
+
+- Windows 10 or 11.
+- [Node.js](https://nodejs.org/) 22 LTS and [pnpm](https://pnpm.io/installation) 10.
+- [Rust toolchain](https://www.rust-lang.org/tools/install) (stable, latest).
+- [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for Windows.
+
+### Quick start
+
+```powershell
+git clone https://github.com/iurii-izman/replyline.git
+cd replyline
+git checkout v0.2.0-beta.3
+pnpm install --frozen-lockfile
+pnpm beta:doctor
+pnpm beta:start
+```
+
+`pnpm beta:doctor` checks that local tooling is ready. `pnpm beta:start` launches
+the desktop app. Neither installs prerequisites automatically — install them first.
+
+> **Screenshot placeholder**: `first-launch-idle.png` — Replyline tray icon and
+> idle MainSurface showing the ContextPack hint and hotkey instruction.
+
+### Configure providers
+
+Open **Settings** and fill:
+
+1. **Deepgram API key** — required for speech-to-text.
+2. **LLM base URL** — your OpenAI-compatible endpoint (e.g. `https://api.openai.com/v1`).
+3. **LLM model** — model name your endpoint expects (e.g. `gpt-4o-mini`).
+4. **LLM API key** — if your endpoint requires authentication.
+
+Keys are stored in Windows Credential Manager, not in plaintext settings.
+
+> **Screenshot placeholder**: `settings-providers.png` — Settings panel with
+> provider fields filled (keys redacted).
+
+### Create your first ContextPack
+
+1. Click the **ContextPack** button in the main UI.
+2. Click **Create new pack**.
+3. Give it a short name.
+4. Add background context in the text area — describe the conversation domain,
+   your role, or relevant constraints.
+5. Click **Save** and then **Activate**.
+
+> **Screenshot placeholder**: `context-pack-create.png` — ContextPack panel
+> showing the create form with a filled name and context text.
+>
+> **Screenshot placeholder**: `context-pack-active.png` — MainSurface with
+> active ContextPack badge visible.
+
+### First capture
+
+1. Make sure system audio is playing through your default Windows output device.
+2. Hold `Ctrl+Alt+Space` while a safe synthetic phrase plays.
+3. Release the hotkey.
+4. Wait for the card: `gist`, `say_now`, `next_move`.
+
+Use synthetic, non-confidential audio for testing. Example safe phrase:
+
+> "We moved the deadline to tomorrow but the input data isn't agreed yet.
+> How do I flag the risk calmly and suggest a next step?"
+
+> **Screenshot placeholder**: `first-card.png` — MainSurface showing a
+> completed card with gist, say_now, and next_move visible.
+
+### What next
+
+- [ContextPack section](#7-contextpack) — more on managing conversation context.
+- [Troubleshooting](#9-troubleshooting-quick-table) — if something doesn't work.
+- [BETA_TESTING.md](../../BETA_TESTING.md) — 15-minute smoke test for testers.
+
+## 3. Detailed setup
 
 1. Use Windows 10 or 11.
 2. Start Replyline from the supported source setup path in [README.md](../../README.md).
@@ -46,7 +124,7 @@ Notes:
 - Remote LLM endpoints should use `https://`; `http://` is for local or local-network routes only.
 - Keep confidential real conversations out of routine beta testing when possible.
 
-## 3. Settings reference
+## 4. Settings reference
 
 Only active user-facing settings are listed here.
 
@@ -70,7 +148,7 @@ Diagnostics notes:
 - There is no user-facing Advanced Mode in the shipped beta.
 - Local vs Cloud URL policy: use `https://` for remote/provider-hosted routes; reserve `http://` for local or local-network endpoints only.
 
-## 4. WorkConversation flow
+## 5. WorkConversation flow
 
 1. Make sure system audio is playing through the default Windows output device.
 2. Hold the configured hotkey while the other person is speaking.
@@ -81,7 +159,7 @@ Diagnostics notes:
 
 WorkConversation is optimized for short, high-pressure moments. It is not a meeting transcript tool and does not keep a long conversation history in the shipped beta.
 
-## 5. Interview Mode (context usage example)
+## 6. Interview Mode (context usage example)
 
 Interview Mode is a specialised use of WorkConversation with interview-oriented context.
 
@@ -99,7 +177,7 @@ Important boundaries:
 - Scores and feedback are heuristics, not formal assessments.
 - Interview Mode is an example of context usage, not a separate product centre.
 
-## 6. ContextPack
+## 7. ContextPack
 
 ContextPack is the only shipped conversation context system. It is optional,
 local, and user-controlled.
@@ -118,7 +196,7 @@ Boundaries:
 - ContextPack is used by WorkConversation and Interview Mode when active.
 - Do not add fabricated metrics, achievements, or claims to a pack.
 
-## 7. Reports and exports
+## 8. Reports and exports
 
 Interview reports are local-only artifacts saved on your machine.
 
@@ -129,7 +207,7 @@ Interview reports are local-only artifacts saved on your machine.
 
 ContextPack files, interview reports, and debug traces can contain sensitive content. Read the storage and provider details in [privacy.md](privacy.md) before sharing anything externally.
 
-## 8. Troubleshooting quick table
+## 9. Troubleshooting quick table
 
 | Problem | Likely cause | What to check |
 | --- | --- | --- |
@@ -144,7 +222,7 @@ ContextPack files, interview reports, and debug traces can contain sensitive con
 
 If the problem still reproduces, use [BETA_TESTING.md](../../BETA_TESTING.md) for the tester flow and the issue-reporting path.
 
-## 9. Accessibility / keyboard notes
+## 10. Accessibility / keyboard notes
 
 Replyline supports a practical keyboard-first flow in the current beta.
 
@@ -161,7 +239,7 @@ Current accessibility note:
 
 - this is a practical keyboard audit, not a WCAG certification claim
 
-## 10. Where to read more
+## 11. Where to read more
 
 - [privacy.md](privacy.md) - capture, storage, provider, and export boundaries
 - [provider-setup.md](provider-setup.md) - OpenRouter, Groq, and custom provider configuration

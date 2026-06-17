@@ -91,8 +91,9 @@ Then configure runtime settings in app UI:
 
 ## Documentation Map
 
-- [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke path for Windows testers.
-- [docs/product/user-guide.md](docs/product/user-guide.md) - setup, settings, flows, exports, and troubleshooting.
+- [BETA_TESTING.md](BETA_TESTING.md) - short beta smoke path for Windows testers (includes ContextPack smoke path).
+- [docs/product/user-guide.md](docs/product/user-guide.md) - setup, settings, first-10-minutes onboarding, flows, exports, and troubleshooting.
+- [docs/product/screenshots.md](docs/product/screenshots.md) - screenshot checklist, redaction rules, and public-safe slots.
 - [docs/product/privacy.md](docs/product/privacy.md) - capture, storage, providers, and sharing boundaries.
 - [docs/product/limitations.md](docs/product/limitations.md) - current beta scope and non-shipped tracks.
 - [CONTRIBUTING.md](CONTRIBUTING.md) - contributor workflow and required validation.

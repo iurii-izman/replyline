@@ -57,11 +57,12 @@ const requiredIncludes = [
   {
     path: "docs/product/user-guide.md",
     includes: [
-      "## 3. Settings reference",
+      "## 2. First 10 minutes",
+      "## 4. Settings reference",
       "`llmBaseUrl`",
-      "## 5. Interview Mode (context usage example)",
-      "## 6. ContextPack",
-      "## 8. Troubleshooting quick table",
+      "## 6. Interview Mode (context usage example)",
+      "## 7. ContextPack",
+      "## 9. Troubleshooting quick table",
     ],
   },
   {
