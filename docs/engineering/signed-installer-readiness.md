@@ -1,9 +1,7 @@
-# Signed Windows Installer Readiness
+# Signed Windows Installer Readiness (Superseded)
 
-План подготовки публичного signed Windows installer для Replyline.
-
-> **Текущий статус**: workflow готов, secrets отсутствуют. Публичный signed artifact
-> не существует. Не утверждай обратного ни в docs, ни в release notes, ни в issues.
+> **⚠️ This document is superseded by [windows-signing-readiness.md](windows-signing-readiness.md).**
+> Kept as historical reference. All new decisions and updates go to the new doc.
 
 ## 1. Что уже готово
 
