@@ -209,15 +209,22 @@ function collectFiles(dir, extPattern) {
 
 const sourceFiles = collectFiles(srcDir, /\.(ts|tsx|jsx)$/);
 
-const usagePatterns = [/st\(\)\.([\w.]+)/g, /strings\(\)\.([\w.]+)/g];
+const usagePatterns = [
+  // st() is typically the full strings accessor: st().contextPack.xxx or st().card.xxx
+  { pattern: /st\(\)\.([\w.]+)/g, prefix: "" },
+  // cp() is the contextPack sub-object accessor: cp().activeLabel → contextPack.activeLabel
+  { pattern: /cp\(\)\.([\w.]+)/g, prefix: "contextPack." },
+  // strings() is the raw Accessor<UiStrings>
+  { pattern: /strings\(\)\.([\w.]+)/g, prefix: "" },
+];
 const sPattern = /s\.([\w.]+)/g;
 const usedKeys = new Set();
 
 for (const file of sourceFiles) {
   const content = readFileSync(file, "utf8");
-  for (const pattern of usagePatterns) {
+  for (const { pattern, prefix } of usagePatterns) {
     for (const match of content.matchAll(pattern)) {
-      usedKeys.add(match[1]);
+      usedKeys.add(prefix + match[1]);
     }
   }
   if (file.endsWith("controller_status.ts") || file.endsWith("selectors.ts")) {
@@ -230,7 +237,10 @@ for (const file of sourceFiles) {
 
 const unusedKeys = uiRuKeys.filter((k) => !usedKeys.has(k));
 const uiRuKeysSet = new Set(uiRuKeys);
-const missingKeys = [...usedKeys].filter((k) => !uiRuKeysSet.has(k));
+// Filter missing keys to only leaf keys (ignore intermediate object references like "contextPack")
+const trueMissingKeys = [...usedKeys].filter(
+  (k) => !uiRuKeysSet.has(k) && !uiRuKeys.some((uk) => uk.startsWith(k + ".")),
+);
 
 const realUnused = unusedKeys;
 
@@ -352,8 +362,8 @@ const failures = [];
 if (realUnused.length > 0) {
   failures.push(`Unused locale keys (not referenced in any source file): ${realUnused.join(", ")}`);
 }
-if (missingKeys.length > 0) {
-  failures.push(`Source files reference non-existent locale keys: ${missingKeys.join(", ")}`);
+if (trueMissingKeys.length > 0) {
+  failures.push(`Source files reference non-existent locale keys: ${trueMissingKeys.join(", ")}`);
 }
 if (hardcodedViolations.length > 0) {
   failures.push(

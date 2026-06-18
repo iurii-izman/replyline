@@ -1,9 +1,12 @@
-import { createSignal, For, Show, onCleanup } from "solid-js";
+import { createSignal, Show, onCleanup } from "solid-js";
 import type { ReplylineController } from "./controller";
 import type { ContextPackDto } from "./model";
-
-const QUICK_CONTEXT_MAX_LEN = 100_000;
-const QUICK_CONTEXT_TITLE_MAX_LEN = 80;
+import { QuickContextCard } from "./context-pack/QuickContextCard";
+import { ActiveContextBanner } from "./context-pack/ActiveContextBanner";
+import { ContextSidebar } from "./context-pack/ContextSidebar";
+import { ContextBriefEditor } from "./context-pack/ContextBriefEditor";
+import { ContextPackList } from "./context-pack/ContextPackListItem";
+import { titleFromContent, quickContextTooLong, quickTooLongMessage } from "./context-pack/helpers";
 
 export function ContextPackPanel(props: Readonly<{ controller: ReplylineController }>) {
   const ctrl = () => props.controller;
@@ -71,57 +74,17 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
     setDraftContent(st().contextPack.emptyExample);
   }
 
-  function normalizedQuickContent() {
-    return quickText().trim();
-  }
-
-  function quickContentLength() {
-    return normalizedQuickContent().length;
-  }
-
-  function quickContextTooLong() {
-    return quickContentLength() > QUICK_CONTEXT_MAX_LEN;
-  }
-
-  function quickTooLongMessage() {
-    const template = st().contextPack.quickTooLong;
-    return template.replace("{{max}}", String(QUICK_CONTEXT_MAX_LEN));
-  }
-
-  function quickCharCountLabel() {
-    const template = st().contextPack.quickCharCount;
-    return template
-      .replace("{{count}}", String(quickContentLength()))
-      .replace("{{max}}", String(QUICK_CONTEXT_MAX_LEN));
-  }
-
-  function normalizeTitleLine(line: string) {
-    return line
-      .replace(/^#+\s*/, "")
-      .replace(/^[-*•]\s*/, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  function quickTitleFromContent() {
-    const firstLine = normalizedQuickContent().split(/\r?\n/).map(normalizeTitleLine).find(Boolean);
-    const title = firstLine || st().contextPack.quickFallbackTitle;
-    return (
-      title.slice(0, QUICK_CONTEXT_TITLE_MAX_LEN).trim() || st().contextPack.quickFallbackTitle
-    );
-  }
-
   function handleQuickInput(value: string) {
     setQuickText(value);
     const nextLen = value.trim().length;
-    setQuickError(nextLen > QUICK_CONTEXT_MAX_LEN ? quickTooLongMessage() : null);
+    setQuickError(nextLen > 100_000 ? quickTooLongMessage(st().contextPack.quickTooLong) : null);
   }
 
   async function handleQuickSave() {
-    const content = normalizedQuickContent();
+    const content = quickText().trim();
     if (!content) return;
-    if (quickContextTooLong()) {
-      setQuickError(quickTooLongMessage());
+    if (quickContextTooLong(content)) {
+      setQuickError(quickTooLongMessage(st().contextPack.quickTooLong));
       return;
     }
     setQuickSaving(true);
@@ -129,7 +92,7 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
     try {
       await ctrl().saveContextPack({
         id: "ctx-" + String(Date.now()),
-        title: quickTitleFromContent(),
+        title: titleFromContent(content, st().contextPack.quickFallbackTitle),
         content,
         isActive: false,
         createdAt: "",
@@ -165,7 +128,6 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
 
   async function handleDelete(id: string) {
     cancelDeleteConfirm();
-    // Close editor if deleting the pack being edited.
     if (draftId() === id) resetDraft();
     await ctrl().deleteContextPack(id);
   }
@@ -191,12 +153,9 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
   }
 
   const selectedPackId = () => draftId() || activePack()?.id || "";
-
-  const contentWordCount = () => {
-    return draftContent().trim().split(/\s+/).filter(Boolean).length;
-  };
-
   const isEditingActive = () => activePack()?.id === draftId();
+  const quickTitlePreview = () =>
+    titleFromContent(quickText(), st().contextPack.quickFallbackTitle);
 
   return (
     <Show when={ctrl().panel() === "contextPack"}>
@@ -227,273 +186,53 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
         </header>
 
         <div class="context-pack-workspace" data-testid="context-pack-workspace">
-          {/* Saved contexts sidebar — narrow rail */}
-          <nav
-            class="context-pack-sidebar"
-            data-testid="context-pack-sidebar"
-            aria-label={st().contextPack.listTitle}
-          >
-            <Show when={packs().length > 0}>
-              <div class="context-pack-sidebar-inner">
-                <For each={packs()}>
-                  {(pack) => {
-                    const isSelected = () => selectedPackId() === pack.id;
-                    const linkClass = () =>
-                      "context-pack-sidebar-link" + (isSelected() ? " is-active" : "");
-                    return (
-                      <button
-                        type="button"
-                        class={linkClass()}
-                        data-testid={"context-pack-sidebar-link-" + pack.id}
-                        onClick={() => startEdit(pack)}
-                        title={st().contextPack.editPack}
-                      >
-                        <span class="context-pack-sidebar-title">{pack.title}</span>
-                        {pack.isActive && (
-                          <span
-                            class="context-pack-sidebar-badge"
-                            aria-label={st().contextPack.activeLabel}
-                          >
-                            ●
-                          </span>
-                        )}
-                      </button>
-                    );
-                  }}
-                </For>
-              </div>
-            </Show>
-          </nav>
+          <ContextSidebar
+            strings={st}
+            packs={packs}
+            selectedPackId={selectedPackId}
+            onEdit={startEdit}
+          />
 
-          {/* Editor panel — the brief workspace */}
           <div class="context-pack-editor-panel" data-testid="context-pack-editor-panel">
-            <section class="quick-context-card" data-testid="quick-context-card">
-              <div class="quick-context-header">
-                <div>
-                  <h3>{st().contextPack.quickTitle}</h3>
-                  <p>{st().contextPack.quickHint}</p>
-                </div>
-                <span class="quick-context-meta" data-testid="quick-context-title-preview">
-                  {st().contextPack.quickTitlePreview}: {quickTitleFromContent()}
-                </span>
-              </div>
-              <label class="quick-context-label" for="quick-context-input">
-                {st().contextPack.quickInputLabel}
-              </label>
-              <textarea
-                class="quick-context-input"
-                id="quick-context-input"
-                data-testid="quick-context-input"
-                value={quickText()}
-                rows={7}
-                onInput={(e) => handleQuickInput(e.currentTarget.value)}
-                placeholder={st().contextPack.quickPlaceholder}
-                aria-describedby="quick-context-meta"
-              />
-              <div class="quick-context-footer">
-                <span class="quick-context-meta" id="quick-context-meta">
-                  {quickCharCountLabel()}
-                </span>
-                <Show when={quickError()}>
-                  <span class="quick-context-error" data-testid="quick-context-error" role="alert">
-                    {quickError()}
-                  </span>
-                </Show>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  data-testid="quick-context-save-btn"
-                  onClick={() => void handleQuickSave()}
-                  disabled={quickSaving() || !normalizedQuickContent() || quickContextTooLong()}
-                >
-                  {quickSaving() ? "..." : st().contextPack.quickSave}
-                </button>
-              </div>
-            </section>
+            <QuickContextCard
+              strings={st}
+              quickText={quickText}
+              onInput={handleQuickInput}
+              quickError={quickError}
+              quickSaving={quickSaving}
+              onSave={handleQuickSave}
+              titlePreview={quickTitlePreview}
+            />
 
-            {/* Active context indicator (subtle, non-blocking) */}
-            <Show when={activePack() && !editing()}>
-              <div class="context-brief-active" data-testid="context-pack-active-banner">
-                <span class="context-brief-active-dot" aria-hidden="true" />
-                <span>
-                  {st().contextPack.activeLabel}:{" "}
-                  <strong data-testid="context-pack-active-title">{activePack()!.title}</strong>
-                </span>
-                <span class="context-brief-active-meta">
-                  {(() => {
-                    const tpl = st().contextPack.charCount;
-                    return tpl.replace("{{count}}", String(activePack()!.content.length));
-                  })()}
-                </span>
-                <span class="context-brief-active-actions">
-                  <button
-                    type="button"
-                    class="btn btn-sm"
-                    data-testid="context-pack-edit-active-btn"
-                    onClick={() => startEdit(activePack()!)}
-                  >
-                    {st().contextPack.editCtx}
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-ghost"
-                    data-testid="context-pack-disable-btn"
-                    onClick={handleClearActive}
-                  >
-                    {st().contextPack.disableCtx}
-                  </button>
-                </span>
-              </div>
-            </Show>
+            <ActiveContextBanner
+              strings={st}
+              activePack={activePack}
+              editing={editing}
+              onEdit={startEdit}
+              onClear={handleClearActive}
+            />
 
-            {/* Editor — the brief document */}
             <Show when={editing()}>
-              <div class="context-brief-editor" data-testid="context-pack-editor">
-                {/* Active indicator inside editor when editing active context */}
-                <Show when={isEditingActive()}>
-                  <div
-                    class="context-brief-editor-active"
-                    data-testid="context-brief-editor-active"
-                  >
-                    {st().contextPack.activeLabel}
-                  </div>
-                </Show>
-
-                <label
-                  for="context-pack-title-field"
-                  style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"
-                >
-                  {st().contextPack.titleLabel}
-                </label>
-                <input
-                  type="text"
-                  class="context-brief-title"
-                  id="context-pack-title-field"
-                  data-testid="context-pack-title-input"
-                  value={draftTitle()}
-                  onInput={(e) => setDraftTitle(e.currentTarget.value)}
-                  maxLength={200}
-                  placeholder={st().contextPack.titleLabel}
-                />
-
-                <label
-                  for="context-pack-content-field"
-                  style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"
-                >
-                  {st().contextPack.contentLabel}
-                </label>
-                <textarea
-                  class="context-brief-content"
-                  id="context-pack-content-field"
-                  data-testid="context-pack-content-input"
-                  value={draftContent()}
-                  onInput={(e) => setDraftContent(e.currentTarget.value)}
-                  rows={14}
-                  placeholder={st().contextPack.emptyExample}
-                />
-
-                <div class="context-brief-footer">
-                  <span class="context-brief-meta">
-                    {(() => {
-                      const tpl = st().contextPack.charCount;
-                      return tpl.replace("{{count}}", String(draftContent().length));
-                    })()}
-                    {" · "}
-                    {contentWordCount()} words
-                  </span>
-                  <span class="context-brief-insert">
-                    <Show when={!draftContent().trim()}>
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-ghost"
-                        data-testid="context-pack-insert-example-btn"
-                        onClick={insertExampleContent}
-                      >
-                        {st().contextPack.insertExample}
-                      </button>
-                    </Show>
-                  </span>
-                </div>
-
-                <div class="context-pack-editor-actions">
-                  <button
-                    type="button"
-                    class="btn btn-primary"
-                    data-testid="context-pack-save-btn"
-                    onClick={handleSave}
-                    disabled={saving() || !draftTitle().trim() || !draftContent().trim()}
-                  >
-                    {saving() ? "..." : st().contextPack.save}
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-ghost"
-                    data-testid="context-pack-cancel-btn"
-                    onClick={resetDraft}
-                  >
-                    {st().contextPack.cancel}
-                  </button>
-
-                  {/* Context actions — only for existing packs */}
-                  <Show when={draftId()}>
-                    <span class="context-brief-actions-sep" aria-hidden="true" />
-                    <Show when={!isEditingActive()}>
-                      <button
-                        type="button"
-                        class="btn btn-sm"
-                        data-testid={"context-pack-activate-" + draftId()}
-                        onClick={() => handleSetActive(draftId())}
-                      >
-                        {st().contextPack.setActive}
-                      </button>
-                    </Show>
-                    <Show when={packs().find((p) => p.id === draftId())}>
-                      {(pack) => (
-                        <button
-                          type="button"
-                          class="btn btn-sm"
-                          data-testid={"context-pack-duplicate-" + draftId()}
-                          onClick={() => handleDuplicate(pack())}
-                        >
-                          {st().contextPack.duplicatePack}
-                        </button>
-                      )}
-                    </Show>
-                    <Show
-                      when={confirmingDeleteId() !== draftId()}
-                      fallback={
-                        <>
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-danger"
-                            data-testid={"context-pack-delete-confirm-" + draftId()}
-                            onClick={() => handleDelete(draftId())}
-                          >
-                            {st().contextPack.confirmDelete}
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-ghost"
-                            data-testid={"context-pack-delete-cancel-" + draftId()}
-                            onClick={cancelDeleteConfirm}
-                          >
-                            {st().contextPack.cancelConfirmDelete}
-                          </button>
-                        </>
-                      }
-                    >
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-danger"
-                        data-testid={"context-pack-delete-" + draftId()}
-                        onClick={() => requestDeleteConfirm(draftId())}
-                      >
-                        {st().contextPack.deletePack}
-                      </button>
-                    </Show>
-                  </Show>
-                </div>
-              </div>
+              <ContextBriefEditor
+                strings={st}
+                draftId={draftId}
+                draftTitle={draftTitle}
+                setDraftTitle={setDraftTitle}
+                draftContent={draftContent}
+                setDraftContent={setDraftContent}
+                saving={saving}
+                onSave={handleSave}
+                onCancel={resetDraft}
+                isEditingActive={isEditingActive}
+                confirmingDeleteId={confirmingDeleteId}
+                onRequestDelete={requestDeleteConfirm}
+                onCancelDelete={cancelDeleteConfirm}
+                onDelete={handleDelete}
+                onSetActive={handleSetActive}
+                onDuplicate={handleDuplicate}
+                packs={packs}
+                insertExample={insertExampleContent}
+              />
             </Show>
 
             {/* Empty state */}
@@ -519,31 +258,12 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
 
             {/* Saved context chips (narrow-screen fallback rail) */}
             <Show when={!editing() && packs().length > 0}>
-              <nav
-                class="context-pack-list context-pack-list--compact"
-                data-testid="context-pack-list"
-                aria-label={st().contextPack.listTitle}
-              >
-                <For each={packs()}>
-                  {(pack) => {
-                    const chipClass = () =>
-                      "context-pack-chip" +
-                      (pack.isActive ? " context-pack-chip--active" : "") +
-                      (selectedPackId() === pack.id ? " context-pack-chip--selected" : "");
-                    return (
-                      <button
-                        type="button"
-                        class={chipClass()}
-                        data-testid={"context-pack-item-" + pack.id}
-                        onClick={() => startEdit(pack)}
-                      >
-                        <span class="context-pack-chip-title">{pack.title}</span>
-                        {pack.isActive && <span class="context-pack-chip-badge">●</span>}
-                      </button>
-                    );
-                  }}
-                </For>
-              </nav>
+              <ContextPackList
+                strings={st}
+                packs={packs}
+                selectedPackId={selectedPackId}
+                onEdit={startEdit}
+              />
             </Show>
           </div>
         </div>
