@@ -29,6 +29,92 @@ describe("main card integration", () => {
     expect(screen.queryByTestId("main-state-idle")).toBeNull();
   });
 
+  it("setup state shows progress indicator and why-explanations for each step", async () => {
+    const setupMock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmKeyPresent: false,
+      llmBaseUrl: "",
+      llmModel: "",
+      runtimeReady: false,
+    });
+    renderApp(setupMock);
+
+    await screen.findByTestId("main-state-setup");
+
+    // Progress indicator is visible (hotkey is ready by default).
+    expect(screen.getByTestId("setup-progress").textContent).toMatch(/\d из 3/);
+
+    // Each step has a "why" explanation.
+    expect(screen.getByTestId("setup-why-1. Речь").textContent).toContain("Deepgram");
+    expect(screen.getByTestId("setup-why-2. Ответ").textContent).toContain("LLM-шлюз");
+    expect(screen.getByTestId("setup-why-3. Горячая клавиша").textContent).toContain("запись");
+
+    // When not all ready, shows "open first missing" CTA, not context CTA.
+    expect(screen.getByTestId("setup-first-missing-cta")).toBeTruthy();
+    expect(screen.queryByTestId("setup-create-context-cta")).toBeNull();
+  });
+
+  it("setup complete state transitions to idle which offers ContextPack creation", async () => {
+    // When all providers are ready, setupRequired is false — the app
+    // transitions to IdleReadyState which has the ContextPack button.
+    const setupMock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmKeyPresent: true,
+      llmBaseUrl: "https://api.example.com/v1",
+      llmModel: "gpt-4o-mini",
+      runtimeReady: true,
+    });
+    renderApp(setupMock);
+
+    // The app transitions from setup to idle.
+    await screen.findByTestId("main-state-idle");
+    expect(screen.queryByTestId("main-state-setup")).toBeNull();
+
+    // Idle state offers ContextPack as the primary action.
+    expect(screen.getByTestId("idle-open-context-btn")).toBeTruthy();
+    expect(screen.getByTestId("idle-open-context-btn").textContent).toContain("Контекст");
+  });
+
+  it("setup shows clear message when Deepgram key is missing", async () => {
+    const setupMock = createSetupMockPlatform({
+      deepgramKeyPresent: false,
+      llmKeyPresent: true,
+      llmBaseUrl: "https://api.example.com/v1",
+      llmModel: "gpt-4o-mini",
+      runtimeReady: false,
+    });
+    renderApp(setupMock);
+
+    await screen.findByTestId("main-state-setup");
+
+    // The speech step shows missing status.
+    expect(screen.getByText("Добавьте ключ Deepgram API.")).toBeTruthy();
+    // The why explanation explains what Deepgram does.
+    expect(screen.getByTestId("setup-why-1. Речь").textContent).toContain(
+      "превращает голос собеседника в текст",
+    );
+  });
+
+  it("setup shows clear message when LLM route is not configured", async () => {
+    const setupMock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmKeyPresent: false,
+      llmBaseUrl: "",
+      llmModel: "",
+      runtimeReady: false,
+    });
+    renderApp(setupMock);
+
+    await screen.findByTestId("main-state-setup");
+
+    // The LLM step shows missing status.
+    expect(screen.getByText("Укажите URL и модель LLM-шлюза.")).toBeTruthy();
+    // The why explanation explains what LLM gateway does.
+    expect(screen.getByTestId("setup-why-2. Ответ").textContent).toContain(
+      "собирает карточку ответа",
+    );
+  });
+
   it("handles work happy path for capture, copy, retry, and clear", async () => {
     mock = createMockPlatform({
       analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },

@@ -41,6 +41,13 @@ export const common_ru = {
     llmReady: "Маршрут LLM настроен.",
     hotkeyMissing: "Назначьте горячую клавишу.",
     hotkeyReady: "Горячая клавиша задана.",
+    whySpeech:
+      "Deepgram превращает голос собеседника в текст — без него Replyline не услышит разговор.",
+    whyLlm: "LLM-шлюз (OpenAI, OpenRouter) собирает карточку ответа из текста и контекста.",
+    whyHotkey: "Горячая клавиша запускает запись: зажали → слушаем, отпустили → анализируем.",
+    setupProgress: "{{done}} из {{total}} шагов готово",
+    setupActionCreateContext: "Создать контекст разговора",
+    setupActionStartEmpty: "Начать без контекста",
     ready: "Настройки сохранены. Приложение готово к работе.",
     notReady: "Заполните недостающие поля, чтобы запустить приложение.",
     deepgramHint: "Ключ хранится в credential store и не записывается в settings файл.",
@@ -160,6 +167,13 @@ export const common_en: typeof common_ru = {
     llmReady: "LLM route configured.",
     hotkeyMissing: "Assign a hotkey.",
     hotkeyReady: "Hotkey assigned.",
+    whySpeech:
+      "Deepgram converts the speaker's voice to text — without it, Replyline cannot hear the conversation.",
+    whyLlm: "The LLM gateway (OpenAI, OpenRouter) builds the answer card from text and context.",
+    whyHotkey: "The hotkey starts recording: hold to capture, release to analyze.",
+    setupProgress: "{{done}} of {{total}} steps ready",
+    setupActionCreateContext: "Create conversation context",
+    setupActionStartEmpty: "Start without context",
     ready: "Settings saved. App is ready.",
     notReady: "Fill in the missing fields to start the app.",
     deepgramHint:

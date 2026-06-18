@@ -5,14 +5,19 @@ import { mapSetupStepToSection } from "./helpers";
 export function SetupFocusState(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
-  const missingSteps = createMemo(() =>
-    controller()
-      .setupSteps()
-      .filter((step) => !step.ready),
-  );
+  const steps = createMemo(() => controller().setupSteps());
+  const readyCount = createMemo(() => steps().filter((s) => s.ready).length);
+  const totalCount = createMemo(() => steps().length);
+  const allReady = createMemo(() => readyCount() === totalCount());
+  const missingSteps = createMemo(() => steps().filter((step) => !step.ready));
   const firstMissingSection = createMemo(() => {
     const first = missingSteps()[0];
     return first ? mapSetupStepToSection(first.label) : undefined;
+  });
+
+  const progressText = createMemo(() => {
+    const tpl = st().setup.setupProgress;
+    return tpl.replace("{{done}}", String(readyCount())).replace("{{total}}", String(totalCount()));
   });
 
   return (
@@ -21,8 +26,11 @@ export function SetupFocusState(props: Readonly<{ controller: ReplylineControlle
       <p class="setup-focus-subtitle" data-testid="setup-overall-hint">
         {st().setup.focusSubtitle}
       </p>
+      <p class="setup-progress" data-testid="setup-progress">
+        {progressText()}
+      </p>
       <ul class="setup-focus-list" data-testid="setup-focus-list">
-        <For each={controller().setupSteps()}>
+        <For each={steps()}>
           {(step) => (
             <li class={`setup-focus-row ${step.ready ? "is-ready" : "is-missing"}`}>
               <div class="setup-focus-copy">
@@ -30,6 +38,13 @@ export function SetupFocusState(props: Readonly<{ controller: ReplylineControlle
                 <span class="empty-flow-hint">
                   {step.ready ? step.readyLabel : step.missingLabel}
                 </span>
+                <p class="setup-focus-why" data-testid={`setup-why-${step.label}`}>
+                  {step.label.startsWith("1.")
+                    ? st().setup.whySpeech
+                    : step.label.startsWith("2.")
+                      ? st().setup.whyLlm
+                      : st().setup.whyHotkey}
+                </p>
               </div>
               <span>{step.ready ? st().settings.statusReady : st().settings.statusMissing}</span>
               <button
@@ -44,32 +59,56 @@ export function SetupFocusState(props: Readonly<{ controller: ReplylineControlle
         </For>
       </ul>
       <div class="action-group">
-        <button
-          class="btn-primary"
-          data-testid="setup-first-missing-cta"
-          type="button"
-          onClick={() => controller().openSettingsPanel(firstMissingSection())}
+        <Show
+          when={!allReady()}
+          fallback={
+            <>
+              <button
+                class="btn-primary"
+                data-testid="setup-create-context-cta"
+                type="button"
+                onClick={() => controller().openContextPackPanel()}
+              >
+                {st().setup.setupActionCreateContext}
+              </button>
+              <button
+                class="btn-secondary"
+                data-testid="setup-start-empty-cta"
+                type="button"
+                onClick={() => controller().openMainPanel()}
+              >
+                {st().setup.setupActionStartEmpty}
+              </button>
+            </>
+          }
         >
-          {st().settings.openFirstMissing}
-        </button>
-        <button
-          class="btn-secondary"
-          type="button"
-          onClick={() => void controller().checkRuntimeConfig()}
-        >
-          {st().settings.runCheck}
-        </button>
-        <button class="btn-ghost" type="button" onClick={() => controller().openSettingsPanel()}>
-          {st().settings.openSettings}
-        </button>
-        <Show when={controller().setupTroubleCount() >= 2}>
           <button
-            class="btn-ghost"
+            class="btn-primary"
+            data-testid="setup-first-missing-cta"
             type="button"
-            onClick={() => void controller().copySetupIssueHint()}
+            onClick={() => controller().openSettingsPanel(firstMissingSection())}
           >
-            {st().settings.copyIssueHint}
+            {st().settings.openFirstMissing}
           </button>
+          <button
+            class="btn-secondary"
+            type="button"
+            onClick={() => void controller().checkRuntimeConfig()}
+          >
+            {st().settings.runCheck}
+          </button>
+          <button class="btn-ghost" type="button" onClick={() => controller().openSettingsPanel()}>
+            {st().settings.openSettings}
+          </button>
+          <Show when={controller().setupTroubleCount() >= 2}>
+            <button
+              class="btn-ghost"
+              type="button"
+              onClick={() => void controller().copySetupIssueHint()}
+            >
+              {st().settings.copyIssueHint}
+            </button>
+          </Show>
         </Show>
       </div>
       <Show when={controller().setupTroubleCount() >= 2}>
