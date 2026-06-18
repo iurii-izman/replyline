@@ -18,7 +18,7 @@ export function openSettingsSection(name: string | RegExp) {
 
 export async function enableCompactInterviewMode() {
   await openSettingsPanel();
-  openSettingsSection(/Горячая клавиша/i);
+  openSettingsSection(/Дополнительно/i);
   fireEvent.click(await screen.findByLabelText("Компактный режим интервью"));
   fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
   fireEvent.click(await screen.findByRole("button", { name: "Назад" }));

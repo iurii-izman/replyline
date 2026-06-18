@@ -108,7 +108,7 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
     { id: "speech", label: st().settings.navSpeech },
     { id: "llm", label: st().settings.navLlm },
     { id: "hotkey", label: st().settings.navHotkey },
-    { id: "reports", label: st().settings.navReports },
+    { id: "reports", label: st().settings.navAdvanced },
   ];
 
   const activeSection = () => controller().settingsActiveSection();

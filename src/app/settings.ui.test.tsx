@@ -24,7 +24,7 @@ describe("settings integration", () => {
     expect(screen.getByRole("button", { name: /Сохран/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Назад" })).toBeTruthy();
 
-    openSettingsSection(/Отчёты/i);
+    openSettingsSection(/Дополнительно/i);
     expect(screen.getByText("Срок хранения отчётов интервью")).toBeTruthy();
     expect(screen.getAllByText("Только ручная очистка").length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/raw prompt/i)).toBeNull();
@@ -35,7 +35,7 @@ describe("settings integration", () => {
     renderApp(mock);
     await openSettingsPanel();
 
-    openSettingsSection(/Горячая клавиша/i);
+    openSettingsSection(/Дополнительно/i);
     expect(screen.getByText("Поведение окна")).toBeTruthy();
     expect(screen.getByLabelText("Скрывать в трей при закрытии окна")).toBeTruthy();
     expect(screen.getByLabelText("Поверх окон только во время захвата и анализа")).toBeTruthy();
@@ -46,11 +46,11 @@ describe("settings integration", () => {
     await waitFor(() => expect(mock.platform.window.setOpacity).toHaveBeenCalledWith(0.8));
   });
 
-  it("persists reports debug trace mode from the reports section", async () => {
+  it("persists reports debug trace mode from the advanced section", async () => {
     const mock = createMockPlatform();
     renderApp(mock);
     await openSettingsPanel();
-    openSettingsSection(/Отчёты/i);
+    openSettingsSection(/Дополнительно/i);
     const modeField = await screen.findByTestId("debug-trace-mode-field");
     fireEvent.input(within(modeField).getByRole("combobox"), { target: { value: "full_local" } });
     fireEvent.click(screen.getByRole("button", { name: /Сохран/ }));
@@ -255,7 +255,9 @@ describe("setup wizard integration", () => {
     await waitFor(() => expect(screen.getByTestId("main-surface")).toBeTruthy());
     fireEvent.click(screen.getByTitle("Настройки"));
     fireEvent.click(screen.getByRole("button", { name: /Сохран/ }));
-    await waitFor(() => expect(mock.invoke.mock.calls.filter((c) => c[0] === "load_bootstrap")).toHaveLength(2));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.filter((c) => c[0] === "load_bootstrap")).toHaveLength(2),
+    );
     expect(bootstrapCount).toBe(2);
     expect(mock.invoke.mock.calls.some((call) => call[0] === "save_secret")).toBe(false);
 

@@ -13,11 +13,71 @@ export function ReportsSection(props: Readonly<{ controller: ReplylineController
       data-testid="settings-section-reports"
     >
       <h3 class="settings-section-title">
-        {st().settings.navReports}{" "}
+        {st().settings.navAdvanced}{" "}
         <span class={setupStatusClass("optional")}>{setupStatusLabel(st(), "optional")}</span>
       </h3>
-      <p class="settings-section-hint">{st().settings.reportsSectionHint}</p>
-      <section class="settings-subsection">
+
+      {/* ── Window behavior ──────────────────────────────── */}
+      <section class="settings-subsection" data-testid="advanced-window-behavior">
+        <h4 class="settings-subsection-title">{st().settings.windowBehaviorTitle}</h4>
+        <p class="field-help">{st().settings.windowBehaviorHint}</p>
+
+        <label class="field">
+          <span class="field-label">{st().settings.windowOpacityLabel}</span>
+          <select
+            class="field-input"
+            value={String(controller().settings.windowOpacity)}
+            onInput={(event) =>
+              void controller().setWindowOpacity(
+                Number.parseInt(event.currentTarget.value, 10) as 100 | 90 | 80 | 70,
+              )
+            }
+          >
+            <option value="100">100%</option>
+            <option value="90">90%</option>
+            <option value="80">80%</option>
+            <option value="70">70%</option>
+          </select>
+        </label>
+
+        <label class="field field-checkbox-row settings-checkbox-row">
+          <input
+            type="checkbox"
+            aria-label={st().settings.hideToTrayOnCloseLabel}
+            checked={controller().settings.hideToTrayOnClose}
+            onInput={(event) => controller().setHideToTrayOnClose(event.currentTarget.checked)}
+          />
+          <span class="field-label">{st().settings.hideToTrayOnCloseLabel}</span>
+          <span class="field-help">{st().settings.hideToTrayOnCloseHint}</span>
+        </label>
+
+        <label class="field field-checkbox-row settings-checkbox-row">
+          <input
+            type="checkbox"
+            aria-label={st().settings.keepOnTopDuringCaptureLabel}
+            checked={controller().settings.keepOnTopDuringCapture}
+            onInput={(event) => controller().setKeepOnTopDuringCapture(event.currentTarget.checked)}
+          />
+          <span class="field-label">{st().settings.keepOnTopDuringCaptureLabel}</span>
+          <span class="field-help">{st().settings.keepOnTopDuringCaptureHint}</span>
+        </label>
+
+        <label
+          class="field field-checkbox-row settings-checkbox-row"
+          data-testid="advanced-compact-row"
+        >
+          <input
+            type="checkbox"
+            aria-label={st().settings.compactModeLabel}
+            checked={controller().settings.interviewCompactMode}
+            onInput={(event) => controller().setCompactMode(event.currentTarget.checked)}
+          />
+          <span class="field-label">{st().settings.compactModeLabel}</span>
+        </label>
+      </section>
+
+      {/* ── Interview reports ────────────────────────────── */}
+      <section class="settings-subsection" data-testid="advanced-reports">
         <h4 class="settings-subsection-title">{st().settings.reportsEverydayTitle}</h4>
         <p class="field-help">{st().settings.reportsEverydayHint}</p>
         <label class="field">
@@ -48,7 +108,44 @@ export function ReportsSection(props: Readonly<{ controller: ReplylineController
         </button>
       </section>
 
-      <section class="settings-subsection settings-subsection--ops">
+      {/* ── Bilingual (experimental, gated) ──────────────── */}
+      <Show when={controller().experimentalBilingualAllowed()}>
+        <section class="settings-subsection" data-testid="advanced-bilingual">
+          <h4 class="settings-subsection-title">{st().settings.reportsSectionHint}</h4>
+          <Show when={controller().settings.bilingualInterviewEnabled}>
+            <label class="field field-checkbox-row settings-checkbox-row">
+              <input
+                type="checkbox"
+                aria-label={st().settings.bilingualInterviewEnabledLabel}
+                checked={controller().settings.bilingualInterviewEnabled}
+                onInput={(event) =>
+                  controller().setBilingualInterviewEnabled(event.currentTarget.checked)
+                }
+              />
+              <span class="field-label">{st().settings.bilingualInterviewEnabledLabel}</span>
+            </label>
+
+            <label class="field field-checkbox-row settings-checkbox-row">
+              <input
+                type="checkbox"
+                aria-label={st().settings.liveTranslationEnabledLabel}
+                checked={controller().settings.liveTranslationEnabled}
+                onInput={(event) =>
+                  controller().setLiveTranslationEnabled(event.currentTarget.checked)
+                }
+              />
+              <span class="field-label">{st().settings.liveTranslationEnabledLabel}</span>
+            </label>
+
+            <p class="settings-note settings-note-warning">
+              {st().settings.bilingualInterviewDisclaimer}
+            </p>
+          </Show>
+        </section>
+      </Show>
+
+      {/* ── Debug traces ─────────────────────────────────── */}
+      <section class="settings-subsection settings-subsection--ops" data-testid="advanced-debug">
         <h4 class="settings-subsection-title">{st().settings.reportsOpsTitle}</h4>
         <p class="field-help">{st().settings.reportsOpsHint}</p>
         <label class="field" data-testid="debug-trace-mode-field">

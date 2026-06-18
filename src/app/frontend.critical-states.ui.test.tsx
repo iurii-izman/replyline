@@ -191,7 +191,7 @@ describe("frontend critical state coverage", () => {
     expect(screen.getByText(ui_ru.settings.debugTraceFullWarning)).toBeTruthy();
   });
 
-  it("renders bilingual toggles in hotkey section and wires handlers", () => {
+  it("renders bilingual toggles in advanced section and wires handlers when env allowed", () => {
     const setBilingualInterviewEnabled = vi.fn();
     const setLiveTranslationEnabled = vi.fn();
     render(
@@ -200,7 +200,7 @@ describe("frontend critical state coverage", () => {
           <SettingsSurface
             controller={
               settingsController({
-                settingsActiveSection: () => "hotkey",
+                settingsActiveSection: () => "reports",
                 setBilingualInterviewEnabled,
                 setLiveTranslationEnabled,
                 experimentalBilingualAllowed: () => true,
@@ -238,14 +238,14 @@ describe("frontend critical state coverage", () => {
     expect(screen.getByText(ui_ru.settings.bilingualInterviewDisclaimer)).toBeTruthy();
   });
 
-  it("hides bilingual settings when disabled by default", () => {
+  it("hides bilingual settings in advanced section when env disallowed", () => {
     render(
       () =>
         (
           <SettingsSurface
             controller={
               settingsController({
-                settingsActiveSection: () => "hotkey",
+                settingsActiveSection: () => "reports",
               }) as never
             }
           />
