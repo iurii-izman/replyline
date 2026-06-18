@@ -442,9 +442,8 @@ describe("main card integration", () => {
   });
 
   it("reduced-motion CSS guard exists in stylesheet", () => {
-    // The App.css contains a @media (prefers-reduced-motion: reduce) block
-    // that zeros out motion tokens and disables animations.
-    const css = readFileSync("src/App.css", "utf-8");
+    // The states.css contains a @media (prefers-reduced-motion: reduce) block.
+    const css = readFileSync("src/styles/states.css", "utf-8");
     expect(css).toContain("prefers-reduced-motion");
     expect(css).toContain("animation-duration: 0.01ms");
   });

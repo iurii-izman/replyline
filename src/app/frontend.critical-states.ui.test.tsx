@@ -285,7 +285,7 @@ describe("frontend critical state coverage", () => {
   });
 
   it("preserves focus-visible coverage for tabs and context pack controls", () => {
-    const css = readFileSync("src/App.css", "utf8");
+    const css = readFileSync("src/styles/components.css", "utf8");
     expect(css).toContain(".interview-card-tab");
     expect(css).toContain(".settings-sidebar-link");
     expect(css).toContain(".context-pack-editor .input");

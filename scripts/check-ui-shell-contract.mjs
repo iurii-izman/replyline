@@ -189,24 +189,31 @@ if (contextPackPanel) {
 }
 
 const appCss = readText("src/App.css");
+// Tokens now live in src/styles/tokens.css — merge for contract checks.
+const tokensCss = readText("src/styles/tokens.css");
+const mergedCss = (appCss || "") + "\n" + (tokensCss || "");
 if (appCss) {
-  assertIncludes(appCss, "--workspace-max", "src/App.css");
-  assertIncludes(appCss, "--settings-max", "src/App.css");
-  assertIncludes(appCss, ".app-sticky-footer", "src/App.css");
-  assertIncludes(appCss, ".settings-sticky-footer", "src/App.css");
-  assertIncludes(appCss, ".settings-sticky-footer--section", "src/App.css");
-  assertIncludes(appCss, ".context-pack-panel", "src/App.css");
+  // Layout/component checks still run against App.css + layout/components.
+  const layoutCss = readText("src/styles/layout.css") || "";
+  const componentsCss = readText("src/styles/components.css") || "";
+  const allCss = mergedCss + "\n" + layoutCss + "\n" + componentsCss;
+  assertIncludes(allCss, "--workspace-max", "src/App.css + styles");
+  assertIncludes(allCss, "--settings-max", "src/App.css + styles");
+  assertIncludes(allCss, ".app-sticky-footer", "src/App.css + styles");
+  assertIncludes(allCss, ".settings-sticky-footer", "src/App.css + styles");
+  assertIncludes(allCss, ".settings-sticky-footer--section", "src/App.css + styles");
+  assertIncludes(allCss, ".context-pack-panel", "src/App.css + styles");
 
   assertRegex(
-    appCss,
+    allCss,
     /\.settings-content\s*\{[^}]*padding-bottom\s*:\s*calc\(var\(--page-footer-space\)\s*\+\s*20px\)/su,
-    "src/App.css",
+    "src/App.css + styles",
     "expected sticky-footer bottom padding compensation for settings content",
   );
   assertRegex(
-    appCss,
+    allCss,
     /\.settings-content\s*\{[^}]*max-width\s*:\s*var\(--settings-content-max\)/su,
-    "src/App.css",
+    "src/App.css + styles",
     "settings content should keep max-width cap token",
   );
   const requiredSemanticTokens = [
@@ -242,7 +249,7 @@ if (appCss) {
   ];
 
   for (const token of requiredSemanticTokens) {
-    assertIncludes(appCss, token, "src/App.css");
+    assertIncludes(mergedCss, token, "src/App.css + tokens.css");
   }
 
   const requiredCompatAliases = [
@@ -265,7 +272,7 @@ if (appCss) {
   ];
 
   for (const aliasToken of requiredCompatAliases) {
-    assertIncludes(appCss, aliasToken, "src/App.css");
+    assertIncludes(mergedCss, aliasToken, "src/App.css + tokens.css");
   }
 }
 

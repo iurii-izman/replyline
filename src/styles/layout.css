@@ -1,0 +1,341 @@
+.app-root {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-2);
+  overflow: hidden;
+}
+
+.shell-chrome {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.app-workarea {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 var(--space-1) var(--space-2) 0;
+}
+
+.app-view {
+  width: 100%;
+  max-width: var(--workspace-max);
+  margin-inline: auto;
+  min-height: 0;
+}
+
+.app-view--settings {
+  max-width: var(--settings-max);
+}
+.app-view--main {
+  max-width: var(--workspace-max);
+}
+.app-view-inner {
+  display: grid;
+  min-width: 0;
+}
+
+.app-page {
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.app-page-header {
+  min-width: 0;
+}
+.app-page-body {
+  min-width: 0;
+}
+.app-page-main {
+  min-width: 0;
+}
+.app-page-aside {
+  min-width: 0;
+}
+.app-sidebar {
+  min-width: 0;
+}
+.app-notice-area {
+  min-width: 0;
+}
+.app-sticky-footer {
+  min-width: 0;
+}
+.app-root > .app-notice-area:empty {
+  display: none;
+}
+
+.surface-card,
+.surface-panel {
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-soft);
+}
+
+.shell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 52px;
+  padding: 4px 0;
+}
+
+.app-header {
+  min-height: 52px;
+}
+.shell-header-drag {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.app-header-brand {
+  display: grid;
+  align-content: center;
+}
+.app-header-context {
+  flex: 1 1 38%;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  color: var(--text-secondary);
+}
+.app-header-section {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-name {
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: 0.015em;
+}
+.app-subtitle {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+.app-header-phase-wrap {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.app-header-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 27px;
+  border-radius: var(--radius-pill);
+  padding: 0 11px;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--surface-base) 76%, var(--surface-raised));
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.012em;
+  white-space: nowrap;
+}
+.app-header-phase-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+.app-header-phase--idle,
+.app-header-phase--ready {
+  color: color-mix(in srgb, var(--success) 78%, #234640);
+  background: color-mix(in srgb, var(--success-soft) 84%, var(--surface-base));
+  border-color: color-mix(in srgb, var(--success) 20%, transparent);
+}
+.app-header-phase--setup,
+.app-header-phase--capturing {
+  color: #6a4a14;
+  background: color-mix(in srgb, var(--amber-soft) 86%, var(--surface-base));
+  border-color: color-mix(in srgb, #6a4a14 18%, transparent);
+}
+.app-header-phase--busy {
+  color: color-mix(in srgb, var(--accent) 82%, #1a4e46);
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface-base));
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.app-header-phase--error {
+  color: color-mix(in srgb, var(--danger) 86%, #58262a);
+  background: color-mix(in srgb, var(--danger-soft) 88%, var(--surface-base));
+  border-color: color-mix(in srgb, var(--danger) 20%, transparent);
+}
+.app-header-phase--capturing .app-header-phase-dot {
+  box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 20%, transparent);
+  animation: phase-pulse 1.35s ease-in-out infinite;
+}
+.app-header-phase--busy .app-header-phase-dot {
+  background: transparent;
+  border: 1.8px solid currentColor;
+  border-right-color: transparent;
+  animation: phase-spin 1s linear infinite;
+}
+.app-header-hotkey {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
+  padding: 0 9px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  font-family:
+    "IBM Plex Mono", "JetBrains Mono", "Cascadia Mono", "Consolas", ui-monospace, monospace;
+  color: color-mix(in srgb, var(--text-secondary) 88%, #1f3c38);
+  background: color-mix(in srgb, var(--surface-base) 74%, white);
+  white-space: nowrap;
+}
+
+/* Breakpoints:
+   compact  : < 760px
+   normal   : 760px - 1279px
+   wide     : >= 1280px
+   ultra cap: >= 1680px (max content width cap) */
+@media (max-width: 759px) {
+  .app-root {
+    padding: var(--space-2);
+  }
+  .app-header-hotkey {
+    display: none;
+  }
+  .app-header-context {
+    flex-basis: 52%;
+    padding-inline: var(--space-1);
+  }
+  .app-header-phase {
+    max-width: 155px;
+  }
+  .app-workarea {
+    padding-right: 0;
+  }
+  .app-view,
+  .app-view--main,
+  .app-view--settings {
+    max-width: 100%;
+  }
+  .main-card {
+    padding: var(--space-3);
+    min-height: 320px;
+  }
+  .main-status-row {
+    min-height: 22px;
+  }
+  .result-actions,
+  .action-bar,
+  .settings-sticky-footer {
+    padding-top: var(--space-2);
+  }
+  .main-cockpit-layout.is-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-sidebar {
+    display: none;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1279px) {
+  .settings-content {
+    max-width: 920px;
+  }
+  .main-cockpit-layout.is-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .secondary-insights {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-sidebar {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main-cockpit-layout.is-wide {
+    grid-template-columns:
+      minmax(var(--main-col-min), var(--main-col-max))
+      minmax(var(--main-side-min), var(--main-side-max));
+    justify-content: center;
+    column-gap: clamp(24px, 1.8vw, 28px);
+  }
+  .cockpit-side {
+    display: grid;
+  }
+  .secondary-insights {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .settings-grid {
+    grid-template-columns:
+      var(--settings-sidebar-width)
+      minmax(var(--settings-content-min), var(--settings-content-max));
+    justify-content: center;
+    column-gap: clamp(24px, 2vw, 32px);
+    align-items: start;
+  }
+  .settings-sidebar {
+    display: block;
+  }
+  .settings-nav-mobile {
+    display: none;
+  }
+}
+
+@media (min-width: 1680px) {
+  .app-view--main {
+    max-width: var(--workspace-max);
+  }
+  .app-view--settings {
+    max-width: var(--settings-max);
+  }
+  .settings-content {
+    max-width: 1060px;
+  }
+}
+
+@media (max-width: 980px) {
+  .app-subtitle {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .app-header-phase-text {
+    max-width: 118px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+

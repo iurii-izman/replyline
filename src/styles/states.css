@@ -1,0 +1,104 @@
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-normal: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-name: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes phase-pulse {
+  0%,
+  100% {
+    transform: scale(0.84);
+    opacity: 0.94;
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 24%, transparent);
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 12%, transparent);
+  }
+}
+
+@keyframes phase-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes busy-shimmer {
+  from {
+    transform: translateX(-180%);
+  }
+  to {
+    transform: translateX(280%);
+  }
+}
+
+/* ── Context active chip ─────────────────────────────────── */
+.context-active-chip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 58%, white);
+}
+.context-chip-label {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.context-chip-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.context-chip-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* ── Compact adjustments ──────────────────────────────────── */
+@media (max-width: 759px) {
+  .context-chip-title {
+    max-width: 140px;
+  }
+  .context-active-chip {
+    justify-content: flex-start;
+  }
+  .interview-card-controls {
+    flex-wrap: wrap;
+  }
+  .main-card {
+    padding-bottom: calc(var(--page-footer-space) + 8px);
+  }
+  .result-section--primary {
+    padding: var(--space-3);
+  }
+  .answer-hero-header {
+    flex-wrap: wrap;
+  }
+  .status-strip {
+    flex-wrap: wrap;
+  }
+}
