@@ -2,12 +2,6 @@ import { createSignal, For, Show, onCleanup } from "solid-js";
 import type { ReplylineController } from "./controller";
 import type { ContextPackDto } from "./model";
 
-function compactPreview(content: string, maxLen: number): string {
-  const single = content.replace(/\s+/g, " ").trim();
-  if (single.length <= maxLen) return single;
-  return single.slice(0, maxLen).trimEnd() + "\u2026";
-}
-
 export function ContextPackPanel(props: Readonly<{ controller: ReplylineController }>) {
   const ctrl = () => props.controller;
   const st = () => ctrl().strings();
@@ -95,6 +89,8 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
 
   async function handleDelete(id: string) {
     cancelDeleteConfirm();
+    // Close editor if deleting the pack being edited.
+    if (draftId() === id) resetDraft();
     await ctrl().deleteContextPack(id);
   }
 
@@ -119,6 +115,12 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
   }
 
   const selectedPackId = () => draftId() || activePack()?.id || "";
+
+  const contentWordCount = () => {
+    return draftContent().trim().split(/\s+/).filter(Boolean).length;
+  };
+
+  const isEditingActive = () => activePack()?.id === draftId();
 
   return (
     <Show when={ctrl().panel() === "contextPack"}>
@@ -149,27 +151,17 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
         </header>
 
         <div class="context-pack-workspace" data-testid="context-pack-workspace">
-          {/* Saved contexts sidebar */}
+          {/* Saved contexts sidebar — narrow rail */}
           <nav
             class="context-pack-sidebar"
             data-testid="context-pack-sidebar"
             aria-label={st().contextPack.listTitle}
           >
-            <Show
-              when={packs().length > 0}
-              fallback={
-                <div class="context-pack-sidebar-inner">
-                  <p class="empty-flow-hint" style="margin:0;text-align:center">
-                    {st().contextPack.emptyHint}
-                  </p>
-                </div>
-              }
-            >
+            <Show when={packs().length > 0}>
               <div class="context-pack-sidebar-inner">
                 <For each={packs()}>
                   {(pack) => {
                     const isSelected = () => selectedPackId() === pack.id;
-                    const isActive = () => pack.isActive;
                     const linkClass = () =>
                       "context-pack-sidebar-link" + (isSelected() ? " is-active" : "");
                     return (
@@ -178,13 +170,15 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                         class={linkClass()}
                         data-testid={"context-pack-sidebar-link-" + pack.id}
                         onClick={() => startEdit(pack)}
+                        title={st().contextPack.editPack}
                       >
-                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 auto;min-width:0">
-                          {pack.title}
-                        </span>
-                        {isActive() && (
-                          <span class="badge badge-active" style="flex:0 0 auto">
-                            {st().contextPack.activeLabel}
+                        <span class="context-pack-sidebar-title">{pack.title}</span>
+                        {pack.isActive && (
+                          <span
+                            class="context-pack-sidebar-badge"
+                            aria-label={st().contextPack.activeLabel}
+                          >
+                            ●
                           </span>
                         )}
                       </button>
@@ -195,93 +189,112 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
             </Show>
           </nav>
 
-          {/* Editor panel */}
+          {/* Editor panel — the brief workspace */}
           <div class="context-pack-editor-panel" data-testid="context-pack-editor-panel">
-            {/* Active context card */}
-            <Show when={activePack()}>
-              {(pack) => (
-                <div class="context-pack-active-banner" data-testid="context-pack-active-banner">
-                  <div style="display:grid;gap:4px;min-width:0;flex:1 1 auto">
-                    <span class="context-pack-active-label">{st().contextPack.activeLabel}</span>
-                    <span class="context-pack-active-title" data-testid="context-pack-active-title">
-                      {pack().title}
-                    </span>
-                    <span
-                      class="context-pack-active-preview"
-                      data-testid="context-pack-active-preview"
-                    >
-                      {compactPreview(pack().content, 80)}
-                    </span>
-                    <span
-                      class="context-pack-active-charcount"
-                      data-testid="context-pack-active-charcount"
-                    >
-                      {(() => {
-                        const tpl = st().contextPack.charCount;
-                        return tpl.replace("{{count}}", String(pack().content.length));
-                      })()}
-                    </span>
-                  </div>
-                  <div class="context-pack-active-actions">
-                    <button
-                      type="button"
-                      class="btn btn-sm"
-                      data-testid="context-pack-edit-active-btn"
-                      onClick={() => startEdit(pack())}
-                    >
-                      {st().contextPack.editCtx}
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-danger"
-                      data-testid="context-pack-disable-btn"
-                      onClick={handleClearActive}
-                    >
-                      {st().contextPack.disableCtx}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </Show>
-
-            {/* Editor */}
-            <Show when={editing()}>
-              <div class="context-pack-editor" data-testid="context-pack-editor">
-                <label for="context-pack-title-field">
-                  <span class="field-label">{st().contextPack.titleLabel}</span>
-                  <input
-                    type="text"
-                    class="input"
-                    id="context-pack-title-field"
-                    data-testid="context-pack-title-input"
-                    value={draftTitle()}
-                    onInput={(e) => setDraftTitle(e.currentTarget.value)}
-                    maxLength={200}
-                    placeholder={st().contextPack.titleLabel}
-                  />
-                </label>
-                <label for="context-pack-content-field">
-                  <span class="field-label">{st().contextPack.contentLabel}</span>
-                  <textarea
-                    class="textarea"
-                    id="context-pack-content-field"
-                    data-testid="context-pack-content-input"
-                    value={draftContent()}
-                    onInput={(e) => setDraftContent(e.currentTarget.value)}
-                    rows={12}
-                    placeholder={st().contextPack.emptyExample}
-                  />
-                </label>
-                <Show when={!draftContent().trim()}>
+            {/* Active context indicator (subtle, non-blocking) */}
+            <Show when={activePack() && !editing()}>
+              <div class="context-brief-active" data-testid="context-pack-active-banner">
+                <span class="context-brief-active-dot" aria-hidden="true" />
+                <span>
+                  {st().contextPack.activeLabel}:{" "}
+                  <strong data-testid="context-pack-active-title">{activePack()!.title}</strong>
+                </span>
+                <span class="context-brief-active-meta">
+                  {(() => {
+                    const tpl = st().contextPack.charCount;
+                    return tpl.replace("{{count}}", String(activePack()!.content.length));
+                  })()}
+                </span>
+                <span class="context-brief-active-actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    data-testid="context-pack-edit-active-btn"
+                    onClick={() => startEdit(activePack()!)}
+                  >
+                    {st().contextPack.editCtx}
+                  </button>
                   <button
                     type="button"
                     class="btn btn-sm btn-ghost"
-                    data-testid="context-pack-insert-example-btn"
-                    onClick={insertExampleContent}
+                    data-testid="context-pack-disable-btn"
+                    onClick={handleClearActive}
                   >
-                    {st().contextPack.insertExample}
+                    {st().contextPack.disableCtx}
                   </button>
+                </span>
+              </div>
+            </Show>
+
+            {/* Editor — the brief document */}
+            <Show when={editing()}>
+              <div class="context-brief-editor" data-testid="context-pack-editor">
+                {/* Active indicator inside editor when editing active context */}
+                <Show when={isEditingActive()}>
+                  <div
+                    class="context-brief-editor-active"
+                    data-testid="context-brief-editor-active"
+                  >
+                    {st().contextPack.activeLabel}
+                  </div>
                 </Show>
+
+                <label
+                  for="context-pack-title-field"
+                  style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"
+                >
+                  {st().contextPack.titleLabel}
+                </label>
+                <input
+                  type="text"
+                  class="context-brief-title"
+                  id="context-pack-title-field"
+                  data-testid="context-pack-title-input"
+                  value={draftTitle()}
+                  onInput={(e) => setDraftTitle(e.currentTarget.value)}
+                  maxLength={200}
+                  placeholder={st().contextPack.titleLabel}
+                />
+
+                <label
+                  for="context-pack-content-field"
+                  style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"
+                >
+                  {st().contextPack.contentLabel}
+                </label>
+                <textarea
+                  class="context-brief-content"
+                  id="context-pack-content-field"
+                  data-testid="context-pack-content-input"
+                  value={draftContent()}
+                  onInput={(e) => setDraftContent(e.currentTarget.value)}
+                  rows={14}
+                  placeholder={st().contextPack.emptyExample}
+                />
+
+                <div class="context-brief-footer">
+                  <span class="context-brief-meta">
+                    {(() => {
+                      const tpl = st().contextPack.charCount;
+                      return tpl.replace("{{count}}", String(draftContent().length));
+                    })()}
+                    {" · "}
+                    {contentWordCount()} words
+                  </span>
+                  <span class="context-brief-insert">
+                    <Show when={!draftContent().trim()}>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        data-testid="context-pack-insert-example-btn"
+                        onClick={insertExampleContent}
+                      >
+                        {st().contextPack.insertExample}
+                      </button>
+                    </Show>
+                  </span>
+                </div>
+
                 <div class="context-pack-editor-actions">
                   <button
                     type="button"
@@ -294,18 +307,17 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                   </button>
                   <button
                     type="button"
-                    class="btn"
+                    class="btn btn-ghost"
                     data-testid="context-pack-cancel-btn"
                     onClick={resetDraft}
                   >
                     {st().contextPack.cancel}
                   </button>
-                </div>
 
-                {/* Inline context actions when editing an existing pack */}
-                <Show when={draftId()}>
-                  <div class="context-pack-item-actions" style="margin-top:var(--space-1)">
-                    <Show when={!activePack() || activePack()!.id !== draftId()}>
+                  {/* Context actions — only for existing packs */}
+                  <Show when={draftId()}>
+                    <span class="context-brief-actions-sep" aria-hidden="true" />
+                    <Show when={!isEditingActive()}>
                       <button
                         type="button"
                         class="btn btn-sm"
@@ -341,7 +353,7 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                           </button>
                           <button
                             type="button"
-                            class="btn btn-sm"
+                            class="btn btn-sm btn-ghost"
                             data-testid={"context-pack-delete-cancel-" + draftId()}
                             onClick={cancelDeleteConfirm}
                           >
@@ -359,12 +371,12 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                         {st().contextPack.deletePack}
                       </button>
                     </Show>
-                  </div>
-                </Show>
+                  </Show>
+                </div>
               </div>
             </Show>
 
-            {/* Empty state when no editor open and no packs */}
+            {/* Empty state */}
             <Show when={!editing() && packs().length === 0}>
               <div class="context-pack-empty" data-testid="context-pack-empty">
                 <p class="context-pack-empty-hint">{st().contextPack.emptyHint}</p>
@@ -385,98 +397,33 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
               </div>
             </Show>
 
-            {/* Saved context list (compact fallback when no sidebar visible on small screens) */}
+            {/* Saved context chips (narrow-screen fallback rail) */}
             <Show when={!editing() && packs().length > 0}>
-              <div
+              <nav
                 class="context-pack-list context-pack-list--compact"
                 data-testid="context-pack-list"
-                style={packs().length > 0 ? "" : "display:none"}
+                aria-label={st().contextPack.listTitle}
               >
-                <h3>{st().contextPack.listTitle}</h3>
                 <For each={packs()}>
                   {(pack) => {
-                    const isActive = () => pack.isActive;
-                    const isConfirming = () => confirmingDeleteId() === pack.id;
-                    const itemClass = () =>
-                      "context-pack-item" + (isActive() ? " context-pack-item--active" : "");
+                    const chipClass = () =>
+                      "context-pack-chip" +
+                      (pack.isActive ? " context-pack-chip--active" : "") +
+                      (selectedPackId() === pack.id ? " context-pack-chip--selected" : "");
                     return (
-                      <div class={itemClass()} data-testid={"context-pack-item-" + pack.id}>
-                        <div class="context-pack-item-info">
-                          <strong>{pack.title}</strong>
-                          <span class="context-pack-item-meta">
-                            {new Date(pack.updatedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div class="context-pack-item-actions">
-                          <Show
-                            when={!isActive()}
-                            fallback={
-                              <span class="badge badge-active">{st().contextPack.activeLabel}</span>
-                            }
-                          >
-                            <button
-                              type="button"
-                              class="btn btn-sm"
-                              data-testid={"context-pack-activate-" + pack.id}
-                              onClick={() => handleSetActive(pack.id)}
-                            >
-                              {st().contextPack.setActive}
-                            </button>
-                          </Show>
-                          <button
-                            type="button"
-                            class="btn btn-sm"
-                            data-testid={"context-pack-edit-" + pack.id}
-                            onClick={() => startEdit(pack)}
-                          >
-                            {st().contextPack.editPack}
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-sm"
-                            data-testid={"context-pack-duplicate-" + pack.id}
-                            onClick={() => handleDuplicate(pack)}
-                          >
-                            {st().contextPack.duplicatePack}
-                          </button>
-                          <Show
-                            when={!isConfirming()}
-                            fallback={
-                              <>
-                                <button
-                                  type="button"
-                                  class="btn btn-sm btn-danger"
-                                  data-testid={"context-pack-delete-confirm-" + pack.id}
-                                  onClick={() => handleDelete(pack.id)}
-                                >
-                                  {st().contextPack.confirmDelete}
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn btn-sm"
-                                  data-testid={"context-pack-delete-cancel-" + pack.id}
-                                  onClick={cancelDeleteConfirm}
-                                >
-                                  {st().contextPack.cancelConfirmDelete}
-                                </button>
-                              </>
-                            }
-                          >
-                            <button
-                              type="button"
-                              class="btn btn-sm btn-danger"
-                              data-testid={"context-pack-delete-" + pack.id}
-                              onClick={() => requestDeleteConfirm(pack.id)}
-                            >
-                              {st().contextPack.deletePack}
-                            </button>
-                          </Show>
-                        </div>
-                      </div>
+                      <button
+                        type="button"
+                        class={chipClass()}
+                        data-testid={"context-pack-item-" + pack.id}
+                        onClick={() => startEdit(pack)}
+                      >
+                        <span class="context-pack-chip-title">{pack.title}</span>
+                        {pack.isActive && <span class="context-pack-chip-badge">●</span>}
+                      </button>
                     );
                   }}
                 </For>
-              </div>
+              </nav>
             </Show>
           </div>
         </div>

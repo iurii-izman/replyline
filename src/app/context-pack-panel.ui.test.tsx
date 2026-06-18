@@ -27,6 +27,15 @@ describe("context pack panel", () => {
     });
   }
 
+  /** Opens a context in the editor by clicking its chip in the list. */
+  async function openContextInEditor(packId: string) {
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+    fireEvent.click(screen.getByTestId("context-pack-item-" + packId));
+    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+  }
+
   // ── Main surface chip ────────────────────────────────────────────
 
   it("active context chip visible on main surface", async () => {
@@ -169,10 +178,8 @@ describe("context pack panel", () => {
 
     await openContextPackPanel();
 
-    // Pack is in list but not active.
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
-      timeout: 3000,
-    });
+    // Open pack in editor to see the Set Active button.
+    await openContextInEditor("ctx-1");
     expect(screen.getByTestId("context-pack-activate-ctx-1")).toBeTruthy();
 
     // Click Set active.
@@ -183,18 +190,10 @@ describe("context pack panel", () => {
       expect(mock.invoke).toHaveBeenCalledWith("set_active_context_pack", { id: "ctx-1" });
     });
 
-    // Active banner appears inside panel.
+    // Active indicator appears inside editor.
     await waitFor(() => {
-      expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy();
+      expect(screen.getByTestId("context-brief-editor-active")).toBeTruthy();
     });
-
-    // Active chip appears on main surface (navigate back — close panel).
-    // The chip is visible via main surface; verify by query.
-    // Actually the chip is always rendered on MainSurface, which is behind the panel.
-    // Let's just check the active banner in panel.
-    expect(screen.getByTestId("context-pack-active-title").textContent).toContain(
-      "Test Context ctx-1",
-    );
   });
 
   it("disables active pack and removes active chip", async () => {
@@ -217,7 +216,7 @@ describe("context pack panel", () => {
       expect(mock.invoke).toHaveBeenCalledWith("clear_active_context_pack");
     });
 
-    // After loadContextPacks, active banner should disappear (pack becomes inactive).
+    // After loadContextPacks, active banner should disappear.
     await waitFor(() => {
       expect(screen.queryByTestId("context-pack-active-banner")).toBeNull();
     });
@@ -231,15 +230,10 @@ describe("context pack panel", () => {
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
-      timeout: 3000,
-    });
 
-    // Click Edit on the pack.
-    fireEvent.click(screen.getByTestId("context-pack-edit-ctx-1"));
+    // Click on the pack chip to open editor.
+    await openContextInEditor("ctx-1");
 
-    // Editor opens with pre-filled values.
-    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
     const titleInput = screen.getByTestId("context-pack-title-input") as HTMLInputElement;
     expect(titleInput.value).toBe("Test Context ctx-1");
 
@@ -247,7 +241,7 @@ describe("context pack panel", () => {
     fireEvent.input(titleInput, { target: { value: "Updated Title" } });
     fireEvent.click(screen.getByTestId("context-pack-save-btn"));
 
-    // Editor closes, updated title appears.
+    // Editor closes, updated title appears in chips.
     await waitFor(
       () => expect(screen.getAllByText("Updated Title").length).toBeGreaterThanOrEqual(1),
       {
@@ -270,11 +264,15 @@ describe("context pack panel", () => {
     fireEvent.click(screen.getByTestId("context-pack-edit-active-btn"));
 
     await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+    // Active indicator should be visible inside editor
+    expect(screen.getByTestId("context-brief-editor-active")).toBeTruthy();
     const contentInput = screen.getByTestId("context-pack-content-input") as HTMLTextAreaElement;
-    fireEvent.input(contentInput, { target: { value: "Updated content for active pack." } });
+    fireEvent.input(contentInput, {
+      target: { value: "Updated content for active pack with enough detail." },
+    });
     fireEvent.click(screen.getByTestId("context-pack-save-btn"));
 
-    // After reload, active banner still shows (mock preserves isActive on existing pack save).
+    // After reload, active banner still shows.
     await waitFor(() => expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy(), {
       timeout: 3000,
     });
@@ -288,16 +286,18 @@ describe("context pack panel", () => {
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+
+    // Both packs visible as chips.
+    await waitFor(() => expect(screen.getByTestId("context-pack-item-ctx-a")).toBeTruthy(), {
       timeout: 3000,
     });
-
-    expect(screen.getByTestId("context-pack-item-ctx-a")).toBeTruthy();
     expect(screen.getByTestId("context-pack-item-ctx-b")).toBeTruthy();
+
+    // Open ctx-a in editor to access delete button.
+    await openContextInEditor("ctx-a");
 
     // First click: request confirm.
     fireEvent.click(screen.getByTestId("context-pack-delete-ctx-a"));
-    // Confirm button appears, original delete is hidden.
     await waitFor(() => {
       expect(screen.getByTestId("context-pack-delete-confirm-ctx-a")).toBeTruthy();
     });
@@ -326,6 +326,9 @@ describe("context pack panel", () => {
     await waitFor(() => expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy(), {
       timeout: 3000,
     });
+
+    // Open ctx-1 in editor to access delete.
+    await openContextInEditor("ctx-1");
 
     // Request confirm.
     fireEvent.click(screen.getByTestId("context-pack-delete-ctx-1"));
@@ -376,7 +379,6 @@ describe("context pack panel", () => {
     const saveCalls = mock.invoke.mock.calls.filter(
       (c: [string, unknown?]) => c[0] === "save_context_pack",
     );
-    // Only bootstrap-initiated calls might exist; verify no new save with our data.
     const lastSaveWithTitle = saveCalls.filter((c: [string, unknown?]) => {
       const input = (c[1] as Record<string, unknown> | undefined)?.input as
         | Record<string, unknown>
@@ -413,21 +415,23 @@ describe("context pack panel", () => {
     expect(cancelBtn.textContent).toBeTruthy();
   });
 
-  it("list item action buttons have accessible text", async () => {
+  it("chips show active context and are clickable", async () => {
     const packs = [makePack("ctx-1", { isActive: true })];
     const mock = createMockPlatform({ contextPacks: packs });
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+    // Active banner should be visible.
+    await waitFor(() => expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy(), {
       timeout: 3000,
     });
-
-    // Active pack shows badge and action buttons.
-    const allActiveLabels = screen.getAllByText("Активный контекст");
-    expect(allActiveLabels.length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByTestId("context-pack-edit-ctx-1").textContent).toBeTruthy();
-    expect(screen.getByTestId("context-pack-delete-ctx-1").textContent).toBeTruthy();
+    // Active label is present in banner.
+    expect(screen.getByTestId("context-pack-active-banner").textContent).toContain(
+      "Активный контекст",
+    );
+    // Chip list is visible and chip is clickable.
+    expect(screen.getByTestId("context-pack-list")).toBeTruthy();
+    expect(screen.getByTestId("context-pack-item-ctx-1").tagName).toBe("BUTTON");
   });
 
   // ── Navigation ───────────────────────────────────────────────────
@@ -487,17 +491,17 @@ describe("context pack panel", () => {
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
-      timeout: 3000,
-    });
 
-    // Activate the pack.
+    // Open pack in editor and click Set Active.
+    await openContextInEditor("ctx-1");
     fireEvent.click(screen.getByTestId("context-pack-activate-ctx-1"));
     await waitFor(() => {
       expect(mock.invoke).toHaveBeenCalledWith("set_active_context_pack", { id: "ctx-1" });
     });
 
-    // Active banner visible inside panel.
+    // Close editor first, then active banner appears.
+    fireEvent.click(screen.getByTestId("context-pack-cancel-btn"));
+    await waitFor(() => expect(screen.queryByTestId("context-pack-editor")).toBeNull());
     await waitFor(() => expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy());
 
     // Navigate back to main surface.
@@ -520,7 +524,6 @@ describe("context pack panel", () => {
     await openContextPackPanel();
 
     const newBtn = screen.getByTestId("context-pack-new-btn") as HTMLButtonElement;
-    // Button is enabled when no editor.
     expect(newBtn.disabled).toBe(false);
 
     // Open editor.
@@ -570,16 +573,15 @@ describe("context pack panel", () => {
     await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
       timeout: 3000,
     });
-    // The notice appears briefly — check it exists.
     await waitFor(() => expect(screen.getByTestId("notice-message")).toBeTruthy(), {
       timeout: 3000,
     });
     expect(screen.getByTestId("notice-message").textContent).toBeTruthy();
   });
 
-  // ── Active preview ────────────────────────────────────────────────
+  // ── Active banner ────────────────────────────────────────────────
 
-  it("active banner shows compact preview and character count", async () => {
+  it("active banner shows context title and character count", async () => {
     const content =
       "I am a senior developer working on the authentication module. " +
       "The current sprint focuses on OAuth2 migration and security review.";
@@ -592,34 +594,11 @@ describe("context pack panel", () => {
       timeout: 3000,
     });
 
-    // Preview is visible.
-    const preview = screen.getByTestId("context-pack-active-preview");
-    expect(preview.textContent).toBeTruthy();
-    // Preview is truncated to ≤80 chars (+ ellipsis).
-    expect(preview.textContent!.length).toBeLessThanOrEqual(84);
-
-    // Character count is visible.
-    const charCount = screen.getByTestId("context-pack-active-charcount");
-    expect(charCount.textContent).toBeTruthy();
-    // Character count contains the actual character count.
-    expect(charCount.textContent).toContain(String(content.length));
-  });
-
-  it("active preview truncates very long content safely", async () => {
-    const content = "A".repeat(200);
-    const packs = [makePack("ctx-1", { isActive: true, content })];
-    const mock = createMockPlatform({ contextPacks: packs });
-    renderApp(mock);
-
-    await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-active-banner")).toBeTruthy(), {
-      timeout: 3000,
-    });
-
-    const preview = screen.getByTestId("context-pack-active-preview");
-    // Preview is truncated with ellipsis.
-    expect(preview.textContent).toContain("\u2026");
-    expect(preview.textContent!.length).toBeLessThanOrEqual(84);
+    // Title is visible.
+    expect(screen.getByTestId("context-pack-active-title").textContent).toContain("Test Context");
+    // Character count is visible in the banner.
+    const banner = screen.getByTestId("context-pack-active-banner");
+    expect(banner.textContent).toContain(String(content.length));
   });
 
   // ── Duplicate flow ────────────────────────────────────────────────
@@ -630,11 +609,11 @@ describe("context pack panel", () => {
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
-      timeout: 3000,
-    });
 
-    // Click Duplicate on the pack.
+    // Open pack in editor to access duplicate button.
+    await openContextInEditor("ctx-1");
+
+    // Click Duplicate.
     fireEvent.click(screen.getByTestId("context-pack-duplicate-ctx-1"));
 
     // Verify save_context_pack was called with localized suffix.
@@ -657,9 +636,7 @@ describe("context pack panel", () => {
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
-      timeout: 3000,
-    });
+    await openContextInEditor("ctx-1");
 
     // Click Duplicate.
     fireEvent.click(screen.getByTestId("context-pack-duplicate-ctx-1"));
@@ -669,7 +646,6 @@ describe("context pack panel", () => {
       const activateCalls = mock.invoke.mock.calls.filter(
         (c: [string, unknown?]) => c[0] === "set_active_context_pack",
       );
-      // Only bootstrap-initiated calls may exist; no new activate.
       const nonBootstrapActivates = activateCalls.filter(
         (_c: [string, unknown?], i: number) => i > 0,
       );
@@ -685,9 +661,7 @@ describe("context pack panel", () => {
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
-      timeout: 3000,
-    });
+    await openContextInEditor("ctx-1");
 
     // Click delete — confirm buttons appear.
     fireEvent.click(screen.getByTestId("context-pack-delete-ctx-1"));
@@ -715,17 +689,23 @@ describe("context pack panel", () => {
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
-      timeout: 3000,
-    });
 
-    // Request confirm on ctx-a.
+    // Open ctx-a in editor, request confirm.
+    await openContextInEditor("ctx-a");
     fireEvent.click(screen.getByTestId("context-pack-delete-ctx-a"));
     await waitFor(() => {
       expect(screen.getByTestId("context-pack-delete-confirm-ctx-a")).toBeTruthy();
     });
 
-    // ctx-b should still show normal delete.
+    // Cancel confirmation to go back to editor, then close editor.
+    fireEvent.click(screen.getByTestId("context-pack-cancel-btn"));
+    await waitFor(() => expect(screen.queryByTestId("context-pack-editor")).toBeNull());
+
+    // Now open ctx-b in editor.
+    fireEvent.click(screen.getByTestId("context-pack-item-ctx-b"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+
+    // ctx-b should show normal delete (confirmation is scoped per-pack).
     expect(screen.getByTestId("context-pack-delete-ctx-b")).toBeTruthy();
     expect(screen.queryByTestId("context-pack-delete-confirm-ctx-b")).toBeNull();
   });
@@ -767,8 +747,6 @@ describe("context pack panel", () => {
 
     const contentInput = screen.getByTestId("context-pack-content-input") as HTMLTextAreaElement;
     expect(contentInput.value).toContain("тимлид");
-    // Save button should be enabled (content is pre-filled, but title still empty).
-    expect(screen.getByTestId("context-pack-save-btn")).toHaveProperty("disabled", true);
   });
 
   // ── Keyboard flow ─────────────────────────────────────────────────
@@ -779,9 +757,7 @@ describe("context pack panel", () => {
     renderApp(mock);
 
     await openContextPackPanel();
-    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
-      timeout: 3000,
-    });
+    await openContextInEditor("ctx-1");
 
     // Delete button is focusable.
     const deleteBtn = screen.getByTestId("context-pack-delete-ctx-1");

@@ -1770,11 +1770,7 @@ textarea.field-input {
 }
 
 .context-pack-header,
-.context-pack-active-banner,
-.context-pack-item,
-.context-pack-editor-actions,
-.context-pack-item-actions,
-.context-pack-active-actions {
+.context-pack-editor-actions {
   display: flex;
   gap: var(--space-2);
   align-items: center;
@@ -1784,9 +1780,117 @@ textarea.field-input {
 .context-pack-header {
   justify-content: space-between;
 }
-.context-pack-active-banner,
-.context-pack-item {
+
+/* ── Brief active indicator ─────────────────────────────── */
+.context-brief-active {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-soft) 36%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+  font-size: var(--text-sm);
+}
+.context-brief-active-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex: 0 0 auto;
+}
+.context-brief-active-meta {
+  color: var(--text-tertiary);
+  font-size: var(--text-caption);
+  margin-left: auto;
+}
+.context-brief-active-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+/* ── Brief editor ────────────────────────────────────────── */
+.context-brief-editor {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-soft);
+}
+.context-brief-editor-active {
+  display: inline-flex;
+  align-self: start;
+  font-size: var(--text-caption);
+  font-weight: 700;
+  color: var(--success);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+  background: var(--success-soft);
+  width: fit-content;
+}
+.context-brief-title {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--border-default);
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: var(--space-2) 0;
+  outline: none;
+  transition: border-color 120ms ease;
+}
+.context-brief-title:focus {
+  border-bottom-color: var(--accent);
+}
+.context-brief-title::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 400;
+  font-size: var(--text-body);
+}
+.context-brief-content {
+  width: 100%;
+  min-height: 220px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--text-primary);
+  padding: 0;
+  outline: none;
+  resize: vertical;
+  font-family: var(--font-sans);
+}
+.context-brief-content::placeholder {
+  color: var(--text-tertiary);
+  font-style: italic;
+  line-height: 1.6;
+}
+.context-brief-footer {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--space-2);
+}
+.context-brief-meta {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+.context-brief-insert {
+  display: flex;
+  gap: var(--space-1);
+}
+.context-brief-actions-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border-default);
+  flex: 0 0 auto;
 }
 
 .context-pack-sidebar {
@@ -1810,7 +1914,7 @@ textarea.field-input {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-1);
-  padding: 8px 10px;
+  padding: 6px 10px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -1829,6 +1933,60 @@ textarea.field-input {
   background: color-mix(in srgb, var(--accent-soft) 48%, white);
   border-color: color-mix(in srgb, var(--accent) 20%, transparent);
 }
+.context-pack-sidebar-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.context-pack-sidebar-badge {
+  flex: 0 0 auto;
+  font-size: 8px;
+  color: var(--success);
+  line-height: 1;
+}
+
+/* ── Narrow-screen chip rail ─────────────────────────────── */
+.context-pack-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-default);
+  background: var(--surface-base);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease;
+}
+.context-pack-chip:hover {
+  background: var(--surface-raised);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.context-pack-chip--active {
+  border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 56%, white);
+}
+.context-pack-chip--selected {
+  border-color: var(--accent);
+}
+.context-pack-chip-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+.context-pack-chip-badge {
+  font-size: 7px;
+  color: var(--success);
+  line-height: 1;
+  flex: 0 0 auto;
+}
 
 .context-pack-editor-panel {
   display: grid;
@@ -1843,8 +2001,6 @@ textarea.field-input {
 }
 
 .context-pack-active-banner,
-.context-pack-editor,
-.context-pack-list,
 .context-pack-empty,
 .context-pack-item {
   border: 1px solid var(--border-default);
@@ -1853,10 +2009,12 @@ textarea.field-input {
   padding: var(--space-3);
 }
 
-.context-pack-editor,
 .context-pack-list {
-  display: grid;
-  gap: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
 }
 
 .context-pack-item--active {
