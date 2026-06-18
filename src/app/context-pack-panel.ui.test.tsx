@@ -278,7 +278,7 @@ describe("context pack panel", () => {
 
   // ── Delete flow ──────────────────────────────────────────────────
 
-  it("deletes an inactive pack and removes only that pack", async () => {
+  it("deletes an inactive pack after confirmation step", async () => {
     const packs = [makePack("ctx-a"), makePack("ctx-b")];
     const mock = createMockPlatform({ contextPacks: packs });
     renderApp(mock);
@@ -291,8 +291,16 @@ describe("context pack panel", () => {
     expect(screen.getByTestId("context-pack-item-ctx-a")).toBeTruthy();
     expect(screen.getByTestId("context-pack-item-ctx-b")).toBeTruthy();
 
-    // Delete ctx-a.
+    // First click: request confirm.
     fireEvent.click(screen.getByTestId("context-pack-delete-ctx-a"));
+    // Confirm button appears, original delete is hidden.
+    await waitFor(() => {
+      expect(screen.getByTestId("context-pack-delete-confirm-ctx-a")).toBeTruthy();
+    });
+    expect(screen.queryByTestId("context-pack-delete-ctx-a")).toBeNull();
+
+    // Second click: confirm delete.
+    fireEvent.click(screen.getByTestId("context-pack-delete-confirm-ctx-a"));
 
     await waitFor(() => {
       expect(mock.invoke).toHaveBeenCalledWith("delete_context_pack", { id: "ctx-a" });
@@ -305,7 +313,7 @@ describe("context pack panel", () => {
     expect(screen.getByTestId("context-pack-item-ctx-b")).toBeTruthy();
   });
 
-  it("deleting an active pack clears the active state", async () => {
+  it("deleting an active pack clears the active state via confirmation", async () => {
     const packs = [makePack("ctx-1", { isActive: true })];
     const mock = createMockPlatform({ contextPacks: packs });
     renderApp(mock);
@@ -315,8 +323,14 @@ describe("context pack panel", () => {
       timeout: 3000,
     });
 
-    // Delete the active pack.
+    // Request confirm.
     fireEvent.click(screen.getByTestId("context-pack-delete-ctx-1"));
+    await waitFor(() => {
+      expect(screen.getByTestId("context-pack-delete-confirm-ctx-1")).toBeTruthy();
+    });
+
+    // Confirm delete.
+    fireEvent.click(screen.getByTestId("context-pack-delete-confirm-ctx-1"));
 
     await waitFor(() => {
       expect(mock.invoke).toHaveBeenCalledWith("delete_context_pack", { id: "ctx-1" });
@@ -605,7 +619,7 @@ describe("context pack panel", () => {
 
   // ── Duplicate flow ────────────────────────────────────────────────
 
-  it("duplicate creates a copy with (Copy) in the title", async () => {
+  it("duplicate creates a copy with localized suffix", async () => {
     const packs = [makePack("ctx-1", { title: "Original" })];
     const mock = createMockPlatform({ contextPacks: packs });
     renderApp(mock);
@@ -618,7 +632,7 @@ describe("context pack panel", () => {
     // Click Duplicate on the pack.
     fireEvent.click(screen.getByTestId("context-pack-duplicate-ctx-1"));
 
-    // Verify save_context_pack was called with a title containing "(Copy)".
+    // Verify save_context_pack was called with localized suffix.
     await waitFor(() => {
       const saveCalls = mock.invoke.mock.calls.filter(
         (c: [string, unknown?]) => c[0] === "save_context_pack",
@@ -626,7 +640,8 @@ describe("context pack panel", () => {
       expect(saveCalls.length).toBeGreaterThanOrEqual(1);
       const lastCall = saveCalls[saveCalls.length - 1];
       const input = (lastCall[1] as Record<string, unknown>).input as Record<string, unknown>;
-      expect(input.title).toContain("(Copy)");
+      expect(input.title).toContain(" (копия)");
+      expect(input.title).not.toContain("(Copy)");
       expect(input.isActive).toBe(false);
     });
   });
@@ -655,5 +670,133 @@ describe("context pack panel", () => {
       );
       expect(nonBootstrapActivates.length).toBe(0);
     });
+  });
+
+  // ── Delete confirmation safety ────────────────────────────────────
+
+  it("cancel delete confirm returns to normal delete button", async () => {
+    const packs = [makePack("ctx-1")];
+    const mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    // Click delete — confirm buttons appear.
+    fireEvent.click(screen.getByTestId("context-pack-delete-ctx-1"));
+    await waitFor(() => {
+      expect(screen.getByTestId("context-pack-delete-confirm-ctx-1")).toBeTruthy();
+    });
+    expect(screen.getByTestId("context-pack-delete-cancel-ctx-1")).toBeTruthy();
+
+    // Click cancel — back to normal delete.
+    fireEvent.click(screen.getByTestId("context-pack-delete-cancel-ctx-1"));
+    await waitFor(() => {
+      expect(screen.getByTestId("context-pack-delete-ctx-1")).toBeTruthy();
+    });
+    expect(screen.queryByTestId("context-pack-delete-confirm-ctx-1")).toBeNull();
+    // No delete was invoked.
+    const deleteCalls = mock.invoke.mock.calls.filter(
+      (c: [string, unknown?]) => c[0] === "delete_context_pack",
+    );
+    expect(deleteCalls.length).toBe(0);
+  });
+
+  it("delete confirmation is scoped — only one pack shows confirm at a time", async () => {
+    const packs = [makePack("ctx-a"), makePack("ctx-b")];
+    const mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    // Request confirm on ctx-a.
+    fireEvent.click(screen.getByTestId("context-pack-delete-ctx-a"));
+    await waitFor(() => {
+      expect(screen.getByTestId("context-pack-delete-confirm-ctx-a")).toBeTruthy();
+    });
+
+    // ctx-b should still show normal delete.
+    expect(screen.getByTestId("context-pack-delete-ctx-b")).toBeTruthy();
+    expect(screen.queryByTestId("context-pack-delete-confirm-ctx-b")).toBeNull();
+  });
+
+  // ── Insert / Use example ──────────────────────────────────────────
+
+  it("insert example button fills content draft while editing", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    fireEvent.click(screen.getByTestId("context-pack-new-btn"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+
+    // Insert example button visible when content is empty.
+    expect(screen.getByTestId("context-pack-insert-example-btn")).toBeTruthy();
+
+    // Click fills the content input with example text.
+    fireEvent.click(screen.getByTestId("context-pack-insert-example-btn"));
+    const contentInput = screen.getByTestId("context-pack-content-input") as HTMLTextAreaElement;
+    expect(contentInput.value).toContain("тимлид");
+    // Insert button hides once content is non-empty.
+    expect(screen.queryByTestId("context-pack-insert-example-btn")).toBeNull();
+  });
+
+  it("use example from empty state opens editor with pre-filled content", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-empty")).toBeTruthy());
+
+    // Use example button is in empty state.
+    expect(screen.getByTestId("context-pack-use-example-btn")).toBeTruthy();
+
+    // Click opens editor with example content.
+    fireEvent.click(screen.getByTestId("context-pack-use-example-btn"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+
+    const contentInput = screen.getByTestId("context-pack-content-input") as HTMLTextAreaElement;
+    expect(contentInput.value).toContain("тимлид");
+    // Save button should be enabled (content is pre-filled, but title still empty).
+    expect(screen.getByTestId("context-pack-save-btn")).toHaveProperty("disabled", true);
+  });
+
+  // ── Keyboard flow ─────────────────────────────────────────────────
+
+  it("keyboard flow works through delete confirm cycle", async () => {
+    const packs = [makePack("ctx-1")];
+    const mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await openContextPackPanel();
+    await waitFor(() => expect(screen.getByTestId("context-pack-list")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    // Delete button is focusable.
+    const deleteBtn = screen.getByTestId("context-pack-delete-ctx-1");
+    deleteBtn.focus();
+    expect(document.activeElement).toBe(deleteBtn);
+
+    // Click delete — confirm appears.
+    fireEvent.click(deleteBtn);
+    await waitFor(() => {
+      expect(screen.getByTestId("context-pack-delete-confirm-ctx-1")).toBeTruthy();
+    });
+
+    // Confirm button is focusable.
+    const confirmBtn = screen.getByTestId("context-pack-delete-confirm-ctx-1");
+    confirmBtn.focus();
+    expect(document.activeElement).toBe(confirmBtn);
+
+    // Cancel button is focusable.
+    const cancelBtn = screen.getByTestId("context-pack-delete-cancel-ctx-1");
+    cancelBtn.focus();
+    expect(document.activeElement).toBe(cancelBtn);
   });
 });

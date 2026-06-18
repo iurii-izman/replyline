@@ -1,4 +1,4 @@
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For, Show, onCleanup } from "solid-js";
 import type { ReplylineController } from "./controller";
 import type { ContextPackDto } from "./model";
 
@@ -18,6 +18,23 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
   const [editing, setEditing] = createSignal(false);
   const [saving, setSaving] = createSignal(false);
 
+  const [confirmingDeleteId, setConfirmingDeleteId] = createSignal<string | null>(null);
+  let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+  onCleanup(() => {
+    if (confirmTimer) clearTimeout(confirmTimer);
+  });
+
+  function requestDeleteConfirm(id: string) {
+    setConfirmingDeleteId(id);
+    if (confirmTimer) clearTimeout(confirmTimer);
+    confirmTimer = setTimeout(() => setConfirmingDeleteId(null), 4000);
+  }
+
+  function cancelDeleteConfirm() {
+    setConfirmingDeleteId(null);
+    if (confirmTimer) clearTimeout(confirmTimer);
+  }
+
   const activePack = () => ctrl().activeContextPack();
   const packs = () => ctrl().contextPacks();
 
@@ -32,6 +49,7 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
 
   function startNew() {
     resetDraft();
+    cancelDeleteConfirm();
     setEditing(true);
   }
 
@@ -40,6 +58,17 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
     setDraftTitle(pack.title);
     setDraftContent(pack.content);
     setEditing(true);
+    cancelDeleteConfirm();
+  }
+
+  function startWithExample() {
+    resetDraft();
+    setDraftContent(st().contextPack.emptyExample);
+    setEditing(true);
+  }
+
+  function insertExampleContent() {
+    setDraftContent(st().contextPack.emptyExample);
   }
 
   async function handleSave() {
@@ -66,11 +95,13 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
   }
 
   async function handleDelete(id: string) {
+    cancelDeleteConfirm();
     await ctrl().deleteContextPack(id);
   }
 
   async function handleSetActive(id: string) {
     await ctrl().setActiveContextPackAction(id);
+    cancelDeleteConfirm();
   }
 
   async function handleClearActive() {
@@ -80,7 +111,7 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
   async function handleDuplicate(pack: ContextPackDto) {
     await ctrl().saveContextPack({
       id: "ctx-" + String(Date.now()),
-      title: pack.title + " (Copy)",
+      title: pack.title + st().contextPack.duplicateSuffix,
       content: pack.content,
       isActive: false,
       createdAt: "",
@@ -182,6 +213,16 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                 placeholder={st().contextPack.emptyExample}
               />
             </label>
+            <Show when={!draftContent().trim()}>
+              <button
+                type="button"
+                class="btn btn-sm btn-ghost"
+                data-testid="context-pack-insert-example-btn"
+                onClick={insertExampleContent}
+              >
+                {st().contextPack.insertExample}
+              </button>
+            </Show>
             <div class="context-pack-editor-actions">
               <button
                 type="button"
@@ -215,6 +256,14 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
               <p class="context-pack-empty-example" data-testid="context-pack-empty-example">
                 {st().contextPack.emptyExample}
               </p>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-testid="context-pack-use-example-btn"
+                onClick={startWithExample}
+              >
+                {st().contextPack.useExample}
+              </button>
             </div>
           }
         >
@@ -223,6 +272,7 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
             <For each={packs()}>
               {(pack) => {
                 const isActive = () => pack.isActive;
+                const isConfirming = () => confirmingDeleteId() === pack.id;
                 const itemClass = () =>
                   "context-pack-item" + (isActive() ? " context-pack-item--active" : "");
                 return (
@@ -265,14 +315,38 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                       >
                         {st().contextPack.duplicatePack}
                       </button>
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-danger"
-                        data-testid={"context-pack-delete-" + pack.id}
-                        onClick={() => handleDelete(pack.id)}
+                      <Show
+                        when={!isConfirming()}
+                        fallback={
+                          <>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-danger"
+                              data-testid={"context-pack-delete-confirm-" + pack.id}
+                              onClick={() => handleDelete(pack.id)}
+                            >
+                              {st().contextPack.confirmDelete}
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-sm"
+                              data-testid={"context-pack-delete-cancel-" + pack.id}
+                              onClick={cancelDeleteConfirm}
+                            >
+                              {st().contextPack.cancelConfirmDelete}
+                            </button>
+                          </>
+                        }
                       >
-                        {st().contextPack.deletePack}
-                      </button>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-danger"
+                          data-testid={"context-pack-delete-" + pack.id}
+                          onClick={() => requestDeleteConfirm(pack.id)}
+                        >
+                          {st().contextPack.deletePack}
+                        </button>
+                      </Show>
                     </div>
                   </div>
                 );
