@@ -73,6 +73,7 @@ export const common_ru = {
     retryDone: "Карточка обновлена.",
     hotkeyAlreadyRegistered: "Клавиша уже занята.",
     setupIssueHintCopied: "Sanitized issue hint скопирован.",
+    supportSnapshotCopied: "Диагностический snapshot скопирован.",
   },
   checks: {
     title: "Результаты проверки",
@@ -200,6 +201,7 @@ export const common_en: typeof common_ru = {
     retryDone: "Card updated.",
     hotkeyAlreadyRegistered: "Hotkey is already taken.",
     setupIssueHintCopied: "Sanitized issue hint copied.",
+    supportSnapshotCopied: "Support snapshot copied.",
   },
   checks: {
     title: "Check results",

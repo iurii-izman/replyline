@@ -1,7 +1,7 @@
 # Replyline IPC Command Reference
 
 > **Date:** 2026-06-17
-> **Commands:** 40 (9 categories)
+> **Commands:** 41 (9 categories)
 > **Enforced by:** `scripts/check-ipc-handler-contract.mjs`
 
 This document describes every IPC command registered in the Replyline Tauri backend.
@@ -463,6 +463,20 @@ Commands for trace inspection, cleanup, and persistence health checks.
 - **Input:** None.
 - **Output:** None.
 - **Privacy:** Creates directory if missing. No trace content returned via IPC.
+
+### `get_support_snapshot`
+
+- **Category:** diagnostics
+- **Stability:** `internal`
+- **Purpose:** Builds a public-safe support snapshot for QA and support. The
+  payload describes provider readiness, current app phase, active ContextPack
+  title, last error category, app version, and OS/runtime metadata.
+- **Input:** `input: SupportSnapshotInputDto` with frontend-owned
+  `currentPhase?: string` and `lastErrorCategory?: string`.
+- **Output:** `SupportSnapshotPayloadDto` with structured `snapshot`, formatted
+  `json`, and copy-ready `markdown`.
+- **Privacy:** Safe metadata only. Does not include transcripts, raw ContextPack
+  content, API keys, provider responses, or local filesystem paths.
 
 ### `get_feedback_payload`
 

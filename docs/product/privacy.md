@@ -23,14 +23,14 @@ Default runtime does not write raw audio or transcripts to disk automatically.
 
 ## What is stored locally
 
-| Data | Location | Notes |
-| --- | --- | --- |
-| App settings | `%APPDATA%\com.replyline.app\settings.json` | Local plaintext JSON preferences. |
-| API keys | Windows Credential Manager | OS-managed secret storage. |
-| App log | `%APPDATA%\com.replyline.app\logs\app.log` | Sanitized operational log with size rotation. |
-| Interview reports | `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json` | Local-only report store with user-controlled retention. |
-| ContextPack files | `%APPDATA%\com.replyline.app\context-packs.json` | Local user-controlled conversation context packs. |
-| Debug traces | Local trace directory controlled by Settings | Optional diagnostics artifacts; sensitivity depends on trace mode. |
+| Data              | Location                                                          | Notes                                                              |
+| ----------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| App settings      | `%APPDATA%\com.replyline.app\settings.json`                       | Local plaintext JSON preferences.                                  |
+| API keys          | Windows Credential Manager                                        | OS-managed secret storage.                                         |
+| App log           | `%APPDATA%\com.replyline.app\logs\app.log`                        | Sanitized operational log with size rotation.                      |
+| Interview reports | `%LOCALAPPDATA%\com.replyline.app\reports\interview-reports.json` | Local-only report store with user-controlled retention.            |
+| ContextPack files | `%APPDATA%\com.replyline.app\context-packs.json`                  | Local user-controlled conversation context packs.                  |
+| Debug traces      | Local trace directory controlled by Settings                      | Optional diagnostics artifacts; sensitivity depends on trace mode. |
 
 ## What is not stored by default
 
@@ -47,6 +47,10 @@ Conversation context is RAM-only, bounded, and cleared on restart or after TTL e
 - Report export happens only on explicit user action.
 - `Export full markdown` is sensitive because it can include transcript content.
 - `Export redacted markdown` excludes raw/full transcript and is the safer sharing path.
+- The Settings support snapshot is public-safe by default: it includes provider readiness,
+  current phase, active ContextPack title only, last error category, app version, and
+  OS/runtime metadata. It excludes raw transcript, raw ContextPack content, provider
+  responses, prompts, secrets, and local paths.
 - Bilingual interview export is also explicit only:
   - `full` can include finalized transcript-derived content.
   - `redacted` includes metadata only and excludes raw transcript text, translated text, full prompts, and raw ContextPack values.

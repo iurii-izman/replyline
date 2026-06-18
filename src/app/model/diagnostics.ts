@@ -90,3 +90,38 @@ export type PersistenceDiagnosticsDto = {
   appLogExists: boolean;
   lastLogEventTime?: string | null;
 };
+
+export type SupportSnapshotProviderReadinessDto = {
+  sttProvider: string;
+  sttKeyPresent: boolean;
+  llmRouteConfigured: boolean;
+  llmKeyPresent: boolean;
+  runtimePathReady: boolean;
+  selectedModelPreset: string;
+  llmRouteKind: string;
+};
+
+export type SupportSnapshotRuntimeDto = {
+  os: string;
+  arch: string;
+  family: string;
+  desktopRuntime: string;
+};
+
+export type SupportSnapshotDto = {
+  schemaVersion: number;
+  generatedAt: string;
+  appVersion: string;
+  commitSha: string;
+  currentPhase: string;
+  activeContextTitle?: string | null;
+  lastErrorCategory?: string | null;
+  providerReadiness: SupportSnapshotProviderReadinessDto;
+  runtime: SupportSnapshotRuntimeDto;
+};
+
+export type SupportSnapshotPayloadDto = {
+  snapshot: SupportSnapshotDto;
+  json: string;
+  markdown: string;
+};

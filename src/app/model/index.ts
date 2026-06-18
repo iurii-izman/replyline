@@ -47,6 +47,7 @@ export type {
   SetupStatusDto,
   SetupReadinessState,
   PersistenceDiagnosticsDto,
+  SupportSnapshotPayloadDto,
 } from "./diagnostics";
 
 export { formatHotkeyFromEvent } from "./hotkeys";

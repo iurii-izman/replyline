@@ -46,7 +46,8 @@ macro_rules! replyline_commands {
             $crate::commands::interview::clear_interview_reports,
             $crate::commands::diagnostics::open_trace_folder,
             $crate::commands::diagnostics::clear_debug_traces,
-            $crate::commands::diagnostics::get_trace_status
+            $crate::commands::diagnostics::get_trace_status,
+            $crate::commands::diagnostics::get_support_snapshot
         ]
     };
 }

@@ -42,6 +42,10 @@ export const settings_ru = {
   reportsEverydayHint: "Что хранить и когда очищать в повседневной работе.",
   reportsOpsTitle: "Диагностика и операции",
   reportsOpsHint: "Расширенная локальная диагностика. Используйте только при разборе проблем.",
+  supportSnapshotTitle: "Поддержка и QA",
+  supportSnapshotHint:
+    "Скопируйте public-safe snapshot: readiness, фаза, active ContextPack title и runtime metadata без transcript, raw context, paths, secrets или provider response.",
+  copySupportSnapshot: "Скопировать диагностический snapshot",
   providerNotesTitle: "Провайдер и caveats",
   save: "Сохранить",
   saving: "Сохраняем настройки...",
@@ -181,6 +185,10 @@ export const settings_en: typeof settings_ru = {
   reportsEverydayHint: "Choose what to keep and when to clear in normal use.",
   reportsOpsTitle: "Diagnostics and operations",
   reportsOpsHint: "Advanced local diagnostics for troubleshooting only.",
+  supportSnapshotTitle: "Support and QA",
+  supportSnapshotHint:
+    "Copy a public-safe snapshot: readiness, phase, active ContextPack title, and runtime metadata without transcript, raw context, paths, secrets, or provider response.",
+  copySupportSnapshot: "Copy diagnostic snapshot",
   providerNotesTitle: "Provider notes and caveats",
   save: "Save",
   saving: "Saving settings...",

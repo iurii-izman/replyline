@@ -73,6 +73,45 @@ describe("settings integration", () => {
     ).toBe(true);
   });
 
+  it("copies a public-safe support snapshot from advanced diagnostics", async () => {
+    const mock = createMockPlatform({
+      contextPacks: [
+        {
+          id: "ctx-1",
+          title: "Client QBR",
+          content: "SECRET project context with raw notes",
+          isActive: true,
+          createdAt: "2026-06-18T10:00:00Z",
+          updatedAt: "2026-06-18T10:00:00Z",
+        },
+      ],
+    });
+    renderApp(mock);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await openSettingsPanel();
+    openSettingsSection(/Дополнительно/i);
+
+    fireEvent.click(screen.getByRole("button", { name: "Скопировать диагностический snapshot" }));
+
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "get_support_snapshot")).toBe(true),
+    );
+    const snapshotCall = mock.invoke.mock.calls.find((call) => call[0] === "get_support_snapshot");
+    const snapshotInput = (snapshotCall?.[1] as { input?: { currentPhase?: string } } | undefined)
+      ?.input;
+    expect(snapshotInput?.currentPhase).toBe("idle");
+    expect(mock.platform.clipboard.writeText).toHaveBeenCalled();
+    const copied = String(
+      (mock.platform.clipboard.writeText as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[0] ?? "",
+    );
+    expect(copied).toContain("# Replyline Support Snapshot");
+    expect(copied).toContain("Client QBR");
+    expect(copied).not.toContain("SECRET project context");
+    expect(copied).not.toContain("rawTranscript");
+    expect(copied).not.toContain("provider response");
+    expect(copied).not.toContain("sk-");
+  });
+
   it("supports model preset caveats, preset sync, and custom route override safety", async () => {
     const mock = createMockPlatform();
     renderApp(mock);

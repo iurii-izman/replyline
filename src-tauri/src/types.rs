@@ -320,6 +320,66 @@ pub struct FeedbackErrorDto {
     pub summary: String,
 }
 
+/// Input supplied by the UI for the public-safe support snapshot.
+/// These fields are already visible UI state; backend adds provider/app/runtime metadata.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportSnapshotInputDto {
+    pub current_phase: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_error_category: Option<String>,
+}
+
+/// Provider readiness summary safe for public support/QA sharing.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportSnapshotProviderReadinessDto {
+    pub stt_provider: String,
+    pub stt_key_present: bool,
+    pub llm_route_configured: bool,
+    pub llm_key_present: bool,
+    pub runtime_path_ready: bool,
+    pub selected_model_preset: String,
+    pub llm_route_kind: String,
+}
+
+/// Runtime metadata safe for public support/QA sharing.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportSnapshotRuntimeDto {
+    pub os: String,
+    pub arch: String,
+    pub family: String,
+    pub desktop_runtime: String,
+}
+
+/// Public-safe diagnostic snapshot.
+/// It intentionally omits transcripts, raw ContextPack content, paths, secrets,
+/// provider request/response bodies, prompts, and card text.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportSnapshotDto {
+    pub schema_version: u8,
+    pub generated_at: String,
+    pub app_version: String,
+    pub commit_sha: String,
+    pub current_phase: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_context_title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_error_category: Option<String>,
+    pub provider_readiness: SupportSnapshotProviderReadinessDto,
+    pub runtime: SupportSnapshotRuntimeDto,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportSnapshotPayloadDto {
+    pub snapshot: SupportSnapshotDto,
+    pub json: String,
+    pub markdown: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TraceStatusDto {

@@ -148,6 +148,22 @@ export function ReportsSection(props: Readonly<{ controller: ReplylineController
       <section class="settings-subsection settings-subsection--ops" data-testid="advanced-debug">
         <h4 class="settings-subsection-title">{st().settings.reportsOpsTitle}</h4>
         <p class="field-help">{st().settings.reportsOpsHint}</p>
+        <div class="settings-inline-callout" data-testid="support-snapshot-block">
+          <div>
+            <h5 class="settings-subsection-title settings-subsection-title--inline">
+              {st().settings.supportSnapshotTitle}
+            </h5>
+            <p class="field-help">{st().settings.supportSnapshotHint}</p>
+          </div>
+          <button
+            class="btn-secondary btn-compact"
+            type="button"
+            onClick={() => void controller().copySupportSnapshot()}
+            data-testid="copy-support-snapshot-btn"
+          >
+            {st().settings.copySupportSnapshot}
+          </button>
+        </div>
         <label class="field" data-testid="debug-trace-mode-field">
           <span class="field-label">{st().settings.debugTraceModeLabel}</span>
           <select

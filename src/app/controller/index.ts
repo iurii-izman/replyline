@@ -16,6 +16,7 @@ import {
   type RuntimeCheckDto,
   type SettingsSectionId,
   type SetupReadinessState,
+  type SupportSnapshotPayloadDto,
   invokeErrorMessage,
   isConfiguredLlmRoute,
 } from "../model";
@@ -574,6 +575,16 @@ export function useReplylineController(platform: AppPlatform) {
     copySetupIssueHint: async () => {
       await platform.clipboard.writeText(buildSetupIssueHint());
       notices.pushNotice({ tone: "info", message: strings().notices.setupIssueHintCopied });
+    },
+    copySupportSnapshot: async () => {
+      const payload = await platform.invoke<SupportSnapshotPayloadDto>("get_support_snapshot", {
+        input: {
+          currentPhase: phase(),
+          lastErrorCategory: lastCommandErrorKind(),
+        },
+      });
+      await platform.clipboard.writeText(payload.markdown);
+      notices.pushNotice({ tone: "info", message: strings().notices.supportSnapshotCopied });
     },
     refreshPersistenceDiagnostics: async () => {
       setPersistenceDiagnosticsError(null);

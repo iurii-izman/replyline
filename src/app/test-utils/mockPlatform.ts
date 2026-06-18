@@ -179,6 +179,42 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     if (options.analysisError) throw options.analysisError;
     return options.analysisCard ?? { gist: "g", sayNow: "say", nextMove: "next" };
   };
+  const handleSupportSnapshot = (args?: Record<string, unknown>) => {
+    const input = (args?.input ?? {}) as { currentPhase?: string; lastErrorCategory?: string };
+    const active = contextPacks.find((p) => p.isActive);
+    const snapshot = {
+      schemaVersion: 1,
+      generatedAt: "2026-06-18T00:00:00Z",
+      appVersion: "0.2.0-beta.3",
+      commitSha: "test",
+      currentPhase: input.currentPhase ?? "idle",
+      activeContextTitle: active?.title ?? null,
+      lastErrorCategory: input.lastErrorCategory ?? null,
+      providerReadiness: {
+        sttProvider: "deepgram",
+        sttKeyPresent: deepgramPresent,
+        llmRouteConfigured: Boolean(
+          settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim(),
+        ),
+        llmKeyPresent: llmPresent,
+        runtimePathReady: runtimeReady(),
+        selectedModelPreset: settingsState.selectedModelPreset,
+        llmRouteKind: "remote_https",
+      },
+      runtime: {
+        os: "windows",
+        arch: "x86_64",
+        family: "windows",
+        desktopRuntime: "tauri",
+      },
+    };
+    const json = JSON.stringify(snapshot, null, 2);
+    return {
+      snapshot,
+      json,
+      markdown: `# Replyline Support Snapshot\n\n\`\`\`json\n${json}\n\`\`\``,
+    };
+  };
   const handleCommand = (command: string, args?: Record<string, unknown>) => {
     if (command === "load_bootstrap") return handleBootstrap();
     if (command === "get_setup_status") return handleSetupStatus();
@@ -195,6 +231,7 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     if (command === "clear_interview_reports" || command === "log_client_event") {
       return null;
     }
+    if (command === "get_support_snapshot") return handleSupportSnapshot(args);
     if (command === "start_interview_session") {
       return {
         active: true,
