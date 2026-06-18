@@ -17,12 +17,16 @@
   }
   .app-view,
   .app-view--main,
-  .app-view--settings {
+  .app-view--settings,
+  .app-view--context-pack {
     max-width: 100%;
   }
   .main-card {
     padding: var(--space-3);
     min-height: 320px;
+  }
+  .settings-card {
+    padding: var(--space-3);
   }
   .main-status-row {
     min-height: 22px;
@@ -89,6 +93,19 @@
   .settings-nav-mobile {
     display: none;
   }
+  .context-pack-workspace {
+    grid-template-columns:
+      var(--context-pack-sidebar-width)
+      minmax(var(--context-pack-content-min), 1fr);
+    column-gap: clamp(20px, 1.8vw, 28px);
+    align-items: start;
+  }
+  .context-pack-sidebar {
+    display: block;
+  }
+  .context-pack-list--compact {
+    display: none;
+  }
 }
 
 @media (min-width: 1680px) {
@@ -116,4 +133,3 @@
     text-overflow: ellipsis;
   }
 }
-

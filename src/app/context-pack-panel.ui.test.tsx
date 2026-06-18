@@ -85,8 +85,9 @@ describe("context pack panel", () => {
     await openContextPackPanel();
 
     // Empty state before creation.
-    expect(screen.getByTestId("context-pack-empty")).toBeTruthy();
-    expect(screen.getByText(/Создайте контекст/)).toBeTruthy();
+    const emptyState = screen.getByTestId("context-pack-empty");
+    expect(emptyState).toBeTruthy();
+    expect(emptyState.textContent).toContain("Создайте контекст");
 
     // Click New.
     fireEvent.click(screen.getByTestId("context-pack-new-btn"));
@@ -120,7 +121,7 @@ describe("context pack panel", () => {
     });
     // After save, controller calls loadContextPacks which re-fetches.
     await waitFor(() => {
-      expect(screen.getByText("My Q3 Prep")).toBeTruthy();
+      expect(screen.getAllByText("My Q3 Prep").length).toBeGreaterThanOrEqual(1);
     });
 
     // Verify invoke was called with correct payload.
@@ -247,9 +248,12 @@ describe("context pack panel", () => {
     fireEvent.click(screen.getByTestId("context-pack-save-btn"));
 
     // Editor closes, updated title appears.
-    await waitFor(() => expect(screen.getByText("Updated Title")).toBeTruthy(), {
-      timeout: 3000,
-    });
+    await waitFor(
+      () => expect(screen.getAllByText("Updated Title").length).toBeGreaterThanOrEqual(1),
+      {
+        timeout: 3000,
+      },
+    );
   });
 
   it("edits active pack and preserves active status", async () => {
@@ -420,7 +424,8 @@ describe("context pack panel", () => {
     });
 
     // Active pack shows badge and action buttons.
-    expect(screen.getByText("Активный контекст")).toBeTruthy();
+    const allActiveLabels = screen.getAllByText("Активный контекст");
+    expect(allActiveLabels.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId("context-pack-edit-ctx-1").textContent).toBeTruthy();
     expect(screen.getByTestId("context-pack-delete-ctx-1").textContent).toBeTruthy();
   });

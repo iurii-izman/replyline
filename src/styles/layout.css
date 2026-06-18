@@ -42,6 +42,9 @@
 .app-view--main {
   max-width: var(--workspace-max);
 }
+.app-view--context-pack {
+  max-width: var(--context-pack-max);
+}
 .app-view-inner {
   display: grid;
   min-width: 0;

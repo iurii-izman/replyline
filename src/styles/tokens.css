@@ -8,13 +8,15 @@
   --text-sm: 0.86rem;
   --text-base: 0.95rem;
   --text-md: 1rem;
-  --text-lg: 1.1rem;
-  --text-xl: 1.24rem;
+  --text-lg: 1.12rem;
+  --text-xl: 1.28rem;
+  --text-2xl: 1.44rem;
   --text-caption: var(--text-xs);
   --text-body: var(--text-base);
   --text-body-strong: 1.02rem;
   --text-title: var(--text-lg);
   --text-hero: var(--text-xl);
+  --text-answer: var(--text-2xl);
   --leading-tight: 1.3;
   --leading-body: 1.5;
 
@@ -117,13 +119,16 @@
 
   --workspace-max: 1440px;
   --settings-max: 1240px;
+  --context-pack-max: 1280px;
   --main-col-min: 720px;
-  --main-col-max: 860px;
+  --main-col-max: 900px;
   --main-side-min: 320px;
   --main-side-max: 360px;
   --settings-sidebar-width: 260px;
   --settings-content-min: 760px;
-  --settings-content-max: 880px;
+  --settings-content-max: 900px;
+  --context-pack-sidebar-width: 280px;
+  --context-pack-content-min: 680px;
   --page-footer-space: 72px;
   --content-ultra-cap: 1680px;
   --side-panel-width: 340px;
@@ -135,7 +140,7 @@
   --color-btn-primary-bg: var(--accent);
   --color-btn-primary-fg: #f8f6f2;
   --radius-card: var(--radius-lg);
-  --text-say-now: var(--text-hero);
+  --text-say-now: var(--text-answer);
   --color-say-now-bg: linear-gradient(
     135deg,
     color-mix(in srgb, var(--color-warning-soft) 75%, white),

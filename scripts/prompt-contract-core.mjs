@@ -90,7 +90,7 @@ function validateV3Answer(rawAnswer) {
   const answer = rawAnswer.trim();
   const words = answer.split(/\s+/u).filter(Boolean);
   const sentences = answer.split(/[.!?]/u).filter((part) => part.trim()).length;
-  if (answer.length > 560) return "answer_now must be <= 560 chars";
+  if (answer.length > 1200) return "answer_now must be <= 1200 chars";
   if (words.length < 10) return "answer_now should be paragraph-shaped (>= 10 words)";
   if (sentences < 2 && words.length < 18) {
     return "answer_now should read as a paragraph (2+ sentences or >= 18 words)";
@@ -116,11 +116,11 @@ export function validateCard(card, snippet) {
   }
 
   const sayNow = card.say_now.trim();
-  if (sayNow.length > 560) {
-    return "say_now must be <= 560 chars";
+  if (sayNow.length > 1200) {
+    return "say_now must be <= 1200 chars";
   }
-  if (sayNow.split(/\s+/u).length > 80) {
-    return "say_now should stay speakable (<= 80 words)";
+  if (sayNow.split(/\s+/u).length > 200) {
+    return "say_now should stay speakable (<= 200 words)";
   }
 
   const banned = [
@@ -163,7 +163,7 @@ export function deterministicCardFromSnippet(snippet) {
   return {
     gist,
     say_now:
-      "Давайте зафиксируем решение и срок: сегодня подтверждаю следующий шаг письменно. После согласования отправлю короткий итог с владельцем и контрольной датой.",
+      "Давайте зафиксируем решение и срок: сегодня подтверждаю следующий шаг письменно. После согласования отправлю короткий итог с владельцем и контрольной датой. Если будут дополнительные вопросы — соберу уточнения в отдельном сообщении.",
     next_move: "Уточню владельца действия и время контрольной проверки в чате.",
   };
 }

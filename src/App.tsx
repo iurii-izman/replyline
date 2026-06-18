@@ -15,7 +15,8 @@ function App(props: AppProps) {
   const controller = useReplylineController(props.platform ?? getDefaultPlatform());
   const panelClass = () => {
     if (controller.panel() === "main") return "app-view app-view--main";
-    if (controller.panel() === "contextPack") return "app-view app-view--context-pack";
+    if (controller.panel() === "contextPack")
+      return "app-view app-view--main app-view--context-pack";
     return "app-view app-view--settings";
   };
 
