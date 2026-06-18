@@ -5,6 +5,7 @@ export function ProcessingState(props: Readonly<{ controller: ReplylineControlle
   const controller = () => props.controller;
   const st = () => controller().strings();
   const isRecording = () => controller().phase() === "capturing";
+  const isTranscribing = () => controller().phase() === "transcribing";
   const isAnalyzing = () => controller().phase() === "analyzing";
 
   return (
@@ -16,9 +17,14 @@ export function ProcessingState(props: Readonly<{ controller: ReplylineControlle
         when={isRecording()}
         fallback={
           <>
-            <strong>{st().header.statusAnalyzing}</strong>
-            <p class="empty-flow-hint">
-              {st().card.processingSpeech} {"->"} {st().card.processingReply}
+            <strong data-testid="processing-phase-label">
+              {isTranscribing() ? st().header.statusTranscribing : st().header.statusAnalyzing}
+            </strong>
+            <p class="empty-flow-hint" data-testid="processing-step-hint">
+              {isTranscribing() ? st().card.processingSpeech : st().card.processingReply}
+            </p>
+            <p class="processing-step-count" data-testid="processing-step-count">
+              {isTranscribing() ? st().card.processingStep1of2 : st().card.processingStep2of2}
             </p>
           </>
         }

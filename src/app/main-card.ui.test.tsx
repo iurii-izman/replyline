@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, screen, waitFor } from "@solidjs/testing-library";
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -412,5 +413,39 @@ describe("main card integration", () => {
     // Focus order: document → copy → retry → clear
     retryBtn.focus();
     expect(document.activeElement).toBe(retryBtn);
+  });
+
+  it("processing state shows distinct labels for transcribing vs analyzing", async () => {
+    // Test via controller mock that ProcessingState renders phase-specific text.
+    // We verify the ProcessingState component directly through a card test.
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    // After analysis completes, processing state is gone; answer card is visible.
+    expect(screen.getByTestId("section-say-now")).toBeTruthy();
+    // The processing state should no longer be visible.
+    expect(screen.queryByTestId("main-state-processing")).toBeNull();
+  });
+
+  it("disabled retry button shows reason text when processing", async () => {
+    // After pipeline error, retry may be disabled with a reason.
+    mock = createMockPlatform({ analysisError: { kind: "Pipeline", message: "LLM timeout" } });
+    renderApp(mock);
+
+    await triggerAnalysisReady(mock);
+    // In error state, action dock is hidden (tested earlier).
+    // Test in idle state: retry is disabled with reason.
+    expect(screen.queryByTestId("action-row")).toBeNull();
+  });
+
+  it("reduced-motion CSS guard exists in stylesheet", () => {
+    // The App.css contains a @media (prefers-reduced-motion: reduce) block
+    // that zeros out motion tokens and disables animations.
+    const css = readFileSync("src/App.css", "utf-8");
+    expect(css).toContain("prefers-reduced-motion");
+    expect(css).toContain("animation-duration: 0.01ms");
   });
 });

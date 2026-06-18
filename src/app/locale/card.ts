@@ -1,8 +1,5 @@
 import { interview_ru, interview_en } from "./interview";
-import {
-  bilingualExperimental_ru,
-  bilingualExperimental_en,
-} from "./bilingualExperimental";
+import { bilingualExperimental_ru, bilingualExperimental_en } from "./bilingualExperimental";
 
 export const card_ru = {
   gistLabel: "Суть",
@@ -15,8 +12,7 @@ export const card_ru = {
   idleRecordHint: "Зажмите Ctrl+Alt+Space, чтобы записать фрагмент.",
   idlePipelineHint: "После записи вы получите суть, ответ и следующий шаг.",
   setupRequiredHint: "Сначала заполните «Речь» и «Ответ / LLM».",
-  setupCompactHint:
-    "Настройки хранятся локально. Ключи нужны для доступа к облачным провайдерам.",
+  setupCompactHint: "Настройки хранятся локально. Ключи нужны для доступа к облачным провайдерам.",
   phasePrefix: "Статус",
   phaseStatusIdle: "ожидание",
   phaseStatusCapturing: "запись",
@@ -50,6 +46,8 @@ export const card_ru = {
   releaseToAnalyze: "Отпустите клавишу для анализа",
   processingSpeech: "Распознаём речь",
   processingReply: "Собираем ответ",
+  processingStep1of2: "Шаг 1/2 — речь в текст",
+  processingStep2of2: "Шаг 2/2 — текст в ответ",
   errorFixAction: "Открыть настройки",
   emptyGistCompact: "Суть появится после записи.",
   emptyNextMoveCompact: "Следующий шаг появится после анализа.",
@@ -113,6 +111,8 @@ export const card_en: typeof card_ru = {
   releaseToAnalyze: "Release the hotkey to analyze",
   processingSpeech: "Transcribing speech",
   processingReply: "Building answer",
+  processingStep1of2: "Step 1/2 — speech to text",
+  processingStep2of2: "Step 2/2 — text to answer",
   errorFixAction: "Open settings",
   emptyGistCompact: "Gist appears after capture.",
   emptyNextMoveCompact: "Next move appears after analysis.",

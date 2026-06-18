@@ -171,7 +171,7 @@ describe("MainSurface state-driven view", () => {
         ) as never,
     );
     expect(screen.getByTestId("main-state-processing")).toBeTruthy();
-    expect(screen.getByText("Собираем ответ")).toBeTruthy();
+    expect(screen.getByTestId("processing-phase-label").textContent).toBe("Распознаём");
     expect(screen.queryByTestId("pipeline-timeline")).toBeNull();
   });
 
@@ -214,7 +214,7 @@ describe("MainSurface state-driven view", () => {
     expect(screen.getByTestId("main-state-processing").className).toContain(
       "phase-card--analyzing",
     );
-    expect(screen.getByText("Собираем ответ")).toBeTruthy();
+    expect(screen.getByTestId("processing-phase-label").textContent).toBe("Собираем ответ");
   });
 
   it("answer-ready renders hero, insight and action dock", () => {
