@@ -54,31 +54,33 @@ the desktop app. Neither installs prerequisites automatically — install them f
 > **Screenshot placeholder**: `first-launch-idle.png` — Replyline tray icon and
 > idle MainSurface showing the ContextPack hint and hotkey instruction.
 
-### Configure providers
+### Setup walkthrough
 
-Open **Settings** and fill:
+The app guides you through three essential steps when you first open it:
 
-1. **Deepgram API key** — required for speech-to-text.
-2. **LLM base URL** — your OpenAI-compatible endpoint (e.g. `https://api.openai.com/v1`).
-3. **LLM model** — model name your endpoint expects (e.g. `gpt-4o-mini`).
-4. **LLM API key** — if your endpoint requires authentication.
+1. **Speech** — enter your Deepgram API key. The key is stored in Windows
+   Credential Manager, never in plaintext settings.
+2. **LLM route** — choose a model preset or set a custom OpenAI-compatible
+   endpoint. Fill the base URL (e.g. `https://api.openai.com/v1`) and model name
+   (e.g. `gpt-4o-mini`).
+3. **Hotkey** — assign a capture shortcut. Default safe choice: `Ctrl+Alt+Space`.
 
-Keys are stored in Windows Credential Manager, not in plaintext settings.
+After filling the required fields, open **Settings → Overview** and click
+**Run check** to verify that Speech and LLM are reachable.
 
 > **Screenshot placeholder**: `settings-providers.png` — Settings panel with
 > provider fields filled (keys redacted).
 
 ### Create your first ContextPack
 
-1. Click the **ContextPack** button in the main UI.
-2. Click **Create new pack**.
-3. Give it a short name.
-4. Add background context in the text area — describe the conversation domain,
-   your role, or relevant constraints.
-5. Click **Save** and then **Activate**.
+1. Once all three setup steps show ✓, click **Create conversation context**.
+2. Give it a short name (e.g. "Q3 planning").
+3. Write your background context in the brief editor — your role, the project,
+   relevant constraints.
+4. Click **Save** and then **Set Active**.
 
 > **Screenshot placeholder**: `context-pack-create.png` — ContextPack panel
-> showing the create form with a filled name and context text.
+> showing the brief editor with a filled name and context text.
 >
 > **Screenshot placeholder**: `context-pack-active.png` — MainSurface with
 > active ContextPack badge visible.
@@ -88,7 +90,9 @@ Keys are stored in Windows Credential Manager, not in plaintext settings.
 1. Make sure system audio is playing through your default Windows output device.
 2. Hold `Ctrl+Alt+Space` while a safe synthetic phrase plays.
 3. Release the hotkey.
-4. Wait for the card: `gist`, `say_now`, `next_move`.
+4. During processing you will see an elapsed timer, stage indicator, and
+   progress feedback.
+5. Wait for the card: headline answer, supporting detail, gist, and next move.
 
 Use synthetic, non-confidential audio for testing. Example safe phrase:
 
@@ -96,7 +100,7 @@ Use synthetic, non-confidential audio for testing. Example safe phrase:
 > How do I flag the risk calmly and suggest a next step?"
 
 > **Screenshot placeholder**: `first-card.png` — MainSurface showing a
-> completed card with gist, say_now, and next_move visible.
+> completed card with answer headline, detail, gist, and next move visible.
 
 ### What next
 
