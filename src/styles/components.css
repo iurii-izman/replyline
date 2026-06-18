@@ -425,8 +425,14 @@
 .secondary-insights {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-3);
+  gap: var(--space-2);
   align-items: stretch;
+}
+.insight-section--gist {
+  background: color-mix(in srgb, var(--surface-muted) 80%, white);
+}
+.insight-section--next {
+  border-left: 3px solid color-mix(in srgb, var(--accent) 42%, #a0c0b0);
 }
 
 .result-card {
@@ -459,9 +465,10 @@
 
 .result-section--compact {
   min-height: 0;
-  padding: 10px 12px;
+  padding: var(--space-2) var(--space-3);
   height: 100%;
-  background: color-mix(in srgb, var(--surface-muted) 85%, white);
+  border: none;
+  background: transparent;
 }
 
 .result-section--primary {
@@ -561,10 +568,21 @@
   border: 1px solid color-mix(in srgb, var(--border-default) 72%, white);
   padding: 8px 10px;
   box-shadow: var(--shadow-xs);
+  gap: var(--space-2);
 }
-.action-bar[data-testid="action-row"] .btn-secondary,
-.action-bar[data-testid="action-row"] .btn-danger {
+.action-bar[data-testid="action-row"] .btn-secondary {
   min-width: 132px;
+}
+.action-bar[data-testid="action-row"] .btn-ghost {
+  font-size: var(--text-caption);
+  min-width: 0;
+  padding-inline: 10px;
+  color: var(--text-tertiary);
+  border-color: transparent;
+}
+.action-bar[data-testid="action-row"] .btn-ghost:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: rgba(23, 36, 34, 0.06);
 }
 .action-dock-item {
   display: flex;
@@ -867,9 +885,9 @@
   color: #5c4207;
 }
 .answer-hero {
-  max-width: 82ch;
+  max-width: 86ch;
   box-shadow: var(--shadow-hero);
-  padding: var(--space-6) var(--space-5);
+  padding: var(--space-6) var(--space-5) var(--space-5);
   border-radius: var(--radius-lg);
   border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border-default));
   background: linear-gradient(
@@ -883,20 +901,36 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 }
-.answer-hero .result-text--speak {
+.answer-body {
+  display: grid;
+  gap: var(--space-3);
+}
+.answer-headline {
   font-size: var(--text-answer);
-  line-height: 1.6;
+  line-height: 1.55;
   max-width: 74ch;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--color-text-accent);
+}
+.answer-detail {
+  font-size: var(--text-body);
+  line-height: 1.65;
+  max-width: 74ch;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+.answer-detail--empty {
+  color: var(--text-tertiary);
+  font-style: italic;
 }
 
 .card-section-divider {
   border: none;
   border-top: 1px solid var(--border-default);
-  margin: var(--space-2) 0 var(--space-3);
-  opacity: 0.45;
+  margin: var(--space-3) 0 var(--space-3);
+  opacity: 0.32;
 }
 .answer-copy-btn {
   min-width: 160px;

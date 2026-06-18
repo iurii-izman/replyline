@@ -25,7 +25,7 @@ export function ActionDock(props: Readonly<{ controller: ReplylineController }>)
       </div>
       <div class="action-dock-item">
         <button
-          class="btn-danger btn-ghost"
+          class="btn-ghost"
           type="button"
           disabled={!controller().canClear()}
           title={controller().clearDisabledReason() ?? ""}

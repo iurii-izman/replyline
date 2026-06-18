@@ -144,7 +144,7 @@ describe("main card integration", () => {
     await waitFor(() =>
       expect(mock.invoke.mock.calls.some((call) => call[0] === "retry_last_analysis")).toBe(true),
     );
-    expect(await screen.findByTestId("section-say-now")).toBeTruthy();
+    expect(await screen.findByTestId("answer-body")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
     await waitFor(() =>
@@ -317,20 +317,21 @@ describe("main card integration", () => {
     renderApp(mock);
     await triggerAnalysisReady(mock);
 
-    const sayNowEl = screen.getByTestId("section-say-now");
+    const sayNowHeadline = screen.getByTestId("answer-headline");
     const gistTextEl = screen.getByTestId("section-gist").querySelector(".result-text");
-    expect(sayNowEl).toBeTruthy();
+    expect(sayNowHeadline).toBeTruthy();
     expect(gistTextEl).toBeTruthy();
 
-    // say_now uses the result-text--speak class for stronger typography
-    expect(sayNowEl.classList.contains("result-text--speak")).toBe(true);
+    // answer-headline uses result-text--speak for stronger typography
+    expect(sayNowHeadline.classList.contains("result-text--speak")).toBe(true);
     // gist text uses plain result-text (no speak modifier)
     expect(gistTextEl!.classList.contains("result-text--speak")).toBe(false);
-    // say_now has font-weight: 700 via CSS
-    expect(sayNowEl.tagName).toBe("P");
-    // answer-hero-card wraps say_now as the primary element
+    // answer-headline is the primary visual element inside answer-hero-card
+    expect(sayNowHeadline.tagName).toBe("P");
     const heroCard = screen.getByTestId("answer-hero-card");
-    expect(heroCard.contains(sayNowEl)).toBe(true);
+    expect(heroCard.contains(sayNowHeadline)).toBe(true);
+    // answer detail is also present
+    expect(screen.getByTestId("answer-detail")).toBeTruthy();
   });
 
   it("copy button transitions to copied state and back", async () => {
@@ -426,7 +427,7 @@ describe("main card integration", () => {
     await triggerAnalysisReady(mock);
 
     // After analysis completes, processing state is gone; answer card is visible.
-    expect(screen.getByTestId("section-say-now")).toBeTruthy();
+    expect(screen.getByTestId("answer-body")).toBeTruthy();
     // The processing state should no longer be visible.
     expect(screen.queryByTestId("main-state-processing")).toBeNull();
   });

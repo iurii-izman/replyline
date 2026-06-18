@@ -6,11 +6,29 @@ export function InsightStrip(props: Readonly<{ controller: ReplylineController }
   const st = () => controller().strings();
   return (
     <section class="secondary-insights" data-testid="secondary-insight-cards">
-      <section class="result-section result-section--compact" data-testid="section-gist">
+      {/* Gist — one-line question context */}
+      <section
+        class="result-section result-section--compact insight-section--gist"
+        data-testid="section-gist"
+        title={st().card.gistHint}
+      >
         <div class="result-label">{st().card.gistLabel}</div>
-        <p class="result-meta">{st().card.gistHint}</p>
         <p class="result-text">{controller().card()?.gist?.trim() || st().card.emptyGistCompact}</p>
       </section>
+
+      {/* Next move — what to do next */}
+      <section
+        class="result-section result-section--compact insight-section--next"
+        data-testid="section-next-move"
+        title={st().card.nextMoveHint}
+      >
+        <div class="result-label">{st().card.nextMoveLabel}</div>
+        <p class="result-text">
+          {controller().card()?.nextMove?.trim() || st().card.emptyNextMoveCompact}
+        </p>
+      </section>
+
+      {/* Evidence — supporting facts */}
       <Show when={controller().card()?.starEvidence?.trim()}>
         <section
           class="result-section result-section--compact insight-section--evidence"
@@ -20,6 +38,8 @@ export function InsightStrip(props: Readonly<{ controller: ReplylineController }
           <p class="result-text">{controller().card()?.starEvidence?.trim()}</p>
         </section>
       </Show>
+
+      {/* Risk / clarifier */}
       <Show when={controller().card()?.riskOrClarifier?.trim()}>
         <section
           class="result-section result-section--compact insight-section--risk"
@@ -29,13 +49,6 @@ export function InsightStrip(props: Readonly<{ controller: ReplylineController }
           <p class="result-text">{controller().card()?.riskOrClarifier?.trim()}</p>
         </section>
       </Show>
-      <section class="result-section result-section--compact" data-testid="section-next-move">
-        <div class="result-label">{st().card.nextMoveLabel}</div>
-        <p class="result-meta">{st().card.nextMoveHint}</p>
-        <p class="result-text">
-          {controller().card()?.nextMove?.trim() || st().card.emptyNextMoveCompact}
-        </p>
-      </section>
     </section>
   );
 }

@@ -181,10 +181,10 @@
 | Attribute | Value |
 |---|---|
 | **Primary user goal** | Read and use the answer |
-| **Primary action** | Read `say_now`, optionally copy |
+| **Primary action** | Read headline + detail, copy to clipboard |
 | **Secondary action** | Retry, clear context, navigate interview cards (if interview mode) |
-| **What must not distract** | The `say_now` field is the dominant visual element |
-| **UI elements** | `LiveAssistShell` + `LiveAnswerCard`: gist section, `say_now` section (prominent), next_move section, `ActionDock` with Retry + Clear buttons, side panel (interview cards/report if applicable), `InsightStrip` with quality tags |
+| **What must not distract** | The answer headline is the dominant element |
+| **UI elements** | `LiveAnswerCard`: answer hero headline/detail (first sentence bold, rest supporting), Copy in header; `InsightStrip`: Gist → Next Move → Evidence → Risk below divider; `ActionDock` Retry (secondary) + Clear (ghost) in pill container |
 | **UX risks** | Card can be truncated on compact widths; interview carousel navigation (1-6 keys) is not visually discoverable; copy action feedback is not obvious (no «Copied!» toast) |
 | **Test coverage** | `main-card.ui.test.tsx` — work happy path (capture → card → copy → retry → clear); `interview-mode.ui.test.tsx` — interview card flow |
 
