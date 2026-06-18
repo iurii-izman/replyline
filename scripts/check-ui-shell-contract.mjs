@@ -349,7 +349,7 @@ if (mainSurface) {
   const mainMergedForCopyCheck = mainSurface + (mainLiveAnswerCard || "");
   assertRegex(
     mainMergedForCopyCheck,
-    /<button[\s\S]*btn-primary[\s\S]*\{st\(\)\.card\.copySayNow\}/u,
+    /<button[\s\S]*btn-primary[\s\S]*\{st\(\)\.card\.copyFullAnswer\}/u,
     "src/app/main/LiveAnswerCard.tsx or MainSurface.tsx",
     "critical copy action must use Replyline button class",
   );

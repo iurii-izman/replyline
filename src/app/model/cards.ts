@@ -7,6 +7,11 @@ export type LegacyAnalysisCard = {
   /// Supporting evidence snippet from the LLM response.
   starEvidence?: string;
   riskOrClarifier?: string;
+  /// Rich Answer Card fields (CardSchemaV4). When present, UI uses explicit structure
+  /// instead of splitting sayNow on the first sentence boundary.
+  answerShort?: string;
+  answerFull?: string;
+  followUpLine?: string;
 };
 
 export type InterviewAnswerDto = {

@@ -132,7 +132,7 @@ describe("main card integration", () => {
       ),
     );
 
-    const copy = await screen.findByRole("button", { name: "Скопировать ответ" });
+    const copy = await screen.findByRole("button", { name: "Скопировать полный ответ" });
     const retry = screen.getByRole("button", { name: "Пересобрать" });
     expect(copy).toHaveProperty("disabled", false);
     expect(retry).toHaveProperty("disabled", false);
@@ -229,7 +229,7 @@ describe("main card integration", () => {
       await screen.findAllByText("Нет ответа LLM-шлюза: проверьте URL, модель и ключ."),
     ).toHaveLength(2);
     expect(screen.queryByTestId("action-row")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Скопировать ответ" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Скопировать полный ответ" })).toBeNull();
   });
 
   it("switches from interview layout to work layout without stale UI remnants", async () => {
@@ -409,7 +409,7 @@ describe("main card integration", () => {
     await triggerAnalysisReady(mock);
 
     const copyBtn = screen.getByTestId("answer-copy-btn");
-    expect(copyBtn.textContent).toContain("Скопировать ответ");
+    expect(copyBtn.textContent).toContain("Скопировать полный ответ");
     expect(copyBtn.classList.contains("is-copied")).toBe(false);
 
     fireEvent.click(copyBtn);
@@ -536,7 +536,7 @@ describe("main card integration", () => {
     await triggerAnalysisReady(mock);
 
     const copyBtn = screen.getByTestId("answer-copy-btn");
-    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать ответ");
+    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать полный ответ");
   });
 
   it("main idle primary CTA is focusable", async () => {
@@ -666,12 +666,12 @@ describe("main card integration", () => {
     await triggerAnalysisReady(mock);
 
     const copyBtn = screen.getByTestId("answer-copy-btn");
-    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать ответ");
+    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать полный ответ");
 
     fireEvent.click(copyBtn);
     await waitFor(() => expect(copyBtn.classList.contains("is-copied")).toBe(true));
     // aria-label stays stable; visual feedback is icon + class change.
-    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать ответ");
+    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать полный ответ");
   });
 
   // ── Responsive layout ────────────────────────────────────────────

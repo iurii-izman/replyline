@@ -9,6 +9,18 @@ const SHORT_TRANSCRIPT_MAX: usize = 40;
 const MEDIUM_TRANSCRIPT_MAX: usize = 120;
 
 #[derive(Debug, Clone, Deserialize)]
+struct RawCardV4 {
+    question_brief: String,
+    answer_short: String,
+    answer_full: String,
+    follow_up_line: String,
+    evidence: String,
+    next_step: String,
+    #[serde(default)]
+    risk_or_clarifier: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 struct RawCardV3 {
     question_brief: String,
     answer_now: String,
@@ -27,8 +39,21 @@ struct RawCardLegacy {
 
 #[derive(Debug, Clone)]
 enum ParsedCard {
+    V4(RawCardV4),
     V3(RawCardV3),
     Legacy(RawCardLegacy),
+}
+
+/// Holds all mapped card fields for building AnalysisCardDto.
+struct CardFields {
+    gist: String,
+    say_now: String,
+    next_move: String,
+    star_evidence: Option<String>,
+    risk_or_clarifier: Option<String>,
+    answer_short: Option<String>,
+    answer_full: Option<String>,
+    follow_up_line: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -69,6 +94,10 @@ pub fn normalize_parsed_card(
 
 fn parse_card_json(raw_text: &str) -> Result<ParsedCard, String> {
     let trimmed = raw_text.trim();
+    // Try CardSchemaV4 first (progressive enhancement)
+    if let Ok(card) = serde_json::from_str::<RawCardV4>(trimmed) {
+        return Ok(ParsedCard::V4(card));
+    }
     if let Ok(card) = serde_json::from_str::<RawCardV3>(trimmed) {
         return Ok(ParsedCard::V3(card));
     }
@@ -78,6 +107,9 @@ fn parse_card_json(raw_text: &str) -> Result<ParsedCard, String> {
 
     if let (Some(start), Some(end)) = (trimmed.find('{'), trimmed.rfind('}')) {
         let candidate = &trimmed[start..=end];
+        if let Ok(card) = serde_json::from_str::<RawCardV4>(candidate) {
+            return Ok(ParsedCard::V4(card));
+        }
         if let Ok(card) = serde_json::from_str::<RawCardV3>(candidate) {
             return Ok(ParsedCard::V3(card));
         }
@@ -86,6 +118,9 @@ fn parse_card_json(raw_text: &str) -> Result<ParsedCard, String> {
         }
     }
 
+    if let Some(card) = try_partial_extract_v4(trimmed) {
+        return Ok(ParsedCard::V4(card));
+    }
     if let Some(card) = try_partial_extract_v3(trimmed) {
         return Ok(ParsedCard::V3(card));
     }
@@ -94,6 +129,32 @@ fn parse_card_json(raw_text: &str) -> Result<ParsedCard, String> {
     }
 
     Err(format!("LLM returned invalid JSON: {trimmed}"))
+}
+
+fn try_partial_extract_v4(text: &str) -> Option<RawCardV4> {
+    let question_brief = extract_field(text, "question_brief")?;
+    let answer_short = extract_field(text, "answer_short")?;
+    let answer_full = extract_field(text, "answer_full")?;
+    let follow_up_line = extract_field(text, "follow_up_line")?;
+    let evidence = extract_field(text, "evidence").unwrap_or_default();
+    let next_step = extract_field(text, "next_step")?;
+    if question_brief.is_empty()
+        || answer_short.is_empty()
+        || answer_full.is_empty()
+        || follow_up_line.is_empty()
+        || next_step.is_empty()
+    {
+        return None;
+    }
+    Some(RawCardV4 {
+        question_brief: format!("[partial] {question_brief}"),
+        answer_short,
+        answer_full,
+        follow_up_line,
+        evidence,
+        next_step,
+        risk_or_clarifier: extract_field(text, "risk_or_clarifier"),
+    })
 }
 
 fn try_partial_extract_v3(text: &str) -> Option<RawCardV3> {
@@ -150,33 +211,37 @@ fn normalize_card(
     let band = chars_band(transcript).to_string();
     let mut quality = CardQualityFlags::default();
 
-    let (mut gist, mut say_now, mut next_move, star_evidence, risk_or_clarifier) = match parsed {
+    let fields = match parsed {
+        ParsedCard::V4(card) => map_v4_fields(card, limits),
         ParsedCard::V3(card) => map_v3_fields(card, limits),
-        ParsedCard::Legacy(card) => (
-            trim_line(&card.gist, limits.question_brief),
-            trim_line(&card.say_now, limits.answer_now),
-            trim_line(&card.next_move, limits.next_step),
-            None,
-            None,
-        ),
+        ParsedCard::Legacy(card) => CardFields {
+            gist: trim_line(&card.gist, limits.question_brief),
+            say_now: trim_line(&card.say_now, limits.answer_now),
+            next_move: trim_line(&card.next_move, limits.next_step),
+            star_evidence: None,
+            risk_or_clarifier: None,
+            answer_short: None,
+            answer_full: None,
+            follow_up_line: None,
+        },
     };
 
-    gist = repair_section(
-        &gist,
+    let gist = repair_section(
+        &fields.gist,
         transcript,
         Section::QuestionBrief,
         limits,
         &mut quality,
     )?;
-    say_now = repair_section(
-        &say_now,
+    let say_now = repair_section(
+        &fields.say_now,
         transcript,
         Section::AnswerNow,
         limits,
         &mut quality,
     )?;
-    next_move = repair_section(
-        &next_move,
+    let next_move = repair_section(
+        &fields.next_move,
         transcript,
         Section::NextStep,
         limits,
@@ -187,11 +252,14 @@ fn normalize_card(
         AnalysisCardDto {
             gist,
             say_now,
+            star_evidence: fields.star_evidence,
+            risk_or_clarifier: fields.risk_or_clarifier,
             next_move,
-            star_evidence,
-            risk_or_clarifier,
             chars_band: band,
             interview_card_schema_v1: None,
+            answer_short: fields.answer_short,
+            answer_full: fields.answer_full,
+            follow_up_line: fields.follow_up_line,
             repair_used: quality.repair_used,
             fallback_used: quality.fallback_used,
         },
@@ -199,10 +267,7 @@ fn normalize_card(
     ))
 }
 
-fn map_v3_fields(
-    card: RawCardV3,
-    limits: CardLimits,
-) -> (String, String, String, Option<String>, Option<String>) {
+fn map_v3_fields(card: RawCardV3, limits: CardLimits) -> CardFields {
     let question_brief = trim_line(&card.question_brief, limits.question_brief);
     let answer_now = trim_line(&card.answer_now, limits.answer_now);
     let star = trim_line(&card.star_evidence, limits.star_evidence);
@@ -212,13 +277,51 @@ fn map_v3_fields(
         .risk_or_clarifier
         .map(|risk| trim_line(&risk, 120))
         .filter(|risk| !risk.is_empty());
-    (
-        question_brief,
-        answer_now,
-        next_step,
+    // V3 has no rich answer fields; UI falls back to splitAnswer(say_now).
+    CardFields {
+        gist: question_brief,
+        say_now: answer_now,
+        next_move: next_step,
         star_evidence,
         risk_or_clarifier,
-    )
+        answer_short: None,
+        answer_full: None,
+        follow_up_line: None,
+    }
+}
+
+fn map_v4_fields(card: RawCardV4, limits: CardLimits) -> CardFields {
+    let question_brief = trim_line(&card.question_brief, limits.question_brief);
+    let answer_short = trim_line(&card.answer_short, limits.answer_now);
+    let answer_full = trim_line(&card.answer_full, limits.answer_now);
+    let follow_up_line = trim_line(&card.follow_up_line, limits.next_step);
+    let ev = trim_line(&card.evidence, limits.star_evidence);
+    let next_step = trim_line(&card.next_step, limits.next_step);
+    let evidence = if ev.is_empty() { None } else { Some(ev) };
+    let risk_or_clarifier = card
+        .risk_or_clarifier
+        .map(|risk| trim_line(&risk, 120))
+        .filter(|risk| !risk.is_empty());
+    // Build legacy say_now from rich fields for backward-compatible IPC.
+    let mut say_now = answer_short.clone();
+    if !answer_full.is_empty() && answer_full != answer_short {
+        if say_now.ends_with('.') || say_now.ends_with('?') || say_now.ends_with('!') {
+            say_now.push(' ');
+        } else if !say_now.is_empty() {
+            say_now.push_str(". ");
+        }
+        say_now.push_str(&answer_full);
+    }
+    CardFields {
+        gist: question_brief,
+        say_now,
+        next_move: next_step,
+        star_evidence: evidence,
+        risk_or_clarifier,
+        answer_short: Some(answer_short),
+        answer_full: Some(answer_full),
+        follow_up_line: Some(follow_up_line),
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -1184,5 +1287,194 @@ mod tests {
             limits.answer_max_words
         )
         .is_ok());
+    }
+
+    // ── CardSchemaV4 tests ────────────────────────────────────────────────
+
+    fn v4_json(
+        question: &str,
+        short: &str,
+        full: &str,
+        follow_up: &str,
+        evidence: &str,
+        next: &str,
+    ) -> String {
+        format!(
+            r#"{{"question_brief":"{question}","answer_short":"{short}","answer_full":"{full}","follow_up_line":"{follow_up}","evidence":"{evidence}","next_step":"{next}"}}"#
+        )
+    }
+
+    #[test]
+    fn parses_v4_json() {
+        let raw = v4_json("q", "short", "full", "follow", "ev", "next");
+        let parsed = parse_card_json(&raw).expect("must parse v4");
+        assert!(matches!(parsed, ParsedCard::V4(_)));
+    }
+
+    #[test]
+    fn v4_maps_to_legacy_fields() {
+        let raw = v4_json(
+            "Клиент спрашивает про срок релиза.",
+            "Давайте зафиксируем владельца и срок: я пришлю обновление сегодня до 17:00.",
+            "После согласования отправлю краткий итог в чат. В случае задержки сразу обозначим новый дедлайн и формат апдейта. Коллеги получат понятную картину и смогут скорректировать свои задачи.",
+            "Если потребуется эскалация, напишу в канал.",
+            "В фрагменте прозвучал запрос на дату.",
+            "Отправлю письмо с владельцем и чекпоинтом на завтра.",
+        );
+        let (card, quality) = normalize_parsed_card(
+            &raw,
+            "medium length transcript for band",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("must map v4");
+        // Legacy fields must be populated for backward compat.
+        assert!(card.gist.contains("срок"));
+        assert!(card.say_now.contains("17:00"));
+        assert!(card.say_now.contains("После согласования"));
+        assert!(card.next_move.contains("письмо"));
+        assert!(!quality.fallback_used);
+    }
+
+    #[test]
+    fn v4_enriches_dto_with_rich_fields() {
+        let raw = v4_json(
+            "Сложный вопрос про архитектуру.",
+            "Рекомендую сервис-ориентированный подход.",
+            "Это позволит изолировать домены и независимо масштабировать команды. При текущем объёме трафика монолит справляется, но по мере роста понадобится разделение на сервисы с собственными базами данных и контрактами API. Документируем границы сервисов в Confluence и заводим ADR для ключевых решений.",
+            "Если нужен пример архитектурного описания, пришлю шаблон ADR.",
+            "Вопрос касался масштабирования текущей архитектуры.",
+            "Заведу ADR с описанием выбора и отправлю на ревью архитектору.",
+        );
+        let (card, _) = normalize_parsed_card(
+            &raw,
+            "Как масштабировать архитектуру?",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("v4 enrichment must pass");
+        // Rich fields present.
+        assert_eq!(
+            card.answer_short.as_deref(),
+            Some("Рекомендую сервис-ориентированный подход.")
+        );
+        assert!(card
+            .answer_full
+            .as_deref()
+            .unwrap()
+            .contains("изолировать домены"));
+        assert!(card
+            .follow_up_line
+            .as_deref()
+            .unwrap()
+            .contains("шаблон ADR"));
+    }
+
+    #[test]
+    fn v3_backward_compat_still_parses() {
+        // Ensure V3 format is still accepted after V4 introduction.
+        let raw = v3_json(
+            "Простой вопрос.",
+            "Давайте зафиксируем решение сегодня. Отправлю краткий итог в чат. Все участники будут в курсе и смогут скорректировать планы при необходимости.",
+            "Вопрос касался рабочего шага.",
+            "Отправлю письмо с владельцем и сроком.",
+        );
+        let parsed = parse_card_json(&raw).expect("must still parse v3");
+        assert!(matches!(parsed, ParsedCard::V3(_)));
+        let (card, _) = normalize_parsed_card(
+            &raw,
+            "Простой вопрос.",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("v3 must normalize");
+        assert!(card.say_now.contains("зафиксируем"));
+        // V3 has no rich fields.
+        assert_eq!(card.answer_short, None);
+        assert_eq!(card.answer_full, None);
+        assert_eq!(card.follow_up_line, None);
+    }
+
+    #[test]
+    fn partial_v4_extract() {
+        let broken = r#"Some text {"question_brief": "Risk", "answer_short": "Test short answer with enough words for validation paragraph shape criteria in answer section.", "answer_full": "Test full explanation paragraph one. Test full explanation paragraph two with more words to meet minimum word count for the richer answer profile validation.", "follow_up_line": "Next conversation line here.", "evidence": "heard risk", "next_step": "Send email with owner"} trailing"#;
+        let card = parse_card_json(broken).expect("must extract v4");
+        assert!(matches!(card, ParsedCard::V4(_)));
+    }
+
+    #[test]
+    fn v4_simple_factual_answer_stays_concise() {
+        let raw = v4_json(
+            "Какой город является столицей Франции?",
+            "Столицей Франции является Париж.",
+            "Париж — столица и крупнейший город Франции, один из самых известных городов мира. Он расположен на реке Сене и ежегодно привлекает миллионы туристов со всего света благодаря богатой истории, культуре и архитектурным памятникам.",
+            "Если нужны дополнительные сведения о Париже, могу подготовить справку.",
+            "Столицей Франции является Париж.",
+            "При необходимости проверить данные по надёжному источнику.",
+        );
+        let (card, quality) = normalize_parsed_card(
+            &raw,
+            "Какой город является столицей Франции?",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("simple factual v4 must pass");
+        // Short answer should be concise.
+        let short = card.answer_short.as_deref().unwrap();
+        assert!(short.split_whitespace().count() <= 25);
+        // No work coordination in factual answer — check rich fields, not repaired say_now.
+        assert!(!short.contains("владельца"));
+        let full = card.answer_full.as_deref().unwrap();
+        assert!(!full.contains("владельца"));
+    }
+
+    #[test]
+    fn v4_complex_answer_gets_full_section() {
+        let raw = v4_json(
+            "Как организовать процесс согласования между тремя командами?",
+            "Предлагаю завести еженедельный чекпоинт с владельцами от каждой команды.",
+            "Это позволит синхронизировать ожидания и выявлять блокеры до того, как они станут критичными. Каждая команда назначает одного представителя, который приходит с актуальным статусом и списком рисков. Решения фиксируются в общем документе и рассылаются участникам в течение часа после встречи. Если какая-то команда не может прислать представителя, она отправляет письменный апдейт заранее.",
+            "Если нужен шаблон meeting notes, пришлю в чат.",
+            "Вопрос касался кросс-командного согласования.",
+            "Создам встречу и подготовлю agenda с рисками.",
+        );
+        let (card, _) = normalize_parsed_card(
+            &raw,
+            "Как организовать процесс согласования между тремя командами? Это требует координации нескольких стримов работы и учёта разных часовых поясов участников проекта.",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("complex v4 answer must pass");
+        // Full answer should be substantive.
+        let full = card.answer_full.as_deref().unwrap();
+        let full_words = full.split_whitespace().count();
+        assert!(
+            full_words >= 18,
+            "full answer too short: {full_words} words"
+        );
+    }
+
+    #[test]
+    fn v4_no_markdown_dump() {
+        // Markdown fences should never appear in any V4 answer field.
+        let raw = v4_json(
+            "Вопрос про архитектуру.",
+            "Используйте микросервисы.",
+            "Микросервисная архитектура позволяет масштабировать команды и изолировать отказы. При выборе важно определить границы bounded context и контракты API между сервисами.",
+            "Пришлю пример схемы.",
+            "Вопрос про архитектурный подход.",
+            "Подготовлю ADR и отправлю на ревью.",
+        );
+        let (card, _) = normalize_parsed_card(
+            &raw,
+            "Какую архитектуру выбрать?",
+            crate::prompt_registry::default_answer_profile(),
+        )
+        .expect("v4 card must pass");
+        for field in [
+            card.answer_short.as_deref().unwrap_or(""),
+            card.answer_full.as_deref().unwrap_or(""),
+            card.follow_up_line.as_deref().unwrap_or(""),
+        ] {
+            assert!(
+                !field.contains("```"),
+                "field contains markdown fence: {field}"
+            );
+        }
     }
 }

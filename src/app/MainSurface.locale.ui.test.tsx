@@ -249,7 +249,7 @@ describe("MainSurface state-driven view", () => {
     expect(screen.getByTestId("answer-headline").textContent).toBe("say");
     expect(screen.getByTestId("action-row")).toBeTruthy();
     const hero = screen.getByTestId("answer-hero-card");
-    const copy = screen.getByRole("button", { name: "Скопировать ответ" });
+    const copy = screen.getByRole("button", { name: "Скопировать полный ответ" });
     expect(hero.contains(copy)).toBe(true);
     expect(screen.getByRole("button", { name: "Пересобрать" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Очистить" })).toBeTruthy();
@@ -282,11 +282,15 @@ describe("MainSurface state-driven view", () => {
         ) as never,
     );
 
-    const copy = screen.getByRole("button", { name: "Скопировать ответ" });
+    const copy = screen.getByRole("button", { name: "Скопировать полный ответ" });
     await user.tab();
     expect(document.activeElement).toBe(copy);
     await user.keyboard("{Enter}");
     await waitFor(() => expect(copyCurrentCard).toHaveBeenCalled());
+    await user.tab();
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", { name: "Скопировать короткий ответ" }),
+    );
     await user.tab();
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "Короче" }));
     await user.tab();

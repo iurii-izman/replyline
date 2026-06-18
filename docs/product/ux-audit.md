@@ -1,8 +1,8 @@
 # Replyline UX Audit — Post-ContextPack Pivot
 
-> **Date:** 2026-06-18
+> **Date:** 2026-06-18, updated 2026-06-19 (Rich Answer Card)
 > **Scope:** Full screen state inventory, UX score, risk assessment
-> **Baseline:** `b65fe67` (post-beta.3, ContextPack shipped)
+> **Baseline:** `d5dd667` (pre Rich Answer Card)
 > **Method:** Code-driven audit — all claims grounded in `src/` and `docs/`
 
 ## 1. Core UX Principle
@@ -14,9 +14,11 @@
 1. Создать/выбрать ContextPack (опционально, но рекомендовано).
 2. Удержать hotkey (`Ctrl+Alt+Space`) во время фрагмента разговора.
 3. Отпустить hotkey.
-4. Получить одну компактную карточку: `gist`, `say_now`, `next_move`.
+4. Получить одну структурированную карточку: `gist`, структурированный ответ (Коротко + Развернуто + Если продолжить), `next_move`.
 
-Первичный визуальный вес — поле `say_now` («Что сказать сейчас»). Всё остальное (gist, next_move, active context chip) — поддерживающая информация.
+Первичный визуальный вес — поле ответа (Коротко — готовая фраза, Развернуто — объяснение). Всё остальное (gist, next_move, active context chip) — поддерживающая информация.
+
+Ответ использует явную структуру CardSchemaV4: `answer_short`, `answer_full`, `follow_up_line`. Для обратной совместимости с V3/Legacy ответами работает fallback: автоматическое разделение `sayNow` по первому предложению.
 
 Базовый контракт: **одна карточка за один capture**. Никакой истории, никакой «ленты», никакого continuous recording. Приложение живёт в трее и появляется по вызову пользователя.
 
@@ -24,7 +26,7 @@
 
 | Mode | Status | Description |
 |---|---|---|
-| **WorkConversation** | Primary | Default mode. `gist / say_now / next_move` card with optional ContextPack. |
+| **WorkConversation** | Primary | Default mode. Structured answer card (Short / In detail / To continue) with optional ContextPack. Uses CardSchemaV4 with backward-compatible V3/Legacy fallback. |
 | **Interview Mode** | Secondary (context usage example) | Interview-focused cards with session lifecycle, carousel, and local report export. Built on top of WorkConversation + interview-oriented ContextPack. |
 | **Bilingual Experimental** | Frozen, gated | Live STT + translation lane. Invisible in default UX. Requires `REPLYLINE_EXPERIMENTAL_BILINGUAL=1`. Not in audit scope. |
 
@@ -164,15 +166,15 @@
 
 | Attribute | Value |
 |---|---|
-| **Primary user goal** | Know that processing is underway and wait |
-| **Primary action** | Wait (no user action required) |
+| **Primary user goal** | Know that processing is underway and optionally stop it |
+| **Primary action** | Wait or click «Остановить» to cancel |
 | **Secondary action** | None (retry not available until card arrives or error) |
 | **What must not distract** | False ready indicators |
-| **UI elements** | `ProcessingState` with `phase-card--analyzing`: «Анализ…» label, «Речь → Ответ» flow hint, progress line animation, optional `statusDetail` text |
-| **UX risks** | No progress indicator (percentage/time); user doesn't know if it's 2s or 20s away; no cancel action; if provider is slow, user may think app is frozen |
-| **Test coverage** | `main-card.ui.test.tsx` — `handles work happy path` (processing state visible); `controller.pipelineActions.test.ts` — pipeline action flow |
+| **UI elements** | `ProcessingState` with `phase-card--analyzing`: «Анализ…» label, «Речь → Ответ» flow hint, progress line animation, «Остановить» cancel button (visible during transcribing/analyzing), «Занимает дольше обычного…» hint after 12s/20s with cancel suggestion, optional `statusDetail` text |
+| **UX risks** | No progress indicator (percentage/time); user doesn't know if it's 2s or 20s away; cancel is now available as escape hatch |
+| **Test coverage** | `ProcessingState.cancel.ui.test.tsx` — 6 cancel button tests; `main-card.ui.test.tsx` — `handles work happy path` (processing state visible); `controller.pipelineActions.test.ts` — 2 cancel pipeline tests |
 
-**Score:** Clarity ✅, Speed ⚠️ (no progress estimate), Trust ⚠️ (no cancel, no timeout UX)
+**Score:** Clarity ✅, Speed ⚠️ (no progress estimate), Trust ✅ (cancel now available as escape hatch)
 
 ### 3.10 Answer Ready
 
@@ -284,7 +286,7 @@ Assessment per state group using five dimensions. Scale: 1–5 (5 = best).
 | ContextPack empty | 5 | 5 | 5 | 4 | 5 | **4.8** |
 | ContextPack with packs | 5 | 5 | 5 | 5 | 5 | **5.0** |
 | Capturing | 5 | 5 | 5 | 4 | 5 | **4.8** |
-| Transcribing / Analyzing | 4 | 3 | 3 | 3 | 4 | **3.4** |
+| Transcribing / Analyzing | 4 | 3 | 5 | 3 | 4 | **3.8** |
 | Answer ready | 5 | 5 | 5 | 5 | 5 | **5.0** |
 | Error / Retry | 4 | 4 | 4 | 3 | 4 | **3.8** |
 | Settings Overview | 4 | 4 | 3 | 4 | 4 | **3.8** |
@@ -325,7 +327,7 @@ Assessment per state group using five dimensions. Scale: 1–5 (5 = best).
 
 | Screen | Score | Why |
 |---|---|---|
-| **Transcribing / Analyzing** | 3.4 | No progress indicator; no time estimate; no cancel; user stares at static text while waiting |
+| **Transcribing / Analyzing** | 3.8 | No progress indicator; no time estimate; cancel added as escape hatch (2026-06-19) |
 | **Bootstrap error** | 3.4 | Error messages are developer-facing; no guided «reset to defaults» path; no link to troubleshooting |
 | **Interview report** | 3.4 | Export distinction unclear; no preview; file paths not shown before export |
 | **Bootstrap checking** | 3.2 | Static text, no spinner/progress, no timeout UX |
@@ -376,14 +378,14 @@ Assessment per state group using five dimensions. Scale: 1–5 (5 = best).
 | Idle (active context) | `context-pack-panel.ui.test.tsx` (indirect), `main-card.ui.test.tsx` ✅ | — | — |
 | ContextPack (all) | `context-pack-panel.ui.test.tsx` (29 tests) ✅, `main-card.ui.test.tsx` (a11y) ✅ | `model.test.ts` (35 storage tests) ✅ | — |
 | Capturing | `main-card.ui.test.tsx` (happy path) ✅ | `controller.hotkeys.test.ts` ✅ | — |
-| Transcribing/Analyzing | `main-card.ui.test.tsx` (indirect) | `controller.pipelineActions.test.ts` ✅ | — |
+| Transcribing/Analyzing | `main-card.ui.test.tsx` (indirect), `ProcessingState.cancel.ui.test.tsx` ✅ (6 tests) | `controller.pipelineActions.test.ts` ✅ (4 tests) | — |
 | Answer ready | `main-card.ui.test.tsx` ✅ | — | — |
 | Error/Retry | `frontend.critical-states.ui.test.tsx` (locale), `main-card.ui.test.tsx` ✅ | `controller.pipelineActions.test.ts` ✅ | — |
 | Settings | `settings.ui.test.tsx` ✅ | `controller.settingsActions.test.ts` ✅ | — |
 | Interview | `interview-mode.ui.test.tsx` ✅ | `controller.selectors.test.ts` ✅ | — |
 | Bilingual | `BilingualInterviewSurface.ui.test.tsx` ✅ | `controller.bilingualInterviewController.test.ts` ✅ | — |
 
-**Coverage gap:** ~~Idle with active context (context chip visibility)~~ and ~~error recovery flow (retry → success)~~ now have dedicated UI tests. Remaining gaps: analyzing progress states and interview carousel visual nav.
+**Coverage gap:** ~~Idle with active context (context chip visibility)~~ and ~~error recovery flow (retry → success)~~ and ~~pipeline cancel~~ now have dedicated UI tests. Remaining gaps: analyzing progress indicator and interview carousel visual nav.
 
 ## 9. Next Recommended UI Block
 
@@ -392,7 +394,7 @@ Based on this audit (post-Product Experience Hardening pass), the next priority 
 | Priority | Task | Rationale |
 |---|---|---|
 | P0 | Add progress indicator to analyzing state (spinner, elapsed time, or stage text) | Highest UX pain: user stares at static text during the longest wait |
-| P0 | Add cancel action to pipeline (if technically feasible) | User has no escape from a stuck pipeline |
+| ~~P0~~ | ~~Add cancel action to pipeline~~ | ✅ Done (2026-06-19). Safe frontend cancellation: stale result ignored, UI returns to idle |
 | P1 | Map Rust error codes to user-facing messages in controller selectors | Raw error messages still leak to UI |
 | P2 | Add visual carousel navigation for interview cards (tab bar or dots) | Keyboard-only nav is power-user only |
 | P2 | Add timeout UX for bootstrap («Taking longer than expected…») | Frozen boot state has no feedback |

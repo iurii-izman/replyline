@@ -194,6 +194,15 @@ pub struct AnalysisCardDto {
     pub chars_band: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interview_card_schema_v1: Option<crate::interview_card_v1::InterviewCardDto>,
+    // Rich Answer Card (CardSchemaV4) — optional progressive enhancement fields.
+    // When present, UI uses these instead of splitting say_now on the first period.
+    // Absent for V3/Legacy responses; frontend falls back to splitAnswer(say_now).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub answer_short: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub answer_full: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub follow_up_line: Option<String>,
     #[serde(skip)]
     pub repair_used: bool,
     #[serde(skip)]

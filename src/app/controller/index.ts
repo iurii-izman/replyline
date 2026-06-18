@@ -170,7 +170,21 @@ export function useReplylineController(platform: AppPlatform) {
   const copyText = createMemo(() => {
     const currentCard = card();
     if (!currentCard) return "";
-    if (currentCard.mode !== "interview") return currentCard.sayNow ?? "";
+    if (currentCard.mode !== "interview") {
+      // Rich answer: build full speakable text from answer_short + answer_full.
+      // Fall back to sayNow when rich fields are absent (V3/Legacy).
+      const short = currentCard.answerShort?.trim() ?? "";
+      const full = currentCard.answerFull?.trim() ?? "";
+      if (short || full) {
+        if (short && full && short !== full) {
+          const sep =
+            short.endsWith(".") || short.endsWith("?") || short.endsWith("!") ? " " : ". ";
+          return `${short}${sep}${full}`;
+        }
+        return short || full;
+      }
+      return currentCard.sayNow ?? "";
+    }
     switch (activeInterviewCardKeyNow()) {
       case "answer":
         return currentCard.interview.answer.main ?? "";
@@ -301,6 +315,7 @@ export function useReplylineController(platform: AppPlatform) {
     setLlmRouteConfigured,
     setLastCommandErrorKind,
     setActiveRunId,
+    activeRunId, // accessor for cancellation check
     isBilingualHotkeyMode: () =>
       settings.bilingualInterviewEnabled &&
       bilingualInterviewState().active &&
@@ -604,6 +619,7 @@ export function useReplylineController(platform: AppPlatform) {
     clearContext: pipelineActions.clearContext,
     retryAnalysis: pipelineActions.retryAnalysis,
     copyCurrentCard: pipelineActions.copyCurrentCard,
+    cancelPipeline: pipelineActions.cancelPipeline,
     settingsActiveSection,
     toggleSettingsPanel: () => {
       setUserSelectedPanel(true);

@@ -885,6 +885,9 @@ mod tests {
             next_move: "n".to_string(),
             chars_band: "short".to_string(),
             interview_card_schema_v1: None,
+            answer_short: None,
+            answer_full: None,
+            follow_up_line: None,
             repair_used: false,
             fallback_used: false,
         };
@@ -928,6 +931,9 @@ mod tests {
                 clarifier: crate::interview_card_v1::InterviewClarifier::default(),
                 bilingual_meta: None,
             }),
+            answer_short: None,
+            answer_full: None,
+            follow_up_line: None,
             repair_used: false,
             fallback_used: false,
         };

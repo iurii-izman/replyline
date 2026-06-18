@@ -59,7 +59,7 @@ Main surface components (extracted to `src/app/main/`):
 - `src/app/main/IdleReadyState.tsx` — Idle screen: readiness, status rail, context value hint (70 loc)
 - `src/app/main/ProcessingState.tsx` — Capturing/transcribing/analyzing phase cards (47 loc)
 - `src/app/main/LiveAssistShell.tsx` — Answer card layout: cockpit grid, interview carousel (234 loc)
-- `src/app/main/LiveAnswerCard.tsx` — Primary answer hero: say-now + copy button (48 loc)
+- `src/app/main/LiveAnswerCard.tsx` — Primary answer hero: rich answer sections + copy buttons (100 loc)
 - `src/app/main/InsightStrip.tsx` — Secondary insights: gist + evidence + risk + next-move (41 loc)
 - `src/app/main/ActionDock.tsx` — Sticky footer: retry + clear actions (45 loc)
 - `src/app/main/WorkspaceSidePanel.tsx` — Side panel: interview session/report/export (158 loc)
@@ -78,7 +78,13 @@ Settings surface components (extracted to `src/app/settings/`):
 
 Other UI surfaces:
 
-- `src/app/ContextPackPanel.tsx` — ContextPack CRUD panel: editor + list + empty state (362 loc)
+- `src/app/ContextPackPanel.tsx` — Context workspace composition root (200 loc)
+- `src/app/context-pack/QuickContextCard.tsx` — Quick-paste context card: textarea + save (70 loc)
+- `src/app/context-pack/ActiveContextBanner.tsx` — Active context indicator (50 loc)
+- `src/app/context-pack/ContextSidebar.tsx` — Desktop sidebar rail with pack list (50 loc)
+- `src/app/context-pack/ContextBriefEditor.tsx` — Full editor with actions (180 loc)
+- `src/app/context-pack/ContextPackListItem.tsx` — Compact chip list for narrow fallback (40 loc)
+- `src/app/context-pack/helpers.ts` — Pure helpers: title extraction, validation, word count (50 loc)
 - `src/app/ChromeSurface.tsx` — App shell: header, phase indicator, hotkey display, notices (124 loc)
 - `src/app/BilingualInterviewSurface.tsx` — Bilingual interview surface (experimental, gated)
 
@@ -134,17 +140,19 @@ Domain modules (12 total, all commands extracted):
 
 ```mermaid
 flowchart LR
-  LLM[LLM JSON CardSchemaV3] --> Parse[card_v3 parse]
-  Parse --> Map[map to gist/say_now/next_move]
+  LLM[LLM JSON CardSchemaV4] --> Parse[card_v3 parse]
+  Parse --> Map[map to gist/say_now/next_move + rich fields]
   Map --> Repair[per-section repair + fallback]
   Repair --> DTO[AnalysisCardDto IPC]
-  DTO --> UI[MainSurface legacy fields]
+  DTO --> UI[MainSurface rich answer or legacy fields]
 ```
 
-- V3 contract: `question_brief`, `answer_now`, `star_evidence`, `next_step`, optional `risk_or_clarifier`.
-- Legacy IPC/UI unchanged: `gist`, `sayNow`, `nextMove`.
+- V4 contract (current): `question_brief`, `answer_short`, `answer_full`, `follow_up_line`, `evidence`, `next_step`, optional `risk_or_clarifier`.
+- V3 contract (backward compat): `question_brief`, `answer_now`, `star_evidence`, `next_step`, optional `risk_or_clarifier`.
+- Legacy IPC/UI always present: `gist`, `sayNow`, `nextMove`.
+- Rich answer IPC (progressive enhancement): `answerShort`, `answerFull`, `followUpLine` — when present, UI renders explicit sections (Short / In detail / To continue) instead of splitting `sayNow` on the first period.
 - Quality flags (logs only): `repair_used`, `fallback_used`, `chars_band`.
-- Migration notes: see git history for schema v3 migration context.
+- Migration notes: see git history for schema v3→v4 migration context.
 
 ## ContextPack system
 

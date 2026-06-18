@@ -3,9 +3,12 @@ import { readFile } from "node:fs/promises";
 import {
   deterministicCardFromSnippet,
   deterministicCardV3FromSnippet,
+  deterministicCardV4FromSnippet,
   mapV3ToLegacy,
+  mapV4ToLegacy,
   validateCard,
   validateCardV3,
+  validateCardV4,
 } from "./prompt-contract-core.mjs";
 import { assertMinArraySize } from "./quality-fixture-shared.mjs";
 
@@ -57,14 +60,22 @@ assertMinArraySize(
   "Fixture corpus is too small for prompt-contract checks (need >= 20).",
 );
 
-assertIncludes(llmRaw, "CardSchemaV3", "llm.rs must document CardSchemaV3 in system prompt.");
+assertIncludes(llmRaw, "CardSchemaV4", "llm.rs must reference CardSchemaV4 in system prompt.");
 assertIncludes(
   llmRaw,
-  '"question_brief":"...","answer_now":"...","star_evidence":"...","next_step":"..."',
-  "llm.rs must require CardSchemaV3 JSON fields.",
+  '"question_brief":"...","answer_short":"...","answer_full":"...","follow_up_line":"...","evidence":"...","next_step":"..."',
+  "llm.rs must require CardSchemaV4 JSON fields.",
 );
-assertIncludes(cardV3Raw, "struct RawCardV3", "card_v3.rs must define RawCardV3.");
+// Backward compat: V3 references must remain in card_v3.rs for parsing.
+assertIncludes(cardV3Raw, "CardSchemaV3", "card_v3.rs must keep CardSchemaV3 in system prompt.");
+assertIncludes(cardV3Raw, "struct RawCardV4", "card_v3.rs must define RawCardV4.");
+assertIncludes(
+  cardV3Raw,
+  "struct RawCardV3",
+  "card_v3.rs must define RawCardV3 for backward compat.",
+);
 assertIncludes(cardV3Raw, "struct RawCardLegacy", "card_v3.rs must keep legacy RawCard parser.");
+assertIncludes(cardV3Raw, "map_v4_fields", "card_v3.rs must map v4 fields.");
 assertIncludes(cardV3Raw, "map_v3_fields", "card_v3.rs must map v3 to legacy fields.");
 assertIncludes(
   cardV3Raw,
@@ -158,11 +169,7 @@ assertIncludes(
   "если не хватает политики компании, цифр, цены, владельца или исходного документа",
   "Russian prompt must require useful uncertainty for missing context.",
 );
-assertIncludes(
-  llmRaw,
-  "that option",
-  "Prompt must cover ambiguous references without guessing.",
-);
+assertIncludes(llmRaw, "that option", "Prompt must cover ambiguous references without guessing.");
 assertIncludes(
   promptRegistryRaw,
   'INTERVIEW_SCHEMA_VERSION: &str = "InterviewCardSchemaV1"',
@@ -269,6 +276,18 @@ for (const fixture of fixtures) {
   if (mappedError) {
     fail(`Fixture "${fixture.id}" v3->legacy mapping violation: ${mappedError}`);
   }
+
+  const v4 = deterministicCardV4FromSnippet(fixture.snippet);
+  const v4Error = validateCardV4(v4, fixture.snippet);
+  if (v4Error) {
+    fail(`Fixture "${fixture.id}" v4 contract violation: ${v4Error}`);
+  }
+
+  const mappedV4 = mapV4ToLegacy(v4);
+  const mappedV4Error = validateCard(mappedV4, fixture.snippet);
+  if (mappedV4Error) {
+    fail(`Fixture "${fixture.id}" v4->legacy mapping violation: ${mappedV4Error}`);
+  }
 }
 
 const negativeCases = [
@@ -322,4 +341,6 @@ for (const sample of negativeCases) {
   }
 }
 
-console.log(`Prompt contract OK: ${fixtures.length} fixtures validated (legacy + v3 + mapping).`);
+console.log(
+  `Prompt contract OK: ${fixtures.length} fixtures validated (legacy + v3 + v4 + mappings).`,
+);
