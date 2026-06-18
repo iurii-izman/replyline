@@ -1,9 +1,9 @@
 # Provider Runtime Evidence Matrix
 
-> **Date:** 2026-06-18
-> **Build:** `main` commit `10ab76c` (v0.2.0-beta.3, post-Product Experience Hardening)
-> **Claim label:** `blocked` (live capture path blocked — no provider keys configured)
-> **Previous snapshot:** 2026-06-17 (commit `59fb18c`)
+> **Date:** 2026-06-19
+> **Build:** `main` commit `d5dd667` (v0.2.0-beta.3, Rich Answer Card)
+> **Claim label:** `blocked` (live capture path blocked — keys in Windows Credential Manager, not exported as env vars for CLI probe)
+> **Previous snapshot:** 2026-06-18 (commit `10ab76c`)
 
 This matrix tracks the evidence status of every documented provider route.
 Statuses follow the claim labels from [engineering/runtime.md](../engineering/runtime.md):
@@ -20,7 +20,7 @@ Statuses follow the claim labels from [engineering/runtime.md](../engineering/ru
 | Node.js | v24.14.1 |
 | pnpm | 9.15.9 |
 | Rust | 1.94.1 |
-| OS keyring | Windows Credential Manager (available, empty) |
+| OS keyring | Windows Credential Manager (available, keys configured but not exported to env) |
 | Settings schema | v10 (valid, parseable) |
 
 ## Provider Routes
@@ -29,14 +29,14 @@ Statuses follow the claim labels from [engineering/runtime.md](../engineering/ru
 
 | # | Route | Status | Notes |
 |---|---|---|---|
-| STT-1 | Deepgram (Nova-2) | **blocked** | `DEEPGRAM_API_KEY is missing` — `pnpm probe:runtime` exits with error. Key not in env, not in credential store. |
+| STT-1 | Deepgram (Nova-2) | **blocked** | `DEEPGRAM_API_KEY` env var not set. Key present in Windows Credential Manager (via app), but `runtime_probe` reads from env. `pnpm probe:runtime` reaches Deepgram but gets 401 with placeholder keys. |
 | STT-2 | Deepgram (custom model) | **blocked** | Same as STT-1 — key required for any Deepgram model. |
 
 ### LLM Providers
 
 | # | Route | Provider | Model | Status | ContextPack tested | Notes |
 |---|---|---|---|---|---|---|
-| LLM-1 | OpenAI-compatible | OpenAI | `gpt-4o-mini` | **blocked** | no | `llmBaseUrl` configured (`https://api.openai.com/v1`), model set. LLM API key not present — blocked at auth. |
+| LLM-1 | OpenAI-compatible | OpenAI | `gpt-4o-mini` | **blocked** | no | `llmBaseUrl` configured (`https://api.openai.com/v1`), model set. LLM key present in Credential Manager but not exported as `LLM_API_KEY` env var. |
 | LLM-2 | OpenRouter Free/Dev | OpenRouter | `google/gemini-2.0-flash-001` (primary) | **documented** | no | Preset available in Settings. Not configured on this machine — no API key. |
 | LLM-3 | OpenRouter Fast/Budget | OpenRouter | `openai/gpt-4o-mini` (primary) | **documented** | no | Preset available. Not configured. |
 | LLM-4 | OpenRouter Balanced Paid | OpenRouter | `anthropic/claude-3.5-haiku` (primary) | **documented** | no | Preset available. Not configured. |
@@ -48,7 +48,7 @@ Statuses follow the claim labels from [engineering/runtime.md](../engineering/ru
 
 | # | STT | LLM | Status | Notes |
 |---|---|---|---|---|
-| COMBO-1 | Deepgram | OpenAI `gpt-4o-mini` | **blocked** | Both keys missing. Settings partially configured. |
+| COMBO-1 | Deepgram | OpenAI `gpt-4o-mini` | **blocked** | Both keys in Credential Manager; env vars not set. Probe reaches Deepgram (401 with placeholder). |
 | COMBO-2 | Deepgram | OpenRouter (any preset) | **blocked** | Deepgram key missing. OpenRouter key not configured. |
 | COMBO-3 | Deepgram | Groq | **blocked** | Deepgram key missing. Groq key not configured. |
 | COMBO-4 | Deepgram | Custom/local | **blocked** | Deepgram key missing. Local LLM may not need key, but STT blocks the path. |
@@ -60,23 +60,25 @@ Statuses follow the claim labels from [engineering/runtime.md](../engineering/ru
 | Automated QA fixtures (47 scenarios) | ✅ **measured** | All 47 pass with avg score 100. Deterministic evaluation, no live LLM. |
 | ContextPack storage tests (35) | ✅ **measured** | CRUD, compact, corrupt recovery, multi-backup ordering. All pass. |
 | ContextPack UI tests (29) | ✅ **measured** | Create, edit, delete (two-step confirm), activate, deactivate, duplicate, preview, empty state, a11y labels. All pass. |
-| Product Experience Hardening UX | ✅ **measured** | UX score 85→88. 189 UI tests. See `docs/product/ux-audit.md`. |
-| ContextPack + live STT + LLM | **blocked** | Requires Deepgram key + LLM key. |
-| ContextPack + manual QA (ctx-live-01/02/03) | **blocked** | Desktop app + synthetic audio required. Pending provider keys. |
+| Product Experience Hardening UX | ✅ **measured** | UX score 88/100. 196 UI tests. Rich Answer Card deployed. See `docs/product/ux-audit.md`. |
+| ContextPack + live STT + LLM | **blocked** | Keys in Credential Manager, not exported to env. See `docs/beta-evidence/live-provider-proof-2026-06-19.md`. |
+| ContextPack + manual QA (ctx-live-01/02/03) | **blocked** | Desktop app + synthetic audio required. Pending env var setup. |
 
-## What IS Verified (2026-06-18)
+## What IS Verified (2026-06-19)
 
 | Gate | Result | Evidence |
 |---|---|---|
-| `pnpm verify` | ✅ PASS | typecheck, lint, build, clippy, fmt, 265 Rust tests, 189 TS tests, contracts, security lanes |
+| `pnpm verify` | ✅ PASS | typecheck, lint, build, clippy, fmt, 770 Rust tests, 196 TS tests, contracts, security lanes |
 | `pnpm verify:full` | ⚠️ 1 pre-existing blocker | Unsigned artifacts (S2, documented) |
 | `pnpm beta:doctor` | ✅ 13/13 PASS | All toolchain checks |
 | `pnpm runtime:preflight` | ✅ PASS | Settings v10 valid, credential manager available |
-| `pnpm probe:runtime` | ❌ FAIL | `DEEPGRAM_API_KEY is missing` |
+| `pnpm probe:runtime` | ❌ FAIL | `Deepgram error 401 Unauthorized` — keys not exported to env |
+| `pnpm test:prompt-contract` | ✅ OK | 24 fixtures (legacy + v3 + v4 + mappings) |
 | `pnpm test:quality` | ✅ PASS | Deterministic quality bundle (ContextPack, interview, say_now, product scenarios) |
 | `pnpm test:report-secret-leaks` | ✅ OK | 58 files scanned |
-| `pnpm test:public-footprint` | ✅ OK | 433 tracked files |
-| UX Score | ✅ 88/100 | Up from 85; see `docs/product/ux-audit.md` |
+| `pnpm test:public-footprint` | ✅ OK | 426 tracked files |
+| Rich Answer Card | ✅ deployed | CardSchemaV4 with V3 backward compat |
+| UX Score | ✅ 88/100 | See `docs/product/ux-audit.md` |
 
 ## Latency Reference (fixture-based, NOT live)
 

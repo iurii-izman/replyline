@@ -44,13 +44,14 @@
 
 **Good:**
 - UX audit score 88/100 (up from 85 after Product Experience Hardening)
+- Rich Answer Card deployed: explicit Short / In detail / To continue sections
 - Answer "Скажи сейчас" hero: enhanced visual treatment (gradient, padding, larger text)
 - Error recovery: actionable 3-step guidance instead of generic message
 - Idle screen: ContextPack value proposition explained
 - Context chip: ghost styling (not danger) for disable — less noisy
-- Copy button: icon feedback + class toggle for "copied" state
+- Copy buttons: primary (full answer) + secondary (short answer); icon feedback + class toggle for "copied" state
 - Settings nav: visual separator between essential and advanced sections
-- 189 UI tests covering all critical user paths
+- 196 UI tests covering all critical user paths
 - Visual quality baseline: 34 automated snapshot tests across 11 states × 3 viewports
 
 **Remaining:**
@@ -65,19 +66,20 @@
 ## 3. Runtime evidence — 82/100 (new category)
 
 **Good:**
-- Automated evidence: **measured** — 731 Rust tests, 189 TS tests, 47 ContextPack QA fixtures
-- All deterministic quality gates pass: prompt contract (24 fixtures), answer quality, product scenarios
+- Automated evidence: **measured** — 770 Rust tests, 196 TS tests, 47 ContextPack QA fixtures
+- All deterministic quality gates pass: prompt contract (24 fixtures across legacy/v3/v4), answer quality, product scenarios
 - Runtime preflight: PASS (settings v10 valid, credential manager available)
 - Provider evidence matrix documents status of 9 routes (7 LLM + 2 STT)
-- Live evidence snapshot: `docs/beta-evidence/contextpack-live-runtime-2026-06-18.md`
+- Live evidence snapshot: `docs/beta-evidence/live-provider-proof-2026-06-19.md`
+- Credential helper script: `scripts/set-probe-env.ps1` for secure env var export from Windows Credential Manager
 - Honest posture: all live paths marked `blocked`, no fake claims
 
 **Remaining:**
-- All live capture paths **blocked** — `DEEPGRAM_API_KEY is missing`
-- No LLM API key configured
+- All live capture paths **blocked** — `DEEPGRAM_API_KEY` and `LLM_API_KEY` env vars not set (keys exist in Windows Credential Manager)
+- Probe binary reaches Deepgram but gets 401 (auth blocked)
 - All latency data is fixture-derived targets, not measured
 - Cross-machine smoke: not tested (Windows 10)
-- Live answer quality evaluation: design complete, blocked by keys
+- Live answer quality evaluation: design complete, blocked by env var setup
 
 **Next:** Obtain Deepgram + LLM keys → unblock live measured claims.
 
