@@ -5,6 +5,7 @@ src-tauri/target/
 !tests/fixtures/runtime-live-evidence/good/app.log
 reports/**
 scripts/reports/
+scripts/reports/**
 !reports/
 !reports/docker/
 !reports/docker/docker-stack-audit-2026-05-21.md
