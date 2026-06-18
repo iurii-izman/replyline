@@ -34,6 +34,35 @@ const thresholdsPath = join(
 const reportsDir = join(rootDir, "reports", "runtime-quality");
 
 const CYRILLIC_RATIO_RE = /[а-яё]/gi;
+const SAFE_UNCERTAINTY_MARKERS = [
+  /не хватает/i,
+  /данн\w*\s+не хватает/i,
+  /данн\w*\s+нет/i,
+  /нет данных/i,
+  /нужно уточн/i,
+  /нужно подтверд/i,
+  /не буду выдум/i,
+  /без подтвержд/i,
+  /пока не утвержд/i,
+  /missing/i,
+  /uncertain/i,
+  /need to clarify/i,
+];
+const USEFUL_NEXT_MOVE_MARKERS = [
+  /уточн/i,
+  /запрош/i,
+  /провер/i,
+  /подтвержд/i,
+  /источник/i,
+  /политик/i,
+  /документ/i,
+  /таблиц/i,
+  /чат/i,
+  /clarify/i,
+  /verify/i,
+  /source/i,
+  /document/i,
+];
 
 function todayStamp() {
   return new Date().toISOString().slice(0, 10);
@@ -150,6 +179,23 @@ export function evaluateFixture(fixture, thresholds) {
     if (fullNorm.includes(normalize(token))) {
       score -= 12;
       reasons.push(`mustNotContain violated: ${token}`);
+    }
+  }
+
+  if (expected.requiresSafeUncertainty) {
+    const hasSafeUncertainty = SAFE_UNCERTAINTY_MARKERS.some((re) => re.test(fullText));
+    if (!hasSafeUncertainty) {
+      score -= 12;
+      reasons.push("safe uncertainty missing");
+    }
+  }
+
+  if (expected.requiresUsefulNextMove) {
+    const nextText = String(card.next_move ?? "");
+    const hasUsefulNextMove = USEFUL_NEXT_MOVE_MARKERS.some((re) => re.test(nextText));
+    if (!hasUsefulNextMove) {
+      score -= 8;
+      reasons.push("useful next_move missing");
     }
   }
 

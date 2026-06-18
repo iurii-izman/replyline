@@ -149,6 +149,21 @@ assertIncludes(
   "Prompt suffix must include anti-hallucination wording.",
 );
 assertIncludes(
+  llmRaw,
+  "when company policy, numbers, price, owner, or source document are missing",
+  "English prompt must require useful uncertainty for missing context.",
+);
+assertIncludes(
+  llmRaw,
+  "если не хватает политики компании, цифр, цены, владельца или исходного документа",
+  "Russian prompt must require useful uncertainty for missing context.",
+);
+assertIncludes(
+  llmRaw,
+  "that option",
+  "Prompt must cover ambiguous references without guessing.",
+);
+assertIncludes(
   promptRegistryRaw,
   'INTERVIEW_SCHEMA_VERSION: &str = "InterviewCardSchemaV1"',
   "InterviewCardSchemaV1 must stay explicit in prompt registry.",

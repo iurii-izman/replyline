@@ -123,8 +123,9 @@ It validates:
 
 - answer-card contract and policy checks
 - synthetic runtime-answer, product-scenario, `say_now`, and SLO checks
-- ContextPack answer-quality fixtures (45 scenarios): evidence usage, fabrication guard,
-  constraint respect, transcript-vs-context conflict resolution, oversized truncation safety
+- ContextPack answer-quality fixtures (51 scenarios): evidence usage, fabrication guard,
+  constraint respect, transcript-vs-context conflict resolution, oversized truncation safety,
+  and missing-context uncertainty handling
 - regression drift across runtime/interview/say-now fixture lanes
 
 It does not validate:
@@ -138,7 +139,7 @@ It does not validate:
 Located at `tests/fixtures/runtime-quality/runtime-answer-fixtures.json`.
 Evaluated by `scripts/evaluate-runtime-answer-quality.mjs`.
 
-Fixture categories (10 ContextPack-specific scenarios out of 45 total):
+Fixture categories (14 ContextPack-related scenarios out of 51 total):
 
 | Category | Fixture count | What it checks |
 | --- | --- | --- |
@@ -152,10 +153,19 @@ Fixture categories (10 ContextPack-specific scenarios out of 45 total):
 | No-fabrication guard | 1 | No invented metrics when data missing |
 | Interview-style context | 1 | Context used in structured answer format |
 | Oversized truncation safety | 1 | No leaked implementation details |
+| Missing policy/number/reference guardrails | 4 | No invented company policy, numbers, prices, or ambiguous-reference decisions; answer includes useful uncertainty and a safe next move |
 
 Each fixture uses `mockCardOverrides` for deterministic evaluation without
 live LLM. For live-provider verification, use the template at
 `tests/fixtures/runtime-live-evidence/context-pack-live-qa.template.md`.
+
+Missing-context guardrail fixtures are synthetic. They validate that the card
+does not invent company policy, numbers, prices, owners, or source documents
+when transcript plus active ContextPack do not contain them. Expected cards
+should state uncertainty naturally, name what needs clarification, and provide a
+safe line or next move the user can use immediately. Reports must keep the same
+privacy boundary as other quality lanes: no raw production transcript, raw
+ContextPack content, full prompts, provider bodies, or secrets.
 
 **Current status (2026-06-17):** Automated ContextPack tests pass (265 Rust tests,
 35 context_pack-specific, 47 QA fixtures). Automated evidence pack generated.
