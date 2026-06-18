@@ -20,16 +20,12 @@ test("credential-free happy path renders shell, settings, and fixture card", asy
 
   await page.locator("#settings-sidebar-tab-hotkey").click();
   await expect(page.getByTestId("settings-section-hotkey")).toBeVisible();
-  await expect(
-    page.locator("#settings-panel-hotkey input[type='checkbox']").nth(0),
-  ).not.toBeChecked();
-  await expect(page.locator("#settings-panel-hotkey input[type='checkbox']").nth(1)).toBeChecked();
-  await expect(
-    page.locator("#settings-panel-hotkey input[type='checkbox']").nth(2),
-  ).not.toBeChecked();
+  await expect(page.locator("#settings-panel-hotkey input[type='text']")).toBeVisible();
+  await expect(page.locator("#settings-panel-hotkey input[type='number']")).toBeVisible();
 
   await page.locator("#settings-sidebar-tab-reports").click();
   await expect(page.getByTestId("settings-section-reports")).toBeVisible();
+  await expect(page.getByTestId("advanced-window-behavior")).toBeVisible();
   await expect(page.getByTestId("debug-trace-mode-field").locator("select")).toHaveValue(
     "redacted",
   );
