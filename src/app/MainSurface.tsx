@@ -302,7 +302,16 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
                 {controller().error() ?? controller().strings().card.errorHint}
               </p>
               <p class="settings-note settings-note-warning" data-testid="error-recovery-hint">
-                {controller().strings().card.errorRecoveryHint}
+                {(() => {
+                  const kind = controller().lastCommandErrorKind?.();
+                  if (kind === "Capture") return controller().strings().errors.captureStart;
+                  if (kind === "Credential")
+                    return controller().strings().errors.missingDeepgramKey;
+                  if (kind === "Pipeline") return controller().strings().errors.pipelineLlm;
+                  if (kind === "Settings")
+                    return controller().strings().settings.setupIssueHintOpenSettings;
+                  return controller().strings().card.errorRecoveryHint;
+                })()}
               </p>
               <div class="action-group">
                 <button

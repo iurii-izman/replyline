@@ -1,44 +1,111 @@
-import { Show } from "solid-js";
+import { Show, createSignal, onCleanup, onMount } from "solid-js";
 import type { ReplylineController } from "../controller";
 
+/**
+ * Processing overlay shown during capture → transcribe → analyze pipeline.
+ * Shows elapsed time, stage indicator, and context-sensitive guidance.
+ */
 export function ProcessingState(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
   const st = () => controller().strings();
-  const isRecording = () => controller().phase() === "capturing";
+
+  const isCapturing = () => controller().phase() === "capturing";
   const isTranscribing = () => controller().phase() === "transcribing";
   const isAnalyzing = () => controller().phase() === "analyzing";
 
+  // ── Elapsed timer ──────────────────────────────────────────────
+  const [elapsed, setElapsed] = createSignal(0);
+  let timerInterval: ReturnType<typeof setInterval> | null = null;
+
+  onMount(() => {
+    timerInterval = setInterval(() => {
+      setElapsed((prev) => prev + 1);
+    }, 1000);
+  });
+
+  onCleanup(() => {
+    if (timerInterval) clearInterval(timerInterval);
+  });
+
+  const elapsedLabel = () => {
+    const tpl = st().card.processingElapsed;
+    return tpl.replace("{{seconds}}", String(elapsed()));
+  };
+
+  // ── Taking-longer hint thresholds ──────────────────────────────
+  const takingLonger = () => {
+    if (isTranscribing() && elapsed() >= 12) return true;
+    if (isAnalyzing() && elapsed() >= 20) return true;
+    return false;
+  };
+
+  // ── Stage index for pipeline indicator ─────────────────────────
+  const stageLabels = () => [
+    { label: st().card.processingStageCapture, done: !isCapturing() },
+    { label: st().card.processingStageStt, done: false, active: isTranscribing() },
+    { label: st().card.processingStageLlm, done: false, active: isAnalyzing() },
+    { label: st().card.processingStageCard, done: false },
+  ];
+
   return (
     <section
-      class={`phase-card ${isRecording() ? "phase-card--recording" : "phase-card--analyzing"}`}
+      class={`phase-card ${isCapturing() ? "phase-card--recording" : "phase-card--analyzing"}`}
       data-testid="main-state-processing"
     >
-      <Show
-        when={isRecording()}
-        fallback={
-          <>
-            <strong data-testid="processing-phase-label">
-              {isTranscribing() ? st().header.statusTranscribing : st().header.statusAnalyzing}
-            </strong>
-            <p class="empty-flow-hint" data-testid="processing-step-hint">
-              {isTranscribing() ? st().card.processingSpeech : st().card.processingReply}
-            </p>
-            <p class="processing-step-count" data-testid="processing-step-count">
-              {isTranscribing() ? st().card.processingStep1of2 : st().card.processingStep2of2}
-            </p>
-          </>
-        }
-      >
+      {/* ── Capturing state ─────────────────────────────────────── */}
+      <Show when={isCapturing()}>
         <div class="phase-card-row">
           <strong>{st().card.recordingLabel}</strong>
-          <span>{controller().phaseLabel()}</span>
+          <span class="phase-elapsed" data-testid="processing-elapsed">
+            {elapsedLabel()}
+          </span>
         </div>
         <p class="empty-flow-hint">{st().card.releaseToAnalyze}</p>
         <div class="phase-activity-pulse" aria-hidden="true" />
       </Show>
+
+      {/* ── Transcribing / Analyzing state ──────────────────────── */}
+      <Show when={!isCapturing()}>
+        <div class="phase-card-row">
+          <strong data-testid="processing-phase-label">
+            {isTranscribing() ? st().header.statusTranscribing : st().header.statusAnalyzing}
+          </strong>
+          <span class="phase-elapsed" data-testid="processing-elapsed">
+            {elapsedLabel()}
+          </span>
+        </div>
+        <p class="empty-flow-hint" data-testid="processing-step-hint">
+          {isTranscribing() ? st().card.processingSpeech : st().card.processingReply}
+        </p>
+        <p class="processing-step-count" data-testid="processing-step-count">
+          {isTranscribing() ? st().card.processingStep1of2 : st().card.processingStep2of2}
+        </p>
+
+        {/* Pipeline stage dots */}
+        <div class="processing-stages" aria-label="Pipeline stages" data-testid="processing-stages">
+          {stageLabels().map((stage) => (
+            <span
+              class={`processing-stage-dot${stage.done ? " is-done" : ""}${stage.active ? " is-active" : ""}`}
+              aria-label={stage.label}
+              title={stage.label}
+            />
+          ))}
+        </div>
+
+        {/* Taking longer hint */}
+        <Show when={takingLonger()}>
+          <p class="processing-long-hint" data-testid="processing-long-hint" role="status">
+            {st().card.processingTakingLonger}
+          </p>
+        </Show>
+      </Show>
+
+      {/* Progress line animation during analyzing */}
       <Show when={isAnalyzing()}>
         <div class="phase-progress-line" aria-hidden="true" />
       </Show>
+
+      {/* Status detail from backend */}
       <Show when={controller().statusDetail()}>
         <p class="empty-flow-hint">{controller().statusDetail()}</p>
       </Show>

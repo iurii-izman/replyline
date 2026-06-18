@@ -830,9 +830,50 @@
 }
 .phase-card-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+}
+.phase-elapsed {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.processing-stages {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  padding: var(--space-2) 0;
+}
+.processing-stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border-default);
+  transition: background-color 200ms ease;
+}
+.processing-stage-dot.is-done {
+  background: var(--success);
+}
+.processing-stage-dot.is-active {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  animation: stage-pulse 1.5s ease-in-out infinite;
+}
+@keyframes stage-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent-soft) 42%, transparent);
+  }
+}
+.processing-long-hint {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-caption);
+  color: var(--warning);
+  text-align: center;
 }
 .phase-activity-pulse {
   width: 10px;
