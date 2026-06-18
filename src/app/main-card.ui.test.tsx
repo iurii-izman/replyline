@@ -345,8 +345,9 @@ describe("main card integration", () => {
     expect(copyBtn.classList.contains("is-copied")).toBe(false);
 
     fireEvent.click(copyBtn);
-    await waitFor(() => expect(copyBtn.textContent).toContain("Скопировано"));
-    expect(copyBtn.classList.contains("is-copied")).toBe(true);
+    await waitFor(() => expect(copyBtn.classList.contains("is-copied")).toBe(true));
+    // Visual feedback: icon changes to checkmark, class toggles.
+    // Text stays stable — screen readers get consistent label via aria-label.
     expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("work say");
   });
 
@@ -499,7 +500,7 @@ describe("main card integration", () => {
     expect(hideBtn.getAttribute("aria-label")).toBeTruthy();
   });
 
-  it("context pack editor fields are wrapped in labels", async () => {
+  it("context pack editor fields have explicit label association", async () => {
     mock = createMockPlatform({ contextPacks: [] });
     renderApp(mock);
 
@@ -518,6 +519,91 @@ describe("main card integration", () => {
     // Editor has label elements wrapping title input and content textarea.
     const editorLabels = screen.getByTestId("context-pack-editor").querySelectorAll("label");
     expect(editorLabels.length).toBeGreaterThanOrEqual(2);
+
+    // Labels have for attributes pointing to input ids.
+    const titleLabel = editorLabels[0];
+    const contentLabel = editorLabels[1];
+    expect(titleLabel.getAttribute("for")).toBe("context-pack-title-field");
+    expect(contentLabel.getAttribute("for")).toBe("context-pack-content-field");
+
+    // Inputs have matching id attributes.
+    expect(screen.getByTestId("context-pack-title-input").getAttribute("id")).toBe(
+      "context-pack-title-field",
+    );
+    expect(screen.getByTestId("context-pack-content-input").getAttribute("id")).toBe(
+      "context-pack-content-field",
+    );
+  });
+
+  it("idle screen shows context value hint", async () => {
+    // When all providers are ready, idle screen explains why context matters.
+    const setupMock = createSetupMockPlatform({
+      deepgramKeyPresent: true,
+      llmKeyPresent: true,
+      llmBaseUrl: "https://api.example.com/v1",
+      llmModel: "gpt-4o-mini",
+      runtimeReady: true,
+    });
+    renderApp(setupMock);
+
+    await screen.findByTestId("main-state-idle");
+
+    // Idle screen shows context value hint.
+    const hint = screen.getByTestId("idle-context-value-hint");
+    expect(hint).toBeTruthy();
+    expect(hint.textContent).toContain("Контекст помогает");
+  });
+
+  it("error recovery card shows actionable recovery hint", async () => {
+    mock = createMockPlatform({ analysisError: { kind: "Pipeline", message: "LLM timeout" } });
+    renderApp(mock);
+
+    await triggerAnalysisReady(mock);
+
+    // Error recovery hint is visible with actionable guidance.
+    const recoveryHint = await screen.findByTestId("error-recovery-hint");
+    expect(recoveryHint).toBeTruthy();
+    expect(recoveryHint.textContent).toContain("проверьте доступ провайдера");
+  });
+
+  it("context chip disable button uses ghost style not danger", async () => {
+    const packs = [
+      {
+        id: "ctx-1",
+        title: "Test",
+        content: "content",
+        isActive: true,
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+      },
+    ];
+    mock = createMockPlatform({ contextPacks: packs });
+    renderApp(mock);
+
+    await waitFor(() => expect(screen.getByTestId("context-chip-disable-btn")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    const disableBtn = screen.getByTestId("context-chip-disable-btn");
+    // Should use btn-ghost, not btn-danger.
+    expect(disableBtn.classList.contains("btn-ghost")).toBe(true);
+    expect(disableBtn.classList.contains("btn-danger")).toBe(false);
+  });
+
+  it("answer copy button preserves accessible name after copy", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "g", sayNow: "say", nextMove: "next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    const copyBtn = screen.getByTestId("answer-copy-btn");
+    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать ответ");
+
+    fireEvent.click(copyBtn);
+    await waitFor(() => expect(copyBtn.classList.contains("is-copied")).toBe(true));
+    // aria-label stays stable; visual feedback is icon + class change.
+    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать ответ");
   });
 
   // ── Responsive layout ────────────────────────────────────────────

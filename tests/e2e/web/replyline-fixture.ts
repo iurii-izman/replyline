@@ -10,6 +10,7 @@ export interface E2EBootstrapOverrides {
   llmKeyPresent?: boolean;
   runtimeReady?: boolean;
   contextActive?: boolean;
+  analysisError?: { kind: string; message: string } | null;
   contextPacks?: Array<{
     id: string;
     title: string;
@@ -93,6 +94,9 @@ export async function installReplylineE2EPlatform(
           if (command === "capture_stop_and_analyze") {
             if (!captureActive) throw new Error("capture_not_started");
             captureActive = false;
+            if (overrides?.analysisError) {
+              throw overrides.analysisError;
+            }
             return {
               gist: "Interviewer asks about reliability ownership.",
               sayNow: "I can own this stream and show measurable delivery impact.",
@@ -101,6 +105,16 @@ export async function installReplylineE2EPlatform(
             };
           }
           if (command === "log_client_event") return null;
+          if (command === "check_runtime_config") {
+            const runtimeReady =
+              overrides?.deepgramKeyPresent !== false && overrides?.runtimeReady !== false;
+            return {
+              runtimeReady,
+              stt: { ok: overrides?.deepgramKeyPresent !== false },
+              llm: { ok: Boolean(mockSettings.llmBaseUrl && mockSettings.llmModel) },
+              settings: { ok: true },
+            };
+          }
           if (command === "get_context_status") {
             return {
               contextActive: contextPacks.some((p) => p.isActive),
@@ -154,6 +168,17 @@ export async function installReplylineE2EPlatform(
             return null;
           }
           if (command === "clear_context") return null;
+          if (command === "retry_last_analysis") {
+            if (overrides?.analysisError) {
+              throw overrides.analysisError;
+            }
+            return {
+              gist: "Retry gist",
+              sayNow: "Retry say",
+              nextMove: "Retry next",
+              charsBand: "normal",
+            };
+          }
           throw new Error(`Unsupported mocked command: ${command}`);
         },
         listen: async () => () => {},

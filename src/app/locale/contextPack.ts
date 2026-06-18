@@ -27,6 +27,8 @@ export const contextPack_ru = {
   editCtx: "Изменить",
   disableCtx: "Отключить",
   manageCtx: "Контекст",
+  idleValueHint:
+    "Контекст помогает помощнику понять вашу роль и проект — без необходимости объяснять это в каждом вопросе. Создайте один раз и активируйте перед разговором.",
 } as const;
 
 export const contextPack_en: typeof contextPack_ru = {
@@ -59,4 +61,6 @@ export const contextPack_en: typeof contextPack_ru = {
   editCtx: "Edit",
   disableCtx: "Disable",
   manageCtx: "Context",
+  idleValueHint:
+    "Context helps the assistant understand your role and project — no need to re-explain in every question. Create once, activate before the conversation.",
 } as const;

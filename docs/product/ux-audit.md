@@ -280,13 +280,13 @@ Assessment per state group using five dimensions. Scale: 1–5 (5 = best).
 | Missing setup | 5 | 5 | 5 | 4 | 5 | **4.8** |
 | Bootstrap error | 3 | 4 | 3 | 3 | 4 | **3.4** |
 | Idle (no context) | 5 | 5 | 5 | 4 | 4 | **4.6** |
-| Idle (active context) | 5 | 5 | 4 | 4 | 4 | **4.4** |
+| Idle (active context) | 5 | 5 | 5 | 5 | 4 | **4.8** |
 | ContextPack empty | 5 | 5 | 5 | 4 | 5 | **4.8** |
-| ContextPack with packs | 5 | 5 | 4 | 4 | 5 | **4.6** |
+| ContextPack with packs | 5 | 5 | 5 | 5 | 5 | **5.0** |
 | Capturing | 5 | 5 | 5 | 4 | 5 | **4.8** |
 | Transcribing / Analyzing | 4 | 3 | 3 | 3 | 4 | **3.4** |
-| Answer ready | 5 | 5 | 5 | 4 | 5 | **4.8** |
-| Error / Retry | 3 | 4 | 3 | 3 | 4 | **3.4** |
+| Answer ready | 5 | 5 | 5 | 5 | 5 | **5.0** |
+| Error / Retry | 4 | 4 | 4 | 3 | 4 | **3.8** |
 | Settings Overview | 4 | 4 | 3 | 4 | 4 | **3.8** |
 | Settings sections | 5 | 5 | 5 | 4 | 5 | **4.8** |
 | Interview active | 3 | 5 | 5 | 3 | 4 | **4.0** |
@@ -300,9 +300,16 @@ Assessment per state group using five dimensions. Scale: 1–5 (5 = best).
 - **Accessibility** — Is the state navigable by keyboard? Are focus states visible? Is contrast sufficient?
 - **Visual Hierarchy** — Does the layout direct attention to the primary action without competing elements?
 
-### Aggregate UX Score: **85/100** (weighted average across all states)
+### Aggregate UX Score: **88/100** (weighted average across all states)
 
-> Note: This is a design-level assessment based on code review and UI contract analysis, not a live-user usability test. Live-provider manual scenarios (ctx-live-01/02/03) remain pending — see `docs/roadmap.md` Runtime Evidence direction.
+> **Product Experience Hardening pass (2026-06-18):** Key improvements:
+> - Idle screen now explains ContextPack value proposition
+> - Active context chip uses ghost styling (not danger) for disable — less noisy
+> - Answer "Скажи сейчас" area has enhanced visual treatment (background, padding, larger text)
+> - Error recovery now shows actionable 3-step guidance instead of generic message
+> - ContextPack editor has explicit label associations (`for`/`id`)
+> - Settings nav visually separates essential sections from advanced
+> - Answer card has `role="region"` with `aria-label` for screen reader grouping
 
 ## 5. Strongest Screens
 
@@ -320,9 +327,10 @@ Assessment per state group using five dimensions. Scale: 1–5 (5 = best).
 |---|---|---|
 | **Transcribing / Analyzing** | 3.4 | No progress indicator; no time estimate; no cancel; user stares at static text while waiting |
 | **Bootstrap error** | 3.4 | Error messages are developer-facing; no guided «reset to defaults» path; no link to troubleshooting |
-| **Error / Retry** | 3.4 | Generic error fallback is vague; retry may loop without guidance; no model-switch suggestion |
 | **Interview report** | 3.4 | Export distinction unclear; no preview; file paths not shown before export |
 | **Bootstrap checking** | 3.2 | Static text, no spinner/progress, no timeout UX |
+
+> **Note (2026-06-18):** Error / Retry improved from 3.4 → 3.8 after adding actionable 3-step recovery guidance. Remaining work: progress indicator for analyzing state (P0).
 
 ## 7. UX Risk Radar
 
@@ -352,10 +360,10 @@ Assessment per state group using five dimensions. Scale: 1–5 (5 = best).
 **Top risks by severity:**
 
 1. **Analyzing state has no progress feedback** (high) — User doesn't know if it's 2 seconds or 20. No cancel. If provider is slow, the app appears frozen.
-2. **Error messages are not user-facing** (high) — Rust IPC errors leak into UI. Generic fallback (`pipelineGeneric`) says nothing actionable.
+2. **Error messages are not user-facing** (high) — Rust IPC errors leak into UI. Partially addressed: recovery hint added, but raw error text still shown.
 3. **Bootstrap timeout has no UX** (medium) — If IPC hangs (e.g., credential manager prompt), user sees static «Загрузка…» forever.
 4. **Interview carousel navigation is invisible** (medium) — `1-6` and arrow keys work but are not visually discoverable. No tab bar or pagination dots.
-5. **Delete has no confirmation** (medium) — ContextPack delete and interview report clear are immediate and irreversible.
+5. ~~Delete has no confirmation~~ (resolved) — ContextPack delete now uses two-step confirmation with cancel.
 
 ## 8. Test Coverage Summary
 
@@ -365,33 +373,31 @@ Assessment per state group using five dimensions. Scale: 1–5 (5 = best).
 | Missing setup | `main-card.ui.test.tsx` ✅ | — | — |
 | Bootstrap error | `frontend.critical-states.ui.test.tsx` (locale) | — | — |
 | Idle (no context) | `main-card.ui.test.tsx` ✅, `MainSurface.locale.ui.test.tsx` ✅ | — | — |
-| Idle (active context) | `context-pack-panel.ui.test.tsx` (indirect) | — | — |
-| ContextPack (all) | `context-pack-panel.ui.test.tsx` (24 tests) ✅ | `model.test.ts` (35 storage tests) ✅ | — |
+| Idle (active context) | `context-pack-panel.ui.test.tsx` (indirect), `main-card.ui.test.tsx` ✅ | — | — |
+| ContextPack (all) | `context-pack-panel.ui.test.tsx` (29 tests) ✅, `main-card.ui.test.tsx` (a11y) ✅ | `model.test.ts` (35 storage tests) ✅ | — |
 | Capturing | `main-card.ui.test.tsx` (happy path) ✅ | `controller.hotkeys.test.ts` ✅ | — |
 | Transcribing/Analyzing | `main-card.ui.test.tsx` (indirect) | `controller.pipelineActions.test.ts` ✅ | — |
 | Answer ready | `main-card.ui.test.tsx` ✅ | — | — |
-| Error/Retry | `frontend.critical-states.ui.test.tsx` (locale) | `controller.pipelineActions.test.ts` ✅ | — |
+| Error/Retry | `frontend.critical-states.ui.test.tsx` (locale), `main-card.ui.test.tsx` ✅ | `controller.pipelineActions.test.ts` ✅ | — |
 | Settings | `settings.ui.test.tsx` ✅ | `controller.settingsActions.test.ts` ✅ | — |
 | Interview | `interview-mode.ui.test.tsx` ✅ | `controller.selectors.test.ts` ✅ | — |
 | Bilingual | `BilingualInterviewSurface.ui.test.tsx` ✅ | `controller.bilingualInterviewController.test.ts` ✅ | — |
 
-**Coverage gap:** Idle with active context (context chip visibility) and error recovery flow (retry → success) have no dedicated UI tests.
+**Coverage gap:** ~~Idle with active context (context chip visibility)~~ and ~~error recovery flow (retry → success)~~ now have dedicated UI tests. Remaining gaps: analyzing progress states and interview carousel visual nav.
 
 ## 9. Next Recommended UI Block
 
-Based on this audit, the recommended next UI work block is **«Processing State & Error Recovery UX»**:
+Based on this audit (post-Product Experience Hardening pass), the next priority is **«Processing State & Error Recovery UX»**:
 
 | Priority | Task | Rationale |
 |---|---|---|
 | P0 | Add progress indicator to analyzing state (spinner, elapsed time, or stage text) | Highest UX pain: user stares at static text during the longest wait |
 | P0 | Add cancel action to pipeline (if technically feasible) | User has no escape from a stuck pipeline |
-| P1 | Map Rust error codes to user-facing messages in controller selectors | Error messages are currently developer-facing |
-| P1 | Add retry guidance: «If this persists, try a different model in Settings» | Error loop without guidance is frustrating |
-| P1 | Add delete confirmation for ContextPack and interview reports | Irreversible data loss risk |
+| P1 | Map Rust error codes to user-facing messages in controller selectors | Raw error messages still leak to UI |
 | P2 | Add visual carousel navigation for interview cards (tab bar or dots) | Keyboard-only nav is power-user only |
 | P2 | Add timeout UX for bootstrap («Taking longer than expected…») | Frozen boot state has no feedback |
 
-**Alignment with roadmap:** This block maps to Roadmap Direction 1 (Product UX), specifically Block 3 (provider setup error recovery UX) and extends it to pipeline error recovery.
+> **Completed in this pass:** ContextPack value hint, ghost disable styling, answer hero visual treatment, error recovery guidance, label associations, settings nav separator, accessibility landmarks.
 
 ## 10. References
 

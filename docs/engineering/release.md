@@ -159,6 +159,7 @@ Operational boundaries:
 - Do not claim public installer readiness from unsigned artifacts, workflow artifacts, or local builds.
 
 See [signed-installer-readiness.md](signed-installer-readiness.md) for the full signed installer plan, certificate requirements, and step-by-step checklist.
+See [release-artifact-manifest.md](release-artifact-manifest.md) for the artifact manifest format, checksum plan, SmartScreen note, and rollback plan.
 
 Evidence still required before public installer claims:
 
@@ -219,7 +220,8 @@ Recorded 2026-06-17. Decision: **Conditional Go**. See `CHANGELOG.md` and `docs/
 - [x] Docs truth aligned: scorecard 88/100, CHANGELOG current, architecture updated
 - [x] ContextPack storage hardened: corrupt JSON quarantine + safe recovery (35 tests)
 - [x] Live provider evidence: updated for 2026-06-17 (265 tests, 390 tracked files)
-- [ ] Live provider manual scenarios: ctx-live-01/02/03 pending (desktop app + synthetic audio required)
+- [x] Product Experience Hardening (2026-06-18): UX score 85→88, idle hint, error recovery, a11y (see `docs/product/ux-audit.md`)
+- [ ] Live provider manual scenarios: ctx-live-01/02/03/04/05/06 blocked (Deepgram key + LLM key missing)
 - [ ] Cross-machine smoke: Windows 10 not tested
 - [ ] Public installer: certificate not acquired, no signed binary
 - [x] Tag created (`v0.2.0-beta.3`)
@@ -230,9 +232,47 @@ Recorded 2026-06-17. Decision: **Conditional Go**. See `CHANGELOG.md` and `docs/
 ContextPack pivot is the defining feature of this cycle. All automated gates green.
 Tag can be applied after explicit confirmation.
 
-## Beta.4 Quality Plan
+## Beta.4 Release Decision
 
-See [docs/release-notes/v0.2.0-beta.4-draft.md](../release-notes/v0.2.0-beta.4-draft.md) for the beta.4 quality/stability release plan (draft).
+Recorded 2026-06-18 (post-epic refresh). Decision: **Conditional Go**.
+
+All automated gates green (920+ tests). No S0/S1 blockers. Public trust package complete,
+architecture debt paid, non-core pruned. Core product boundaries explicit.
+
+**Blockers (documented S2):**
+- Live provider evidence: all paths blocked — `DEEPGRAM_API_KEY is missing`
+- Signed installer: no Authenticode certificate
+- npm audit: 5 pre-existing vulns (optional webdriverio deps)
+
+**Scorecard:** 93/100 (stable). Categories: Product 95, UX 88, Runtime 82, Packaging 84,
+Accessibility 91, Frontend 93, Rust 93, Tests 91, Docs 93, Minimalism 88.
+
+**Next epics:** Live Provider Proof → Signed Installer → Processing State UX.
+
+Tag suggestion (requires explicit approval):
+```bash
+git tag -a v0.2.0-beta.4 -m "v0.2.0-beta.4: quality, stability, and public trust"
+git push origin v0.2.0-beta.4
+```
+
+### Live Evidence Status (2026-06-18)
+
+| Path | Status | Blocker |
+|---|---|---|
+| Automated QA (all gates) | ✅ `measured` | — |
+| ContextPack deterministic (47 fixtures) | ✅ `measured` | — |
+| ContextPack UI (29 tests) | ✅ `measured` | — |
+| Product Experience UX (189 tests) | ✅ `measured` | — |
+| Live STT path (Deepgram) | ❌ `blocked` | `DEEPGRAM_API_KEY is missing` |
+| Live LLM path (OpenAI-compatible) | ❌ `blocked` | No LLM API key configured |
+| Live combined pipeline | ❌ `blocked` | Both keys missing |
+| Cross-machine smoke | ❌ `blocked` | No second machine available |
+| Signed installer | ❌ `blocked` | No Authenticode certificate |
+
+**Evidence files:**
+- `docs/beta-evidence/contextpack-live-runtime-2026-06-18.md` — full runtime evidence snapshot
+- `docs/beta-evidence/provider-runtime-matrix.md` — updated provider matrix
+- `docs/beta-evidence/context-pack-live-qa.2026-06-17.md` — previous QA evidence
 
 ## Manual Release Checklist
 

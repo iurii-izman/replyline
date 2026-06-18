@@ -43,7 +43,7 @@
 
 ## M
 
-- **measured** — claim level: подтверждён runtime artifact, не теорией. Высший уровень доверия в [benchmark-policy.md](../benchmark-policy.md).
+- **measured** — claim level: подтверждён runtime artifact, не теорией. Высший уровень доверия в [benchmark-policy.md](../archive/handoff/benchmark-policy.md).
 - **mock lane** — UI-тесты с stubbed providers, без сети. Быстрый, deterministic, не доказывает runtime поведение.
 - **non-shipped track** — future/experimental направление, которое не должно описываться как доступная capability без явного статуса в canonical product docs. См. [product/limitations.md](../product/limitations.md).
 

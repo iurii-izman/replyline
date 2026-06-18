@@ -2,60 +2,124 @@
 
 Architecture reference for the current Replyline beta.
 
+## Core Product Boundary
+
+Replyline's core product is intentionally narrow:
+- **WorkConversation** — `gist / say_now / next_move` card from one capture
+- **ContextPack** — single active conversation context primitive
+- **One response card per capture** — no history, no feed, no continuous recording
+
+Secondary features:
+- **Interview Mode** — context usage example built on WorkConversation + interview ContextPack
+- **Bilingual experimental** — frozen, gated behind env flag + setting, compiled but not active
+
+All architecture decisions serve the core product first. Secondary features share the same pipeline and UI shell but are explicitly marked as non-core.
+
 ## Frontend boundaries
 
 Source-of-truth split (must stay stable):
 
-- `src/app/model/settings.ts` — Phase, Panel, AppSettings, DEFAULT_SETTINGS, MainUiState
-- `src/app/model/errors.ts` — CommandError parsing, user-safe error mapping
-- `src/app/model/cards.ts` — Analysis card DTOs, interview card schema V1, asAnalysisCard
-- `src/app/model/interview.ts` — Interview report/session DTOs
-- `src/app/model/diagnostics.ts` — Bootstrap, setup status, persistence diagnostics DTOs
-- `src/app/model/hotkeys.ts` — Hotkey normalization and KeyboardEvent parsing
-- `src/app/model/routeMode.ts` — LLM route mode detection (local/cloud)
-- `src/app/model/bilingualExperimental.ts` — Bilingual interview DTOs, state, gated by default
-- `src/app/model/index.ts` — Barrel re-export, canonical import surface (`from "./model"`)
+### Model layer (10 modules)
+
+- `src/app/model/settings.ts` — Phase, Panel, AppSettings, DEFAULT_SETTINGS, MainUiState (64 loc)
+- `src/app/model/errors.ts` — CommandError parsing, user-safe error mapping (120 loc)
+- `src/app/model/cards.ts` — Analysis card DTOs, interview card schema V1 (100 loc)
+- `src/app/model/interview.ts` — Interview report/session DTOs (36 loc)
+- `src/app/model/diagnostics.ts` — Bootstrap, setup status, persistence diagnostics DTOs (92 loc)
+- `src/app/model/hotkeys.ts` — Hotkey normalization and KeyboardEvent parsing (24 loc)
+- `src/app/model/routeMode.ts` — LLM route mode detection (local/cloud) (23 loc)
+- `src/app/model/contextPack.ts` — ContextPack DTOs and types (17 loc)
+- `src/app/model/bilingualExperimental.ts` — Bilingual interview DTOs, state, gated by default (143 loc)
+- `src/app/model/index.ts` — Barrel re-export, canonical import surface (76 loc)
+
+Additional frontend modules:
+- `src/app/modelPresets.ts` — Model preset definitions and resolution (5 presets, 4 OpenRouter)
+- `src/app/answerProfiles.ts` — Answer profile/style definitions (work_default, work_concise, etc.)
 - `src/app/platform.ts` — Tauri/browser bridge (`invoke`, listeners, shortcuts, clipboard, window)
-- `src/app/controller.ts` — re-export entry for controller layer (`controller/index.ts`)
-- `src/app/controller/index.ts` — orchestration composition and app-level state wiring
-- `src/app/controller/hotkeys.ts` — capture hotkey lifecycle and capture start/stop orchestration
-- `src/app/controller/pipelineActions.ts` — retry/clear/copy actions
-- `src/app/controller/settingsActions.ts` — bootstrap/setup/settings persistence flow
-- `src/app/controller/lifecycle.ts` — runtime status listeners and run-id event acceptance rules
-- `src/app/controller/traySync.ts` — tray phase synchronization side effect
-- `src/app/controller/selectors.ts` — derived UI state/selectors for main surface
-- `src/app/controller/keyboardShortcuts.ts` — non-hotkey keyboard actions in UI
-- `src/app/controller/notices.ts` — ephemeral notice lifecycle/timers
 
-UI surfaces remain view-focused and do not own orchestration:
+### Controller layer (10 modules)
 
-- `src/app/MainSurface.tsx`
-- `src/app/SettingsSurface.tsx`
-- `src/app/settings/settingsViewModel.ts` — Pure UI helpers (check item labels, status classes, runtime check messages)
+- `src/app/controller/index.ts` — Orchestration composition, app-level state wiring (726 loc)
+- `src/app/controller/hotkeys.ts` — Capture hotkey lifecycle and capture start/stop orchestration (313 loc)
+- `src/app/controller/settingsActions.ts` — Bootstrap/setup/settings persistence flow (248 loc)
+- `src/app/controller/bilingualInterviewController.ts` — Bilingual interview orchestration (336 loc)
+- `src/app/controller/selectors.ts` — Derived UI state/selectors for main surface (139 loc)
+- `src/app/controller/pipelineActions.ts` — Retry/clear/copy actions (136 loc)
+- `src/app/controller/lifecycle.ts` — Runtime status listeners and run-id event acceptance rules (114 loc)
+- `src/app/controller/keyboardShortcuts.ts` — Non-hotkey keyboard actions in UI (75 loc)
+- `src/app/controller/notices.ts` — Ephemeral notice lifecycle/timers (36 loc)
+- `src/app/controller/traySync.ts` — Tray phase synchronization side effect (29 loc)
+
+### UI surface layer
+
+Main surface components (extracted to `src/app/main/`):
+
+- `src/app/MainSurface.tsx` — Thin orchestrator, state routing to sub-components (347 loc)
+- `src/app/main/SetupFocusState.tsx` — Setup wizard: 3-step checklist, progress, CTAs (120 loc)
+- `src/app/main/IdleReadyState.tsx` — Idle screen: readiness, status rail, context value hint (70 loc)
+- `src/app/main/ProcessingState.tsx` — Capturing/transcribing/analyzing phase cards (47 loc)
+- `src/app/main/LiveAssistShell.tsx` — Answer card layout: cockpit grid, interview carousel (234 loc)
+- `src/app/main/LiveAnswerCard.tsx` — Primary answer hero: say-now + copy button (48 loc)
+- `src/app/main/InsightStrip.tsx` — Secondary insights: gist + evidence + risk + next-move (41 loc)
+- `src/app/main/ActionDock.tsx` — Sticky footer: retry + clear actions (45 loc)
+- `src/app/main/WorkspaceSidePanel.tsx` — Side panel: interview session/report/export (158 loc)
+- `src/app/main/helpers.tsx` — Shared helpers: duration, step mapping, card labels (56 loc)
+
+Settings surface components (extracted to `src/app/settings/`):
+
+- `src/app/SettingsSurface.tsx` — Settings orchestrator: nav, section routing, form (390 loc)
+- `src/app/settings/SettingsNav.tsx` — Tab-based navigation: sidebar + mobile chips (100 loc)
+- `src/app/settings/settingsViewModel.ts` — Pure UI helpers: check items, status classes, runtime messages
+- `src/app/settings/OverviewSection.tsx` — Health check overview + persistence diagnostics (185 loc)
+- `src/app/settings/SpeechSection.tsx` — Deepgram key configuration (48 loc)
+- `src/app/settings/LlmSection.tsx` — LLM provider/model/profile selection (123 loc)
+- `src/app/settings/HotkeySection.tsx` — Hotkey capture + window behavior controls (57 loc)
+- `src/app/settings/ReportsSection.tsx` — Report retention + debug trace + bilingual toggles (206 loc)
+
+Other UI surfaces:
+
+- `src/app/ContextPackPanel.tsx` — ContextPack CRUD panel: editor + list + empty state (362 loc)
+- `src/app/ChromeSurface.tsx` — App shell: header, phase indicator, hotkey display, notices (124 loc)
+- `src/app/BilingualInterviewSurface.tsx` — Bilingual interview surface (experimental, gated)
+
+### Locale layer (7 modules)
+
+- `src/app/locale/index.ts` — Barrel re-export: `ui_ru`, `ui_en`, `UiStrings`, `getUi` (24 loc)
+- `src/app/locale/common.ts` — Header, phase, setup, pipeline, errors, checks (250 loc)
+- `src/app/locale/settings.ts` — Settings labels, nav, hints, report controls (276 loc)
+- `src/app/locale/card.ts` — Card labels: gist, sayNow, retry, copy, a11y (136 loc)
+- `src/app/locale/interview.ts` — Interview card labels + report labels (149 loc)
+- `src/app/locale/contextPack.ts` — ContextPack panel labels (66 loc)
+- `src/app/locale/bilingualExperimental.ts` — Bilingual UI labels (45 loc)
+
+Total locale keys: 396 (RU primary, EN mirror).
 
 ## Backend ownership map
 
-### Command layer (domain split in progress)
+### Command layer (domain split complete)
 
-- `src-tauri/src/commands/mod.rs` — remaining IPC commands (17 of 40) + shared helpers
+All 40 IPC commands distributed across 12 domain modules. `mod.rs` is a thin re-export hub (29 loc).
+
+- `src-tauri/src/commands/mod.rs` — Module declarations + 2 shared utilities: `next_run_id`, `hash_path_for_log` (29 loc)
 - `src-tauri/src/commands/registry.rs` — `replyline_commands!` macro (single-source command registration)
 - `src-tauri/src/commands/shared.rs` — `CommandError` impl for `SettingsError`/`CredentialError`
 
-Extracted domains (7 of 10, 23 of 40 commands):
+Domain modules (12 total, all commands extracted):
 
-- `src-tauri/src/commands/bootstrap.rs` — `load_bootstrap`, `log_client_event`, `quit_app`
-- `src-tauri/src/commands/diagnostics.rs` — `get_trace_status`, `clear_debug_traces`, `open_trace_folder`
-- `src-tauri/src/commands/tray_window.rs` — `sync_tray_ui_phase`, `refresh_tray_menu`, `tray_open_main`
-- `src-tauri/src/commands/context.rs` — `clear_context`, `get_context_status`
-- `src-tauri/src/commands/context_pack.rs` — `list_context_packs`, `save_context_pack`, `delete_context_pack`, `set_active_context_pack`, `clear_active_context_pack`, `get_active_context_pack`, `get_context_pack_status`
-- `src-tauri/src/commands/runtime_checks.rs` — `check_stt_config`, `check_llm_config`, `check_runtime_config`
-- `src-tauri/src/commands/secrets.rs` — `save_secret`, `delete_secret`
-
-Remaining in `mod.rs` (4 domains, 17 commands):
-- settings (4): `save_settings`, `get_setup_status`, `get_feedback_payload`, `get_persistence_diagnostics`
-- capture (3): `capture_start`, `capture_stop_and_analyze`, `retry_last_analysis`
-- interview (6): start/end/get/export_markdown/export_redacted/clear
-- bilingual_experimental (4): start/stop/capture/export
+| Module | Commands | Count |
+|---|---|---|
+| `bootstrap.rs` | `load_bootstrap`, `log_client_event`, `quit_app` | 3 |
+| `capture.rs` | `capture_start`, `capture_stop_and_analyze`, `retry_last_analysis` | 3 |
+| `context.rs` | `clear_context`, `get_context_status` | 2 |
+| `context_pack.rs` | `list_context_packs`, `save_context_pack`, `delete_context_pack`, `set_active_context_pack`, `clear_active_context_pack`, `get_active_context_pack`, `get_context_pack_status` | 7 |
+| `diagnostics.rs` | `get_trace_status`, `clear_debug_traces`, `open_trace_folder`, `get_persistence_diagnostics` | 4 |
+| `interview.rs` | `start_interview_session`, `end_interview_session`, `get_interview_report`, `export_interview_report_markdown`, `export_interview_report_redacted_markdown`, `clear_interview_reports` | 6 |
+| `bilingual_experimental.rs` | `start_bilingual_session`, `stop_bilingual_session`, `capture_bilingual_answer`, `export_bilingual_interview_report` | 4 |
+| `runtime_checks.rs` | `check_stt_config`, `check_llm_config`, `check_runtime_config` | 3 |
+| `secrets.rs` | `save_secret`, `delete_secret` | 2 |
+| `settings.rs` | `save_settings`, `get_setup_status`, `get_feedback_payload` | 3 |
+| `tray_window.rs` | `sync_tray_ui_phase`, `refresh_tray_menu`, `tray_open_main` | 3 |
+| **Total** | | **40** |
 
 ### Other backend modules
 - `src-tauri/src/settings.rs` — settings schema, migration chain, validation, corrupt-file quarantine

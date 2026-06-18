@@ -59,7 +59,7 @@ This report is safe to share by default, but it is still a diagnostic artifact. 
 
 See also:
 
-- [docs/beta-doctor.md](beta-doctor.md)
+- [docs/engineering/testing.md](engineering/testing.md)
 - [docs/engineering/release.md](engineering/release.md)
 - [docs/product/privacy.md](product/privacy.md)
 - [docs/product/user-guide.md#9-troubleshooting-quick-table](product/user-guide.md#9-troubleshooting-quick-table)

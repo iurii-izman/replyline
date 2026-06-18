@@ -44,6 +44,9 @@ export function IdleReadyState(props: Readonly<{ controller: ReplylineController
           {st().card.errorFixAction}
         </button>
       </div>
+      <p class="idle-context-hint" data-testid="idle-context-value-hint">
+        {st().contextPack.idleValueHint}
+      </p>
       <div class="idle-secondary-area" data-testid="idle-secondary-area">
         <Show when={controller().interviewSession()}>
           <p class="empty-flow-hint" data-testid="idle-session-chip">

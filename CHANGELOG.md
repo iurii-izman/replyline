@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — beta.4 quality cycle
 
 Quality and stability release. No new features — focus on UX polish, maintainability
-splits, public documentation, and signing readiness.
+splits, public documentation, signing readiness, and public trust.
 
 ### Added
 
@@ -60,6 +60,14 @@ splits, public documentation, and signing readiness.
 - ContextPack empty state explains why and shows example content.
 - "First 10 minutes" onboarding section in user guide.
 - ContextPack smoke path in BETA_TESTING.md.
+- **Release artifact manifest** (`docs/engineering/release-artifact-manifest.md`) —
+  canonical format: artifact naming, SHA256 checksum plan, SmartScreen expectation note,
+  rollback plan, public wording rules.
+- **Live runtime evidence** (`docs/beta-evidence/contextpack-live-runtime-2026-06-18.md`) —
+  honest blocked status with exact unblock checklist, measured automated evidence.
+- **Product Experience Hardening** — UX 85→88: idle context hint, ghost disable styling,
+  answer hero visual treatment, error recovery guidance, label associations, settings separator.
+- 6 new UI tests: idle hint, error recovery, context chip a11y, copy button, labels, separator.
 
 ### Changed
 
@@ -72,7 +80,11 @@ splits, public documentation, and signing readiness.
 - Locale key checker updated for recursive import resolution (supports directory structure).
 - IPC contract checker now validates docs coverage (all 40 commands in `ipc.md`).
 - UI shell contract checker updated for extracted component files.
-- Repository scorecard refreshed: 88 → 93/100, 416 tracked files.
+- Repository scorecard refreshed: 88 → 93/100, 416 → 433 tracked files.
+- README Quick Start simplified: removed `git checkout` step, inline config steps.
+- README Engineering Highlights updated: 265 Rust + 189 TS = 454 automated tests.
+- Roadmap synced to post-hardening state, trust package items marked ready.
+- Provider runtime matrix updated with 2026-06-18 commit and test counts.
 
 ### Removed
 

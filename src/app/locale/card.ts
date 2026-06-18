@@ -32,6 +32,8 @@ export const card_ru = {
   readyHint: "Ответ готов к копированию.",
   shortCaptureHint: "Короткий фрагмент поддерживается; захватите вопрос целиком и разборчиво.",
   errorHint: "Повторите захват или проверьте настройки.",
+  errorRecoveryHint:
+    "Если ошибка повторяется: 1) проверьте доступ провайдера в настройках, 2) попробуйте другую модель, 3) убедитесь, что захват содержал слышимую речь.",
   copySayNow: "Скопировать ответ",
   copiedLabel: "Скопировано",
   sayNowHint: "Используйте как основной ответ и адаптируйте под формулировку вопроса.",
@@ -97,6 +99,8 @@ export const card_en: typeof card_ru = {
   readyHint: "Reply is ready to copy.",
   shortCaptureHint: "Short fragments are supported; capture the complete question clearly.",
   errorHint: "Retry capture or check settings.",
+  errorRecoveryHint:
+    "If the error persists: 1) verify provider access in settings, 2) try a different model, 3) ensure the capture contained audible speech.",
   copySayNow: "Copy reply",
   copiedLabel: "Copied",
   sayNowHint: "Use this as the primary answer and adapt it to the exact question wording.",

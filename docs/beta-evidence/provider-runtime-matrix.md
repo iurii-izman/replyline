@@ -1,8 +1,9 @@
 # Provider Runtime Evidence Matrix
 
-> **Date:** 2026-06-17
-> **Build:** `main` commit `59fb18c` (post v0.2.0-beta.3)
-> **Claim label:** `pending verification` (live capture path blocked — no provider keys configured)
+> **Date:** 2026-06-18
+> **Build:** `main` commit `10ab76c` (v0.2.0-beta.3, post-Product Experience Hardening)
+> **Claim label:** `blocked` (live capture path blocked — no provider keys configured)
+> **Previous snapshot:** 2026-06-17 (commit `59fb18c`)
 
 This matrix tracks the evidence status of every documented provider route.
 Statuses follow the claim labels from [engineering/runtime.md](../engineering/runtime.md):
@@ -58,22 +59,24 @@ Statuses follow the claim labels from [engineering/runtime.md](../engineering/ru
 |---|---|---|
 | Automated QA fixtures (47 scenarios) | ✅ **measured** | All 47 pass with avg score 100. Deterministic evaluation, no live LLM. |
 | ContextPack storage tests (35) | ✅ **measured** | CRUD, compact, corrupt recovery, multi-backup ordering. All pass. |
-| ContextPack UI tests (24) | ✅ **measured** | Create, edit, delete, activate, deactivate, duplicate, preview, empty state. All pass. |
+| ContextPack UI tests (29) | ✅ **measured** | Create, edit, delete (two-step confirm), activate, deactivate, duplicate, preview, empty state, a11y labels. All pass. |
+| Product Experience Hardening UX | ✅ **measured** | UX score 85→88. 189 UI tests. See `docs/product/ux-audit.md`. |
 | ContextPack + live STT + LLM | **blocked** | Requires Deepgram key + LLM key. |
 | ContextPack + manual QA (ctx-live-01/02/03) | **blocked** | Desktop app + synthetic audio required. Pending provider keys. |
 
-## What IS Verified (2026-06-17)
+## What IS Verified (2026-06-18)
 
 | Gate | Result | Evidence |
 |---|---|---|
-| `pnpm verify` | ✅ PASS | typecheck, lint, build, clippy, fmt, 265 Rust tests, 158 TS tests, contracts, security lanes |
+| `pnpm verify` | ✅ PASS | typecheck, lint, build, clippy, fmt, 265 Rust tests, 189 TS tests, contracts, security lanes |
 | `pnpm verify:full` | ⚠️ 1 pre-existing blocker | Unsigned artifacts (S2, documented) |
 | `pnpm beta:doctor` | ✅ 13/13 PASS | All toolchain checks |
 | `pnpm runtime:preflight` | ✅ PASS | Settings v10 valid, credential manager available |
 | `pnpm probe:runtime` | ❌ FAIL | `DEEPGRAM_API_KEY is missing` |
 | `pnpm test:quality` | ✅ PASS | Deterministic quality bundle (ContextPack, interview, say_now, product scenarios) |
-| `pnpm test:report-secret-leaks` | ✅ OK | 49 files scanned |
-| `pnpm test:public-footprint` | ✅ OK | 393 tracked files |
+| `pnpm test:report-secret-leaks` | ✅ OK | 58 files scanned |
+| `pnpm test:public-footprint` | ✅ OK | 433 tracked files |
+| UX Score | ✅ 88/100 | Up from 85; see `docs/product/ux-audit.md` |
 
 ## Latency Reference (fixture-based, NOT live)
 
@@ -93,10 +96,11 @@ Source: `reports/runtime/pipeline-latency-summary.json` (2026-06-13, fixture-der
 
 ### What this matrix proves
 
-- Replyline v0.2.0-beta.3 compiles and passes all deterministic gates on Windows 11 build 26200.
+- Replyline v0.2.0-beta.3 (commit `10ab76c`) compiles and passes all deterministic gates on Windows 11 build 26200.
 - Settings v10 schema loads and validates.
 - Windows Credential Manager service is available.
-- All automated ContextPack tests pass (47 QA fixtures, 35 storage, 24 UI).
+- All automated ContextPack tests pass (35 Rust storage, 29 UI, 47 quality fixtures).
+- Product Experience Hardening pass improved UX score from 85→88, with 189 UI tests.
 - Provider documentation exists for 4 LLM routes + 4 OpenRouter presets + generic custom route.
 - No live provider path has been validated on this machine.
 
@@ -107,6 +111,7 @@ Source: `reports/runtime/pipeline-latency-summary.json` (2026-06-13, fixture-der
 - Any LLM provider generates useful cards.
 - Cross-machine or cross-Windows-build behaviour.
 - Production readiness for any provider route.
+- ContextPack interaction with live STT+LLM pipeline.
 
 ### Hard blocker
 

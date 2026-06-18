@@ -6,7 +6,12 @@ import {
   createSetupMockPlatform,
   defaultMockSettings,
 } from "./test-utils/mockPlatform";
-import { openSettingsPanel, openSettingsSection, renderApp } from "./test-utils/appUi";
+import {
+  openSettingsPanel,
+  openSettingsSection,
+  renderApp,
+  triggerAnalysisReady,
+} from "./test-utils/appUi";
 
 describe("settings integration", () => {
   it("renders localized settings sections and submits from keyboard form path", async () => {
@@ -312,5 +317,32 @@ describe("setup wizard integration", () => {
       canRetryLastTranscript: false,
     });
     await waitFor(() => expect(screen.queryByTestId("startup-checking")).toBeNull());
+  });
+
+  it("settings nav separates essential and advanced sections with a divider", async () => {
+    const mock = createMockPlatform();
+    renderApp(mock);
+    await openSettingsPanel();
+
+    // The sidebar should contain a visual separator before the Advanced section.
+    const sidebar = screen.getByTestId("settings-sidebar");
+    const separator = sidebar.querySelector(".settings-nav-separator");
+    expect(separator).toBeTruthy();
+
+    // Separator has aria-hidden so screen readers ignore it.
+    expect(separator!.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("answer hero card has region role for screen reader grouping", async () => {
+    const mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "g", sayNow: "say", nextMove: "next" },
+    });
+    renderApp(mock);
+
+    await triggerAnalysisReady(mock);
+
+    const heroCard = screen.getByTestId("answer-hero-card");
+    expect(heroCard.getAttribute("role")).toBe("region");
+    expect(heroCard.getAttribute("aria-label")).toBe("Скажи сейчас");
   });
 });

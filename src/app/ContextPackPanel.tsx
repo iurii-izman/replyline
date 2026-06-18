@@ -190,11 +190,12 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
 
         <Show when={editing()}>
           <div class="context-pack-editor" data-testid="context-pack-editor">
-            <label>
+            <label for="context-pack-title-field">
               <span class="field-label">{st().contextPack.titleLabel}</span>
               <input
                 type="text"
                 class="input"
+                id="context-pack-title-field"
                 data-testid="context-pack-title-input"
                 value={draftTitle()}
                 onInput={(e) => setDraftTitle(e.currentTarget.value)}
@@ -202,10 +203,11 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
                 placeholder={st().contextPack.titleLabel}
               />
             </label>
-            <label>
+            <label for="context-pack-content-field">
               <span class="field-label">{st().contextPack.contentLabel}</span>
               <textarea
                 class="textarea"
+                id="context-pack-content-field"
                 data-testid="context-pack-content-input"
                 value={draftContent()}
                 onInput={(e) => setDraftContent(e.currentTarget.value)}

@@ -21,6 +21,8 @@ export function LiveAnswerCard(props: Readonly<{ controller: ReplylineController
     <article
       class="result-section result-section--primary answer-hero"
       data-testid="answer-hero-card"
+      role="region"
+      aria-label={st().card.sayNowLabel}
     >
       <div class="answer-hero-header">
         <div class="result-label">{st().card.sayNowLabel}</div>
@@ -32,7 +34,7 @@ export function LiveAnswerCard(props: Readonly<{ controller: ReplylineController
           onClick={() => void handleCopy()}
         >
           {copied() ? <CheckIcon class="ui-icon--16" /> : <CopyIcon class="ui-icon--16" />}
-          <span>{copied() ? st().card.copiedLabel : st().card.copySayNow}</span>
+          <span>{st().card.copySayNow}</span>
         </button>
       </div>
       <p class="result-text result-text--speak" data-testid="section-say-now">

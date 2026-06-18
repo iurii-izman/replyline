@@ -103,12 +103,12 @@ export function SettingsSurface(props: Readonly<{ controller: ReplylineControlle
     };
   };
 
-  const sections: Array<{ id: SettingsSectionId; label: string }> = [
+  const sections: Array<{ id: SettingsSectionId; label: string; separatorBefore?: boolean }> = [
     { id: "overview", label: st().settings.navOverview },
     { id: "speech", label: st().settings.navSpeech },
     { id: "llm", label: st().settings.navLlm },
     { id: "hotkey", label: st().settings.navHotkey },
-    { id: "reports", label: st().settings.navAdvanced },
+    { id: "reports", label: st().settings.navAdvanced, separatorBefore: true },
   ];
 
   const activeSection = () => controller().settingsActiveSection();

@@ -1,11 +1,11 @@
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import type { SettingsSectionId } from "../model";
 import type { UiStrings } from "../locale";
 import { type SetupStatusTone, setupStatusLabel } from "./settingsViewModel";
 
 export function SettingsNav(
   props: Readonly<{
-    sections: Array<{ id: SettingsSectionId; label: string }>;
+    sections: Array<{ id: SettingsSectionId; label: string; separatorBefore?: boolean }>;
     activeSection: () => SettingsSectionId;
     sectionStatus: (id: SettingsSectionId) => SetupStatusTone;
     focusSectionByIndex: (index: number, refs: HTMLButtonElement[]) => void;
@@ -62,29 +62,34 @@ export function SettingsNav(
               const status = () => props.sectionStatus(section.id);
               const tabIndex = props.sections.findIndex((item) => item.id === section.id);
               return (
-                <button
-                  ref={(element) => {
-                    sidebarTabRefs[tabIndex] = element;
-                  }}
-                  class={`settings-sidebar-link ${props.activeSection() === section.id ? "is-active" : ""}`}
-                  type="button"
-                  id={`settings-sidebar-tab-${section.id}`}
-                  role="tab"
-                  aria-selected={props.activeSection() === section.id}
-                  aria-controls={`settings-panel-${section.id}`}
-                  tabIndex={props.activeSection() === section.id ? 0 : -1}
-                  onClick={() => props.focusSectionByIndex(tabIndex, sidebarTabRefs)}
-                  onKeyDown={(event) => props.handleSectionKeyDown(event, sidebarTabRefs)}
-                >
-                  <span class="settings-sidebar-label">{section.label}</span>
-                  <span
-                    class={`section-status-dot section-status-${status()}`}
-                    aria-label={setupStatusLabel(props.st(), status())}
-                    title={setupStatusLabel(props.st(), status())}
+                <>
+                  <Show when={section.separatorBefore && tabIndex > 0}>
+                    <hr class="settings-nav-separator" aria-hidden="true" />
+                  </Show>
+                  <button
+                    ref={(element) => {
+                      sidebarTabRefs[tabIndex] = element;
+                    }}
+                    class={`settings-sidebar-link ${props.activeSection() === section.id ? "is-active" : ""}`}
+                    type="button"
+                    id={`settings-sidebar-tab-${section.id}`}
+                    role="tab"
+                    aria-selected={props.activeSection() === section.id}
+                    aria-controls={`settings-panel-${section.id}`}
+                    tabIndex={props.activeSection() === section.id ? 0 : -1}
+                    onClick={() => props.focusSectionByIndex(tabIndex, sidebarTabRefs)}
+                    onKeyDown={(event) => props.handleSectionKeyDown(event, sidebarTabRefs)}
                   >
-                    <span class="section-status-dot-inner" />
-                  </span>
-                </button>
+                    <span class="settings-sidebar-label">{section.label}</span>
+                    <span
+                      class={`section-status-dot section-status-${status()}`}
+                      aria-label={setupStatusLabel(props.st(), status())}
+                      title={setupStatusLabel(props.st(), status())}
+                    >
+                      <span class="section-status-dot-inner" />
+                    </span>
+                  </button>
+                </>
               );
             }}
           </For>

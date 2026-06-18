@@ -1,15 +1,28 @@
 # Replyline Development Roadmap
 
-> **Date:** 2026-06-17
-> **Phase:** Post-ContextPack pivot
+> **Date:** 2026-06-18
+> **Phase:** Post-Product Experience Hardening, pre-signed-installer
 
 ## Public Roadmap
+
+### Core Product (shipped, actively maintained)
+
+Replyline's core product is intentionally narrow:
+
+- **WorkConversation** — `gist / say_now / next_move` card from one capture
+- **ContextPack** — single active conversation context primitive
+- **One response card per capture** — no history, no feed, no continuous recording
+
+Everything else in the product is either:
+- **Secondary** — Interview Mode (context usage example, not a separate product centre)
+- **Frozen** — Bilingual experimental (gated, invisible in default UX, no active work)
+- **Not planned** — see below
 
 This section is public-safe: no scores, no internal estimates, no provider keys.
 For the full internal development plan with parallel lanes and scorecard targets,
 see [Internal Development Plan](#internal-development-plan) below.
 
-### Now — Shipped in beta.3
+### Now — Shipped in beta.3 + hardening
 
 | What | Status |
 |---|---|
@@ -18,18 +31,20 @@ see [Internal Development Plan](#internal-development-plan) below.
 | **Interview Mode** — context usage example with session/report flow | ✅ Shipped |
 | **Privacy-first local storage** — keys in credential manager, settings local | ✅ Shipped |
 | **Source/developer beta** — `git clone` + `pnpm beta:start` | ✅ Shipped |
+| **Product Experience Hardening** — UX 85→88, idle hint, error recovery, a11y | ✅ Shipped |
 | **Bilingual experimental** — frozen, invisible in default UX | ✅ Shipped (gated) |
 
-### Next — In Development
+### Next — In Development / Ready for beta.4
 
 | What | Status |
 |---|---|
-| **Signed Windows installer** — Authenticode-verified `.msi`/`.exe` | ⚠️ Blocked by certificate acquisition |
-| **Live provider evidence** — measured STT + LLM paths | ⚠️ Blocked by API key availability |
-| **Frontend maintainability** — split large surfaces, locale by domain | 🏗️ In progress |
+| **Public trust package** — artifact manifest, checksum plan, SmartScreen note | ✅ Ready |
+| **Frontend maintainability** — split large surfaces, locale by domain | ✅ Shipped |
 | **IPC command reference** — human-readable API docs for all 40 commands | ✅ Shipped |
 | **Desktop E2E smoke** — reproducible artifact bring-up test | ✅ Shipped |
 | **Public onboarding** — first-10-minutes guide, screenshot checklist | ✅ Shipped |
+| **Signed Windows installer** — Authenticode-verified `.msi`/`.exe` | ⚠️ Blocked by certificate acquisition |
+| **Live provider evidence** — measured STT + LLM paths | ⚠️ Blocked by API key availability |
 
 ### Later — Planned
 

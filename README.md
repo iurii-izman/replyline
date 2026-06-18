@@ -55,11 +55,11 @@ Not in the current beta:
 Built for correctness and trust, not hype:
 
 - **Tauri v2 + Rust backend** — WASAPI loopback capture, typed IPC contract (40 commands, 9 categories), settings migration chain v1→v10, corrupt-file quarantine.
-- **Solid.js + TypeScript frontend** — Controller pattern with 10 domain modules, deterministic error mapping, mock platform for UI tests (139 tests).
+- **Solid.js + TypeScript frontend** — Controller pattern with 10 domain modules, deterministic error mapping, mock platform for UI tests (189 tests).
 - **Deepgram STT + OpenAI-compatible LLM route** — User-configured providers, RAM-only transcripts, redacted export as default sharing path.
 - **Privacy-first local storage** — API keys in Windows Credential Manager, settings in local JSON, no background recording, no transcript history DB.
-- **Quality gates** — `pnpm verify` (blocking CI), `pnpm verify:full` (release), advisory release-freeze guard, 285 automated tests (146 Rust + 139 TS), security lane checks, public footprint guard, secret leak scanner.
-- **Release discipline** — Honest beta posture (unsigned artifacts stay internal), Authenticode-gated public binary, changelog, release notes, operator evidence bundle.
+- **Quality gates** — `pnpm verify` (blocking CI), `pnpm verify:full` (release), advisory release-freeze guard, 454 automated tests (265 Rust + 189 TS), security lane checks, public footprint guard, secret leak scanner.
+- **Release discipline** — Honest beta posture (unsigned artifacts stay internal), Authenticode-gated public binary, release artifact manifest with checksum plan, changelog, release notes, operator evidence bundle.
 
 ## Supported Runtime Path
 
@@ -74,21 +74,25 @@ Built for correctness and trust, not hype:
 ```bash
 git clone https://github.com/iurii-izman/replyline.git
 cd replyline
-git checkout v0.2.0-beta.3
 pnpm install --frozen-lockfile
-pnpm beta:doctor
-pnpm beta:start
+pnpm beta:doctor   # checks: Node.js, pnpm, Rust, Tauri, WebView2
+pnpm beta:start    # prints readiness summary, then launches app
 ```
 
-`pnpm beta:start` prints a readiness summary and launches `pnpm tauri dev` when
-the local environment is ready. It does not install prerequisites automatically.
+`pnpm beta:start` verifies your environment and launches the app via `pnpm tauri dev`.
+No pre-installed provider keys required — the app starts in setup mode and guides you
+through configuration.
 
-Then configure runtime settings in app UI:
+Then configure in the app UI:
+1. **Speech** — Deepgram API key
+2. **LLM** — OpenAI-compatible URL + model (e.g., `https://api.openai.com/v1`, `gpt-4o-mini`)
+3. **Hotkey** — default `Ctrl+Alt+Space`
 
-- Deepgram API key
-- LLM base URL
-- LLM model
-- optional LLM API key
+See the [user guide](docs/product/user-guide.md) for detailed setup instructions.
+
+**This is a source/developer beta.** No unsigned artifact is presented as a public
+installer. Use `git clone` + `pnpm beta:start` until a signed installer is available.
+See [beta limitations](docs/product/limitations.md) for current scope.
 
 ## Documentation Map
 

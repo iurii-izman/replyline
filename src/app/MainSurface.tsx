@@ -17,6 +17,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
     st().card.emptyFlow,
     st().card.emptyGist,
     st().card.emptySayNow,
+    st().card.errorRecoveryHint,
+    st().card.copySayNow,
+    st().card.copiedLabel,
     st().card.emptyNextMove,
     st().card.setupRequiredHint,
     st().card.idleRecordHint,
@@ -186,7 +189,12 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
           </section>
           <Show when={controller().activeContextPack()}>
             {(pack) => (
-              <div class="context-active-chip" data-testid="context-active-chip">
+              <div
+                class="context-active-chip"
+                data-testid="context-active-chip"
+                role="status"
+                aria-label={`${st().contextPack.activeLabel}: ${pack().title}`}
+              >
                 <span class="context-chip-label">{st().contextPack.activeLabel}:</span>
                 <span class="context-chip-title" data-testid="context-chip-title">
                   {pack().title}
@@ -202,7 +210,7 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
                   </button>
                   <button
                     type="button"
-                    class="btn btn-sm btn-danger"
+                    class="btn btn-sm btn-ghost"
                     data-testid="context-chip-disable-btn"
                     onClick={() => controller().clearActiveContextPackAction()}
                   >
@@ -292,6 +300,9 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
               <strong>{controller().strings().phase.error}</strong>
               <p class="empty-flow-hint">
                 {controller().error() ?? controller().strings().card.errorHint}
+              </p>
+              <p class="settings-note settings-note-warning" data-testid="error-recovery-hint">
+                {controller().strings().card.errorRecoveryHint}
               </p>
               <div class="action-group">
                 <button
