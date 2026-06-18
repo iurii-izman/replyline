@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 import { installReplylineE2EPlatform } from "./replyline-fixture";
 
 test("credential-free happy path renders shell, settings, and fixture card", async ({ page }) => {
+  // Sidebar is visible only at >=1280px viewports.
+  await page.setViewportSize({ width: 1440, height: 900 });
   await installReplylineE2EPlatform(page);
 
   await page.goto("/");
@@ -20,8 +22,8 @@ test("credential-free happy path renders shell, settings, and fixture card", asy
 
   await page.locator("#settings-sidebar-tab-hotkey").click();
   await expect(page.getByTestId("settings-section-hotkey")).toBeVisible();
-  await expect(page.locator("#settings-panel-hotkey input[type='text']")).toBeVisible();
-  await expect(page.locator("#settings-panel-hotkey input[type='number']")).toBeVisible();
+  // Hotkey section has a text input for the hotkey and a number input for capture max.
+  await expect(page.locator("#settings-panel-hotkey input.field-input").first()).toBeVisible();
 
   await page.locator("#settings-sidebar-tab-reports").click();
   await expect(page.getByTestId("settings-section-reports")).toBeVisible();

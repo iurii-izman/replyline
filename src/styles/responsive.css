@@ -1,0 +1,119 @@
+@media (max-width: 759px) {
+  .app-root {
+    padding: var(--space-2);
+  }
+  .app-header-hotkey {
+    display: none;
+  }
+  .app-header-context {
+    flex-basis: 52%;
+    padding-inline: var(--space-1);
+  }
+  .app-header-phase {
+    max-width: 155px;
+  }
+  .app-workarea {
+    padding-right: 0;
+  }
+  .app-view,
+  .app-view--main,
+  .app-view--settings {
+    max-width: 100%;
+  }
+  .main-card {
+    padding: var(--space-3);
+    min-height: 320px;
+  }
+  .main-status-row {
+    min-height: 22px;
+  }
+  .result-actions,
+  .action-bar,
+  .settings-sticky-footer {
+    padding-top: var(--space-2);
+  }
+  .main-cockpit-layout.is-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-sidebar {
+    display: none;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1279px) {
+  .settings-content {
+    max-width: 920px;
+  }
+  .main-cockpit-layout.is-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .secondary-insights {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-sidebar {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main-cockpit-layout.is-wide {
+    grid-template-columns:
+      minmax(var(--main-col-min), var(--main-col-max))
+      minmax(var(--main-side-min), var(--main-side-max));
+    justify-content: center;
+    column-gap: clamp(24px, 1.8vw, 28px);
+  }
+  .cockpit-side {
+    display: grid;
+  }
+  .secondary-insights {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .settings-grid {
+    grid-template-columns:
+      var(--settings-sidebar-width)
+      minmax(var(--settings-content-min), var(--settings-content-max));
+    justify-content: center;
+    column-gap: clamp(24px, 2vw, 32px);
+    align-items: start;
+  }
+  .settings-sidebar {
+    display: block;
+  }
+  .settings-nav-mobile {
+    display: none;
+  }
+}
+
+@media (min-width: 1680px) {
+  .app-view--main {
+    max-width: var(--workspace-max);
+  }
+  .app-view--settings {
+    max-width: var(--settings-max);
+  }
+  .settings-content {
+    max-width: 1060px;
+  }
+}
+
+@media (max-width: 980px) {
+  .app-subtitle {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .app-header-phase-text {
+    max-width: 118px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+

@@ -92,7 +92,20 @@ Phase-dependent visual states, processing indicators, error states, and keyframe
 - **Motion:** `@media (prefers-reduced-motion: reduce)`
 - **Keyframes:** `@keyframes phase-pulse`, `@keyframes phase-spin`, `@keyframes busy-shimmer`, `@keyframes card-enter`
 
-## 6. Entry Point
+## 6. Responsive Overrides
+
+`src/styles/responsive.css`
+
+All `@media` breakpoint rules. Must be imported LAST to override component base styles.
+
+**Contents:**
+- Compact: `<760px` — single column, hidden sidebar, collapsed header
+- Normal: `760–1279px` — single column cockpit, 2-col insights
+- Wide: `≥1280px` — sidebar visible, 2-col cockpit
+- Ultra-wide: `≥1680px` — content width caps
+- Narrow helpers: `<980px`, `<860px` — header text truncation
+
+## 7. Entry Point
 
 `src/App.css`
 
@@ -102,18 +115,20 @@ Phase-dependent visual states, processing indicators, error states, and keyframe
 @import "./styles/layout.css";
 @import "./styles/components.css";
 @import "./styles/states.css";
+@import "./styles/responsive.css";
 ```
 
-## 7. Module Dependency Rules
+## 8. Module Dependency Rules
 
 - `tokens.css` — no dependencies (pure variables)
 - `base.css` — depends on tokens (uses `var(--*)`)
 - `layout.css` — depends on tokens + base
 - `components.css` — depends on tokens + base
 - `states.css` — depends on tokens + components (overrides)
+- `responsive.css` — depends on tokens + layout + components (overrides at breakpoints)
 - All modules are self-contained — no cross-module `@import`
 
-## 8. Split Safety Rules
+## 9. Split Safety Rules
 
 - ❌ Do not rename any CSS class
 - ❌ Do not change any selector specificity
@@ -122,8 +137,9 @@ Phase-dependent visual states, processing indicators, error states, and keyframe
 - ✅ Only split existing rules into files
 - ✅ Preserve comment blocks as section markers
 - ✅ Verify: build passes, UI tests pass, contracts pass
+- ⚠️  Media queries MUST be in `responsive.css` (imported last) to override component base styles
 
-## 9. Vite CSS Import Behavior
+## 10. Vite CSS Import Behavior
 
 Vite natively resolves `@import` in CSS files during development and production builds. Imported CSS files are:
 - Processed through PostCSS (if configured)
