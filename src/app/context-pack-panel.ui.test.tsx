@@ -144,6 +144,101 @@ describe("context pack panel", () => {
     expect(input.content).toBe("I am a senior engineer preparing for quarterly review.");
   });
 
+  it("quick pasted context creates a local draft with auto-title", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+
+    const quickInput = screen.getByTestId("quick-context-input") as HTMLTextAreaElement;
+    fireEvent.input(quickInput, {
+      target: {
+        value: "  Project Gemini kickoff\nBring up Q3 scope, launch risk, and owner map.  ",
+      },
+    });
+
+    expect(quickInput.value).toContain("Project Gemini kickoff");
+    expect(screen.getByTestId("quick-context-title-preview").textContent).toContain(
+      "Project Gemini kickoff",
+    );
+  });
+
+  it("quick pasted context saves an inactive ContextPack with trimmed content", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+
+    fireEvent.input(screen.getByTestId("quick-context-input"), {
+      target: {
+        value: "\n  Client renewal call\n  Discuss renewal risk and pricing guardrails.  \n",
+      },
+    });
+    fireEvent.click(screen.getByTestId("quick-context-save-btn"));
+
+    await waitFor(() => {
+      const saveCalls = mock.invoke.mock.calls.filter(
+        (c: [string, unknown?]) => c[0] === "save_context_pack",
+      );
+      expect(saveCalls.length).toBeGreaterThanOrEqual(1);
+      const input = (saveCalls[saveCalls.length - 1][1] as Record<string, unknown>).input as
+        | Record<string, unknown>
+        | undefined;
+      expect(input?.title).toBe("Client renewal call");
+      expect(input?.content).toBe(
+        "Client renewal call\n  Discuss renewal risk and pricing guardrails.",
+      );
+      expect(input?.isActive).toBe(false);
+    });
+
+    const activateCalls = mock.invoke.mock.calls.filter(
+      (c: [string, unknown?]) => c[0] === "set_active_context_pack",
+    );
+    expect(activateCalls.length).toBe(0);
+    expect(screen.queryByTestId("context-pack-active-banner")).toBeNull();
+  });
+
+  it("quick pasted context uses safe fallback title when first line is blank markup", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+
+    fireEvent.input(screen.getByTestId("quick-context-input"), {
+      target: { value: "###\n\n-   \n\nActual notes start later." },
+    });
+    fireEvent.click(screen.getByTestId("quick-context-save-btn"));
+
+    await waitFor(() => {
+      const saveCalls = mock.invoke.mock.calls.filter(
+        (c: [string, unknown?]) => c[0] === "save_context_pack",
+      );
+      const input = (saveCalls[saveCalls.length - 1][1] as Record<string, unknown>).input as
+        | Record<string, unknown>
+        | undefined;
+      expect(input?.title).toBe("Actual notes start later.");
+    });
+  });
+
+  it("quick pasted context shows safe error for too long content", async () => {
+    const mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    await openContextPackPanel();
+
+    const tooLong = "x".repeat(100_001);
+    fireEvent.input(screen.getByTestId("quick-context-input"), {
+      target: { value: tooLong },
+    });
+
+    expect(screen.getByTestId("quick-context-error").textContent).toContain("100000");
+    expect(screen.getByTestId("quick-context-error").textContent).not.toContain(tooLong);
+    expect(screen.getByTestId("quick-context-save-btn")).toHaveProperty("disabled", true);
+    expect(
+      mock.invoke.mock.calls.some((c: [string, unknown?]) => c[0] === "save_context_pack"),
+    ).toBe(false);
+  });
+
   it("save button is disabled when title is empty", async () => {
     const mock = createMockPlatform({ contextPacks: [] });
     renderApp(mock);

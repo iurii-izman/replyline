@@ -6,7 +6,7 @@ use crate::model_presets::{resolve_model_preset, ProviderKind};
 use crate::pipeline_timing::{PipelineTimer, StageTiming};
 use crate::prompt_registry::resolve_answer_profile;
 use crate::trace_manifest;
-use crate::types::{AnalysisCardDto, AppSettings};
+use crate::types::{AnalysisCardDto, AnswerRewriteStyle, AppSettings};
 
 use super::openai_compatible;
 
@@ -25,6 +25,21 @@ fn fallback_models_for_selected_preset(preset_id: &str) -> &'static [&'static st
 pub enum AnalysisMode {
     WorkConversation,
     Interview,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AnalysisOptions {
+    pub mode: AnalysisMode,
+    pub style_override: Option<AnswerRewriteStyle>,
+}
+
+impl AnalysisOptions {
+    pub fn new(mode: AnalysisMode) -> Self {
+        Self {
+            mode,
+            style_override: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -53,9 +68,9 @@ pub async fn analyze_transcript(
     api_key: Option<&str>,
     transcript: &str,
     context: &str,
-    mode: AnalysisMode,
+    options: AnalysisOptions,
 ) -> Result<CardGenerationOutcome, String> {
-    match mode {
+    match options.mode {
         AnalysisMode::WorkConversation => {
             analyze_work_conversation(
                 run_id,
@@ -64,6 +79,7 @@ pub async fn analyze_transcript(
                 api_key,
                 transcript,
                 context,
+                options.style_override,
             )
             .await
         }
@@ -75,6 +91,7 @@ pub async fn analyze_transcript(
                 api_key,
                 transcript,
                 context,
+                options.style_override,
             )
             .await
         }
@@ -88,9 +105,12 @@ async fn analyze_work_conversation(
     api_key: Option<&str>,
     transcript: &str,
     context: &str,
+    style_override: Option<AnswerRewriteStyle>,
 ) -> Result<CardGenerationOutcome, String> {
     let language = crate::language_profile::llm_language().to_string();
     let profile = resolve_answer_profile(&settings.active_answer_profile);
+    let style_suffix =
+        style_override.map(|style| llm::build_rewrite_style_override(style, &language));
     let mut all_timings: Vec<StageTiming> = Vec::new();
     let llm_timer = PipelineTimer::start();
     let (raw_text, parse_or_request_err, llm_telemetry) = request_card_with_prompt(
@@ -102,7 +122,7 @@ async fn analyze_work_conversation(
         context,
         &language,
         profile,
-        None,
+        style_suffix,
         llm::PRIMARY_MAX_TOKENS,
     )
     .await?;
@@ -186,9 +206,12 @@ async fn analyze_interview(
     api_key: Option<&str>,
     transcript: &str,
     context: &str,
+    style_override: Option<AnswerRewriteStyle>,
 ) -> Result<CardGenerationOutcome, String> {
     let language = crate::language_profile::llm_language().to_string();
     let profile = resolve_answer_profile(&settings.active_answer_profile);
+    let style_suffix =
+        style_override.map(|style| llm::build_rewrite_style_override(style, &language));
     let mut all_timings: Vec<StageTiming> = Vec::new();
 
     let base_llm_timer = PipelineTimer::start();
@@ -201,7 +224,7 @@ async fn analyze_interview(
         context,
         &language,
         profile,
-        None,
+        style_suffix,
         llm::PRIMARY_MAX_TOKENS,
     )
     .await?;

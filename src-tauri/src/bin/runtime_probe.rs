@@ -179,7 +179,7 @@ async fn main() -> Result<(), String> {
         Some(&llm_api_key),
         &transcript,
         "",
-        llm_provider::AnalysisMode::WorkConversation,
+        llm_provider::AnalysisOptions::new(llm_provider::AnalysisMode::WorkConversation),
     )
     .await?;
     let card = outcome.card;

@@ -10,7 +10,7 @@ use crate::settings;
 use crate::state::ReplylineState;
 use crate::trace_manifest;
 use crate::tray_status;
-use crate::types::{AnalysisCardDto, CommandError};
+use crate::types::{AnalysisCardDto, AnswerRewriteStyle, CommandError};
 
 #[tauri::command]
 pub fn capture_start(
@@ -86,6 +86,7 @@ pub async fn retry_last_analysis(
     state: State<'_, ReplylineState>,
     app: AppHandle,
     run_id: Option<String>,
+    style_override: Option<AnswerRewriteStyle>,
 ) -> Result<AnalysisCardDto, CommandError> {
-    capture_pipeline::retry_last_analysis(&state, &app, run_id).await
+    capture_pipeline::retry_last_analysis(&state, &app, run_id, style_override).await
 }

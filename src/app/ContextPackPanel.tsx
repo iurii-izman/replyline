@@ -2,6 +2,9 @@ import { createSignal, For, Show, onCleanup } from "solid-js";
 import type { ReplylineController } from "./controller";
 import type { ContextPackDto } from "./model";
 
+const QUICK_CONTEXT_MAX_LEN = 100_000;
+const QUICK_CONTEXT_TITLE_MAX_LEN = 80;
+
 export function ContextPackPanel(props: Readonly<{ controller: ReplylineController }>) {
   const ctrl = () => props.controller;
   const st = () => ctrl().strings();
@@ -11,6 +14,9 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
   const [draftContent, setDraftContent] = createSignal("");
   const [editing, setEditing] = createSignal(false);
   const [saving, setSaving] = createSignal(false);
+  const [quickText, setQuickText] = createSignal("");
+  const [quickError, setQuickError] = createSignal<string | null>(null);
+  const [quickSaving, setQuickSaving] = createSignal(false);
 
   const [confirmingDeleteId, setConfirmingDeleteId] = createSignal<string | null>(null);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
@@ -63,6 +69,76 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
 
   function insertExampleContent() {
     setDraftContent(st().contextPack.emptyExample);
+  }
+
+  function normalizedQuickContent() {
+    return quickText().trim();
+  }
+
+  function quickContentLength() {
+    return normalizedQuickContent().length;
+  }
+
+  function quickContextTooLong() {
+    return quickContentLength() > QUICK_CONTEXT_MAX_LEN;
+  }
+
+  function quickTooLongMessage() {
+    const template = st().contextPack.quickTooLong;
+    return template.replace("{{max}}", String(QUICK_CONTEXT_MAX_LEN));
+  }
+
+  function quickCharCountLabel() {
+    const template = st().contextPack.quickCharCount;
+    return template
+      .replace("{{count}}", String(quickContentLength()))
+      .replace("{{max}}", String(QUICK_CONTEXT_MAX_LEN));
+  }
+
+  function normalizeTitleLine(line: string) {
+    return line
+      .replace(/^#+\s*/, "")
+      .replace(/^[-*•]\s*/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function quickTitleFromContent() {
+    const firstLine = normalizedQuickContent().split(/\r?\n/).map(normalizeTitleLine).find(Boolean);
+    const title = firstLine || st().contextPack.quickFallbackTitle;
+    return (
+      title.slice(0, QUICK_CONTEXT_TITLE_MAX_LEN).trim() || st().contextPack.quickFallbackTitle
+    );
+  }
+
+  function handleQuickInput(value: string) {
+    setQuickText(value);
+    const nextLen = value.trim().length;
+    setQuickError(nextLen > QUICK_CONTEXT_MAX_LEN ? quickTooLongMessage() : null);
+  }
+
+  async function handleQuickSave() {
+    const content = normalizedQuickContent();
+    if (!content) return;
+    if (quickContextTooLong()) {
+      setQuickError(quickTooLongMessage());
+      return;
+    }
+    setQuickSaving(true);
+    setQuickError(null);
+    try {
+      await ctrl().saveContextPack({
+        id: "ctx-" + String(Date.now()),
+        title: quickTitleFromContent(),
+        content,
+        isActive: false,
+        createdAt: "",
+        updatedAt: "",
+      });
+      setQuickText("");
+    } finally {
+      setQuickSaving(false);
+    }
   }
 
   async function handleSave() {
@@ -191,6 +267,50 @@ export function ContextPackPanel(props: Readonly<{ controller: ReplylineControll
 
           {/* Editor panel — the brief workspace */}
           <div class="context-pack-editor-panel" data-testid="context-pack-editor-panel">
+            <section class="quick-context-card" data-testid="quick-context-card">
+              <div class="quick-context-header">
+                <div>
+                  <h3>{st().contextPack.quickTitle}</h3>
+                  <p>{st().contextPack.quickHint}</p>
+                </div>
+                <span class="quick-context-meta" data-testid="quick-context-title-preview">
+                  {st().contextPack.quickTitlePreview}: {quickTitleFromContent()}
+                </span>
+              </div>
+              <label class="quick-context-label" for="quick-context-input">
+                {st().contextPack.quickInputLabel}
+              </label>
+              <textarea
+                class="quick-context-input"
+                id="quick-context-input"
+                data-testid="quick-context-input"
+                value={quickText()}
+                rows={7}
+                onInput={(e) => handleQuickInput(e.currentTarget.value)}
+                placeholder={st().contextPack.quickPlaceholder}
+                aria-describedby="quick-context-meta"
+              />
+              <div class="quick-context-footer">
+                <span class="quick-context-meta" id="quick-context-meta">
+                  {quickCharCountLabel()}
+                </span>
+                <Show when={quickError()}>
+                  <span class="quick-context-error" data-testid="quick-context-error" role="alert">
+                    {quickError()}
+                  </span>
+                </Show>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  data-testid="quick-context-save-btn"
+                  onClick={() => void handleQuickSave()}
+                  disabled={quickSaving() || !normalizedQuickContent() || quickContextTooLong()}
+                >
+                  {quickSaving() ? "..." : st().contextPack.quickSave}
+                </button>
+              </div>
+            </section>
+
             {/* Active context indicator (subtle, non-blocking) */}
             <Show when={activePack() && !editing()}>
               <div class="context-brief-active" data-testid="context-pack-active-banner">

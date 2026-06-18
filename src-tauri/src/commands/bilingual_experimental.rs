@@ -193,7 +193,7 @@ pub async fn capture_bilingual_answer(
         llm_key.as_deref(),
         &question_en,
         &bilingual_context,
-        AnalysisMode::Interview,
+        crate::providers::llm_provider::AnalysisOptions::new(AnalysisMode::Interview),
     )
     .await
     .map_err(CommandError::Pipeline)?;

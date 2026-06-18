@@ -13,6 +13,16 @@ export const contextPack_ru = {
   cancel: "Отмена",
   titleLabel: "Название",
   contentLabel: "Содержание",
+  quickTitle: "Быстрый контекст",
+  quickHint:
+    "Вставьте письмо, ТЗ, вакансию, заметки или план разговора. Replyline сохранит это как обычный ContextPack без активации.",
+  quickInputLabel: "Текст для быстрого контекста",
+  quickPlaceholder: "Вставьте сюда письмо, ТЗ, вакансию, заметки или план разговора перед звонком.",
+  quickSave: "Сохранить как контекст",
+  quickTitlePreview: "Название",
+  quickFallbackTitle: "Быстрый контекст",
+  quickCharCount: "{{count}} / {{max}} зн.",
+  quickTooLong: "Текст слишком длинный. Максимум {{max}} знаков.",
   listTitle: "Сохранённые контексты",
   emptyHint: "Создайте контекст, чтобы помощник учитывал ваш бэкграунд и роль в разговоре.",
   emptyWhy:
@@ -46,6 +56,16 @@ export const contextPack_en: typeof contextPack_ru = {
   cancel: "Cancel",
   titleLabel: "Title",
   contentLabel: "Content",
+  quickTitle: "Quick Context",
+  quickHint:
+    "Paste an email, spec, job post, notes, or conversation plan. Replyline saves it as a normal ContextPack without activating it.",
+  quickInputLabel: "Quick context text",
+  quickPlaceholder: "Paste an email, spec, job post, notes, or conversation plan before a call.",
+  quickSave: "Save as Context",
+  quickTitlePreview: "Title",
+  quickFallbackTitle: "Quick Context",
+  quickCharCount: "{{count}} / {{max}} chars",
+  quickTooLong: "Text is too long. Maximum is {{max}} characters.",
   listTitle: "Saved Contexts",
   emptyHint:
     "Create a context so the assistant knows your background and role in the conversation.",

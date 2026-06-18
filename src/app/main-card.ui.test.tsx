@@ -153,6 +153,73 @@ describe("main card integration", () => {
     expect(await screen.findByTestId("main-state-idle")).toBeTruthy();
   });
 
+  it("answer rewrite controls rebuild with style overrides", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    const controls = [
+      ["Короче", "shorter"],
+      ["Подробнее", "more_detailed"],
+      ["Прямее", "more_direct"],
+      ["Мягче", "softer"],
+    ] as const;
+
+    for (const [label, styleOverride] of controls) {
+      fireEvent.click(await screen.findByRole("button", { name: label }));
+      await waitFor(() =>
+        expect(
+          mock.invoke.mock.calls.some(
+            (call) =>
+              call[0] === "retry_last_analysis" &&
+              (call[1] as Record<string, unknown> | undefined)?.styleOverride === styleOverride,
+          ),
+        ).toBe(true),
+      );
+      await screen.findByTestId("answer-rewrite-controls");
+    }
+  });
+
+  it("keeps answer rewrite controls disabled when no last transcript exists", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+      canRetryLastTranscript: false,
+      rememberTranscriptOnAnalysis: false,
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    expect(await screen.findByTestId("answer-rewrite-controls")).toBeTruthy();
+    for (const label of ["Короче", "Подробнее", "Прямее", "Мягче"]) {
+      expect(screen.getByRole("button", { name: label })).toHaveProperty("disabled", true);
+    }
+    expect(screen.getByRole("button", { name: "Пересобрать" })).toHaveProperty("disabled", true);
+  });
+
+  it("rebuild style override does not change no active context behavior", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+      contextPacks: [],
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    expect(screen.queryByTestId("context-active-chip")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Короче" }));
+    await waitFor(() =>
+      expect(
+        mock.invoke.mock.calls.some(
+          (call) =>
+            call[0] === "retry_last_analysis" &&
+            (call[1] as Record<string, unknown> | undefined)?.styleOverride === "shorter",
+        ),
+      ).toBe(true),
+    );
+    expect(screen.queryByTestId("context-active-chip")).toBeNull();
+  });
+
   it("shows error recovery state and hides the action zone after a pipeline error", async () => {
     mock = createMockPlatform({ analysisError: { kind: "Pipeline", message: "LLM timeout" } });
     renderApp(mock);

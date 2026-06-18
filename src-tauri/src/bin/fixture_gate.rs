@@ -160,7 +160,7 @@ async fn main() -> Result<(), String> {
                 Some(&llm_api_key),
                 &fixture.snippet,
                 "",
-                llm_provider::AnalysisMode::WorkConversation,
+                llm_provider::AnalysisOptions::new(llm_provider::AnalysisMode::WorkConversation),
             )
             .await
             {

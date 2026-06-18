@@ -94,9 +94,7 @@ export function createSelectors(deps: SelectorDeps): Selectors {
     () => mainUiState() === "ready" && Boolean(deps.card()?.sayNow?.trim()),
   );
 
-  const canRetry = createMemo(
-    () => !pipelineActive() && (Boolean(deps.card()) || deps.canRetryLastTranscript()),
-  );
+  const canRetry = createMemo(() => !pipelineActive() && deps.canRetryLastTranscript());
 
   const canClear = createMemo(
     () =>

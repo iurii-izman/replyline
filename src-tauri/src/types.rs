@@ -200,6 +200,15 @@ pub struct AnalysisCardDto {
     pub fallback_used: bool,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum AnswerRewriteStyle {
+    Shorter,
+    MoreDetailed,
+    MoreDirect,
+    Softer,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InterviewQuestionReportDto {

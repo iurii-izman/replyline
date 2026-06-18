@@ -1,5 +1,6 @@
 import { createMemo, createSignal, onCleanup } from "solid-js";
 import type { ReplylineController } from "../controller";
+import type { AnswerRewriteStyle } from "../controller/pipelineActions";
 import { CheckIcon, CopyIcon } from "../ui/icons";
 
 /**
@@ -35,6 +36,12 @@ export function LiveAnswerCard(props: Readonly<{ controller: ReplylineController
   const answerText = createMemo(() => controller().card()?.sayNow?.trim() ?? "");
   const answerParts = createMemo(() => splitAnswer(answerText()));
   const hasDetail = createMemo(() => answerParts().detail.length > 0);
+  const rewriteControls: Array<{ style: AnswerRewriteStyle; label: () => string }> = [
+    { style: "shorter", label: () => st().card.rewriteShorter },
+    { style: "more_detailed", label: () => st().card.rewriteMoreDetailed },
+    { style: "more_direct", label: () => st().card.rewriteMoreDirect },
+    { style: "softer", label: () => st().card.rewriteSofter },
+  ];
 
   return (
     <article
@@ -68,6 +75,25 @@ export function LiveAnswerCard(props: Readonly<{ controller: ReplylineController
         >
           {hasDetail() ? answerParts().detail : st().card.sayNowHint}
         </p>
+      </div>
+      <div
+        class="answer-rewrite-controls"
+        data-testid="answer-rewrite-controls"
+        aria-label={st().card.rewriteControlsLabel}
+      >
+        {rewriteControls.map((control) => (
+          <button
+            class="btn-ghost btn-compact answer-rewrite-btn"
+            type="button"
+            disabled={!controller().canRetry()}
+            title={controller().retryDisabledReason() ?? ""}
+            aria-label={control.label()}
+            data-testid={`answer-rewrite-${control.style}`}
+            onClick={() => void controller().retryAnalysis(control.style)}
+          >
+            {control.label()}
+          </button>
+        ))}
       </div>
     </article>
   );

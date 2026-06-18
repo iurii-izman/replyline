@@ -13,7 +13,7 @@ use crate::diag_contract::{
 use crate::llm;
 use crate::pipeline_timing::{self, PipelineTimer, StageTiming};
 use crate::providers::llm_provider;
-use crate::providers::llm_provider::AnalysisMode;
+use crate::providers::llm_provider::{AnalysisMode, AnalysisOptions};
 use crate::providers::stt_provider;
 use crate::services::pipeline_errors;
 use crate::services::pipeline_events::{emit_status, log_diag, update_tray_title};
@@ -21,7 +21,7 @@ use crate::settings;
 use crate::state::ReplylineState;
 use std::collections::BTreeMap;
 
-use crate::types::{AnalysisCardDto, CommandError, SecretSlot};
+use crate::types::{AnalysisCardDto, AnswerRewriteStyle, CommandError, SecretSlot};
 use crate::ui_strings::{en, pick_lang, ru};
 use crate::{
     observability::{self, Fields, PrivacyClass},
@@ -521,7 +521,7 @@ pub async fn capture_stop_and_analyze(
         llm_key.as_deref(),
         &transcript,
         &combined_context,
-        mode,
+        AnalysisOptions::new(mode),
     )
     .await
     {
@@ -672,6 +672,7 @@ pub async fn retry_last_analysis(
     state: &ReplylineState,
     app: &AppHandle,
     run_id_param: Option<String>,
+    style_override: Option<AnswerRewriteStyle>,
 ) -> Result<AnalysisCardDto, CommandError> {
     let settings = settings::load()?;
     let lang = crate::language_profile::default_language();
@@ -786,7 +787,10 @@ pub async fn retry_last_analysis(
         llm_key.as_deref(),
         &transcript,
         &combined_context,
-        mode,
+        AnalysisOptions {
+            mode,
+            style_override,
+        },
     )
     .await
     {

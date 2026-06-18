@@ -132,18 +132,18 @@ Notes:
 
 Only active user-facing settings are listed here.
 
-| Setting | What it controls | Notes |
-| --- | --- | --- |
-| `hotkey` | Hold-to-capture shortcut | Reserved close/refresh shortcuts are rejected. |
-| `captureMaxSeconds` | Maximum capture length | Range: `5..180`; shorter clips usually return faster. |
-| `selectedModelPreset` | Preset for the LLM route | Includes OpenRouter presets and `Custom OpenAI-compatible`. |
-| `llmBaseUrl` | OpenAI-compatible endpoint URL | Usually ends with `/v1`. |
-| `llmModel` | Model name sent to the LLM endpoint | Required for analysis. |
-| `llmApiKey` | Optional LLM credential | Stored in Windows Credential Manager. |
-| `deepgramApiKey` | Deepgram credential for STT | Stored in Windows Credential Manager. |
-| `interviewReportRetentionDays` | Auto-purge window for saved interview reports | `0` keeps reports until manual clear. |
-| `debugTraceMode` | Local diagnostics sensitivity | `off`, `redacted`, or `full_local`. |
-| `debugTraceRetentionDays` | Auto-cleanup window for local traces | `0` means manual cleanup only. |
+| Setting                        | What it controls                              | Notes                                                       |
+| ------------------------------ | --------------------------------------------- | ----------------------------------------------------------- |
+| `hotkey`                       | Hold-to-capture shortcut                      | Reserved close/refresh shortcuts are rejected.              |
+| `captureMaxSeconds`            | Maximum capture length                        | Range: `5..180`; shorter clips usually return faster.       |
+| `selectedModelPreset`          | Preset for the LLM route                      | Includes OpenRouter presets and `Custom OpenAI-compatible`. |
+| `llmBaseUrl`                   | OpenAI-compatible endpoint URL                | Usually ends with `/v1`.                                    |
+| `llmModel`                     | Model name sent to the LLM endpoint           | Required for analysis.                                      |
+| `llmApiKey`                    | Optional LLM credential                       | Stored in Windows Credential Manager.                       |
+| `deepgramApiKey`               | Deepgram credential for STT                   | Stored in Windows Credential Manager.                       |
+| `interviewReportRetentionDays` | Auto-purge window for saved interview reports | `0` keeps reports until manual clear.                       |
+| `debugTraceMode`               | Local diagnostics sensitivity                 | `off`, `redacted`, or `full_local`.                         |
+| `debugTraceRetentionDays`      | Auto-cleanup window for local traces          | `0` means manual cleanup only.                              |
 
 Diagnostics notes:
 
@@ -160,8 +160,11 @@ Diagnostics notes:
 4. Wait for one compact card.
 5. Read `gist` for the short summary, `say_now` for the immediate response, and `next_move` for the follow-up step.
 6. Use `Retry` if you want a second pass on the latest captured fragment.
+7. Use the lightweight answer controls near the answer card when you want the same fragment rebuilt as `Короче`, `Подробнее`, `Прямее`, or `Мягче`.
 
 WorkConversation is optimized for short, high-pressure moments. It is not a meeting transcript tool and does not keep a long conversation history in the shipped beta.
+
+Lightweight answer controls use only the latest available transcript plus the active ContextPack, when one is active. The selected control is a one-time rebuild instruction; it is not saved as an answer profile, does not create a history, and does not persist raw transcript beyond the existing retry flow.
 
 ## 6. Interview Mode (context usage example)
 
@@ -193,12 +196,27 @@ Typical flow:
 3. Set exactly one pack active when you want it included in prompts.
 4. Clear the active pack when the conversation no longer needs it.
 
+Quick Context:
+
+1. Before a call, paste an email, task brief, job post, notes, or conversation plan into `Quick Context`.
+2. Review the local auto-title, generated from the first useful line.
+3. Select `Save as Context`.
+4. Activate the saved ContextPack explicitly only when you want it used.
+
+Examples:
+
+- customer email with renewal risks and constraints;
+- technical brief with scope, owners, and open questions;
+- vacancy or interview notes for Interview Mode preparation;
+- short call plan with desired outcome and sensitive topics to avoid.
+
 Boundaries:
 
 - Saved ContextPack files stay local.
 - Active ContextPack content can be sent to your configured LLM provider as part of card generation.
 - ContextPack is used by WorkConversation and Interview Mode when active.
 - Do not add fabricated metrics, achievements, or claims to a pack.
+- Quick Context does not upload files, run RAG, create profiles, or activate the saved pack automatically.
 
 ## 8. Reports and exports
 
@@ -213,16 +231,16 @@ ContextPack files, interview reports, and debug traces can contain sensitive con
 
 ## 9. Troubleshooting quick table
 
-| Problem | Likely cause | What to check |
-| --- | --- | --- |
-| No card after capture | Hotkey conflict or app not running | Change hotkey, restart Replyline, check tray presence. |
-| Empty transcript | No meaningful system audio or Deepgram issue | Confirm audio is playing on the default output device and re-check the Deepgram key. |
-| Deepgram `401/403` | Invalid or expired STT key | Re-enter the key and run the health check. |
-| LLM timeout or connection error | Wrong `llmBaseUrl`, server down, firewall | Verify the URL, endpoint health, and model name. |
-| Vague or partial card | Weak transcript or model too small | Re-capture a clearer snippet or use a more capable model. |
-| Settings reset to defaults | Corrupt `settings.json` after crash/edit | Re-enter settings; inspect the `.corrupt` backup if needed. |
-| Slow response after release | Large clip, slow provider, or network latency | Lower `captureMaxSeconds` or use a faster model. |
-| Retry unavailable | No previous capture to reuse | Capture one snippet first. |
+| Problem                         | Likely cause                                  | What to check                                                                        |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------ |
+| No card after capture           | Hotkey conflict or app not running            | Change hotkey, restart Replyline, check tray presence.                               |
+| Empty transcript                | No meaningful system audio or Deepgram issue  | Confirm audio is playing on the default output device and re-check the Deepgram key. |
+| Deepgram `401/403`              | Invalid or expired STT key                    | Re-enter the key and run the health check.                                           |
+| LLM timeout or connection error | Wrong `llmBaseUrl`, server down, firewall     | Verify the URL, endpoint health, and model name.                                     |
+| Vague or partial card           | Weak transcript or model too small            | Re-capture a clearer snippet or use a more capable model.                            |
+| Settings reset to defaults      | Corrupt `settings.json` after crash/edit      | Re-enter settings; inspect the `.corrupt` backup if needed.                          |
+| Slow response after release     | Large clip, slow provider, or network latency | Lower `captureMaxSeconds` or use a faster model.                                     |
+| Retry unavailable               | No previous capture to reuse                  | Capture one snippet first.                                                           |
 
 If the problem still reproduces, use [BETA_TESTING.md](../../BETA_TESTING.md) for the tester flow and the issue-reporting path.
 

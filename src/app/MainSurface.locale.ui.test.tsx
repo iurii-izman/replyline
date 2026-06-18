@@ -288,6 +288,14 @@ describe("MainSurface state-driven view", () => {
     await user.keyboard("{Enter}");
     await waitFor(() => expect(copyCurrentCard).toHaveBeenCalled());
     await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Короче" }));
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Подробнее" }));
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Прямее" }));
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Мягче" }));
+    await user.tab();
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "Пересобрать" }));
     await user.tab();
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "Очистить" }));

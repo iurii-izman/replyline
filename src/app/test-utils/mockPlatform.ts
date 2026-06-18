@@ -25,6 +25,8 @@ export type MockPlatformOptions = {
     createdAt: string;
     updatedAt: string;
   }>;
+  canRetryLastTranscript?: boolean;
+  rememberTranscriptOnAnalysis?: boolean;
 };
 
 export type SetupMockPlatformOverrides = {
@@ -144,6 +146,8 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
   }> = (options.contextPacks ?? []).map((p) => ({ ...p }));
   let deepgramPresent = true;
   let llmPresent = true;
+  let canRetryLastTranscript = options.canRetryLastTranscript ?? false;
+  const contextActive = () => contextPacks.some((p) => p.isActive);
   const runtimeReady = () =>
     deepgramPresent && Boolean(settingsState.llmBaseUrl.trim() && settingsState.llmModel.trim());
 
@@ -151,11 +155,11 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     settings: settingsState,
     deepgramKeyPresent: deepgramPresent,
     llmKeyPresent: llmPresent,
-    contextActive: false,
+    contextActive: contextActive(),
     contextEntryCount: 0,
     runtimeReady: runtimeReady(),
     logStatus: { logPath: "", lastLine: null },
-    canRetryLastTranscript: false,
+    canRetryLastTranscript,
     experimentalBilingualAllowed: false,
   });
   const handleSetupStatus = () => ({
@@ -221,9 +225,19 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     if (command === "save_settings") return handleSaveSettings(args);
     if (command === "save_secret") return handleSaveSecret(args);
     if (command === "get_context_status")
-      return { contextActive: true, entryCount: 1, canRetryLastTranscript: true };
+      return {
+        contextActive: contextActive(),
+        entryCount: contextActive() ? 1 : 0,
+        canRetryLastTranscript,
+      };
     if (command === "capture_start") return "run-1";
     if (command === "capture_stop_and_analyze" || command === "retry_last_analysis") {
+      if (
+        command === "capture_stop_and_analyze" &&
+        options.rememberTranscriptOnAnalysis !== false
+      ) {
+        canRetryLastTranscript = true;
+      }
       return handleAnalysis();
     }
     if (command === "clear_context")

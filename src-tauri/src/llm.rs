@@ -2,7 +2,7 @@ use crate::card_v3::{self, CardQualityFlags};
 use crate::prompt_registry::{
     default_answer_profile, AnswerProfileConfig, ClarifierPolicy, StructurePreference,
 };
-use crate::types::AnalysisCardDto;
+use crate::types::{AnalysisCardDto, AnswerRewriteStyle};
 
 // ---------------------------------------------------------------------------
 // Card generation budget — part of the prompt contract
@@ -134,6 +134,35 @@ pub fn build_user_prompt(
     prompt
 }
 
+pub fn build_rewrite_style_override(style: AnswerRewriteStyle, language: &str) -> &'static str {
+    match (language, style) {
+        ("en", AnswerRewriteStyle::Shorter) => {
+            "Temporary rewrite style override for this rebuild only: make answer_now shorter. Keep the same facts, transcript grounding, and active context rules. Do not save this as a standing preference."
+        }
+        ("en", AnswerRewriteStyle::MoreDetailed) => {
+            "Temporary rewrite style override for this rebuild only: make answer_now more detailed while staying concise enough to say aloud. Keep the same facts, transcript grounding, and active context rules. Do not save this as a standing preference."
+        }
+        ("en", AnswerRewriteStyle::MoreDirect) => {
+            "Temporary rewrite style override for this rebuild only: make answer_now more direct and decisive. Keep the same facts, transcript grounding, and active context rules. Do not save this as a standing preference."
+        }
+        ("en", AnswerRewriteStyle::Softer) => {
+            "Temporary rewrite style override for this rebuild only: make answer_now softer and more diplomatic without becoming vague. Keep the same facts, transcript grounding, and active context rules. Do not save this as a standing preference."
+        }
+        (_, AnswerRewriteStyle::Shorter) => {
+            "Временный style override только для этой пересборки: сделай answer_now короче. Сохрани те же факты, привязку к transcript и правила active context. Не сохраняй это как постоянное предпочтение."
+        }
+        (_, AnswerRewriteStyle::MoreDetailed) => {
+            "Временный style override только для этой пересборки: сделай answer_now подробнее, но достаточно коротким для устной реплики. Сохрани те же факты, привязку к transcript и правила active context. Не сохраняй это как постоянное предпочтение."
+        }
+        (_, AnswerRewriteStyle::MoreDirect) => {
+            "Временный style override только для этой пересборки: сделай answer_now прямее и решительнее. Сохрани те же факты, привязку к transcript и правила active context. Не сохраняй это как постоянное предпочтение."
+        }
+        (_, AnswerRewriteStyle::Softer) => {
+            "Временный style override только для этой пересборки: сделай answer_now мягче и дипломатичнее, но не расплывчато. Сохрани те же факты, привязку к transcript и правила active context. Не сохраняй это как постоянное предпочтение."
+        }
+    }
+}
+
 fn build_profile_prompt_suffix(profile: &AnswerProfileConfig, language: &str) -> String {
     let structure = match profile.structure_preference {
         StructurePreference::Star => "STAR",
@@ -188,8 +217,9 @@ pub fn chars_band(transcript: &str) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use super::{build_user_prompt, system_prompt_for_profile};
+    use super::{build_rewrite_style_override, build_user_prompt, system_prompt_for_profile};
     use crate::prompt_registry::resolve_answer_profile;
+    use crate::types::AnswerRewriteStyle;
 
     #[test]
     fn executive_profile_includes_no_fabrication_rule() {
@@ -333,5 +363,25 @@ mod tests {
         let retry_pos = prompt.find("RETRY MODE").unwrap();
         let fragment_pos = prompt.find("Current fragment:").unwrap();
         assert!(retry_pos > fragment_pos);
+    }
+
+    #[test]
+    fn rewrite_style_override_is_ephemeral_not_profile_system() {
+        let suffix = build_rewrite_style_override(AnswerRewriteStyle::MoreDirect, "en");
+        assert!(suffix.contains("Temporary rewrite style override"));
+        assert!(suffix.contains("this rebuild only"));
+        assert!(suffix.contains("Do not save"));
+        assert!(!suffix.to_lowercase().contains("profile"));
+    }
+
+    #[test]
+    fn prompt_contains_rewrite_style_override_when_supplied() {
+        let profile = resolve_answer_profile("work_default");
+        let suffix = build_rewrite_style_override(AnswerRewriteStyle::Shorter, "ru");
+        let prompt = build_user_prompt("фрагмент", "", "ru", profile, Some(suffix));
+        assert!(prompt.contains("style override"));
+        assert!(prompt.contains("короче"));
+        assert!(prompt.contains("только для этой пересборки"));
+        assert!(!prompt.contains("profile system"));
     }
 }

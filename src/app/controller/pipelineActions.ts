@@ -17,6 +17,8 @@ import {
 } from "../model";
 import { emitUiEvent } from "../observability";
 
+export type AnswerRewriteStyle = "shorter" | "more_detailed" | "more_direct" | "softer";
+
 export interface PipelineActionDeps {
   platform: AppPlatform;
   canCopyCurrentCard: Accessor<boolean>;
@@ -36,7 +38,7 @@ export interface PipelineActionDeps {
 
 export interface PipelineActions {
   clearContext: () => Promise<void>;
-  retryAnalysis: () => Promise<void>;
+  retryAnalysis: (styleOverride?: AnswerRewriteStyle) => Promise<void>;
   copyCurrentCard: () => Promise<void>;
 }
 
@@ -72,8 +74,11 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
     }
   }
 
-  async function retryAnalysis() {
-    void emitUiEvent(deps.platform, "retry_clicked", { phase: "analyzing" });
+  async function retryAnalysis(styleOverride?: AnswerRewriteStyle) {
+    void emitUiEvent(deps.platform, "retry_clicked", {
+      phase: "analyzing",
+      style_override: styleOverride ?? "default",
+    });
     deps.setError(null);
     deps.setPhase("analyzing");
     // Generate a client-side runId so the lifecycle listener can
@@ -88,6 +93,7 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
     try {
       const result = await deps.platform.invoke<AnalysisCardDto>("retry_last_analysis", {
         runId,
+        ...(styleOverride ? { styleOverride } : {}),
       });
       const card = asAnalysisCard(result);
       deps.setCard(card);
