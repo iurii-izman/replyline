@@ -448,4 +448,76 @@ describe("main card integration", () => {
     expect(css).toContain("prefers-reduced-motion");
     expect(css).toContain("animation-duration: 0.01ms");
   });
+
+  // ── Accessibility ─────────────────────────────────────────────────
+
+  it("error recovery card has alert role for screen readers", async () => {
+    mock = createMockPlatform({ analysisError: { kind: "Pipeline", message: "LLM timeout" } });
+    renderApp(mock);
+
+    await triggerAnalysisReady(mock);
+    const errorCard = await screen.findByTestId("error-recovery-card");
+    expect(errorCard.getAttribute("role")).toBe("alert");
+  });
+
+  it("answer copy button has accessible name", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "g", sayNow: "say", nextMove: "next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    const copyBtn = screen.getByTestId("answer-copy-btn");
+    expect(copyBtn.getAttribute("aria-label")).toBe("Скопировать ответ");
+  });
+
+  it("main idle primary CTA is focusable", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "g", sayNow: "say", nextMove: "next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    // Clear to get back to idle.
+    fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
+    await waitFor(() => expect(screen.getByTestId("main-state-idle")).toBeTruthy());
+
+    const contextBtn = screen.getByTestId("idle-open-context-btn");
+    contextBtn.focus();
+    expect(document.activeElement).toBe(contextBtn);
+  });
+
+  it("header icon buttons have aria labels", () => {
+    mock = createMockPlatform();
+    renderApp(mock);
+
+    // Settings gear button.
+    const settingsBtn = screen.getByTestId("app-header-settings-action");
+    expect(settingsBtn.getAttribute("aria-label")).toBeTruthy();
+
+    // Hide-to-tray button.
+    const hideBtn = screen.getByTestId("app-header-hide-action");
+    expect(hideBtn.getAttribute("aria-label")).toBeTruthy();
+  });
+
+  it("context pack editor fields are wrapped in labels", async () => {
+    mock = createMockPlatform({ contextPacks: [] });
+    renderApp(mock);
+
+    // Open context pack panel and start a new pack to reveal editor labels.
+    await waitFor(() => expect(screen.getByTestId("context-pack-open-btn")).toBeTruthy(), {
+      timeout: 3000,
+    });
+    fireEvent.click(screen.getByTestId("context-pack-open-btn"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-panel")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    fireEvent.click(screen.getByTestId("context-pack-new-btn"));
+    await waitFor(() => expect(screen.getByTestId("context-pack-editor")).toBeTruthy());
+
+    // Editor has label elements wrapping title input and content textarea.
+    const editorLabels = screen.getByTestId("context-pack-editor").querySelectorAll("label");
+    expect(editorLabels.length).toBeGreaterThanOrEqual(2);
+  });
 });

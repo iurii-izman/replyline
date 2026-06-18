@@ -223,7 +223,11 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
             </section>
           </Show>
           <Show when={isStartupError()}>
-            <section class="phase-card phase-card--error" data-testid="startup-readiness-error">
+            <section
+              class="phase-card phase-card--error"
+              data-testid="startup-readiness-error"
+              role="alert"
+            >
               <strong>{controller().strings().phase.error}</strong>
               <p class="empty-flow-hint">
                 {controller().error() ?? controller().strings().card.errorHint}
@@ -280,7 +284,11 @@ export function MainSurface(props: Readonly<{ controller: ReplylineController }>
             />
           </Show>
           <Show when={isError()}>
-            <section class="phase-card phase-card--error" data-testid="error-recovery-card">
+            <section
+              class="phase-card phase-card--error"
+              data-testid="error-recovery-card"
+              role="alert"
+            >
               <strong>{controller().strings().phase.error}</strong>
               <p class="empty-flow-hint">
                 {controller().error() ?? controller().strings().card.errorHint}
