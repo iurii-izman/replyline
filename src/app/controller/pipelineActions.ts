@@ -40,6 +40,7 @@ export interface PipelineActions {
   clearContext: () => Promise<void>;
   retryAnalysis: (styleOverride?: AnswerRewriteStyle) => Promise<void>;
   copyCurrentCard: () => Promise<void>;
+  cancelPipeline: () => void;
 }
 
 export function createPipelineActions(deps: PipelineActionDeps): PipelineActions {
@@ -138,5 +139,24 @@ export function createPipelineActions(deps: PipelineActionDeps): PipelineActions
     });
   }
 
-  return { clearContext, retryAnalysis, copyCurrentCard };
+  /**
+   * Frontend-safe pipeline cancellation: switches activeRunId so the
+   * lifecycle listener ignores stale status events from the current run.
+   * The backend request continues to completion, but its result is
+   * discarded (runId mismatch).
+   */
+  function cancelPipeline() {
+    void emitUiEvent(deps.platform, "cancel_clicked", { phase: "processing" });
+    // Switch to a synthetic runId so stale status events are filtered out.
+    deps.setActiveRunId(`cancel-${Date.now()}`);
+    deps.setPhase("idle");
+    deps.setStatusDetail(null);
+    deps.setError(null);
+    deps.notices.pushNotice({
+      tone: "info",
+      message: deps.strings().card.cancelNotice,
+    });
+  }
+
+  return { clearContext, retryAnalysis, copyCurrentCard, cancelPipeline };
 }

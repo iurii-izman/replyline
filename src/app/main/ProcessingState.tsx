@@ -3,7 +3,8 @@ import type { ReplylineController } from "../controller";
 
 /**
  * Processing overlay shown during capture → transcribe → analyze pipeline.
- * Shows elapsed time, stage indicator, and context-sensitive guidance.
+ * Shows elapsed time, stage indicator, context-sensitive guidance,
+ * and a cancel button during transcribing/analyzing phases.
  */
 export function ProcessingState(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
@@ -12,6 +13,7 @@ export function ProcessingState(props: Readonly<{ controller: ReplylineControlle
   const isCapturing = () => controller().phase() === "capturing";
   const isTranscribing = () => controller().phase() === "transcribing";
   const isAnalyzing = () => controller().phase() === "analyzing";
+  const canCancel = () => isTranscribing() || isAnalyzing();
 
   // ── Elapsed timer ──────────────────────────────────────────────
   const [elapsed, setElapsed] = createSignal(0);
@@ -46,6 +48,10 @@ export function ProcessingState(props: Readonly<{ controller: ReplylineControlle
     { label: st().card.processingStageLlm, done: false, active: isAnalyzing() },
     { label: st().card.processingStageCard, done: false },
   ];
+
+  const handleCancel = () => {
+    controller().cancelPipeline();
+  };
 
   return (
     <section
@@ -97,6 +103,25 @@ export function ProcessingState(props: Readonly<{ controller: ReplylineControlle
           <p class="processing-long-hint" data-testid="processing-long-hint" role="status">
             {st().card.processingTakingLonger}
           </p>
+        </Show>
+
+        {/* Cancel action */}
+        <Show when={canCancel()}>
+          <div class="processing-cancel-area" data-testid="processing-cancel-area">
+            <Show when={takingLonger()}>
+              <p class="processing-cancel-hint" data-testid="processing-cancel-hint">
+                {st().card.processingCancelHint}
+              </p>
+            </Show>
+            <button
+              class="btn-ghost btn-compact processing-cancel-btn"
+              type="button"
+              data-testid="processing-cancel-btn"
+              onClick={handleCancel}
+            >
+              {st().card.cancelProcessing}
+            </button>
+          </div>
         </Show>
       </Show>
 

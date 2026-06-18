@@ -44,6 +44,7 @@ export interface HotkeyDeps {
   setLlmRouteConfigured: Setter<boolean>;
   setLastCommandErrorKind: Setter<CommandErrorKind | null>;
   setActiveRunId: Setter<string | null>;
+  activeRunId: Accessor<string | null>;
   isBilingualHotkeyMode: () => boolean;
   isBilingualDegraded: () => boolean;
   triggerBilingualHotkeyAnswer: () => Promise<void>;
@@ -231,6 +232,20 @@ export function createHotkeys(deps: HotkeyDeps): HotkeyApi {
           run_id: currentRunId ?? "unknown",
         });
         const result = await deps.platform.invoke<AnalysisCardDto>("capture_stop_and_analyze");
+        // Check for cancellation before applying the card.
+        const currentActive = deps.activeRunId();
+        if (currentActive && currentActive.startsWith("cancel-")) {
+          void emitClientEvent("capture_stop_result_discarded", {
+            source: "hotkey_release",
+            phase: "capture",
+            reason: "cancelled",
+          });
+          captureState = "idle";
+          deps.setActiveRunId(null);
+          currentRunId = null;
+          await clearCaptureAlwaysOnTop();
+          return;
+        }
         const card = asAnalysisCard(result);
         deps.setCard(card);
         deps.setCaptureQuality(resolveCaptureQuality(card.charsBand));
