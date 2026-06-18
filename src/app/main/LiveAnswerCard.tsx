@@ -1,5 +1,6 @@
 import { createSignal, onCleanup } from "solid-js";
 import type { ReplylineController } from "../controller";
+import { CheckIcon, CopyIcon } from "../ui/icons";
 
 export function LiveAnswerCard(props: Readonly<{ controller: ReplylineController }>) {
   const controller = () => props.controller;
@@ -10,7 +11,7 @@ export function LiveAnswerCard(props: Readonly<{ controller: ReplylineController
     await controller().copyCurrentCard();
     setCopied(true);
     if (copiedTimer) clearTimeout(copiedTimer);
-    copiedTimer = setTimeout(() => setCopied(false), 1200);
+    copiedTimer = setTimeout(() => setCopied(false), 1800);
   };
   onCleanup(() => {
     if (copiedTimer) clearTimeout(copiedTimer);
@@ -27,15 +28,19 @@ export function LiveAnswerCard(props: Readonly<{ controller: ReplylineController
           class={`btn-primary answer-copy-btn ${copied() ? "is-copied" : ""}`}
           type="button"
           aria-label={st().card.copySayNow}
+          data-testid="answer-copy-btn"
           onClick={() => void handleCopy()}
         >
-          {copied() ? st().card.copiedLabel : st().card.copySayNow}
+          {copied() ? <CheckIcon class="ui-icon--16" /> : <CopyIcon class="ui-icon--16" />}
+          <span>{copied() ? st().card.copiedLabel : st().card.copySayNow}</span>
         </button>
       </div>
       <p class="result-text result-text--speak" data-testid="section-say-now">
         {controller().card()?.sayNow?.trim()}
       </p>
-      <p class="empty-flow-hint">{st().card.sayNowHint}</p>
+      <p class="say-now-hint" data-testid="say-now-hint">
+        {st().card.sayNowHint}
+      </p>
     </article>
   );
 }

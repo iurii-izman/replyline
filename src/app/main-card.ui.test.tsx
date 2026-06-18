@@ -222,4 +222,109 @@ describe("main card integration", () => {
     expect(screen.getByTestId("section-gist")).toBeTruthy();
     expect(screen.getByTestId("section-next-move")).toBeTruthy();
   });
+
+  it("keeps say_now as visual primary element with stronger typography than gist", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    const sayNowEl = screen.getByTestId("section-say-now");
+    const gistTextEl = screen.getByTestId("section-gist").querySelector(".result-text");
+    expect(sayNowEl).toBeTruthy();
+    expect(gistTextEl).toBeTruthy();
+
+    // say_now uses the result-text--speak class for stronger typography
+    expect(sayNowEl.classList.contains("result-text--speak")).toBe(true);
+    // gist text uses plain result-text (no speak modifier)
+    expect(gistTextEl!.classList.contains("result-text--speak")).toBe(false);
+    // say_now has font-weight: 700 via CSS
+    expect(sayNowEl.tagName).toBe("P");
+    // answer-hero-card wraps say_now as the primary element
+    const heroCard = screen.getByTestId("answer-hero-card");
+    expect(heroCard.contains(sayNowEl)).toBe(true);
+  });
+
+  it("copy button transitions to copied state and back", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    const copyBtn = screen.getByTestId("answer-copy-btn");
+    expect(copyBtn.textContent).toContain("Скопировать ответ");
+    expect(copyBtn.classList.contains("is-copied")).toBe(false);
+
+    fireEvent.click(copyBtn);
+    await waitFor(() => expect(copyBtn.textContent).toContain("Скопировано"));
+    expect(copyBtn.classList.contains("is-copied")).toBe(true);
+    expect(mock.platform.clipboard.writeText).toHaveBeenCalledWith("work say");
+  });
+
+  it("next move is always visible in work answer card", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    expect(screen.getByTestId("section-next-move")).toBeTruthy();
+    expect(screen.getByTestId("section-next-move").textContent).toContain("work next");
+  });
+
+  it("hides risk/clarifier and star evidence when not present in card", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    expect(screen.queryByTestId("section-star-evidence")).toBeNull();
+    expect(screen.queryByTestId("section-risk-clarifier")).toBeNull();
+  });
+
+  it("shows risk/clarifier and star evidence with distinct treatment when present", async () => {
+    mock = createMockPlatform({
+      analysisCard: {
+        mode: "work",
+        gist: "g",
+        sayNow: "say",
+        nextMove: "next",
+        starEvidence: "Use STAR structure",
+        riskOrClarifier: "Avoid blaming tone",
+      },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    const evidenceEl = screen.getByTestId("section-star-evidence");
+    const riskEl = screen.getByTestId("section-risk-clarifier");
+    expect(evidenceEl).toBeTruthy();
+    expect(riskEl).toBeTruthy();
+    expect(evidenceEl.classList.contains("insight-section--evidence")).toBe(true);
+    expect(riskEl.classList.contains("insight-section--risk")).toBe(true);
+    expect(evidenceEl.textContent).toContain("Use STAR structure");
+    expect(riskEl.textContent).toContain("Avoid blaming tone");
+  });
+
+  it("keeps retry and clear action dock accessible inside answer-ready state", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "work gist", sayNow: "work say", nextMove: "work next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    const retryBtn = screen.getByRole("button", { name: "Пересобрать" });
+    const clearBtn = screen.getByRole("button", { name: "Очистить" });
+    expect(retryBtn).toBeTruthy();
+    expect(clearBtn).toBeTruthy();
+    expect(retryBtn).toHaveProperty("disabled", false);
+    expect(clearBtn).toHaveProperty("disabled", false);
+
+    // Focus order: document → copy → retry → clear
+    retryBtn.focus();
+    expect(document.activeElement).toBe(retryBtn);
+  });
 });
