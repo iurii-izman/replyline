@@ -520,4 +520,32 @@ describe("main card integration", () => {
     const editorLabels = screen.getByTestId("context-pack-editor").querySelectorAll("label");
     expect(editorLabels.length).toBeGreaterThanOrEqual(2);
   });
+
+  // ── Responsive layout ────────────────────────────────────────────
+
+  it("main CTA and action dock visible when answer ready", async () => {
+    mock = createMockPlatform({
+      analysisCard: { mode: "work", gist: "g", sayNow: "say", nextMove: "next" },
+    });
+    renderApp(mock);
+    await triggerAnalysisReady(mock);
+
+    // Answer card is visible.
+    expect(screen.getByTestId("answer-hero-card")).toBeTruthy();
+    // Action dock is visible with retry/clear buttons.
+    expect(screen.getByTestId("action-row")).toBeTruthy();
+    // Copy button is visible.
+    expect(screen.getByTestId("answer-copy-btn")).toBeTruthy();
+  });
+
+  it("no horizontal overflow on app root at default viewport", () => {
+    mock = createMockPlatform();
+    renderApp(mock);
+
+    const root = document.querySelector(".app-root");
+    expect(root).toBeTruthy();
+    // Body has overflow: hidden to prevent horizontal scroll.
+    const bodyOverflow = window.getComputedStyle(document.body).overflow;
+    expect(bodyOverflow).toBe("hidden");
+  });
 });
