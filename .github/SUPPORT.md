@@ -23,6 +23,7 @@
 - exact scenario
 - expected vs actual behavior
 - reproducible steps
+- support snapshot from **Settings → Advanced → Copy diagnostic snapshot**
 - relevant runtime artifact references (`reports/`, if available and sanitized)
 
 ## Sensitive Data Safety (required)

@@ -17,6 +17,7 @@ import {
   type SettingsSectionId,
   type SetupReadinessState,
   type SupportSnapshotPayloadDto,
+  type SupportSnapshotRuntimeCheckInputDto,
   invokeErrorMessage,
   isConfiguredLlmRoute,
 } from "../model";
@@ -466,6 +467,16 @@ export function useReplylineController(platform: AppPlatform) {
       bilingualInterviewState().finalizedSegments.length > 0,
   );
   const bilingualDegraded = createMemo(() => bilingualInterviewState().degraded);
+  const supportSnapshotRuntimeCheck = createMemo<SupportSnapshotRuntimeCheckInputDto | null>(() => {
+    const result = runtimeCheckResult();
+    if (!result) return null;
+    return {
+      runtimeReady: result.runtimeReady,
+      sttOk: result.stt.ok,
+      llmOk: result.llm.ok,
+      settingsOk: result.settings.ok,
+    };
+  });
 
   // ── Public API ─────────────────────────────────────────────────────────
   const interviewCardKeys = createMemo(() => interviewCarouselKeys(card()));
@@ -596,6 +607,8 @@ export function useReplylineController(platform: AppPlatform) {
         input: {
           currentPhase: phase(),
           lastErrorCategory: lastCommandErrorKind(),
+          setupReadiness: setupReadinessState(),
+          lastRuntimeCheck: supportSnapshotRuntimeCheck(),
         },
       });
       await platform.clipboard.writeText(payload.markdown);

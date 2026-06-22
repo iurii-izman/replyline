@@ -47,6 +47,7 @@ export type {
   SetupStatusDto,
   SetupReadinessState,
   PersistenceDiagnosticsDto,
+  SupportSnapshotRuntimeCheckInputDto,
   SupportSnapshotPayloadDto,
 } from "./diagnostics";
 

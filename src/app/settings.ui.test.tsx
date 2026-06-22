@@ -97,19 +97,59 @@ describe("settings integration", () => {
       expect(mock.invoke.mock.calls.some((call) => call[0] === "get_support_snapshot")).toBe(true),
     );
     const snapshotCall = mock.invoke.mock.calls.find((call) => call[0] === "get_support_snapshot");
-    const snapshotInput = (snapshotCall?.[1] as { input?: { currentPhase?: string } } | undefined)
-      ?.input;
+    const snapshotInput = (snapshotCall?.[1] as {
+      input?: {
+        currentPhase?: string;
+        setupReadiness?: string;
+        lastRuntimeCheck?: unknown;
+      };
+    } | undefined)?.input;
     expect(snapshotInput?.currentPhase).toBe("idle");
+    expect(snapshotInput?.setupReadiness).toBe("ready");
+    expect(snapshotInput?.lastRuntimeCheck).toBeNull();
     expect(mock.platform.clipboard.writeText).toHaveBeenCalled();
     const copied = String(
       (mock.platform.clipboard.writeText as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[0] ?? "",
     );
     expect(copied).toContain("# Replyline Support Snapshot");
     expect(copied).toContain("Client QBR");
+    expect(copied).toContain('"setupReadiness": "ready"');
+    expect(copied).toContain('"status": "not_run"');
     expect(copied).not.toContain("SECRET project context");
     expect(copied).not.toContain("rawTranscript");
     expect(copied).not.toContain("provider response");
     expect(copied).not.toContain("sk-");
+  });
+
+  it("includes safe setup/runtime summary fields in copied support snapshot", async () => {
+    const mock = createMockPlatform();
+    renderApp(mock);
+    await waitFor(() => expect(mock.platform.shortcuts.register).toHaveBeenCalled());
+    await openSettingsPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "Проверить настройки" }));
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "check_runtime_config")).toBe(true),
+    );
+
+    openSettingsSection(/Дополнительно/i);
+    fireEvent.click(screen.getByRole("button", { name: "Скопировать диагностический snapshot" }));
+
+    await waitFor(() =>
+      expect(mock.invoke.mock.calls.some((call) => call[0] === "get_support_snapshot")).toBe(true),
+    );
+    const snapshotCall = [...mock.invoke.mock.calls]
+      .reverse()
+      .find((call) => call[0] === "get_support_snapshot");
+    const snapshotInput = (snapshotCall?.[1] as { input?: Record<string, unknown> } | undefined)
+      ?.input;
+    expect(snapshotInput?.setupReadiness).toBe("ready");
+    expect(snapshotInput?.lastRuntimeCheck).toEqual({
+      runtimeReady: false,
+      sttOk: false,
+      llmOk: false,
+      settingsOk: false,
+    });
   });
 
   it("supports model preset caveats, preset sync, and custom route override safety", async () => {

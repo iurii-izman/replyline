@@ -11,6 +11,8 @@ body:
         Use this form for reproducible defects in the current beta.
 
         Do not paste or attach API keys, bearer tokens, raw transcripts, raw prompts, provider response bodies, or private smoke reports committed into the repo.
+        
+        Before submitting, prefer **Settings → Advanced → Copy diagnostic snapshot** and paste that sanitized snapshot into the evidence section.
   - type: input
     id: app_version
     attributes:
@@ -97,8 +99,9 @@ body:
     id: evidence
     attributes:
       label: Sanitized evidence
-      description: Reference sanitized local artifacts, redacted screenshots, or the sanitized smoke report attachment.
+      description: Paste the public-safe diagnostic snapshot and reference sanitized local artifacts, redacted screenshots, or the sanitized smoke report attachment.
       placeholder: |
+        Paste the copied diagnostic snapshot first.
         Attach `artifacts/beta-smoke-report/smoke-report.md` and `smoke-report.json` after submitting.
         Paste only short redacted snippets here when needed.
     validations:

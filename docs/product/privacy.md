@@ -48,8 +48,9 @@ Conversation context is RAM-only, bounded, and cleared on restart or after TTL e
 - `Export full markdown` is sensitive because it can include transcript content.
 - `Export redacted markdown` excludes raw/full transcript and is the safer sharing path.
 - The Settings support snapshot is public-safe by default: it includes provider readiness,
-  current phase, active ContextPack title only, last error category, app version, and
-  OS/runtime metadata. It excludes raw transcript, raw ContextPack content, provider
+  current phase, setup readiness, last runtime-check summary, feature gates,
+  active ContextPack title only, last error category, app version, and OS/runtime
+  metadata. It excludes raw transcript, raw ContextPack content, provider
   responses, prompts, secrets, and local paths.
 - Bilingual interview export is also explicit only:
   - `full` can include finalized transcript-derived content.

@@ -14,7 +14,10 @@ sharing private conversation data.
 
 - App version and build commit, when available.
 - Current UI phase: `idle`, `capturing`, `transcribing`, `analyzing`, `ready`, `error`, or `unknown`.
+- Setup readiness summary: `checking`, `ready`, `missing`, `error`, or `unknown`.
 - Provider readiness metadata: Deepgram key present, LLM route configured, LLM key present, runtime path ready, selected model preset, and route kind.
+- Last runtime check summary: `not_run`, `ready`, or `needs_fix`, plus safe per-check booleans (`stt`, `llm`, `settings`).
+- Feature gates: experimental bilingual env gate, bilingual UI opt-in, live translation toggle, and `debugTraceMode`.
 - Active ContextPack title only.
 - Last error category only.
 - OS, CPU architecture, OS family, and desktop runtime.

@@ -184,7 +184,17 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
     return options.analysisCard ?? { gist: "g", sayNow: "say", nextMove: "next" };
   };
   const handleSupportSnapshot = (args?: Record<string, unknown>) => {
-    const input = (args?.input ?? {}) as { currentPhase?: string; lastErrorCategory?: string };
+    const input = (args?.input ?? {}) as {
+      currentPhase?: string;
+      lastErrorCategory?: string;
+      setupReadiness?: string;
+      lastRuntimeCheck?: {
+        runtimeReady?: boolean;
+        sttOk?: boolean;
+        llmOk?: boolean;
+        settingsOk?: boolean;
+      } | null;
+    };
     const active = contextPacks.find((p) => p.isActive);
     const snapshot = {
       schemaVersion: 1,
@@ -192,6 +202,7 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
       appVersion: "0.2.0-beta.3",
       commitSha: "test",
       currentPhase: input.currentPhase ?? "idle",
+      setupReadiness: input.setupReadiness ?? "ready",
       activeContextTitle: active?.title ?? null,
       lastErrorCategory: input.lastErrorCategory ?? null,
       providerReadiness: {
@@ -204,6 +215,27 @@ export function createMockPlatform(options: MockPlatformOptions = {}): MockPlatf
         runtimePathReady: runtimeReady(),
         selectedModelPreset: settingsState.selectedModelPreset,
         llmRouteKind: "remote_https",
+      },
+      lastRuntimeCheck: input.lastRuntimeCheck
+        ? {
+            status: input.lastRuntimeCheck.runtimeReady ? "ready" : "needs_fix",
+            runtimeReady: Boolean(input.lastRuntimeCheck.runtimeReady),
+            sttOk: Boolean(input.lastRuntimeCheck.sttOk),
+            llmOk: Boolean(input.lastRuntimeCheck.llmOk),
+            settingsOk: Boolean(input.lastRuntimeCheck.settingsOk),
+          }
+        : {
+            status: "not_run",
+            runtimeReady: false,
+            sttOk: false,
+            llmOk: false,
+            settingsOk: false,
+          },
+      featureGates: {
+        experimentalBilingualAllowed: false,
+        bilingualInterviewEnabled: settingsState.bilingualInterviewEnabled,
+        liveTranslationEnabled: settingsState.liveTranslationEnabled,
+        debugTraceMode: settingsState.debugTraceMode,
       },
       runtime: {
         os: "windows",

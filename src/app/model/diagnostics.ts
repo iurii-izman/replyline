@@ -101,11 +101,33 @@ export type SupportSnapshotProviderReadinessDto = {
   llmRouteKind: string;
 };
 
+export type SupportSnapshotRuntimeCheckInputDto = {
+  runtimeReady: boolean;
+  sttOk: boolean;
+  llmOk: boolean;
+  settingsOk: boolean;
+};
+
 export type SupportSnapshotRuntimeDto = {
   os: string;
   arch: string;
   family: string;
   desktopRuntime: string;
+};
+
+export type SupportSnapshotRuntimeCheckDto = {
+  status: string;
+  runtimeReady: boolean;
+  sttOk: boolean;
+  llmOk: boolean;
+  settingsOk: boolean;
+};
+
+export type SupportSnapshotFeatureGatesDto = {
+  experimentalBilingualAllowed: boolean;
+  bilingualInterviewEnabled: boolean;
+  liveTranslationEnabled: boolean;
+  debugTraceMode: string;
 };
 
 export type SupportSnapshotDto = {
@@ -114,9 +136,12 @@ export type SupportSnapshotDto = {
   appVersion: string;
   commitSha: string;
   currentPhase: string;
+  setupReadiness: string;
   activeContextTitle?: string | null;
   lastErrorCategory?: string | null;
   providerReadiness: SupportSnapshotProviderReadinessDto;
+  lastRuntimeCheck: SupportSnapshotRuntimeCheckDto;
+  featureGates: SupportSnapshotFeatureGatesDto;
   runtime: SupportSnapshotRuntimeDto;
 };
 

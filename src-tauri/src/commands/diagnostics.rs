@@ -3,8 +3,9 @@ use crate::context_pack;
 use crate::credentials;
 use crate::settings;
 use crate::types::{
-    AppSettings, CommandError, SecretSlot, SupportSnapshotDto, SupportSnapshotInputDto,
-    SupportSnapshotPayloadDto, SupportSnapshotProviderReadinessDto, SupportSnapshotRuntimeDto,
+    AppSettings, CommandError, SecretSlot, SupportSnapshotDto, SupportSnapshotFeatureGatesDto,
+    SupportSnapshotInputDto, SupportSnapshotPayloadDto, SupportSnapshotProviderReadinessDto,
+    SupportSnapshotRuntimeCheckDto, SupportSnapshotRuntimeCheckInputDto, SupportSnapshotRuntimeDto,
     TraceStatusDto,
 };
 
@@ -38,12 +39,46 @@ fn normalize_snapshot_phase(value: &str) -> String {
     }
 }
 
+fn normalize_setup_readiness(value: Option<String>) -> String {
+    let raw = value.unwrap_or_default();
+    match raw.trim() {
+        "checking" | "ready" | "missing" | "error" => raw.trim().to_string(),
+        "" => "unknown".to_string(),
+        _ => "unknown".to_string(),
+    }
+}
+
 fn sanitize_error_category(value: Option<String>) -> Option<String> {
     let raw = value?.trim().to_string();
     match raw.as_str() {
         "Settings" | "Credential" | "Capture" | "Pipeline" | "Internal" => Some(raw),
         "" => None,
         _ => Some("Internal".to_string()),
+    }
+}
+
+fn sanitize_runtime_check_summary(
+    value: Option<SupportSnapshotRuntimeCheckInputDto>,
+) -> SupportSnapshotRuntimeCheckDto {
+    match value {
+        Some(summary) => SupportSnapshotRuntimeCheckDto {
+            status: if summary.runtime_ready {
+                "ready".to_string()
+            } else {
+                "needs_fix".to_string()
+            },
+            runtime_ready: summary.runtime_ready,
+            stt_ok: summary.stt_ok,
+            llm_ok: summary.llm_ok,
+            settings_ok: summary.settings_ok,
+        },
+        None => SupportSnapshotRuntimeCheckDto {
+            status: "not_run".to_string(),
+            runtime_ready: false,
+            stt_ok: false,
+            llm_ok: false,
+            settings_ok: false,
+        },
     }
 }
 
@@ -55,6 +90,7 @@ fn support_snapshot_markdown(snapshot: &SupportSnapshotDto, json: &str) -> Strin
         String::new(),
         format!("- appVersion: {}", snapshot.app_version),
         format!("- currentPhase: {}", snapshot.current_phase),
+        format!("- setupReadiness: {}", snapshot.setup_readiness),
         format!("- activeContextTitle: {active_context}"),
         format!("- lastErrorCategory: {last_error}"),
         format!(
@@ -63,6 +99,21 @@ fn support_snapshot_markdown(snapshot: &SupportSnapshotDto, json: &str) -> Strin
             snapshot.provider_readiness.llm_route_configured,
             snapshot.provider_readiness.llm_key_present,
             snapshot.provider_readiness.runtime_path_ready
+        ),
+        format!(
+            "- lastRuntimeCheck: status={}, runtimeReady={}, sttOk={}, llmOk={}, settingsOk={}",
+            snapshot.last_runtime_check.status,
+            snapshot.last_runtime_check.runtime_ready,
+            snapshot.last_runtime_check.stt_ok,
+            snapshot.last_runtime_check.llm_ok,
+            snapshot.last_runtime_check.settings_ok
+        ),
+        format!(
+            "- featureGates: experimentalBilingualAllowed={}, bilingualInterviewEnabled={}, liveTranslationEnabled={}, debugTraceMode={}",
+            snapshot.feature_gates.experimental_bilingual_allowed,
+            snapshot.feature_gates.bilingual_interview_enabled,
+            snapshot.feature_gates.live_translation_enabled,
+            snapshot.feature_gates.debug_trace_mode
         ),
         format!(
             "- runtime: {} {} ({})",
@@ -86,6 +137,8 @@ fn build_support_snapshot_payload(
     let llm_route_configured =
         !settings.llm_base_url.trim().is_empty() && !settings.llm_model.trim().is_empty();
     let route_kind = llm_route_kind(&settings);
+    let setup_readiness = normalize_setup_readiness(input.setup_readiness.clone());
+    let last_runtime_check = sanitize_runtime_check_summary(input.last_runtime_check);
     let snapshot = SupportSnapshotDto {
         schema_version: 1,
         generated_at: chrono::Utc::now().to_rfc3339(),
@@ -94,6 +147,7 @@ fn build_support_snapshot_payload(
             .unwrap_or("unknown")
             .to_string(),
         current_phase: normalize_snapshot_phase(&input.current_phase),
+        setup_readiness,
         active_context_title: active_context_title.and_then(|title| {
             let trimmed = title.trim();
             if trimmed.is_empty() {
@@ -111,6 +165,14 @@ fn build_support_snapshot_payload(
             runtime_path_ready: settings.runtime_path_configured(deepgram_key_present),
             selected_model_preset: settings.selected_model_preset,
             llm_route_kind: route_kind,
+        },
+        last_runtime_check,
+        feature_gates: SupportSnapshotFeatureGatesDto {
+            experimental_bilingual_allowed: crate::commands::shared::experimental_bilingual_allowed(
+            ),
+            bilingual_interview_enabled: settings.bilingual_interview_enabled,
+            live_translation_enabled: settings.live_translation_enabled,
+            debug_trace_mode: format!("{:?}", settings.debug_trace_mode).to_lowercase(),
         },
         runtime: SupportSnapshotRuntimeDto {
             os: std::env::consts::OS.to_string(),
@@ -229,6 +291,13 @@ mod tests {
             SupportSnapshotInputDto {
                 current_phase: "analyzing".to_string(),
                 last_error_category: Some("Pipeline".to_string()),
+                setup_readiness: Some("ready".to_string()),
+                last_runtime_check: Some(SupportSnapshotRuntimeCheckInputDto {
+                    runtime_ready: true,
+                    stt_ok: true,
+                    llm_ok: true,
+                    settings_ok: true,
+                }),
             },
             settings,
             true,
@@ -239,6 +308,7 @@ mod tests {
 
         assert_eq!(payload.snapshot.schema_version, 1);
         assert_eq!(payload.snapshot.current_phase, "analyzing");
+        assert_eq!(payload.snapshot.setup_readiness, "ready");
         assert_eq!(
             payload.snapshot.active_context_title.as_deref(),
             Some("Client QBR")
@@ -254,9 +324,13 @@ mod tests {
             payload.snapshot.provider_readiness.llm_route_kind,
             "openrouter"
         );
+        assert_eq!(payload.snapshot.last_runtime_check.status, "ready");
+        assert!(payload.snapshot.last_runtime_check.stt_ok);
+        assert!(payload.snapshot.feature_gates.debug_trace_mode == "redacted");
         assert_eq!(payload.snapshot.runtime.desktop_runtime, "tauri");
         assert!(payload.markdown.contains("# Replyline Support Snapshot"));
         assert!(payload.markdown.contains("```json"));
+        assert!(payload.markdown.contains("setupReadiness: ready"));
     }
 
     #[test]
@@ -270,6 +344,13 @@ mod tests {
             SupportSnapshotInputDto {
                 current_phase: "ready".to_string(),
                 last_error_category: Some("Credential".to_string()),
+                setup_readiness: Some("missing".to_string()),
+                last_runtime_check: Some(SupportSnapshotRuntimeCheckInputDto {
+                    runtime_ready: false,
+                    stt_ok: false,
+                    llm_ok: true,
+                    settings_ok: true,
+                }),
             },
             settings,
             true,
@@ -305,6 +386,8 @@ mod tests {
             SupportSnapshotInputDto {
                 current_phase: "raw transcript: confidential".to_string(),
                 last_error_category: Some("API key sk-test".to_string()),
+                setup_readiness: Some("resume: private".to_string()),
+                last_runtime_check: None,
             },
             AppSettings::default(),
             false,
@@ -314,10 +397,12 @@ mod tests {
         .expect("snapshot");
 
         assert_eq!(payload.snapshot.current_phase, "unknown");
+        assert_eq!(payload.snapshot.setup_readiness, "unknown");
         assert_eq!(
             payload.snapshot.last_error_category.as_deref(),
             Some("Internal")
         );
+        assert_eq!(payload.snapshot.last_runtime_check.status, "not_run");
         assert!(!payload.json.contains("confidential"));
         assert!(!payload.json.contains("sk-test"));
     }

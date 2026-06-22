@@ -346,6 +346,20 @@ pub struct SupportSnapshotInputDto {
     pub current_phase: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_error_category: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub setup_readiness: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_runtime_check: Option<SupportSnapshotRuntimeCheckInputDto>,
+}
+
+/// Safe runtime-check summary supplied by the UI for the support snapshot.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportSnapshotRuntimeCheckInputDto {
+    pub runtime_ready: bool,
+    pub stt_ok: bool,
+    pub llm_ok: bool,
+    pub settings_ok: bool,
 }
 
 /// Provider readiness summary safe for public support/QA sharing.
@@ -371,6 +385,27 @@ pub struct SupportSnapshotRuntimeDto {
     pub desktop_runtime: String,
 }
 
+/// Last runtime-check summary safe for support sharing.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportSnapshotRuntimeCheckDto {
+    pub status: String,
+    pub runtime_ready: bool,
+    pub stt_ok: bool,
+    pub llm_ok: bool,
+    pub settings_ok: bool,
+}
+
+/// Feature gates and opt-ins relevant for safe support triage.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportSnapshotFeatureGatesDto {
+    pub experimental_bilingual_allowed: bool,
+    pub bilingual_interview_enabled: bool,
+    pub live_translation_enabled: bool,
+    pub debug_trace_mode: String,
+}
+
 /// Public-safe diagnostic snapshot.
 /// It intentionally omits transcripts, raw ContextPack content, paths, secrets,
 /// provider request/response bodies, prompts, and card text.
@@ -382,11 +417,14 @@ pub struct SupportSnapshotDto {
     pub app_version: String,
     pub commit_sha: String,
     pub current_phase: String,
+    pub setup_readiness: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active_context_title: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_error_category: Option<String>,
     pub provider_readiness: SupportSnapshotProviderReadinessDto,
+    pub last_runtime_check: SupportSnapshotRuntimeCheckDto,
+    pub feature_gates: SupportSnapshotFeatureGatesDto,
     pub runtime: SupportSnapshotRuntimeDto,
 }
 
