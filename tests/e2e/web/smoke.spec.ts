@@ -48,6 +48,6 @@ test("credential-free happy path renders shell, settings, and fixture card", asy
 
   await expect(page.getByTestId("answer-hero-card")).toBeVisible();
   await expect(page.getByTestId("answer-headline")).toContainText(
-    "I can own this stream and show measurable delivery impact.",
+    "I can own reliability for this workstream",
   );
 });

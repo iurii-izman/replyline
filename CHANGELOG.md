@@ -40,10 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Live provider evidence remains `pending verification` on the primary Windows 11 test machine (Deepgram API key unavailable at time of release).
 - Cross-machine and cross-call-app runtime behavior remains pending broader verification.
 
-## [Unreleased] — beta.4 quality cycle
+## [Unreleased] — beta.5 consolidation cycle
 
-Quality and stability release. No new features — focus on UX polish, maintainability
-splits, public documentation, signing readiness, and public trust.
+Consolidation release candidate. Focus: freeze the current Rich Answer / live evidence /
+UX state, refresh the release decision docs, and keep the beta posture honest.
 
 ### Added
 
@@ -67,6 +67,8 @@ splits, public documentation, signing readiness, and public trust.
   honest blocked status with exact unblock checklist, measured automated evidence.
 - **Product Experience Hardening** — UX 85→88: idle context hint, ghost disable styling,
   answer hero visual treatment, error recovery guidance, label associations, settings separator.
+- Public-safe support snapshot in Settings → Advanced / Reports.
+- Beta.5 consolidation draft (`docs/release-notes/v0.2.0-beta.5-draft.md`).
 - 6 new UI tests: idle hint, error recovery, context chip a11y, copy button, labels, separator.
 
 ### Changed
@@ -80,11 +82,16 @@ splits, public documentation, signing readiness, and public trust.
 - Locale key checker updated for recursive import resolution (supports directory structure).
 - IPC contract checker now validates docs coverage (all 40 commands in `ipc.md`).
 - UI shell contract checker updated for extracted component files.
-- Repository scorecard refreshed: 88 → 93/100, 416 → 433 tracked files.
+- Repository scorecard refreshed for 2026-06-22 beta.5 decision.
 - README Quick Start simplified: removed `git checkout` step, inline config steps.
 - README Engineering Highlights updated: 265 Rust + 189 TS = 454 automated tests.
-- Roadmap synced to post-hardening state, trust package items marked ready.
+- Roadmap synced to beta.5 consolidation state.
 - Provider runtime matrix updated with 2026-06-18 commit and test counts.
+- Web smoke spec aligned with the current Rich Answer fixture wording.
+
+### Fixed
+
+- `pnpm test:e2e:web:smoke` fixture assertion drift after Rich Answer wording changes.
 
 ### Removed
 
@@ -97,6 +104,7 @@ splits, public documentation, signing readiness, and public trust.
 - Cross-machine smoke (Windows 10) not tested.
 - Unsigned artifacts remain S2 (no code-signing certificate).
 - User guide screenshots are placeholders — need real build captures.
+- Live-provider proof is still blocked by missing provider keys on the current machine.
 
 ## [0.2.0-beta.3] - 2026-06-17
 

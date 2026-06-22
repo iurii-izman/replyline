@@ -232,47 +232,73 @@ Recorded 2026-06-17. Decision: **Conditional Go**. See `CHANGELOG.md` and `docs/
 ContextPack pivot is the defining feature of this cycle. All automated gates green.
 Tag can be applied after explicit confirmation.
 
-## Beta.4 Release Decision
+## Beta.5 Release Decision
 
-Recorded 2026-06-18 (post-epic refresh). Decision: **Conditional Go**.
+Recorded 2026-06-22. Decision: **Conditional Go** for a source/developer beta only.
 
-All automated gates green (920+ tests). No S0/S1 blockers. Public trust package complete,
-architecture debt paid, non-core pruned. Core product boundaries explicit.
+Important date truth:
 
-**Blockers (documented S2):**
-- Live provider evidence: all paths blocked — `DEEPGRAM_API_KEY is missing`
-- Signed installer: no Authenticode certificate
-- npm audit: 5 pre-existing vulns (optional webdriverio deps)
+- latest existing tag after `git fetch --tags`: `v0.2.0-beta.3`
+- no `v0.2.0-beta.4` tag exists
+- no new tag should be created without explicit approval
 
-**Scorecard:** 93/100 (stable). Categories: Product 95, UX 88, Runtime 82, Packaging 84,
-Accessibility 91, Frontend 93, Rust 93, Tests 91, Docs 93, Minimalism 88.
+### Requested validation snapshot
 
-**Next epics:** Live Provider Proof → Signed Installer → Processing State UX.
+| Gate | Result |
+| --- | --- |
+| `pnpm verify` | ✅ pass |
+| `pnpm test:quality` | ✅ pass with non-blocking SLO deviations |
+| `pnpm test:e2e:web:smoke` | ✅ pass after fixture-text assertion refresh |
+| `pnpm test:public-footprint` | ✅ pass |
 
-Tag suggestion (requires explicit approval):
-```bash
-git tag -a v0.2.0-beta.4 -m "v0.2.0-beta.4: quality, stability, and public trust"
-git push origin v0.2.0-beta.4
-```
+### Scorecard summary
 
-### Live Evidence Status (2026-06-18)
+Overall score remains **93/100**.
+
+| Area | Score |
+| --- | --- |
+| Product clarity | 95 |
+| UI / UX | 89 |
+| Runtime evidence | 84 |
+| Packaging trust | 84 |
+| Answer quality | 94 |
+| Accessibility | 92 |
+| Frontend / Rust architecture | 93 |
+| Tests / CI | 92 |
+| Minimalism | 88 |
+
+### Why beta.5 is not `Go`
+
+- Live provider evidence is still blocked by missing `DEEPGRAM_API_KEY` and LLM credentials.
+- No Authenticode certificate exists, so a public signed installer remains blocked.
+- Windows 10 clean-machine smoke is still missing.
+- `pnpm test:quality` still reports non-blocking SLO misses:
+  - `llm_request_p50_ms`
+  - `release_to_card_p50_ms`
+
+### Why beta.5 is not `No-Go`
+
+- No requested blocking gate is red after the smoke assertion refresh.
+- No `S0` or `S1` issue is evidenced by the current validation set.
+- Core source-beta posture remains honest and supportable.
+
+### Live Evidence Status (2026-06-22)
 
 | Path | Status | Blocker |
-|---|---|---|
-| Automated QA (all gates) | ✅ `measured` | — |
-| ContextPack deterministic (47 fixtures) | ✅ `measured` | — |
-| ContextPack UI (29 tests) | ✅ `measured` | — |
-| Product Experience UX (189 tests) | ✅ `measured` | — |
-| Live STT path (Deepgram) | ❌ `blocked` | `DEEPGRAM_API_KEY is missing` |
-| Live LLM path (OpenAI-compatible) | ❌ `blocked` | No LLM API key configured |
-| Live combined pipeline | ❌ `blocked` | Both keys missing |
-| Cross-machine smoke | ❌ `blocked` | No second machine available |
-| Signed installer | ❌ `blocked` | No Authenticode certificate |
+| --- | --- | --- |
+| Deterministic QA / contracts / quality | ✅ `measured` | — |
+| Rich Answer / UX recovery surface | ✅ `measured` | — |
+| Public-safe support snapshot | ✅ `measured` | — |
+| Live STT path | ❌ `blocked` | `DEEPGRAM_API_KEY` unavailable |
+| Live LLM path | ❌ `blocked` | LLM API credentials unavailable |
+| Live combined pipeline | ❌ `blocked` | both live provider paths blocked |
+| Cross-machine smoke | ❌ `blocked` | second-machine evidence missing |
+| Signed installer | ❌ `blocked` | no certificate / no Authenticode proof |
 
-**Evidence files:**
-- `docs/beta-evidence/contextpack-live-runtime-2026-06-18.md` — full runtime evidence snapshot
-- `docs/beta-evidence/provider-runtime-matrix.md` — updated provider matrix
-- `docs/beta-evidence/context-pack-live-qa.2026-06-17.md` — previous QA evidence
+### Operator note
+
+beta.5 should be treated as a **documentation and decision consolidation point**,
+not proof that packaging trust or live runtime evidence are complete.
 
 ## Manual Release Checklist
 
