@@ -97,10 +97,18 @@ export async function installReplylineE2EPlatform(
             if (overrides?.analysisError) {
               throw overrides.analysisError;
             }
+            await new Promise((resolve) => setTimeout(resolve, 350));
             return {
               gist: "Interviewer asks about reliability ownership.",
-              sayNow: "I can own this stream and show measurable delivery impact.",
+              sayNow:
+                "I can take ownership of reliability for this workstream and tie it to a measurable delivery outcome.",
               nextMove: "Back this with one metric and one risk tradeoff.",
+              answerShort:
+                "I can own reliability for this workstream and show how that improves delivery confidence.",
+              answerFull:
+                "I treat reliability as part of delivery. I set one clear signal, cut noisy regressions, and make release decisions easier.",
+              followUpLine:
+                "If helpful, I can give one metric and one tradeoff example.",
               charsBand: "120-220",
             };
           }
@@ -172,10 +180,15 @@ export async function installReplylineE2EPlatform(
             if (overrides?.analysisError) {
               throw overrides.analysisError;
             }
+            await new Promise((resolve) => setTimeout(resolve, 200));
             return {
               gist: "Retry gist",
-              sayNow: "Retry say",
+              sayNow: "I would restate the answer more directly and keep the same ownership point.",
               nextMove: "Retry next",
+              answerShort: "I would answer more directly and keep the ownership signal clear.",
+              answerFull:
+                "The stronger version is to anchor on scope, metric, and practical release impact instead of speaking in generalities.",
+              followUpLine: "Then I would ask whether they want the technical or stakeholder example.",
               charsBand: "normal",
             };
           }

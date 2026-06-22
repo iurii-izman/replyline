@@ -53,6 +53,8 @@ the desktop app. Neither installs prerequisites automatically — install them f
 
 > **Screenshot placeholder**: `first-launch-idle.png` — Replyline tray icon and
 > idle MainSurface showing the ContextPack hint and hotkey instruction.
+>
+> Public-safe demo slot: see [screenshots.md](screenshots.md) → `Idle - no context`.
 
 ### Setup walkthrough
 
@@ -70,6 +72,8 @@ After filling the required fields, open **Settings → Overview** and click
 
 > **Screenshot placeholder**: `settings-providers.png` — Settings panel with
 > provider fields filled (keys redacted).
+>
+> Public-safe demo slot: see [screenshots.md](screenshots.md) → `Settings - overview`.
 
 ### Create your first ContextPack
 
@@ -84,6 +88,9 @@ After filling the required fields, open **Settings → Overview** and click
 >
 > **Screenshot placeholder**: `context-pack-active.png` — MainSurface with
 > active ContextPack badge visible.
+>
+> Public-safe demo slots: see [screenshots.md](screenshots.md) →
+> `Context Workspace` and `Idle - active context`.
 
 ### First capture
 
@@ -101,6 +108,9 @@ Use synthetic, non-confidential audio for testing. Example safe phrase:
 
 > **Screenshot placeholder**: `first-card.png` — MainSurface showing a
 > completed card with answer headline, detail, gist, and next move visible.
+>
+> Public-safe demo slot: see [screenshots.md](screenshots.md) →
+> `Answer ready - rich card`.
 
 ### What next
 
@@ -165,6 +175,10 @@ Diagnostics notes:
 WorkConversation is optimized for short, high-pressure moments. It is not a meeting transcript tool and does not keep a long conversation history in the shipped beta.
 
 Lightweight answer controls use only the latest available transcript plus the active ContextPack, when one is active. The selected control is a one-time rebuild instruction; it is not saved as an answer profile, does not create a history, and does not persist raw transcript beyond the existing retry flow.
+
+Public-safe demo states for this flow are documented in
+[screenshots.md](screenshots.md), including `Processing`,
+`Answer ready - rich card`, and `Provider error recovery`.
 
 ## 6. Interview Mode (context usage example)
 

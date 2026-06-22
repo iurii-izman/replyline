@@ -19,6 +19,7 @@ The current public entry is a Windows **source/developer beta** for testers and 
 - [Open the product page](https://iurii-izman.github.io/replyline/)
 - [Run the 15-minute beta test](BETA_TESTING.md)
 - [Read the user guide](docs/product/user-guide.md)
+- [See the public-safe demo screenshot pack policy](docs/product/screenshots.md)
 - [Read privacy and data-flow boundaries](docs/product/privacy.md)
 - [Read current beta limitations](docs/product/limitations.md)
 - [Read the beta release notes](https://github.com/iurii-izman/replyline/releases/tag/v0.2.0-beta.3)
@@ -27,6 +28,11 @@ The current public entry is a Windows **source/developer beta** for testers and 
 
 No unsigned artifact is presented as a public installer. Until an Authenticode-signed build
 is verified and published, use the source setup below.
+
+Public docs use a synthetic demo screenshot pack from the Playwright visual
+baseline. It covers idle, active context, Context Workspace, rich answer card,
+processing, settings overview, and provider error recovery without exposing real
+keys, transcripts, or ContextPack content.
 
 ## What It Does
 

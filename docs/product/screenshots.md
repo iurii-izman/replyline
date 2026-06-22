@@ -1,19 +1,21 @@
 # Replyline Screenshot Checklist
 
-> **Status:** Placeholder slots defined. Actual screenshots pending — do not add fake or
-> AI-generated screenshots. Every slot must be filled from a real build.
+> **Status:** Public-safe demo screenshot pack is available from the Playwright
+> visual baseline. Signed desktop release screenshots are still a separate,
+> pending deliverable.
 
-This document lists every screenshot needed for public docs, what each must show,
-what must be redacted, and which slots are public-safe.
+This document defines the public-safe screenshot policy for README, user guide,
+and release notes, plus the redaction rules and the reproducible export path.
 
 ## General rules
 
-- **No fake screenshots.** Every image must come from a real Replyline build.
-- **Redact before capture, not after.** Configure the app with synthetic/test data
-  before taking the screenshot.
-- **Use synthetic content only.** No real names, company names, project names,
-  credentials, or confidential information in any screenshot.
-- **PNG format**, reasonable resolution (1200–1600px wide). Keep file sizes
+- **No AI-generated UI mockups.** Public screenshots must come from a real
+  Replyline render path.
+- **Synthetic/demo content only.** No real names, projects, companies,
+  credentials, transcripts, or confidential details.
+- **Redact before capture, not after.** Configure synthetic inputs first; do not
+  rely on manual paint-over edits.
+- **PNG format**, reasonable resolution (1200-1600px wide). Keep file sizes
   under 500 KB where possible.
 
 ## What must never appear in a public screenshot
@@ -28,155 +30,105 @@ what must be redacted, and which slots are public-safe.
 | Debug traces | `full_local` trace content, WAV paths, internal file paths |
 | Credential Manager entries | Screenshots of Windows Credential Manager |
 
-## Public-safe screenshot slots
+## Screenshot / artifact policy
 
-These slots are needed for public-facing docs (README, user-guide, landing page).
-All use synthetic/test content only.
+- **Public-safe demo pack:** committed Playwright PNG snapshots under
+  `tests/e2e/web/visual.spec.ts-snapshots/`. These are synthetic, reproducible,
+  and safe to reference in docs/release materials.
+- **Docs surface:** `README.md`, `docs/product/user-guide.md`, and release notes
+  reference named screenshot slots/states instead of embedding ad-hoc local files.
+- **Signed desktop release captures:** still pending. Do not present web visual
+  snapshots as signed-build proof or installer screenshots.
+- **No binary screenshots under `docs/product/screenshots/` yet.** Keep this
+  document as the source of truth for slots, policy, and export instructions.
 
-| # | Slot | Filename | What it shows | Used in |
-|---|---|---|---|---|
-| 1 | First launch — idle state | `first-launch-idle.png` | Tray icon + MainSurface idle: ContextPack hint, hotkey instruction (`Ctrl+Alt+Space`), no active capture | user-guide §2 |
-| 2 | Settings — providers configured | `settings-providers.png` | Settings panel: Deepgram key field (dots/hidden), LLM base URL filled, model name filled, preset selector visible | user-guide §2 |
-| 3 | ContextPack — create form | `context-pack-create.png` | ContextPack panel: create form with synthetic name and context text filled, Save button visible | user-guide §2 |
-| 4 | ContextPack — active badge | `context-pack-active.png` | MainSurface with active ContextPack badge visible, idle state, pack name shown | user-guide §2 |
-| 5 | First card result | `first-card.png` | MainSurface showing completed card: gist, say_now, next_move visible. No raw transcript shown | user-guide §2 |
-| 6 | ContextPack list | `context-pack-list.png` | ContextPack panel: list of 2–3 saved packs, one active (highlighted), edit/delete buttons visible | user-guide §7 |
-| 7 | Settings — model presets | `settings-model-presets.png` | Settings panel: model preset dropdown expanded showing available presets | user-guide §4, provider-setup |
-| 8 | Interview Mode — session active | `interview-mode-session.png` | Interview Mode surface: session active, first card visible, card navigation visible | user-guide §6 |
-| 9 | Export dialog | `export-dialog.png` | Export dialog: redacted vs full export options visible, warning text about sensitivity | user-guide §8 |
-| 10 | Tray menu | `tray-menu.png` | Windows system tray: Replyline icon, right-click menu with Show/Hide/Quit | user-guide §2 |
+## Public-safe demo state matrix
 
-## Internal-only slots
+These are the curated states for the docs/release demo pack. All are driven by
+synthetic data in `tests/e2e/web/replyline-fixture.ts`.
 
-These slots are for internal docs (release notes, beta evidence, engineering docs).
-They may contain more detail but still follow the same redaction rules.
+| # | State | Snapshot files | Primary use |
+|---|---|---|---|
+| 1 | Idle - no context | `idle-ready-no-context-*.png` | README, user guide first launch |
+| 2 | Idle - active context | `idle-ready-active-context-*.png` | user guide context activation |
+| 3 | Context Workspace | `context-pack-active-*.png` | user guide ContextPack / workspace flow |
+| 4 | Answer ready - rich card | `answer-ready-*.png` | README, user guide, release notes |
+| 5 | Processing | `capturing.png`, `analyzing.png` | release notes / troubleshooting |
+| 6 | Settings - overview | `settings-overview-*.png` | user guide setup/settings |
+| 7 | Provider error recovery | `error-recovery-*.png` | user guide troubleshooting, release notes |
 
-| # | Slot | Filename | What it shows | Used in |
-|---|---|---|---|---|
-| I1 | Settings — full panel | `settings-full.png` | Entire Settings panel scrolled to show all sections | release notes |
-| I2 | ContextPack — edit form | `context-pack-edit.png` | ContextPack edit form with existing content, Save/Cancel buttons | engineering docs |
-| I3 | Error state — missing key | `error-missing-key.png` | MainSurface error notice when Deepgram key is missing | troubleshooting |
-| I4 | Health check result | `health-check.png` | Settings health check result panel | release notes |
+Additional automated states remain available when needed:
 
-## Redaction checklist (per slot)
+| State | Snapshot files |
+|---|---|
+| Setup missing | `setup-missing-*.png` |
+| Context Workspace - empty | `context-pack-empty-*.png` |
+| Settings - runtime check error | `settings-runtime-check-error-*.png` |
 
-Before publishing any screenshot, verify:
+## Redaction checklist
 
-- [ ] No API key value visible (field shows dots or is blank)
+Before publishing or sharing any screenshot, verify:
+
+- [ ] No API key value visible
 - [ ] No raw transcript text visible
-- [ ] Synthetic content only — no real names, projects, companies
+- [ ] Synthetic content only - no real names, projects, or companies
 - [ ] No full file paths with username (`C:\Users\...`)
 - [ ] No provider response bodies
 - [ ] No debug trace content
-- [ ] `debugTraceMode` set to `off` or `redacted` before capture
+- [ ] `debugTraceMode` set to `off` or `redacted`
 - [ ] ContextPack content is synthetic/generic
-- [ ] Interview report content (if shown) is synthetic only
+- [ ] Interview/report content, if shown, is synthetic only
 
-## Capturing screenshots
+## Reproducible screenshot command
 
-### Windows built-in
+Generate or refresh the public-safe demo pack locally:
 
-```
-Win+Shift+S  →  select area  →  paste into image editor  →  save as PNG
-```
-
-### Recommended workflow
-
-1. Launch Replyline with `pnpm beta:start`.
-2. Configure providers with synthetic/test keys (or leave fields empty for
-   UI-only screenshots).
-3. Create a synthetic ContextPack with generic content.
-4. Capture a synthetic audio snippet for card screenshots.
-5. Take the screenshot with `Win+Shift+S`.
-6. Review the captured area for any redaction violations before saving.
-7. Save to `docs/product/screenshots/` (create directory if missing).
-8. Run `pnpm test:public-footprint` to confirm no secret leaks in image metadata.
-
-## Placeholder policy
-
-Until actual screenshots are captured, docs use placeholder markers:
-
-```
-> **Screenshot placeholder**: `filename.png` — description of what the slot shows.
-```
-
-Once a real screenshot is captured:
-
-1. Save the file to `docs/product/screenshots/`.
-2. Replace the placeholder with a proper image markdown reference.
-3. Update this checklist to mark the slot as filled.
-
-**Never** use AI-generated images, mockups from design tools, or screenshots from
-other applications as placeholders for Replyline UI.
-
-## How to update visual baseline
-
-### Automated visual snapshots (Playwright)
-
-Visual regression snapshots live in `tests/e2e/web/visual.spec.ts-snapshots/`.
-They are generated by `pnpm test:e2e:web:visual` and cover 11 UI states across
-3 viewports (compact 900×620, normal 1200×760, wide 1440×900).
-
-To update the visual baseline after intentional UI changes:
-
-```bash
-# 1. Run visual tests with snapshot update flag
+```powershell
 pnpm exec playwright test tests/e2e/web/visual.spec.ts --update-snapshots
-
-# 2. Review the changed snapshots in git diff
-#    (Playwright generates PNG files — verify visually before committing)
-git diff --stat tests/e2e/web/visual.spec.ts-snapshots/
-
-# 3. Verify no redaction violations in new snapshots
-#    (API keys, transcripts, personal data — see redaction checklist above)
-
-# 4. Commit updated snapshots alongside code changes
-git add tests/e2e/web/visual.spec.ts-snapshots/
+New-Item -ItemType Directory -Force artifacts/demo-screenshot-pack | Out-Null
+Copy-Item tests/e2e/web/visual.spec.ts-snapshots/*.png artifacts/demo-screenshot-pack/
 ```
 
-### Visual scenario matrix
+This produces:
 
-The visual spec (`tests/e2e/web/visual.spec.ts`) covers these states:
+- committed baselines in `tests/e2e/web/visual.spec.ts-snapshots/`
+- optional export copies in `artifacts/demo-screenshot-pack/`
 
-| # | State | Viewports | Status |
-|---|---|---|---|
-| 1 | Setup missing | compact, normal, wide | Automated |
-| 2 | Idle — no context | compact, normal, wide | Automated |
-| 3 | Idle — active context | compact, normal, wide | Automated |
-| 4 | ContextPack — empty | compact, normal, wide | Automated |
-| 5 | ContextPack — active | compact, normal, wide | Automated |
-| 6 | Capturing | wide only (transient) | Automated |
-| 7 | Analyzing | wide only (transient) | Automated |
-| 8 | Answer ready | compact, normal, wide | Automated |
-| 9 | Error recovery | compact, normal, wide | Automated |
-| 10 | Settings — overview | compact, normal, wide | Automated |
-| 11 | Settings — runtime error | compact, normal, wide | Automated |
+If CI or a manual workflow generates `artifacts/demo-screenshot-pack/`, that
+directory is safe to upload as a GitHub Actions artifact for review. Do not treat
+it as signed-build evidence.
 
-### Layout safety checks (non-snapshot)
+After regenerating screenshots:
 
-In addition to pixel snapshots, layout checks verify:
-- No horizontal overflow at compact viewport
-- Sticky footer doesn't overlap main content
-- Context chip wraps cleanly on narrow viewports
-- Answer card text doesn't truncate
-- Settings sidebar stays within bounds at compact height
+1. Review PNGs visually.
+2. Run `pnpm test:public-footprint`.
+3. Run `pnpm test:e2e:web:visual` to confirm the baseline is stable.
 
-### Artifact-only visual test policy
+## Manual desktop captures
 
-- **No binary snapshots in docs/.** Screenshot slots in `docs/product/screenshots/`
-  must be captured manually from a real build with synthetic content.
-- **Automated snapshots stay in test directory.** `tests/e2e/web/visual.spec.ts-snapshots/`
-  contains Playwright-generated baselines for regression detection only.
-- **Snapshots are OS-specific.** Current baselines are for `chromium-win32`.
-  Cross-platform baselines would need separate snapshot directories.
-- **Do not commit snapshots with real data.** All E2E snapshots use synthetic
-  mock data with no real API keys, transcripts, or personal information.
-- **Run `pnpm test:public-footprint` after updating snapshots** to ensure
-  no secrets leak into PNG metadata.
+Manual desktop captures are still allowed for future signed-release screenshots,
+but they are a separate track from this public-safe demo pack.
+
+Rules for that path:
+
+1. Use a real Replyline build only.
+2. Keep content synthetic.
+3. Do not claim signed-build proof unless the signed artifact actually exists.
+4. Run `pnpm test:public-footprint` after adding any PNG files to the repo.
+
+## Automated visual coverage notes
+
+- Visual regression snapshots live in `tests/e2e/web/visual.spec.ts-snapshots/`.
+- The suite covers 11 UI states across 3 viewports
+  (compact `900x620`, normal `1200x760`, wide `1440x900`).
+- Layout safety checks also assert no horizontal overflow, visible sticky action
+  dock, clean context-chip wrapping, no answer truncation, and bounded
+  settings sidebar behavior.
+- Snapshots are OS-specific. Current baselines are for `chromium-win32`.
 
 ## Related docs
 
-- [copy-rules.md](../copy-rules.md) — product wording constraints
-- [privacy.md](privacy.md) — data flow and storage boundaries
-- [user-guide.md](user-guide.md) — where screenshots are placed
-- [engineering/release.md](../engineering/release.md) — release screenshot requirements
+- [copy-rules.md](../copy-rules.md) - product wording constraints
+- [privacy.md](privacy.md) - data flow and storage boundaries
+- [user-guide.md](user-guide.md) - setup and state references
+- [engineering/release.md](../engineering/release.md) - release screenshot requirements
