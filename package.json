@@ -4,25 +4,6 @@
   "description": "Replyline — Windows-first tray app для сложных рабочих разговоров (public source beta, RU-first UX).",
   "packageManager": "pnpm@9.15.9",
   "type": "module",
-  "pnpm": {
-    "overrides": {
-      "postcss": "8.5.14",
-      "flatted": "3.4.2",
-      "lodash": "4.18.1",
-      "tmp": "0.2.7",
-      "uuid": "11.1.1",
-      "qs": "6.15.2",
-      "serialize-javascript": "7.0.5",
-      "ws@>=7.0.0 <7.5.11": "7.5.11",
-      "undici": "7.28.0"
-    },
-    "onlyBuiltDependencies": [
-      "edgedriver",
-      "esbuild",
-      "geckodriver",
-      "protobufjs"
-    ]
-  },
   "scripts": {
     "// ── Dev ──": "",
     "start": "vite",

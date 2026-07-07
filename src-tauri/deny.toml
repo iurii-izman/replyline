@@ -11,6 +11,10 @@ unmaintained = "workspace"
 ignore = [
     # REVIEW_DATE=2026-07-01; reason=Tauri/wry GTK3 stack is transitive on Linux and not used on primary Windows target.
     { crate = "fastrand@2.4.0", reason = "yanked transitive crate; locked by upstream tree until next dependency refresh." },
+    # REVIEW_DATE=2026-07-07; reason=Wayland clipboard transitives are Linux-only while Replyline's supported primary target is Windows-first desktop.
+    { id = "RUSTSEC-2026-0194", reason = "Remaining vulnerable quick-xml path is transitively pulled by wayland-scanner for Linux clipboard support; plist-backed build-time path was upgraded to quick-xml 0.41.0." },
+    # REVIEW_DATE=2026-07-07; reason=Wayland namespace parsing path is Linux-only and currently constrained to upstream tauri/arboard dependency chain.
+    { id = "RUSTSEC-2026-0195", reason = "Remaining vulnerable quick-xml path is transitively pulled by wayland-scanner for Linux clipboard support; upstream upgrade required for full removal." },
 ]
 
 [licenses]

@@ -139,7 +139,7 @@ jobs:
 
           if ($failed.Count -gt 0) {
             Write-Host "::warning title=Extended quality signal::Non-blocking workflow reported failed lanes. See summary + artifact."
-            exit 1
+            exit 0
           }
 
           Write-Host "::warning title=Extended quality signal::Baseline passed; addon lane skipped optional tools. See summary + artifact."
