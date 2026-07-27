@@ -47,8 +47,8 @@ const requiredIncludes = [
     excludes: ["primary instruction", "alpha-only"],
   },
   {
-    path: "docs/archive/handoff/beta-doctor.md",
-    includes: ["pnpm beta:doctor", "ready_with_warnings", "blocked"],
+    path: "scripts/beta-doctor.mjs",
+    includes: ["replyline.beta-doctor.v1", "ready_with_warnings", "blocked"],
   },
   {
     path: "docs/beta-smoke-report.md",

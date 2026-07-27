@@ -66,4 +66,3 @@ Replyline должен звучать как спокойный рабочий �
 - [engineering/runtime.md](engineering/runtime.md) - где живут runtime claims, evidence и proof boundaries.
 - [`product/privacy.md`](product/privacy.md)
 - [`product/limitations.md`](product/limitations.md)
-- [benchmark-policy.md](archive/handoff/benchmark-policy.md) - historical shorthand for the same claim labels.
