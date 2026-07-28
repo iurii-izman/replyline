@@ -35,14 +35,18 @@ test("credential-free happy path renders shell, settings, and fixture card", asy
   await page.getByTestId("app-header-settings-action").click();
   await expect(page.getByTestId("main-surface")).toBeVisible();
 
-  await page.evaluate(() => {
-    (
-      window as Window & { __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (s: "Pressed" | "Released") => void }
+  await page.evaluate(async () => {
+    await (
+      window as Window & {
+        __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (s: "Pressed" | "Released") => Promise<void>;
+      }
     ).__REPLYLINE_E2E_TRIGGER_SHORTCUT__("Pressed");
   });
-  await page.evaluate(() => {
-    (
-      window as Window & { __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (s: "Pressed" | "Released") => void }
+  await page.evaluate(async () => {
+    await (
+      window as Window & {
+        __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (s: "Pressed" | "Released") => Promise<void>;
+      }
     ).__REPLYLINE_E2E_TRIGGER_SHORTCUT__("Released");
   });
 

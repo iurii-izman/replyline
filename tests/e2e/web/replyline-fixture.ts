@@ -54,10 +54,12 @@ export async function installReplylineE2EPlatform(
 
       (
         window as Window & {
-          __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (state: "Pressed" | "Released") => void;
+          __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (
+            state: "Pressed" | "Released",
+          ) => Promise<void>;
         }
-      ).__REPLYLINE_E2E_TRIGGER_SHORTCUT__ = (state) => {
-        void shortcutHandler?.({ state });
+      ).__REPLYLINE_E2E_TRIGGER_SHORTCUT__ = async (state) => {
+        await shortcutHandler?.({ state });
       };
 
       (window as Window & { __REPLYLINE_E2E_PLATFORM__: unknown }).__REPLYLINE_E2E_PLATFORM__ = {

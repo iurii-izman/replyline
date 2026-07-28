@@ -41,20 +41,20 @@ function demoContextPack(): E2EBootstrapOverrides["contextPacks"] {
 
 // ── Helper: trigger capture cycle ───────────────────────────────────────
 async function pressHotkey(page: import("@playwright/test").Page) {
-  await page.evaluate(() => {
-    (
+  await page.evaluate(async () => {
+    await (
       window as Window & {
-        __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (s: "Pressed" | "Released") => void;
+        __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (s: "Pressed" | "Released") => Promise<void>;
       }
     ).__REPLYLINE_E2E_TRIGGER_SHORTCUT__("Pressed");
   });
 }
 
 async function releaseHotkey(page: import("@playwright/test").Page) {
-  await page.evaluate(() => {
-    (
+  await page.evaluate(async () => {
+    await (
       window as Window & {
-        __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (s: "Pressed" | "Released") => void;
+        __REPLYLINE_E2E_TRIGGER_SHORTCUT__: (s: "Pressed" | "Released") => Promise<void>;
       }
     ).__REPLYLINE_E2E_TRIGGER_SHORTCUT__("Released");
   });
